@@ -1,0 +1,2488 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Hisaab Pro — Worker Monthly Salary &amp; Hisaab Panel</title>
+<style>
+/* ================= BASE ================= */
+*,*::before,*::after{box-sizing:border-box}
+:root{
+  --bg:#eef2f9; --card:#fff; --ink:#0f172a; --ink2:#334155; --muted:#64748b; --line:#e4eaf3;
+  --primary:#4f46e5; --primary-d:#4338ca; --primary-l:#eef2ff;
+  --ok:#059669; --ok-l:#ecfdf5; --warn:#d97706; --warn-l:#fffbeb; --danger:#dc2626; --danger-l:#fef2f2;
+  --side:#0f172a; --side2:#1a2540;
+  --radius:14px; --shadow:0 1px 2px rgba(15,23,42,.05),0 8px 24px -12px rgba(15,23,42,.16);
+  --shadow-lg:0 24px 60px -20px rgba(15,23,42,.35);
+  --ff:"Inter",-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Arial,"Noto Sans Devanagari",sans-serif;
+  --mono:"SFMono-Regular",Consolas,"Liberation Mono",Menlo,monospace;
+}
+html,body{margin:0;padding:0}
+body{font-family:var(--ff);background:var(--bg);color:var(--ink);font-size:14px;line-height:1.45;-webkit-font-smoothing:antialiased}
+button,input,select,textarea{font-family:inherit;font-size:inherit;color:inherit}
+button{cursor:pointer}
+h1,h2,h3,h4,h5{margin:0;font-weight:700;letter-spacing:-.01em}
+a{color:var(--primary)}
+::selection{background:#c7d2fe}
+
+/* ================= LAYOUT ================= */
+.app{display:flex;min-height:100vh}
+.sidebar{width:250px;flex:0 0 250px;background:linear-gradient(180deg,#0f172a,#16213c 60%,#0e1729);color:#cbd5e1;
+  padding:20px 14px;display:flex;flex-direction:column;gap:18px;position:sticky;top:0;height:100vh;z-index:40}
+.brand{display:flex;gap:11px;align-items:center;padding:2px 6px 4px}
+.logo{width:42px;height:42px;border-radius:12px;background:linear-gradient(135deg,#6366f1,#22d3ee);display:grid;place-items:center;
+  font-size:21px;font-weight:800;color:#fff;box-shadow:0 8px 20px -8px #4f46e5}
+.brand h1{font-size:16.5px;color:#fff;line-height:1.1}
+.brand span{font-size:10.5px;color:#7d8db0;text-transform:uppercase;letter-spacing:.14em}
+.nav{display:flex;flex-direction:column;gap:3px}
+.nav button{display:flex;align-items:center;gap:11px;width:100%;padding:11px 12px;border:0;border-radius:10px;background:transparent;
+  color:#a9b6cf;font-weight:600;font-size:13.5px;text-align:left;transition:.16s}
+.nav button .ico{width:19px;text-align:center;font-size:15px;opacity:.9}
+.nav button:hover{background:#1c2947;color:#fff}
+.nav button.active{background:linear-gradient(90deg,rgba(99,102,241,.28),rgba(99,102,241,.06));color:#fff;
+  box-shadow:inset 0 0 0 1px rgba(129,140,248,.35)}
+.nav button.active .ico{color:#a5b4fc}
+.side-foot{margin-top:auto;font-size:11px;color:#6f7f9f;padding:10px 8px;border-top:1px solid #22304e;line-height:1.6}
+.side-foot b{color:#93a4c4;font-weight:600}
+.dot{display:inline-block;width:7px;height:7px;border-radius:50%;background:#22c55e;margin-right:5px;vertical-align:middle}
+
+.main{flex:1;min-width:0;padding:18px 24px 48px}
+.topbar{display:flex;flex-wrap:wrap;gap:14px;align-items:center;justify-content:space-between;margin-bottom:18px}
+.topbar h2{font-size:21px}
+.topbar p{margin:2px 0 0;color:var(--muted);font-size:12.5px}
+.topbar-actions{display:flex;gap:9px;align-items:center;flex-wrap:wrap}
+.mp{display:flex;align-items:center;gap:2px;background:#fff;border:1px solid var(--line);border-radius:11px;padding:3px;box-shadow:var(--shadow)}
+.mp button{border:0;background:transparent;width:30px;height:30px;border-radius:8px;color:var(--ink2);font-size:15px;font-weight:700}
+.mp button:hover{background:#eef2f9}
+.mp select{border:0;background:transparent;font-weight:700;font-size:13.5px;padding:4px 2px;outline:none;cursor:pointer}
+.mp .sep{width:1px;height:18px;background:var(--line)}
+
+/* ================= COMPONENTS ================= */
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:7px;padding:9px 14px;border-radius:10px;border:1px solid var(--line);
+  background:#fff;font-weight:650;font-size:13px;color:var(--ink2);transition:.15s;white-space:nowrap;box-shadow:0 1px 1px rgba(15,23,42,.03)}
+.btn:hover{background:#f7f9fd;border-color:#cfd9e8;transform:translateY(-1px)}
+.btn:active{transform:translateY(0)}
+.btn.primary{background:linear-gradient(180deg,#5b53ea,#463ed6);border-color:#4338ca;color:#fff;box-shadow:0 6px 16px -8px #4f46e5}
+.btn.primary:hover{background:linear-gradient(180deg,#655df0,#4c43e0);color:#fff}
+.btn.ok{background:var(--ok);border-color:#047857;color:#fff}
+.btn.ok:hover{background:#047857;color:#fff}
+.btn.danger{background:#fff;border-color:#f3c5c5;color:var(--danger)}
+.btn.danger:hover{background:var(--danger-l)}
+.btn.ghost{background:transparent;border-color:transparent;box-shadow:none;color:var(--muted)}
+.btn.ghost:hover{background:#eaeff8;color:var(--ink)}
+.btn.sm{padding:6px 10px;font-size:12px;border-radius:8px}
+.btn.xs{padding:4px 8px;font-size:11.5px;border-radius:7px;gap:4px}
+.btn[disabled]{opacity:.5;pointer-events:none}
+
+.card{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow)}
+.card-h{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:14px 16px;border-bottom:1px solid var(--line);flex-wrap:wrap}
+.card-h h3{font-size:14.5px}
+.card-h .sub{color:var(--muted);font-size:11.5px;margin-top:2px}
+.card-b{padding:16px}
+
+.grid{display:grid;gap:14px}
+.g4{grid-template-columns:repeat(4,minmax(0,1fr))}
+.g3{grid-template-columns:repeat(3,minmax(0,1fr))}
+.g2{grid-template-columns:repeat(2,minmax(0,1fr))}
+
+.kpi{background:#fff;border:1px solid var(--line);border-radius:var(--radius);padding:15px 16px;box-shadow:var(--shadow);position:relative;overflow:hidden}
+.kpi::after{content:"";position:absolute;inset:0 0 auto 0;height:3px;background:linear-gradient(90deg,var(--primary),#22d3ee)}
+.kpi.ok::after{background:linear-gradient(90deg,#059669,#34d399)}
+.kpi.warn::after{background:linear-gradient(90deg,#d97706,#fbbf24)}
+.kpi.danger::after{background:linear-gradient(90deg,#dc2626,#f87171)}
+.kpi .lbl{font-size:11.5px;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);font-weight:700}
+.kpi .val{font-size:25px;font-weight:800;letter-spacing:-.02em;margin-top:6px;font-variant-numeric:tabular-nums}
+.kpi .hint{font-size:11.5px;color:var(--muted);margin-top:3px}
+.kpi .val.mono{font-family:var(--ff)}
+
+/* tables */
+.twrap{overflow-x:auto;-webkit-overflow-scrolling:touch}
+table.tbl{width:100%;border-collapse:separate;border-spacing:0;font-size:12.8px;min-width:900px}
+table.tbl.has-actions{min-width:1080px}
+@media(min-width:701px){
+  /* 13 columns must fit a laptop screen without side-scroll */
+  table.tbl.has-actions{min-width:1000px}
+  table.tbl.has-actions th{padding:9px 5px;font-size:9.8px;letter-spacing:.03em}
+  table.tbl.has-actions td{padding:7px 5px}
+  table.tbl.has-actions .cell-inp{width:52px}
+  table.tbl.has-actions .w-name{max-width:172px}
+  table.tbl.has-actions .row-actions{gap:3px}
+  table.tbl.has-actions .btn.xs{width:25px;height:25px;font-size:11px;padding:0}
+  table.tbl.has-actions .tag{font-size:9.6px;padding:2px 6px}
+}
+table.tbl.has-actions th:last-child,table.tbl.has-actions td:last-child{position:sticky;right:0;background:#fff;
+  box-shadow:-10px 0 14px -12px rgba(15,23,42,.55);z-index:3;width:1%;white-space:nowrap;border-left:1px solid var(--line)}
+table.tbl.has-actions thead th:last-child{background:#f7f9fd;z-index:4}
+table.tbl.has-actions tbody tr:hover td:last-child{background:#fafbff}
+table.tbl th{position:sticky;top:0;background:#f7f9fd;color:var(--muted);font-size:10.4px;text-transform:uppercase;letter-spacing:.06em;
+  font-weight:750;text-align:left;padding:9px 8px;border-bottom:1px solid var(--line);white-space:nowrap;z-index:2}
+table.tbl td{padding:8px 8px;border-bottom:1px solid #eef2f9;vertical-align:middle}
+table.tbl tbody tr:hover{background:#fafbff}
+table.tbl tbody tr:last-child td{border-bottom:0}
+.num{text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}
+th.num{text-align:right}
+.strong{font-weight:750;color:var(--ink)}
+.muted{color:var(--muted)}
+.tfoot td{background:#f7f9fd;font-weight:800;border-top:2px solid var(--line);border-bottom:0}
+td.w-name{min-width:150px}
+.w-sub{display:flex;align-items:center;gap:5px;margin-top:2px}
+.w-name b{display:block;font-size:13.2px;font-weight:700}
+.w-name small{color:var(--muted);font-size:11px}
+.cell-inp{width:52px;padding:5px 5px;border:1px solid #dbe3ef;border-radius:7px;text-align:right;font-weight:700;
+  font-variant-numeric:tabular-nums;background:#fff;outline:none;transition:.12s}
+.cell-inp:focus{border-color:var(--primary);box-shadow:0 0 0 3px rgba(79,70,229,.14)}
+.cell-inp.bad{border-color:#f0a3a3;background:var(--danger-l)}
+.tag{display:inline-flex;align-items:center;gap:4px;padding:3px 8px;border-radius:99px;font-size:11px;font-weight:700;white-space:nowrap}
+.tag.m{background:var(--primary-l);color:#4338ca}
+.tag.h{background:#ecfeff;color:#0e7490}
+.tag.ok{background:var(--ok-l);color:#047857}
+.tag.warn{background:var(--warn-l);color:#b45309}
+.tag.bad{background:var(--danger-l);color:#b91c1c}
+.tag.grey{background:#f1f5f9;color:#475569}
+.row-actions{display:flex;gap:3px;justify-content:flex-end}
+.row-actions .btn.xs{padding:4px 6px;font-size:11px;line-height:1}
+
+/* forms */
+.field{display:flex;flex-direction:column;gap:5px}
+.field label{font-size:11.5px;font-weight:700;color:var(--ink2);letter-spacing:.01em}
+.field .hint{font-size:11px;color:var(--muted)}
+.inp,select.inp,textarea.inp{width:100%;padding:9px 11px;border:1px solid #dbe3ef;border-radius:10px;background:#fff;outline:none;transition:.14s;font-size:13.5px}
+.inp:focus,select.inp:focus,textarea.inp:focus{border-color:var(--primary);box-shadow:0 0 0 3px rgba(79,70,229,.13)}
+.inp.err{border-color:#f0a3a3;background:var(--danger-l)}
+textarea.inp{resize:vertical;min-height:64px}
+.inp-group{display:flex;gap:1px}
+.seg{display:inline-flex;background:#eef2f9;border-radius:10px;padding:3px;gap:2px}
+.seg button{border:0;background:transparent;padding:7px 13px;border-radius:8px;font-weight:700;font-size:12.5px;color:var(--muted)}
+.seg button.on{background:#fff;color:var(--primary-d);box-shadow:0 1px 3px rgba(15,23,42,.13)}
+.chk{display:flex;align-items:center;gap:8px;font-size:12.5px;font-weight:600;color:var(--ink2);cursor:pointer}
+.chk input{width:16px;height:16px;accent-color:var(--primary)}
+
+/* modal */
+.overlay{position:fixed;inset:0;background:rgba(11,18,32,.55);backdrop-filter:blur(3px);z-index:100;display:flex;
+  align-items:flex-start;justify-content:center;padding:26px 16px;overflow-y:auto}
+.modal{background:#fff;border-radius:18px;width:100%;max-width:860px;box-shadow:var(--shadow-lg);animation:pop .18s ease-out;margin:auto 0}
+@keyframes pop{from{transform:translateY(10px) scale(.985);opacity:0}to{transform:none;opacity:1}}
+.modal-h{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;padding:18px 20px;border-bottom:1px solid var(--line);position:sticky;top:0;background:#fff;border-radius:18px 18px 0 0;z-index:5}
+.modal-h h3{font-size:16px}
+.modal-h p{margin:2px 0 0;font-size:12px;color:var(--muted)}
+.x{border:0;background:#f1f5f9;width:32px;height:32px;border-radius:9px;font-size:16px;color:var(--muted);display:grid;place-items:center;flex:0 0 32px}
+.x:hover{background:#e2e8f0;color:var(--ink)}
+.modal-b{padding:18px 20px}
+.modal-f{padding:14px 20px;border-top:1px solid var(--line);display:flex;gap:9px;justify-content:space-between;align-items:center;flex-wrap:wrap;background:#fbfcff;border-radius:0 0 18px 18px}
+.sec-title{font-size:11.5px;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);font-weight:800;margin:18px 0 9px;display:flex;align-items:center;gap:8px}
+.sec-title:first-child{margin-top:0}
+.sec-title::after{content:"";flex:1;height:1px;background:var(--line)}
+
+/* hisaab summary in modal */
+.sum{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.sum-box{border:1px solid var(--line);border-radius:12px;overflow:hidden}
+.sum-box .hd{background:#f7f9fd;padding:8px 12px;font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:.07em;color:var(--muted)}
+.sum-line{display:flex;justify-content:space-between;padding:7px 12px;font-size:12.8px;border-top:1px solid #f1f5f9}
+.sum-line span:first-child{color:var(--ink2)}
+.sum-line b{font-variant-numeric:tabular-nums}
+.sum-line.minus b{color:var(--danger)}
+.sum-line.plus b{color:var(--ok)}
+.netbox{margin-top:12px;border-radius:13px;padding:14px 16px;background:linear-gradient(120deg,#0f172a,#1e293b);color:#fff;display:flex;
+  align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}
+.netbox .l{font-size:11px;text-transform:uppercase;letter-spacing:.1em;color:#93a4c4;font-weight:800}
+.netbox .v{font-size:27px;font-weight:800;letter-spacing:-.02em;font-variant-numeric:tabular-nums}
+.netbox.neg{background:linear-gradient(120deg,#7f1d1d,#b91c1c)}
+.netbox.pos{background:linear-gradient(120deg,#064e3b,#047857)}
+.words{font-size:11.5px;color:#c7d2e4;margin-top:2px}
+
+/* advances list */
+.adv-list{display:flex;flex-direction:column;gap:7px}
+.adv-item{display:grid;grid-template-columns:110px 1fr 110px 32px;gap:8px;align-items:center}
+.adv-item .inp{padding:7px 9px;font-size:12.5px}
+@media(max-width:640px){.adv-item{grid-template-columns:1fr 1fr 32px}.adv-item .a-note{grid-column:1/-1}}
+
+/* worker cards */
+.wcards{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:14px}
+.wcard{background:#fff;border:1px solid var(--line);border-radius:var(--radius);padding:15px;box-shadow:var(--shadow);transition:.16s}
+.wcard:hover{transform:translateY(-2px);box-shadow:0 18px 40px -22px rgba(15,23,42,.4)}
+.wcard .top{display:flex;gap:11px;align-items:center}
+.avatar{width:42px;height:42px;border-radius:12px;display:grid;place-items:center;font-weight:800;font-size:16px;color:#fff;flex:0 0 42px;
+  background:linear-gradient(135deg,#6366f1,#8b5cf6)}
+.avatar.b{background:linear-gradient(135deg,#0ea5e9,#22d3ee)}
+.wcard .nm{font-weight:750;font-size:14.5px;line-height:1.2}
+.wcard .rl{font-size:11.5px;color:var(--muted)}
+.wcard .money{margin-top:12px;display:flex;gap:14px;justify-content:space-between;border-top:1px dashed var(--line);padding-top:10px}
+.wcard .money div{font-size:11px;color:var(--muted)}
+.wcard .money b{display:block;font-size:14.5px;color:var(--ink);font-variant-numeric:tabular-nums}
+.wcard .foot{display:flex;gap:6px;margin-top:12px}
+
+/* empty state */
+.empty{text-align:center;padding:46px 20px;color:var(--muted)}
+.empty .big{font-size:40px;margin-bottom:8px;opacity:.45}
+.empty h4{font-size:15px;color:var(--ink);margin-bottom:4px}
+.empty p{font-size:12.5px;margin:0 auto 14px;max-width:380px}
+
+/* chart */
+.card.chartcard{display:flex;flex-direction:column}
+.card.chartcard .card-b{flex:1;display:flex;flex-direction:column;justify-content:flex-end;padding-bottom:10px}
+.chart{display:flex;align-items:flex-end;gap:10px;height:100%;min-height:180px;padding:8px 2px 0}
+.chart .bar{flex:1;display:flex;flex-direction:column;justify-content:flex-end;align-items:center;gap:6px;height:100%;min-width:0}
+.chart .bar .col{width:100%;max-width:54px;border-radius:8px 8px 3px 3px;background:linear-gradient(180deg,#6366f1,#4f46e5);
+  min-height:4px;transition:height .45s ease;position:relative}
+.chart .bar.sel .col{background:linear-gradient(180deg,#22d3ee,#0891b2)}
+.chart .bar .lb{font-size:10.5px;color:var(--muted);font-weight:700;white-space:nowrap}
+.chart .bar .vl{font-size:9.6px;color:var(--ink2);font-weight:750;white-space:nowrap;letter-spacing:-.02em}
+
+.toast{position:fixed;bottom:22px;left:50%;transform:translateX(-50%) translateY(20px);background:#0f172a;color:#fff;padding:11px 18px;
+  border-radius:11px;font-size:13px;font-weight:600;box-shadow:var(--shadow-lg);opacity:0;pointer-events:none;transition:.25s;z-index:300;max-width:92vw}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+.toast.ok{background:#065f46}.toast.bad{background:#991b1b}
+.banner{display:flex;gap:10px;align-items:flex-start;padding:11px 13px;border-radius:11px;font-size:12.5px;margin-bottom:13px;border:1px solid}
+.banner.warn{background:var(--warn-l);border-color:#fde68a;color:#92400e}
+.banner.info{background:var(--primary-l);border-color:#c7d2fe;color:#3730a3}
+.banner b{font-weight:800}
+
+/* ================= PRINT / STATEMENT ================= */
+#print-root{display:none}
+.stmt{width:794px;margin:0 auto;background:#fff;color:#111827;padding:0;font-family:var(--ff)}
+.stmt .pad{padding:34px 40px}
+.stmt .hd{display:flex;justify-content:space-between;gap:20px;border-bottom:3px solid #0f172a;padding-bottom:14px}
+.stmt .shop{font-size:21px;font-weight:800;letter-spacing:-.02em}
+.stmt .shop small{display:block;font-size:11.5px;font-weight:600;color:#4b5563;letter-spacing:.04em;margin-top:3px}
+.stmt .rt{text-align:right;font-size:11.5px;color:#374151;line-height:1.6}
+.stmt .rt .ttl{font-size:15px;font-weight:800;color:#0f172a;letter-spacing:.02em}
+.stmt .rt .hi{font-size:11px;color:#6b7280}
+.stmt .meta{display:grid;grid-template-columns:1fr 1fr;gap:8px 24px;margin:18px 0 6px;font-size:12px}
+.stmt .meta .r{display:flex;justify-content:space-between;border-bottom:1px dotted #d1d5db;padding:5px 0}
+.stmt .meta .r span{color:#6b7280}
+.stmt .meta .r b{color:#111827;font-weight:700}
+.stmt h4.sec{font-size:11px;text-transform:uppercase;letter-spacing:.1em;color:#0f172a;margin:20px 0 8px;border-bottom:1.5px solid #e5e7eb;padding-bottom:5px}
+.stmt table{width:100%;border-collapse:collapse;font-size:12px}
+.stmt th{background:#f3f4f6;font-size:10.5px;text-transform:uppercase;letter-spacing:.05em;color:#374151;text-align:left;padding:7px 9px;border:1px solid #e5e7eb}
+.stmt td{padding:7px 9px;border:1px solid #e5e7eb}
+.stmt td.r, .stmt th.r{text-align:right;font-variant-numeric:tabular-nums}
+.stmt .two{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.stmt .net{display:flex;justify-content:space-between;align-items:center;background:#0f172a;color:#fff;padding:13px 16px;border-radius:10px;margin-top:16px}
+.stmt .net .l{font-size:11px;text-transform:uppercase;letter-spacing:.1em;opacity:.75;font-weight:700}
+.stmt .net .v{font-size:22px;font-weight:800;font-variant-numeric:tabular-nums}
+.stmt .inwords{margin-top:9px;font-size:11.5px;color:#374151;background:#f9fafb;border:1px dashed #d1d5db;padding:9px 12px;border-radius:8px}
+.stmt .inwords b{color:#111827}
+.stmt .sign{display:flex;justify-content:space-between;gap:30px;margin-top:52px;font-size:11px;color:#4b5563}
+.stmt .sign div{border-top:1px solid #9ca3af;padding-top:6px;width:180px;text-align:center}
+.stmt .ft{margin-top:26px;border-top:1px solid #e5e7eb;padding-top:9px;font-size:10px;color:#9ca3af;display:flex;justify-content:space-between}
+.stmt .watermark{color:#10b981;font-weight:800;letter-spacing:.1em;font-size:11px;border:1.5px solid #10b981;padding:3px 9px;border-radius:5px;display:inline-block}
+
+@media print{
+  @page{size:A4;margin:10mm}
+  body{background:#fff}
+  .app,.toast,.overlay{display:none !important}
+  #print-root{display:block !important}
+  .stmt{width:auto;box-shadow:none}
+  .stmt .pad{padding:0}
+}
+
+@media(max-width:1100px){.g4{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:900px){
+  .app{flex-direction:column}
+  .sidebar{position:static;height:auto;width:100%;flex:none;padding:12px;flex-direction:row;align-items:center;gap:10px;overflow-x:auto}
+  .brand{flex:0 0 auto}.brand span{display:none}
+  .brand h1{font-size:14px}
+  .nav{flex-direction:row;flex:0 0 auto}
+  .nav button{padding:8px 11px;font-size:12.5px;white-space:nowrap}
+  .nav button .ico{display:none}
+  .side-foot{display:none}
+  .main{padding:14px 13px 40px}
+  .g3,.g2{grid-template-columns:1fr}
+  .sum{grid-template-columns:1fr}
+}
+/* --- compact hisaab table on phones: tap a row to open the full hisaab --- */
+.mstat{display:none}
+@media(max-width:700px){
+  table.tbl.has-actions{min-width:0;width:100%}
+  table.tbl.has-actions th:nth-child(n+4):nth-child(-n+5),
+  table.tbl.has-actions td:nth-child(n+4):nth-child(-n+5),
+  table.tbl.has-actions th:nth-child(n+7):nth-child(-n+10),
+  table.tbl.has-actions td:nth-child(n+7):nth-child(-n+10),
+  table.tbl.has-actions th:nth-child(12), table.tbl.has-actions td:nth-child(12),
+  table.tbl.has-actions th:last-child, table.tbl.has-actions td:last-child,
+  table.tbl.has-actions tfoot{display:none}
+  table.tbl.has-actions td:first-child{max-width:150px}
+  table.tbl.has-actions .w-name b{font-size:12.6px}
+  .mstat{display:inline-block;font-size:9px;float:right;margin-top:2px}
+  .cell-inp{width:46px}
+}
+@media(max-width:480px){
+  /* keep only Worker · Present · Hours · Net on small phones (absent is in the row tap) */
+  table.tbl.has-actions th:nth-child(3), table.tbl.has-actions td:nth-child(3){display:none}
+  table.tbl.has-actions td,table.tbl.has-actions th{padding:7px 4px}
+  table.tbl.has-actions .tag{font-size:9.5px;padding:2px 5px}
+  table.tbl.has-actions td:first-child{max-width:112px}
+  table.tbl.has-actions .w-name small{display:none}
+  table.tbl.has-actions .w-name b{font-size:12.2px}
+  table.tbl.has-actions .w-name small{font-size:10px}
+  table.tbl.has-actions{font-size:12px}
+  .cell-inp{width:42px;padding:4px;font-size:12px}
+  .kpi .val{font-size:20px}
+  .mp select{font-size:12.5px}
+}
+@media(max-width:560px){
+  .g4{grid-template-columns:1fr}
+  .kpi .val{font-size:21px}
+  .topbar h2{font-size:18px}
+  .modal{border-radius:14px}
+  .modal-b{padding:14px}
+}
+
+/* ---------------- login screen & cloud widgets ---------------- */
+#loginRoot:not(:empty){display:block}
+.login-wrap{position:fixed;inset:0;z-index:250;background:radial-gradient(1200px 600px at 50% -15%,#1e293b,#0b1220 55%,#070c16 100%);
+  display:flex;align-items:center;justify-content:center;padding:18px;overflow-y:auto}
+.login-card{width:100%;max-width:392px;background:#fff;border-radius:18px;padding:22px;box-shadow:0 30px 80px -20px rgba(0,0,0,.75);animation:pop .2s ease-out}
+.lc-head{display:flex;gap:11px;align-items:center}
+.lc-head .logo{width:44px;height:44px;flex:0 0 44px}
+.lc-head h2{font-size:18px;line-height:1.15;color:var(--ink)}
+.lc-head p{margin:3px 0 0;font-size:12px;color:var(--muted)}
+.login-card .seg{display:flex}
+.login-card .inp{padding:10px 12px}
+.cloud-pill{display:inline-flex;align-items:center;gap:4px}
+
+</style>
+</head>
+<body>
+<div class="app">
+  <aside class="sidebar">
+    <div class="brand">
+      <div class="logo">₹</div>
+      <div>
+        <h1>Hisaab Pro</h1>
+        <span>Worker Salary Panel</span>
+      </div>
+    </div>
+    <nav class="nav" id="nav">
+      <button data-view="dashboard" class="active"><span class="ico">◧</span>Dashboard</button>
+      <button data-view="hisaab"><span class="ico">₹</span>Monthly Hisaab</button>
+      <button data-view="workers"><span class="ico">☰</span>Workers</button>
+      <button data-view="records"><span class="ico">◷</span>Records &amp; History</button>
+      <button data-view="settings"><span class="ico">⚙</span>Settings</button>
+    </nav>
+    <div class="side-foot">
+      <div><span class="dot"></span><b>Auto-saved</b> in this browser</div>
+      <div style="margin-top:6px" id="sideStats">—</div>
+      <div style="margin-top:7px" data-cloud-badge></div>
+      <div style="margin-top:6px;opacity:.85">Panel <b>v<span data-ver></span></b></div>
+    </div>
+  </aside>
+
+  <main class="main">
+    <div class="topbar">
+      <div>
+        <h2 id="viewTitle">Dashboard</h2>
+        <p id="viewSub">Monthly overview of wages, advances &amp; payments</p>
+      </div>
+      <div class="topbar-actions">
+        <div class="mp">
+          <button data-act="prevMonth" title="Previous month">‹</button>
+          <select id="selMonth" title="Month"></select>
+          <select id="selYear" title="Year"></select>
+          <button data-act="nextMonth" title="Next month">›</button>
+        </div>
+        <button class="btn" data-act="todayMonth" title="Jump to current month">Today</button>
+        <button class="btn primary" data-act="addWorker">+ Add Worker</button>
+      </div>
+    </div>
+    <div id="viewRoot"></div>
+  </main>
+</div>
+
+<div id="modalRoot"></div>
+<div id="print-root"></div>
+<div id="loginRoot"></div>
+<div class="toast" id="toast"></div>
+<script>
+/* ============================================================================
+   HISAAB PRO — Worker Monthly Salary & Hisaab Panel
+   Single-file app. Data is stored in this browser (localStorage).
+   Salary rule: monthly salary is ALWAYS divided by 30 (fixed 30-day month).
+   Sundays are auto-excluded from payable working days.
+   ========================================================================== */
+(function () {
+"use strict";
+
+/* ----------------------------- 1. UTILITIES ----------------------------- */
+const $  = (s, r) => (r || document).querySelector(s);
+const $$ = (s, r) => Array.from((r || document).querySelectorAll(s));
+const uid = () => Math.random().toString(36).slice(2, 10) + Date.now().toString(36).slice(-4);
+const num = (v) => { const n = parseFloat(v); return isFinite(n) ? n : 0; };
+const r2 = (n) => Math.round((n + Number.EPSILON) * 100) / 100;
+const clamp = (n, lo, hi) => Math.min(hi, Math.max(lo, n));
+const APP_VERSION = "2.0";
+const esc = (s) => String(s == null ? "" : s).replace(/[&<>"']/g, (m) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[m]));
+
+const MONTHS = ["January","February","March","April","May","June","July","August","September","October","November","December"];
+const MONTHS_S = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
+const DAYS = ["Sunday","Monday","Tuesday","Wednesday","Thursday","Friday","Saturday"];
+
+function money(n, dec) {
+  const d = dec === undefined ? 2 : dec;
+  const v = isFinite(n) ? n : 0;
+  return "₹" + v.toLocaleString("en-IN", { minimumFractionDigits: d, maximumFractionDigits: d });
+}
+const money0 = (n) => money(n, 0);
+/* compact money for dense tables: no ".00" when the amount is a whole number */
+const moneyS = (n) => (Math.abs((n || 0) - Math.round(n || 0)) < 0.005 ? money(n, 0) : money(n, 2));
+const signed = (n) => (n < 0 ? "−" : "") + money(Math.abs(n));
+
+/* Indian number-to-words (for salary statements) */
+function inWords(amount) {
+  let n = Math.round(Math.abs(amount) * 100) / 100;
+  const paise = Math.round((n - Math.floor(n)) * 100);
+  let whole = Math.floor(n);
+  const a = ["","One","Two","Three","Four","Five","Six","Seven","Eight","Nine","Ten","Eleven","Twelve","Thirteen","Fourteen","Fifteen","Sixteen","Seventeen","Eighteen","Nineteen"];
+  const b = ["","","Twenty","Thirty","Forty","Fifty","Sixty","Seventy","Eighty","Ninety"];
+  const two = (x) => (x < 20 ? a[x] : b[Math.floor(x / 10)] + (x % 10 ? " " + a[x % 10] : ""));
+  const three = (x) => (x >= 100 ? a[Math.floor(x / 100)] + " Hundred" + (x % 100 ? " " + two(x % 100) : "") : two(x));
+  let out = "";
+  const crore = Math.floor(whole / 10000000); whole %= 10000000;
+  const lakh  = Math.floor(whole / 100000);   whole %= 100000;
+  const thou  = Math.floor(whole / 1000);     whole %= 1000;
+  if (crore) out += three(crore) + " Crore ";
+  if (lakh)  out += three(lakh) + " Lakh ";
+  if (thou)  out += three(thou) + " Thousand ";
+  if (whole) out += three(whole);
+  out = out.trim() || "Zero";
+  let s = "Rupees " + out;
+  if (paise) s += " and " + two(paise) + " Paise";
+  return s + " Only";
+}
+
+/* ------------------------- 2. MONTH / SUNDAY MATH ------------------------ */
+/* Month meta: how many days, how many Sundays, working days = days - Sundays */
+function monthMeta(year, month) {
+  const dim = new Date(year, month + 1, 0).getDate();
+  let sundays = 0;
+  const list = [];
+  for (let d = 1; d <= dim; d++) {
+    if (new Date(year, month, d).getDay() === 0) { sundays++; list.push(d); }
+  }
+  return { dim, sundays, sundayDates: list, workingDays: dim - sundays };
+}
+const monthLabel = (y, m) => MONTHS[m] + " " + y;
+
+/* ------------------------------- 3. STORE ------------------------------- */
+const KEY = "hisaabPro.v1";
+
+const DEFAULT_SETTINGS = {
+  shopName: "Sharma Traders",
+  ownerName: "Proprietor",
+  address: "Shop No. 12, Main Market, Delhi",
+  phone: "",
+  hoursPerDay: 8,
+  otMultiplier: 1.5,
+  statementNote: "This is a computer-generated salary statement. Please verify all figures before payment.",
+  paidLabel: "PAID"
+};
+
+function blankData() {
+  return { settings: { ...DEFAULT_SETTINGS }, workers: [], records: [] };
+}
+
+function sampleData() {
+  const now = new Date();
+  const y = now.getFullYear(), m = now.getMonth();
+  const pm = m === 0 ? { y: y - 1, m: 11 } : { y, m: m - 1 };
+  const workers = [
+    { id: uid(), name: "Ramesh Kumar",  role: "Tailor / Master", phone: "98765 43210", type: "monthly", rate: 21000, active: true, note: "Full-time, 6 days a week" },
+    { id: uid(), name: "Sunita Devi",   role: "Helper",          phone: "98111 22334", type: "monthly", rate: 13500, active: true, note: "" },
+    { id: uid(), name: "Imran Ali",     role: "Machine Operator",phone: "99999 11223", type: "hourly",  rate: 95,    active: true, note: "₹95 per hour" },
+    { id: uid(), name: "Pooja Sharma",  role: "Accountant",      phone: "90000 55667", type: "monthly", rate: 18500, active: true, note: "Part-time evenings" }
+  ];
+  const recs = [];
+  const mk = (w, yy, mm, present, absent, adv, status, bonus) => {
+    const meta = monthMeta(yy, mm);
+    recs.push({
+      id: uid(), workerId: w.id, year: yy, month: mm,
+      presentDays: present, absentDays: absent, includeSundays: false,
+      totalHours: w.type === "hourly" ? present * 8 : 0, bonus: bonus || 0,
+      advances: adv.map((a, i) => ({ id: uid(), date: yy + "-" + String(mm + 1).padStart(2, "0") + "-" + String(5 + i * 9).padStart(2, "0"), note: a.n, amount: a.amt })),
+      deductions: [],
+      note: "", status, paidOn: status === "paid" ? yy + "-" + String(mm + 1).padStart(2, "0") + "-" + String(meta.dim).padStart(2, "0") : "",
+      updatedAt: Date.now()
+    });
+  };
+  const meta = monthMeta(y, m);
+  mk(workers[0], y, m, meta.workingDays - 1, 1, [{ n: "Festival advance", amt: 3000 }, { n: "Medical", amt: 1500 }], "pending");
+  mk(workers[1], y, m, meta.workingDays - 2, 2, [{ n: "Cash advance", amt: 2000 }], "pending");
+  mk(workers[2], y, m, meta.workingDays, 0, [], "paid");
+  const pmeta = monthMeta(pm.y, pm.m);
+  mk(workers[0], pm.y, pm.m, pmeta.workingDays, 0, [{ n: "Advance", amt: 2000 }], "paid");
+  mk(workers[1], pm.y, pm.m, pmeta.workingDays - 3, 3, [], "paid");
+  mk(workers[2], pm.y, pm.m, pmeta.workingDays - 1, 1, [], "paid");
+  mk(workers[3], pm.y, pm.m, pmeta.workingDays, 0, [], "paid", 1000);
+  return { settings: { ...DEFAULT_SETTINGS, demo: true }, workers, records: recs };
+}
+
+const Store = {
+  data: blankData(),
+  load() {
+    let raw = null;
+    try { raw = localStorage.getItem(KEY); } catch (e) { raw = null; }
+    if (!raw) { this.data = sampleData(); this.save(true); return; }
+    try {
+      const d = JSON.parse(raw);
+      this.data = {
+        settings: { ...DEFAULT_SETTINGS, ...(d.settings || {}) },
+        workers: Array.isArray(d.workers) ? d.workers : [],
+        records: Array.isArray(d.records) ? d.records : []
+      };
+    } catch (e) { this.data = blankData(); }
+    this.migrate();
+  },
+  /* one-time cleanup: old records had overtime fields / hourly day-hours */
+  migrate() {
+    let changed = false;
+    (this.data.records || []).forEach((r) => {
+      const w = this.data.workers.find((x) => x.id === r.workerId);
+      if (w && w.type === "hourly" && typeof r.totalHours !== "number") {
+        r.totalHours = r2(clamp(num(r.presentDays), 0, 999) * 8);
+        changed = true;
+      }
+      if (r.otHours !== undefined) { delete r.otHours; changed = true; }
+      if (r.otMultiplier !== undefined) { delete r.otMultiplier; changed = true; }
+    });
+    if (changed) this.save(true);
+  },
+  save(silent) {
+    try { localStorage.setItem(KEY, JSON.stringify(this.data)); } catch (e) {
+      if (!silent) toast("Could not save — browser storage full or blocked", "bad");
+    }
+    if (!silent) flashSaved();
+    try { Cloud.schedulePush(); } catch (e) {}
+  },
+  workers() { return this.data.workers; },
+  activeWorkers() { return this.data.workers.filter((w) => w.active !== false); },
+  worker(id) { return this.data.workers.find((w) => w.id === id); },
+  record(workerId, year, month) {
+    return this.data.records.find((r) => r.workerId === workerId && r.year === year && r.month === month) || null;
+  },
+  ensureRecord(workerId, year, month, create) {
+    let rec = this.record(workerId, year, month);
+    if (rec) return rec;
+    const w = this.worker(workerId);
+    const meta = monthMeta(year, month);
+    rec = {
+      id: uid(), workerId, year, month,
+      presentDays: meta.workingDays, absentDays: 0, includeSundays: false,
+      totalHours: 0, bonus: 0, advances: [], deductions: [],
+      note: "", status: "pending", paidOn: "", updatedAt: Date.now()
+    };
+    if (create) { this.data.records.push(rec); this.save(); }
+    return rec;
+  },
+  persistRecord(rec) { rec.updatedAt = Date.now(); this.save(); }
+};
+
+/* ---------------------------- 4. CALCULATIONS --------------------------- */
+/* Core salary engine. Every figure the panel shows comes from here. */
+function calc(w, rec, settings) {
+  const s = settings || Store.data.settings;
+  const meta = monthMeta(rec.year, rec.month);
+  const includeSundays = !!rec.includeSundays;
+  const sundays = includeSundays ? 0 : meta.sundays;
+  const workingDays = meta.dim - sundays;
+
+  const present = clamp(num(rec.presentDays), 0, 999);
+  const absentRaw = clamp(num(rec.absentDays), 0, 999);
+  const rate = num(w.rate);
+  const isHourly = w.type === "hourly";
+
+  /* HOURLY workers: working hours are NOT fixed -> pay = rate × total hours worked.
+     No per-day hour assumption, no overtime.                                  */
+  const totalHours = isHourly ? Math.max(0, num(rec.totalHours)) : 0;
+  const perHour = isHourly ? rate : 0;
+  /* MONTHLY workers: salary is ALWAYS divided by 30 (fixed 30-day month)      */
+  const perDay = isHourly ? 0 : rate / 30;
+
+  const earned = isHourly ? rate * totalHours : perDay * present;
+  const absentValue = isHourly ? 0 : perDay * absentRaw;
+  const bonus = num(rec.bonus);
+  const needsHours = isHourly && totalHours === 0 && present > 0;
+
+  const advances = (rec.advances || []).filter((a) => num(a.amount) !== 0 || (a.note || "").trim());
+  const advTotal = advances.reduce((t, a) => t + num(a.amount), 0);
+  const deductions = (rec.deductions || []).filter((d) => num(d.amount) !== 0 || (d.label || "").trim());
+  const dedTotal = deductions.reduce((t, d) => t + num(d.amount), 0);
+
+  const grossEarnings = earned + bonus;
+  const totalDeductions = advTotal + dedTotal;
+  const net = r2(grossEarnings - totalDeductions);
+
+  return {
+    meta, sundays, workingDays, includeSundays, present, absent: absentRaw,
+    rate, isHourly, totalHours, perDay: r2(perDay), perHour: r2(perHour),
+    earned: r2(earned), absentValue: r2(absentValue), bonus: r2(bonus), needsHours,
+    advances, deductions, advTotal: r2(advTotal), dedTotal: r2(dedTotal),
+    grossEarnings: r2(grossEarnings), totalDeductions: r2(totalDeductions), net,
+    overAttendance: present + absentRaw > workingDays,
+    negative: net < 0
+  };
+}
+
+function rowsForMonth(year, month) {
+  return Store.activeWorkers().map((w) => {
+    const rec = Store.ensureRecord(w.id, year, month, false);
+    return { w, rec, c: calc(w, rec, Store.data.settings) };
+  });
+}
+
+/* ------------------------------ 5. UI STATE ----------------------------- */
+const today = new Date();
+const UI = {
+  view: "dashboard",
+  year: today.getFullYear(),
+  month: today.getMonth(),
+  search: "",
+  filter: "all",
+  openRec: null
+};
+let saveTimer = null;
+
+function toast(msg, kind) {
+  const t = $("#toast");
+  if (!t) return;
+  t.textContent = msg;
+  t.className = "toast show" + (kind ? " " + kind : "");
+  clearTimeout(t._h);
+  t._h = setTimeout(() => { t.className = "toast"; }, 2600);
+}
+function flashSaved() {
+  clearTimeout(saveTimer);
+  const el = $("#sideStats");
+  if (el) el.innerHTML = '<span style="color:#34d399">✔ Saved just now</span>';
+  saveTimer = setTimeout(updateSideStats, 2200);
+}
+function updateSideStats() {
+  const el = $("#sideStats");
+  if (!el) return;
+  el.textContent = Store.activeWorkers().length + " active worker" + (Store.activeWorkers().length === 1 ? "" : "s") + " · " + Store.data.records.length + " records";
+}
+
+/* ------------------------------ 6. ROUTER ------------------------------- */
+const VIEW_META = {
+  dashboard: ["Dashboard", "Monthly overview of wages, advances & payments"],
+  hisaab:    ["Monthly Hisaab", "Attendance, advances and final payable for every worker"],
+  workers:   ["Workers", "Add, edit, search and manage your workforce"],
+  records:   ["Records & History", "Month-wise salary records with payment status"],
+  settings:  ["Settings", "Shop details, salary rules and your data"]
+};
+
+function go(view) {
+  UI.view = view;
+  $$("#nav button").forEach((b) => b.classList.toggle("active", b.dataset.view === view));
+  const m = VIEW_META[view] || ["", ""];
+  $("#viewTitle").textContent = m[0];
+  $("#viewSub").textContent = m[1];
+  render();
+  window.scrollTo({ top: 0, behavior: "smooth" });
+}
+
+function render() {
+  const root = $("#viewRoot");
+  if (UI.view === "dashboard") root.innerHTML = viewDashboard();
+  else if (UI.view === "hisaab") root.innerHTML = viewHisaab();
+  else if (UI.view === "workers") root.innerHTML = viewWorkers();
+  else if (UI.view === "records") root.innerHTML = viewRecords();
+  else if (UI.view === "settings") root.innerHTML = viewSettings();
+  updateSideStats();
+  syncMonthPickers();
+  document.querySelectorAll("[data-ver]").forEach((el) => { el.textContent = APP_VERSION; });
+  /* on phones the top bar scrolls sideways — keep the active tab visible */
+  const bar = document.querySelector(".sidebar"), act = document.querySelector(".nav button.active");
+  if (bar && act && bar.scrollWidth > bar.clientWidth + 4) bar.scrollLeft = Math.max(0, act.offsetLeft - 70);
+}
+
+function syncMonthPickers() {
+  const ms = $("#selMonth"), ys = $("#selYear");
+  if (!ms || !ys) return;
+  if (ms.options.length !== 12) {
+    ms.innerHTML = MONTHS.map((m, i) => '<option value="' + i + '">' + m + "</option>").join("");
+  }
+  ms.value = String(UI.month);
+  const years = new Set([today.getFullYear() - 3, today.getFullYear() - 2, today.getFullYear() - 1, today.getFullYear(), today.getFullYear() + 1, today.getFullYear() + 2, UI.year]);
+  Store.data.records.forEach((r) => years.add(r.year));
+  const list = Array.from(years).sort((a, b) => a - b);
+  ys.innerHTML = list.map((y) => '<option value="' + y + '">' + y + "</option>").join("");
+  ys.value = String(UI.year);
+}
+
+/* ----------------------------- 7. DASHBOARD ----------------------------- */
+function viewDashboard() {
+  const rows = rowsForMonth(UI.year, UI.month);
+  const active = Store.activeWorkers().length;
+  let gross = 0, adv = 0, ded = 0, net = 0, paidNet = 0, pendNet = 0, present = 0, absent = 0, paidCount = 0;
+  rows.forEach(({ rec, c }) => {
+    gross += c.grossEarnings; adv += c.advTotal; ded += c.dedTotal; net += c.net;
+    present += c.present; absent += c.absent;
+    if (rec && rec.status === "paid") { paidNet += c.net; paidCount++; } else { pendNet += c.net; }
+  });
+  const meta = monthMeta(UI.year, UI.month);
+
+  /* last 6 months payout chart */
+  const bars = [];
+  for (let i = 5; i >= 0; i--) {
+    const d = new Date(UI.year, UI.month - i, 1);
+    const yy = d.getFullYear(), mm = d.getMonth();
+    let tot = 0;
+    Store.activeWorkers().forEach((w) => {
+      const rec = Store.ensureRecord(w.id, yy, mm, false);
+      tot += calc(w, rec, Store.data.settings).net;
+    });
+    bars.push({ y: yy, m: mm, tot, sel: yy === UI.year && mm === UI.month });
+  }
+  const maxBar = Math.max(1, ...bars.map((b) => b.tot));
+
+  const demoBanner = Store.data.settings.demo
+    ? '<div class="banner info" style="align-items:center"><span>👋</span><div style="flex:1"><b>Demo data loaded</b> so you can explore every feature. ' +
+      "When you are ready, clear it and add your own workers and shop details.</div>" +
+      '<div style="display:flex;gap:6px"><button class="btn sm" data-act="keepDemo">Keep exploring</button>' +
+      '<button class="btn sm primary" data-act="clearDemo">Start fresh</button></div></div>'
+    : "";
+
+  return (
+    demoBanner +
+    '<div class="grid g4" style="margin-bottom:14px">' +
+      kpi("Net Payable — " + MONTHS_S[UI.month], money0(net), active + " active workers · incl. advances deducted", "") +
+      kpi("Gross Earnings", money0(gross), "Wages + bonus (no OT)", "ok") +
+      kpi("Advances + Deductions", money0(adv + ded), "Advances " + money0(adv) + " · Other " + money0(ded), "warn") +
+      kpi("Pending to Pay", money0(pendNet), (rows.length - paidCount) + " of " + rows.length + " workers unpaid" + (paidNet ? " · Paid " + money0(paidNet) : ""), pendNet > 0 ? "danger" : "ok") +
+    "</div>" +
+
+    '<div class="grid g2" style="margin-bottom:14px;grid-template-columns:1.55fr 1fr">' +
+      '<div class="card chartcard"><div class="card-h"><div><h3>Payout trend</h3><div class="sub">Net salary for the last 6 months</div></div>' +
+        '<span class="tag grey">' + monthLabel(UI.year, UI.month) + "</span></div>" +
+        '<div class="card-b"><div class="chart">' +
+          bars.map((b) => {
+            const pct = Math.max(2, Math.round((b.tot / maxBar) * 100));
+            return '<div class="bar' + (b.sel ? " sel" : "") + '"><div class="vl">' + (b.tot ? money0(b.tot) : "—") + '</div>' +
+              '<div class="col" style="height:' + pct + '%" title="' + esc(MONTHS[b.m] + " " + b.y) + ": " + money(b.tot) + '"></div>' +
+              '<div class="lb">' + MONTHS_S[b.m] + "</div></div>";
+          }).join("") +
+        "</div></div></div>" +
+
+      '<div class="card"><div class="card-h"><h3>This month at a glance</h3></div><div class="card-b" style="padding-top:6px">' +
+        glance("Days in month", meta.dim + " days", "") +
+        glance("Sundays (auto-excluded)", meta.sundays + " Sundays", "Excluded from pay") +
+        glance("Payable working days", meta.workingDays + " days", "Days − Sundays") +
+        glance("Present days (all workers)", present + " days", "of " + (rows.length * meta.workingDays) + " possible") +
+        glance("Absent days (all workers)", absent + " days", "") +
+        glance("Salary base rule", "Monthly ÷ 30", "Fixed 30-day month, always") +
+      "</div></div>" +
+    "</div>" +
+
+    '<div class="card"><div class="card-h"><div><h3>Worker-wise summary</h3><div class="sub">' + monthLabel(UI.year, UI.month) + " · click any row to open full hisaab</div></div>" +
+      '<div style="display:flex;gap:7px"><button class="btn sm" data-act="gotoHisaab">Open Monthly Hisaab →</button></div></div>' +
+      (rows.length ? dashboardTable(rows) : emptyState("No workers yet", "Add your first worker to start calculating salaries.", "addWorker", "+ Add Worker")) +
+    "</div>" +
+
+    (active === 0 ? "" : "")
+  );
+}
+
+function kpi(label, val, hint, kind) {
+  return '<div class="kpi ' + (kind || "") + '"><div class="lbl">' + esc(label) + '</div><div class="val">' + val + '</div><div class="hint">' + esc(hint) + "</div></div>";
+}
+function glance(l, v, sub) {
+  return '<div style="display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid #f1f5f9">' +
+    '<div><div style="font-size:12.5px;font-weight:600;color:#334155">' + esc(l) + '</div>' +
+    (sub ? '<div style="font-size:10.8px;color:#94a3b8">' + esc(sub) + "</div>" : "") + "</div>" +
+    '<div style="font-weight:750;font-size:13px;font-variant-numeric:tabular-nums">' + esc(v) + "</div></div>";
+}
+
+function statusTag(rec) {
+  return rec && rec.status === "paid"
+    ? '<span class="tag ok">✔ Paid' + (rec.paidOn ? " " + esc(rec.paidOn.slice(5).split("-").reverse().join("/")) : "") + "</span>"
+    : '<span class="tag warn">● Pending</span>';
+}
+
+function dashboardTable(rows) {
+  let t = { net: 0, adv: 0, gross: 0 };
+  const body = rows.map(({ w, rec, c }) => {
+    t.net += c.net; t.adv += c.advTotal; t.gross += c.grossEarnings;
+    return '<tr class="clickable" data-act="openRec" data-wid="' + w.id + '" style="cursor:pointer">' +
+      '<td class="w-name"><b>' + esc(w.name) + "</b><small>" + esc(w.role || (w.type === "monthly" ? "Monthly salary" : "Hourly wage")) + "</small></td>" +
+      '<td><span class="tag ' + (w.type === "monthly" ? "m" : "h") + '">' + (w.type === "monthly" ? "Monthly" : "Hourly") + "</span></td>" +
+      '<td class="num">' + c.present + "</td>" +
+      '<td class="num">' + c.absent + "</td>" +
+      '<td class="num muted">' + c.sundays + "</td>" +
+      '<td class="num">' + (c.isHourly ? '<span class="muted">' + money0(w.rate) + "/hr</span>" : money(c.perDay) + '<span class="muted" style="font-size:10.5px">/day</span>') + "</td>" +
+      '<td class="num">' + money(c.grossEarnings) + "</td>" +
+      '<td class="num" style="color:#dc2626">' + (c.advTotal ? "−" + money(c.advTotal) : "—") + "</td>" +
+      '<td class="num strong">' + money(c.net) + "</td>" +
+      "<td>" + statusTag(rec) + "</td></tr>";
+  }).join("");
+  return '<div class="twrap"><table class="tbl"><thead><tr>' +
+    "<th>Worker</th><th>Type</th><th class=\"num\">Present</th><th class=\"num\">Absent</th><th class=\"num\">Sundays</th>" +
+    "<th class=\"num\">Rate</th><th class=\"num\">Gross</th><th class=\"num\">Advances</th><th class=\"num\">Net Payable</th><th>Status</th>" +
+    '</tr></thead><tbody>' + body + "</tbody>" +
+    '<tfoot class="tfoot"><tr><td>Total (' + rows.length + " workers)</td><td></td><td></td><td></td><td></td><td></td>" +
+    '<td class="num">' + money(t.gross) + '</td><td class="num" style="color:#dc2626">−' + money(t.adv) + "</td>" +
+    '<td class="num">' + money(t.net) + "</td><td></td></tr></tfoot></table></div>";
+}
+
+function emptyState(title, msg, act, btn) {
+  return '<div class="empty"><div class="big">₹</div><h4>' + esc(title) + "</h4><p>" + esc(msg) + "</p>" +
+    (act ? '<button class="btn primary" data-act="' + act + '">' + esc(btn) + "</button>" : "") + "</div>";
+}
+
+/* --------------------------- 8. MONTHLY HISAAB -------------------------- */
+function viewHisaab() {
+  const all = rowsForMonth(UI.year, UI.month);
+  const q = UI.search.trim().toLowerCase();
+  const rows = all.filter(({ w, rec, c }) => {
+    if (q && !(w.name + " " + (w.role || "")).toLowerCase().includes(q)) return false;
+    if (UI.filter === "pending" && rec && rec.status === "paid") return false;
+    if (UI.filter === "paid" && (!rec || rec.status !== "paid")) return false;
+    if (UI.filter === "advance" && !c.advTotal) return false;
+    return true;
+  });
+  const meta = monthMeta(UI.year, UI.month);
+  let gross = 0, adv = 0, ded = 0, net = 0;
+  rows.forEach(({ c }) => { gross += c.grossEarnings; adv += c.advTotal; ded += c.dedTotal; net += c.net; });
+
+  const noHours = rows.filter(({ c }) => c.needsHours).map(({ w }) => w.name);
+
+  return (
+    (noHours.length ? '<div class="banner warn" style="background:#fffbeb;border-color:#fde68a"><span>⏱️</span><div><b>Total hours missing:</b> ' +
+      esc(noHours.join(", ")) + " — hourly worker ki pay <b>hours × rate</b> se banti hai. Table ke <b>Hours</b> column me hours daalein.</div></div>" : "") +
+    '<div class="banner info"><span>ℹ️</span><div><b>' + monthLabel(UI.year, UI.month) + ":</b> " + meta.dim + " days, <b>" + meta.sundays +
+      " Sundays</b> auto-excluded → <b>" + meta.workingDays + " payable working days</b>. " +
+      "Monthly salary ÷ <b>30</b> (fixed) = per-day rate. Hourly workers: <b>hours × rate</b> (koi fixed hours nahi).</div></div>" +
+
+    '<div class="card"><div class="card-h">' +
+      '<div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">' +
+        '<input class="inp" id="hisaabSearch" placeholder="🔍 Search worker…" value="' + esc(UI.search) + '" style="width:210px;padding:8px 11px">' +
+        '<select class="inp" id="hisaabFilter" style="width:auto;padding:8px 11px">' +
+          ["all|All workers", "pending|Pending only", "paid|Paid only", "advance|With advances"].map((o) => {
+            const [v, l] = o.split("|");
+            return '<option value="' + v + '"' + (UI.filter === v ? " selected" : "") + ">" + l + "</option>";
+          }).join("") +
+        "</select>" +
+      "</div>" +
+      '<div style="display:flex;gap:7px;flex-wrap:wrap">' +
+        '<button class="btn sm" data-act="autoFillAll" title="Set present days = working days for every worker this month">⚡ Auto-fill attendance</button>' +
+        '<button class="btn sm" data-act="copyPrev" title="Copy attendance from previous month">⧉ Copy previous month</button>' +
+        '<button class="btn sm" data-act="markAllPaid">✔ Mark all paid</button>' +
+        '<button class="btn sm" data-act="printAll">🖨 Print all</button>' +
+        '<button class="btn sm primary" data-act="pdfAll">⬇ Download all PDFs</button>' +
+      "</div>" +
+    "</div>" +
+    (rows.length ? hisaabTable(rows, meta) : emptyState("No workers match", "Try a different search or add a new worker.", "addWorker", "+ Add Worker")) +
+    (rows.length ? '<div class="card-b" style="border-top:1px solid var(--line);display:flex;gap:22px;flex-wrap:wrap;justify-content:flex-end;font-size:13px">' +
+      '<div>Gross: <b id="sumGross">' + moneyS(gross) + "</b></div>" +
+      '<div>Advances: <b id="sumAdv" style="color:#dc2626">' + (adv ? "−" + moneyS(adv) : moneyS(0)) + "</b></div>" +
+      '<div>Other deductions: <b id="sumDed" style="color:#dc2626">' + (ded ? "−" + moneyS(ded) : moneyS(0)) + "</b></div>" +
+      '<div style="font-size:15px">Net payable: <b id="sumNet" style="color:#4f46e5">' + moneyS(net) + "</b></div></div>" : "") +
+    "</div>"
+  );
+}
+
+function hisaabTable(rows) {
+  const t = { gross: 0, adv: 0, ded: 0, net: 0 };
+  const body = rows.map(({ w, rec, c }) => {
+    t.gross += c.grossEarnings; t.adv += c.advTotal; t.ded += c.dedTotal; t.net += c.net;
+    const rid = rec ? rec.id : "";
+    return '<tr class="clickable" data-row="' + (rec ? rec.id : "") + '" data-wid="' + w.id + '" data-act="openRec">' +
+      '<td class="w-name"><b>' + esc(w.name) + '<span class="mstat" style="color:' + (rec && rec.status === "paid" ? "#059669" : "#d97706") + '">●</span></b>' +
+        '<div class="w-sub"><span class="tag ' + (w.type === "monthly" ? "m" : "h") + '">' + (w.type === "monthly" ? money0(w.rate) + "/mo" : money0(w.rate) + "/hr") + "</span>" +
+        '<small style="margin:0">' + esc(w.role || "") + "</small></div></td>" +
+      '<td class="num"><input class="cell-inp' + (c.overAttendance ? " bad" : "") + '" type="number" min="0" step="1" data-wid="' + w.id + '" data-f="presentDays" value="' + c.present + '"></td>' +
+      '<td class="num"><input class="cell-inp' + (c.overAttendance ? " bad" : "") + '" type="number" min="0" step="1" data-wid="' + w.id + '" data-f="absentDays" value="' + c.absent + '"></td>' +
+      '<td class="num muted" data-cell="sundays" title="Sundays in ' + esc(MONTHS[UI.month]) + '">' + c.sundays + "</td>" +
+      '<td class="num" data-cell="wd">' + c.workingDays + "</td>" +
+      (c.isHourly
+        ? '<td class="num"><input class="cell-inp' + (c.needsHours ? " bad" : "") + '" type="number" min="0" step="0.5" data-wid="' + w.id + '" data-f="totalHours" value="' + c.totalHours + '" title="Total hours worked"></td>'
+        : '<td class="num muted" data-cell="hours">—</td>') +
+      '<td class="num" data-cell="perDay">' + (c.isHourly ? '<span class="muted">' + money0(w.rate) + "/hr</span>" : money(c.perDay)) + "</td>" +
+      '<td class="num" data-cell="gross">' + moneyS(c.grossEarnings) + "</td>" +
+      '<td class="num" data-cell="adv" style="color:#dc2626">' + (c.advTotal ? "−" + moneyS(c.advTotal) : "—") + "</td>" +
+      '<td class="num" data-cell="ded" style="color:#dc2626">' + (c.dedTotal ? "−" + moneyS(c.dedTotal) : "—") + "</td>" +
+      '<td class="num strong" data-cell="net">' + moneyS(c.net) + "</td>" +
+      '<td data-cell="status">' + statusTag(rec) + "</td>" +
+      '<td><div class="row-actions">' +
+        '<button class="btn xs" data-act="openRec" data-wid="' + w.id + '" title="Open hisaab / advances">✎</button>' +
+        '<button class="btn xs" data-act="togglePaid" data-wid="' + w.id + '" title="' + (rec && rec.status === "paid" ? "Mark as pending" : "Mark as paid") + '">' + (rec && rec.status === "paid" ? "↺" : "✔") + "</button>" +
+        '<button class="btn xs" data-act="printRec" data-wid="' + w.id + '" title="Print statement">🖨</button>' +
+        '<button class="btn xs" data-act="pdfRec" data-wid="' + w.id + '" title="Download PDF">⬇</button>' +
+      "</div></td></tr>";
+  }).join("");
+
+  return '<div class="twrap"><table class="tbl has-actions"><thead><tr>' +
+    "<th>Worker</th><th class=\"num\">Present</th><th class=\"num\">Absent</th><th class=\"num\">Sun</th><th class=\"num\">Days</th>" +
+    "<th class=\"num\" title=\"Hourly workers ke liye\">Hours</th><th class=\"num\">Rate</th><th class=\"num\">Gross</th><th class=\"num\">Advance</th><th class=\"num\">Other</th><th class=\"num\">Net</th><th>Status</th><th></th>" +
+    '</tr></thead><tbody>' + body + "</tbody>" +
+    '<tfoot class="tfoot"><tr><td colspan="7">Totals (' + rows.length + ' workers)</td>' +
+    '<td class="num" id="totGross">' + moneyS(t.gross) + '</td><td class="num" id="totAdv">' + (t.adv ? "−" + moneyS(t.adv) : "—") + '</td>' +
+    '<td class="num" id="totDed">' + (t.ded ? "−" + moneyS(t.ded) : "—") + "</td>" +
+    '<td class="num" id="totNet" style="color:#4f46e5">' + moneyS(t.net) + "</td><td colspan=\"2\"></td></tr></tfoot></table></div>";
+}
+
+/* ---------------------------- 9. WORKERS VIEW --------------------------- */
+function viewWorkers() {
+  const list = Store.data.workers.filter((w) => {
+    const q = UI.search.trim().toLowerCase();
+    if (!q) return true;
+    return (w.name + " " + (w.role || "") + " " + (w.phone || "")).toLowerCase().includes(q);
+  });
+  return (
+    '<div class="card" style="margin-bottom:14px"><div class="card-b" style="display:flex;gap:10px;flex-wrap:wrap;align-items:center">' +
+      '<input class="inp" id="workerSearch" placeholder="🔍 Search by name, role or phone…" value="' + esc(UI.search) + '" style="flex:1;min-width:200px;max-width:340px">' +
+      '<div style="flex:1"></div>' +
+      '<button class="btn" data-act="exportData">⤓ Backup JSON</button>' +
+      '<button class="btn primary" data-act="addWorker">+ Add Worker</button>' +
+    "</div></div>" +
+    (list.length
+      ? '<div class="wcards">' + list.map(workerCard).join("") + "</div>"
+      : emptyState("No workers found", "Add your workers with their salary type and rate. Everything else is automatic.", "addWorker", "+ Add Worker"))
+  );
+}
+
+function workerCard(w) {
+  const rec = Store.record(w.id, UI.year, UI.month);
+  const c = calc(w, Store.ensureRecord(w.id, UI.year, UI.month, false), Store.data.settings);
+  const inits = w.name.trim().split(/\s+/).map((x) => x[0]).slice(0, 2).join("").toUpperCase();
+  return '<div class="wcard">' +
+    '<div class="top"><div class="avatar' + (w.type === "hourly" ? " b" : "") + '">' + esc(inits) + "</div>" +
+      '<div style="flex:1;min-width:0"><div class="nm">' + esc(w.name) + "</div>" +
+      '<div class="rl">' + esc(w.role || "—") + (w.phone ? " · " + esc(w.phone) : "") + "</div></div>" +
+      (w.active === false ? '<span class="tag grey">Inactive</span>' : '<span class="tag ok">Active</span>') + "</div>" +
+    '<div class="money">' +
+      "<div>Rate<b>" + (w.type === "monthly" ? money0(w.rate) + "/mo" : money0(w.rate) + "/hr") + "</b></div>" +
+      (w.type === "hourly" ? "<div>Per hour<b>" + money0(w.rate) + "</b></div>" : "<div>Per day<b>" + money(c.perDay) + "</b></div>") +
+      "<div>Net (" + MONTHS_S[UI.month] + ")<b>" + money0(c.net) + "</b></div>" +
+    "</div>" +
+    '<div style="display:flex;justify-content:space-between;align-items:center;margin-top:9px">' + statusTag(rec) +
+      '<span class="muted" style="font-size:11px">Present ' + c.present + " · Absent " + c.absent + "</span></div>" +
+    '<div class="foot">' +
+      '<button class="btn sm" data-act="openRec" data-wid="' + w.id + '">Open hisaab</button>' +
+      '<button class="btn sm" data-act="editWorker" data-wid="' + w.id + '">Edit</button>' +
+      '<button class="btn sm" data-act="workerHistory" data-wid="' + w.id + '">History</button>' +
+      '<button class="btn sm danger" data-act="delWorker" data-wid="' + w.id + '" style="margin-left:auto">✕</button>' +
+    "</div></div>";
+}
+
+/* ---------------------------- 10. RECORDS VIEW -------------------------- */
+function viewRecords() {
+  const recs = Store.data.records.slice().sort((a, b) => (b.year - a.year) || (b.month - a.month));
+  const q = UI.search.trim().toLowerCase();
+  const filtered = recs.filter((r) => {
+    const w = Store.worker(r.workerId);
+    if (!w) return false;
+    if (q && !(w.name + " " + (w.role || "")).toLowerCase().includes(q)) return false;
+    if (UI.filter === "pending" && r.status === "paid") return false;
+    if (UI.filter === "paid" && r.status !== "paid") return false;
+    return true;
+  });
+  const groups = {};
+  filtered.forEach((r) => {
+    const k = r.year + "-" + String(r.month).padStart(2, "0");
+    (groups[k] = groups[k] || []).push(r);
+  });
+  const keys = Object.keys(groups).sort().reverse();
+
+  return (
+    '<div class="card" style="margin-bottom:14px"><div class="card-b" style="display:flex;gap:10px;flex-wrap:wrap;align-items:center">' +
+      '<input class="inp" id="recordSearch" placeholder="🔍 Search worker…" value="' + esc(UI.search) + '" style="flex:1;min-width:200px;max-width:340px">' +
+      '<select class="inp" id="recordFilter" style="width:auto">' +
+        ["all|All records", "pending|Pending only", "paid|Paid only"].map((o) => { const [v, l] = o.split("|"); return '<option value="' + v + '"' + (UI.filter === v ? " selected" : "") + ">" + l + "</option>"; }).join("") +
+      "</select><div style=\"flex:1\"></div>" +
+      '<button class="btn sm" data-act="exportData">⤓ Backup JSON</button>' +
+    "</div></div>" +
+    (keys.length ? keys.map((k) => {
+      const [y, m] = k.split("-").map(Number);
+      const list = groups[k];
+      let net = 0, paid = 0, cntPaid = 0;
+      const rows = list.map((rec) => {
+        const w = Store.worker(rec.workerId);
+        const c = calc(w, rec, Store.data.settings);
+        net += c.net; if (rec.status === "paid") { paid += c.net; cntPaid++; }
+        return '<tr><td class="w-name"><b>' + esc(w.name) + "</b><small>" + esc(w.role || "—") + "</small></td>" +
+          '<td><span class="tag ' + (w.type === "monthly" ? "m" : "h") + '">' + (w.type === "monthly" ? "Monthly" : "Hourly") + "</span></td>" +
+          '<td class="num">' + c.present + " / " + c.workingDays + "</td>" +
+          '<td class="num">' + money(c.grossEarnings) + "</td>" +
+          '<td class="num" style="color:#dc2626">' + (c.totalDeductions ? "−" + money(c.totalDeductions) : "—") + "</td>" +
+          '<td class="num strong">' + money(c.net) + "</td>" +
+          "<td>" + statusTag(rec) + "</td>" +
+          '<td><div class="row-actions">' +
+            '<button class="btn xs" data-act="openRecAt" data-wid="' + w.id + '" data-y="' + rec.year + '" data-m="' + rec.month + '">✎</button>' +
+            '<button class="btn xs" data-act="printRecAt" data-wid="' + w.id + '" data-y="' + rec.year + '" data-m="' + rec.month + '">🖨</button>' +
+            '<button class="btn xs" data-act="pdfRecAt" data-wid="' + w.id + '" data-y="' + rec.year + '" data-m="' + rec.month + '">⬇</button>' +
+          "</div></td></tr>";
+      }).join("");
+      return '<div class="card" style="margin-bottom:14px">' +
+        '<div class="card-h"><div><h3>' + monthLabel(y, m) + '</h3><div class="sub">' + list.length + " worker records · " + cntPaid + " paid · " + (list.length - cntPaid) + " pending</div></div>" +
+          '<div style="text-align:right"><div style="font-size:11px;color:var(--muted);font-weight:700">NET TOTAL</div>' +
+          '<div style="font-weight:800;font-size:16px">' + money(net) + "</div></div></div>" +
+        '<div class="twrap"><table class="tbl" style="min-width:760px"><thead><tr><th>Worker</th><th>Type</th><th class="num">Present/Work</th>' +
+        '<th class="num">Gross</th><th class="num">Deductions</th><th class="num">Net</th><th>Status</th><th></th></tr></thead><tbody>' +
+        rows + "</tbody></table></div></div>";
+    }).join("")
+    : emptyState("No records yet", "Open the Monthly Hisaab tab, set attendance and advances — records appear here automatically.", "gotoHisaab", "Go to Monthly Hisaab"))
+  );
+}
+
+/* ---------------------------- 11. SETTINGS VIEW ------------------------- */
+function viewSettings() {
+  const s = Store.data.settings;
+  return (
+    '<div class="grid g2">' +
+      '<div class="card"><div class="card-h"><div><h3>Shop / Business details</h3><div class="sub">Printed on every salary statement</div></div></div>' +
+        '<div class="card-b">' +
+          field("Shop / business name", '<input class="inp" id="sShop" value="' + esc(s.shopName) + '">') +
+          '<div class="grid g2" style="margin-top:12px">' +
+            field("Owner / signatory", '<input class="inp" id="sOwner" value="' + esc(s.ownerName) + '">') +
+            field("Phone", '<input class="inp" id="sPhone" value="' + esc(s.phone) + '" placeholder="e.g. 98765 43210">') +
+          "</div>" +
+          '<div style="margin-top:12px">' + field("Address", '<input class="inp" id="sAddress" value="' + esc(s.address) + '">') + "</div>" +
+          '<div style="margin-top:12px">' + field("Statement footer note", '<textarea class="inp" id="sNote">' + esc(s.statementNote) + "</textarea>") + "</div>" +
+        "</div></div>" +
+
+      '<div class="card"><div class="card-h"><div><h3>Salary rules</h3><div class="sub">Used automatically in every calculation</div></div></div>' +
+        '<div class="card-b">' +
+          '<div class="banner info" style="margin:0 0 10px"><span>🔒</span><div><b>Monthly workers:</b> salary is always divided by <b>30</b> ' +
+            "(never by the number of days in the month), and <b>Sundays are automatically excluded</b> from payable days. " +
+            "You can still allow Sunday work in an individual worker's hisaab.</div></div>" +
+          '<div class="banner info" style="margin:0 0 12px"><span>⏱️</span><div><b>Hourly workers:</b> koi fixed working hours nahi — ' +
+            "pay = <b>hourly rate × total hours worked</b> (hours aap har mahine daal sakte hain). <b>Overtime alag se nahi</b> jodta.</div></div>" +
+          '<button class="btn primary" data-act="saveSettings">Save settings</button>' +
+        "</div></div>" +
+    "</div>" +
+
+    '<div class="card" style="margin-top:14px"><div class="card-h"><div><h3>Data &amp; backup</h3><div class="sub">Everything is stored privately in this browser · Panel <b>v<span data-ver></span></b></div></div></div>' +
+      '<div class="card-b" style="display:flex;gap:9px;flex-wrap:wrap">' +
+        '<button class="btn" data-act="exportData">⤓ Download backup (JSON)</button>' +
+        '<button class="btn" data-act="importData">⤒ Restore backup</button>' +
+        '<button class="btn" data-act="loadSample">▤ Load sample data</button>' +
+        '<button class="btn danger" data-act="wipeData">🗑 Erase all data</button>' +
+      "</div></div>" +
+
+      cloudSettingsCard()
+  );
+}
+
+function field(label, control, hint, labelId) {
+  return '<div class="field"><label' + (labelId ? ' id="' + labelId + '"' : "") + ">" + esc(label) + "</label>" + control +
+    (hint ? '<div class="hint">' + esc(hint) + "</div>" : "") + "</div>";
+}
+/* ------------------------ 12. MODALS & DIALOGS -------------------------- */
+function openModal(html, opts) {
+  const root = $("#modalRoot");
+  root.innerHTML = '<div class="overlay" id="overlay">' + html + "</div>";
+  const ov = $("#overlay");
+  ov.addEventListener("mousedown", (e) => { if (e.target === ov && !(opts && opts.sticky)) closeModal(); });
+  document.body.style.overflow = "hidden";
+}
+function closeModal() {
+  $("#modalRoot").innerHTML = "";
+  document.body.style.overflow = "";
+  UI.openRec = null;
+}
+function confirmDialog(title, msg, okLabel, onOk, danger) {
+  openModal(
+    '<div class="modal" style="max-width:430px"><div class="modal-h"><div><h3>' + esc(title) + '</h3></div>' +
+      '<button class="x" data-act="closeModal">✕</button></div>' +
+      '<div class="modal-b" style="font-size:13px;color:#475569">' + msg + "</div>" +
+      '<div class="modal-f" style="justify-content:flex-end">' +
+      '<button class="btn" data-act="closeModal">Cancel</button>' +
+      '<button class="btn ' + (danger ? "danger" : "primary") + '" id="cfmOk">' + esc(okLabel) + "</button></div></div>"
+  );
+  $("#cfmOk").addEventListener("click", () => { closeModal(); onOk(); });
+}
+
+/* ----------------------------- WORKER MODAL ----------------------------- */
+function openWorkerModal(id) {
+  const w = id ? Store.worker(id) : null;
+  const isEdit = !!w;
+  const d = w || { name: "", role: "", phone: "", type: "monthly", rate: "", active: true, note: "" };
+  openModal(
+    '<div class="modal" style="max-width:560px">' +
+      '<div class="modal-h"><div><h3>' + (isEdit ? "Edit worker" : "Add new worker") + "</h3>" +
+        "<p>" + (isEdit ? "Update details — all hisaab recalculates automatically" : "Salary type and rate are enough to start") + "</p></div>" +
+        '<button class="x" data-act="closeModal">✕</button></div>' +
+      '<div class="modal-b">' +
+        '<div class="grid g2">' +
+          field("Worker name *", '<input class="inp" id="wName" value="' + esc(d.name) + '" placeholder="e.g. Ramesh Kumar" autofocus>') +
+          field("Role / designation", '<input class="inp" id="wRole" value="' + esc(d.role || "") + '" placeholder="e.g. Tailor, Helper">') +
+        "</div>" +
+        '<div class="grid g2" style="margin-top:12px">' +
+          field("Phone (optional)", '<input class="inp" id="wPhone" value="' + esc(d.phone || "") + '" placeholder="98765 43210">') +
+          '<div class="field"><label>Salary type</label><div class="seg" id="typeSeg">' +
+            '<button type="button" data-type="monthly" class="' + (d.type === "monthly" ? "on" : "") + '">Monthly salary</button>' +
+            '<button type="button" data-type="hourly" class="' + (d.type === "hourly" ? "on" : "") + '">Hourly wage</button>' +
+          "</div></div>" +
+        "</div>" +
+        '<div style="margin-top:12px">' +
+          field(d.type === "monthly" ? "Monthly salary (₹)" : "Hourly wage (₹)",
+            '<input class="inp" type="number" id="wRate" min="0" step="0.01" value="' + (d.rate === "" || d.rate == null ? "" : d.rate) + '" placeholder="0">',
+            "", "rateLbl") +
+          '<div class="hint" id="rateHint" style="margin-top:5px"></div>' +
+        "</div>" +
+        '<div style="margin-top:12px">' + field("Note (optional)", '<input class="inp" id="wNote" value="' + esc(d.note || "") + '" placeholder="e.g. works 6 days a week">') + "</div>" +
+        '<label class="chk" style="margin-top:14px"><input type="checkbox" id="wActive" ' + (d.active !== false ? "checked" : "") + "> Active worker (include in hisaab &amp; dashboard)</label>" +
+      "</div>" +
+      '<div class="modal-f" style="justify-content:flex-end">' +
+        '<button class="btn" data-act="closeModal">Cancel</button>' +
+        '<button class="btn primary" id="wSave">' + (isEdit ? "Save changes" : "Add worker") + "</button>" +
+      "</div></div>"
+  );
+  let type = d.type;
+  const paint = () => {
+    $$("#typeSeg button").forEach((b) => b.classList.toggle("on", b.dataset.type === type));
+    $("#rateLbl").textContent = type === "monthly" ? "Monthly salary (₹)" : "Hourly wage (₹)";
+    const r = num($("#wRate").value);
+    $("#rateHint").innerHTML = type === "monthly"
+      ? "Per day = " + money(r / 30) + " (monthly salary ÷ 30, fixed)"
+      : "Hourly worker — pay = hours worked × " + money(r) + " (hours roz alag ho sakte hain)";
+  };
+  $$("#typeSeg button").forEach((b) => b.addEventListener("click", () => { type = b.dataset.type; paint(); }));
+  $("#wRate").addEventListener("input", paint);
+  paint();
+  $("#wSave").addEventListener("click", () => {
+    const name = $("#wName").value.trim();
+    const rate = num($("#wRate").value);
+    if (!name) { $("#wName").classList.add("err"); $("#wName").focus(); toast("Please enter the worker's name", "bad"); return; }
+    if (rate <= 0) { $("#wRate").classList.add("err"); $("#wRate").focus(); toast("Please enter a valid salary rate", "bad"); return; }
+    const payload = { name, role: $("#wRole").value.trim(), phone: $("#wPhone").value.trim(), type, rate, active: $("#wActive").checked, note: $("#wNote").value.trim() };
+    if (isEdit) { Object.assign(w, payload); toast("Worker updated"); }
+    else { Store.data.workers.push({ id: uid(), ...payload }); toast("Worker added — hisaab ready"); }
+    Store.save(); closeModal(); render();
+  });
+  setTimeout(() => { const n = $("#wName"); if (n) n.focus(); }, 60);
+}
+
+/* ----------------------------- RECORD MODAL ----------------------------- */
+function openRecordModal(wid, y, m) {
+  const w = Store.worker(wid);
+  if (!w) return;
+  const rec = Store.ensureRecord(wid, y, m, true);
+  UI.openRec = { wid, y, m };
+  const c = calc(w, rec, Store.data.settings);
+  openModal(
+    '<div class="modal" style="max-width:920px">' +
+      '<div class="modal-h"><div><h3>' + esc(w.name) + "</h3>" +
+        "<p>" + esc(w.role || "—") + " · " + monthLabel(y, m) + " · " +
+        (w.type === "monthly" ? "Monthly " + money0(w.rate) : "Hourly " + money0(w.rate)) + "</p></div>" +
+        '<div style="display:flex;gap:8px;align-items:center">' +
+          '<select class="inp" id="mStatus" style="width:auto;padding:7px 10px;font-weight:700">' +
+            '<option value="pending"' + (rec.status !== "paid" ? " selected" : "") + ">● Pending</option>" +
+            '<option value="paid"' + (rec.status === "paid" ? " selected" : "") + ">✔ Paid</option>" +
+          "</select>" +
+          '<button class="x" data-act="closeModal">✕</button>' +
+        "</div></div>" +
+      '<div class="modal-b">' +
+
+        '<div class="sec-title">Attendance (monthly totals)</div>' +
+        '<div class="grid g4">' +
+          '<div class="field"><label>Present days</label><input class="inp" type="number" id="mPresent" min="0" step="1" value="' + c.present + '">' +
+            '<div class="hint">Click ⚡ to fill all working days</div></div>' +
+          '<div class="field"><label>Absent days</label><input class="inp" type="number" id="mAbsent" min="0" step="1" value="' + c.absent + '">' +
+            '<div class="hint">Unpaid — excluded from salary</div></div>' +
+          '<div class="field"><label>Sundays <span style="color:var(--primary)">(auto)</span></label>' +
+            '<input class="inp" id="mSundays" value="' + c.sundays + '" readonly style="background:#f7f9fd;font-weight:700">' +
+            '<div class="hint" data-live="sunDates">' + (c.includeSundays ? "Counting Sundays as working" : "Excluded from pay") + "</div></div>" +
+          '<div class="field"><label>Total working days</label>' +
+            '<input class="inp" id="mWorkDays" value="' + c.workingDays + '" readonly style="background:#f7f9fd;font-weight:700">' +
+            '<div class="hint" data-live="wdHint">' + c.meta.dim + " days − " + c.sundays + " Sundays</div></div>" +
+        "</div>" +
+        '<div style="display:flex;gap:14px;align-items:center;flex-wrap:wrap;margin-top:11px">' +
+          '<button class="btn sm" data-act="fillFull">⚡ Full attendance</button>' +
+          '<div style="display:flex;gap:6px" data-quick></div>' +
+          '<label class="chk" style="margin-left:auto"><input type="checkbox" id="mIncludeSun"' + (rec.includeSundays ? " checked" : "") + "> Shop open on Sundays (count as working)</label>" +
+        "</div>" +
+        '<div id="attWarn"></div>' +
+
+        '<div class="sec-title">Earnings</div>' +
+        '<div style="display:flex;gap:10px;flex-wrap:wrap">' +
+          '<div style="flex:1;min-width:150px;background:#f7f9fd;border:1px solid var(--line);border-radius:11px;padding:10px 12px">' +
+            '<div style="font-size:10.5px;color:var(--muted);font-weight:800;letter-spacing:.06em" data-live="rateMainLbl">' + (c.isHourly ? "PER HOUR RATE" : "PER DAY RATE") + "</div>" +
+            '<div style="font-weight:800;font-size:16px" data-live="rateMain">' + money(c.isHourly ? c.perHour : c.perDay) + "</div>" +
+            '<div style="font-size:10.5px;color:var(--muted)" data-live="rateMainBasis"></div></div>' +
+          '<div style="flex:1;min-width:150px;background:#f7f9fd;border:1px solid var(--line);border-radius:11px;padding:10px 12px">' +
+            '<div style="font-size:10.5px;color:var(--muted);font-weight:800;letter-spacing:.06em" data-live="qtyMainLbl">' + (c.isHourly ? "TOTAL HOURS" : "PRESENT DAYS") + "</div>" +
+            '<div style="font-weight:800;font-size:16px" data-live="qtyMain">' + (c.isHourly ? c.totalHours + " hrs" : c.present + " days") + "</div>" +
+            '<div style="font-size:10.5px;color:var(--muted)" data-live="qtyMainBasis"></div></div>' +
+          '<div style="flex:1;min-width:150px;background:#eef2ff;border:1px solid #c7d2fe;border-radius:11px;padding:10px 12px">' +
+            '<div style="font-size:10.5px;color:#4338ca;font-weight:800;letter-spacing:.06em">EARNED WAGES</div>' +
+            '<div style="font-weight:800;font-size:16px;color:#3730a3" data-live="earned">' + money(c.earned) + "</div>" +
+            '<div style="font-size:10.5px;color:#4338ca" data-live="earnedBasis"></div></div>' +
+        "</div>" +
+        '<div class="grid ' + (w.type === "hourly" ? "g2" : "") + '" style="margin-top:12px">' +
+          (w.type === "hourly"
+            ? '<div class="field"><label>Total hours worked this month</label><input class="inp" type="number" id="mHours" min="0" step="0.5" value="' + num(rec.totalHours) + '">' +
+              '<div class="hint" data-live="hoursHint">Pay = hours × ' + money(w.rate) + ' · hours roz alag ho sakte hain</div></div>'
+            : "") +
+          '<div class="field"><label>Bonus / allowance (₹)</label><input class="inp" type="number" id="mBonus" min="0" step="1" value="' + num(rec.bonus) + '">' +
+            '<div class="hint">Optional — extra payment</div></div>' +
+        "</div>" +
+
+        '<div class="sec-title">Advances &amp; deductions</div>' +
+        '<div class="grid g2">' +
+          '<div><div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:7px">' +
+            '<b style="font-size:12.5px">Advances taken</b>' +
+            '<button class="btn xs primary" data-act="addAdv">+ Add advance</button></div>' +
+            '<div class="adv-list" id="advList"></div>' +
+            '<div style="display:flex;justify-content:space-between;margin-top:8px;padding-top:7px;border-top:1px dashed var(--line);font-size:12.5px">' +
+              '<span class="muted">Total advances</span><b data-live="advTotal">' + money(c.advTotal) + "</b></div></div>" +
+          '<div><div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:7px">' +
+            '<b style="font-size:12.5px">Other deductions</b>' +
+            '<button class="btn xs" data-act="addDed">+ Add deduction</button></div>' +
+            '<div class="adv-list" id="dedList"></div>' +
+            '<div style="display:flex;justify-content:space-between;margin-top:8px;padding-top:7px;border-top:1px dashed var(--line);font-size:12.5px">' +
+              '<span class="muted">Total other deductions</span><b data-live="dedTotal">' + money(c.dedTotal) + "</b></div></div>" +
+        "</div>" +
+
+        '<div class="sec-title">Final hisaab</div>' +
+        '<div class="sum">' +
+          '<div class="sum-box"><div class="hd">Earnings</div><div id="sumEarn"></div></div>' +
+          '<div class="sum-box"><div class="hd">Deductions</div><div id="sumDed"></div></div>' +
+        "</div>" +
+        '<div id="netBox"></div>' +
+
+        '<div class="sec-title">Notes &amp; payment</div>' +
+        '<div class="grid g2">' +
+          '<div class="field"><label>Note (optional)</label><textarea class="inp" id="mNote" placeholder="Any remark for this month…">' + esc(rec.note || "") + "</textarea></div>" +
+          '<div class="field"><label>Payment date</label><input class="inp" type="date" id="mPaidOn" value="' + esc(rec.paidOn || "") + '">' +
+            '<div class="hint">Set automatically when you mark the month as paid.</div></div>' +
+        "</div>" +
+        '<div id="prevMonths"></div>' +
+      "</div>" +
+      '<div class="modal-f">' +
+        '<button class="btn danger sm" data-act="delRec">🗑 Delete this month’s record</button>' +
+        "<div style=\"display:flex;gap:8px\">" +
+          '<button class="btn" data-act="printRecModal">🖨 Print</button>' +
+          '<button class="btn" data-act="pdfRecModal">⬇ PDF</button>' +
+          '<button class="btn primary" data-act="saveRecClose">Save &amp; close</button>' +
+        "</div>" +
+      "</div></div>"
+  );
+  renderAdvDedLists();
+  refreshRecModal();
+  renderPrevMonths(wid, y, m);
+
+  /* quick attendance chips */
+  const q = $("[data-quick]");
+  if (q) {
+    q.innerHTML = [0, 1, 2, 3].map((n) => '<button class="btn xs" data-act="quickAbsent" data-n="' + n + '" title="Mark ' + n + " absent and rest present\">" + (n === 0 ? "All present" : n + " absent") + "</button>").join("");
+  }
+
+  ["mPresent", "mAbsent", "mHours", "mBonus", "mNote", "mPaidOn", "mIncludeSun", "mStatus"].forEach((id) => {
+    const el = document.getElementById(id);
+    if (!el) return;
+    el.addEventListener("input", () => { commitModal(); refreshRecModal(); });
+    el.addEventListener("change", () => { commitModal(); refreshRecModal(); if (id === "mStatus") syncStatusUI(); });
+  });
+}
+
+function syncStatusUI() {
+  const rec = currentModalRec();
+  if (!rec) return;
+  if (rec.status === "paid" && !rec.paidOn) {
+    const d = new Date();
+    rec.paidOn = d.getFullYear() + "-" + String(d.getMonth() + 1).padStart(2, "0") + "-" + String(d.getDate()).padStart(2, "0");
+    const el = $("#mPaidOn"); if (el) el.value = rec.paidOn;
+    Store.persistRecord(rec);
+  }
+}
+
+function currentModalRec() {
+  if (!UI.openRec) return null;
+  return Store.record(UI.openRec.wid, UI.openRec.y, UI.openRec.m);
+}
+
+function commitModal() {
+  const st = UI.openRec;
+  if (!st || !document.getElementById("mPresent")) return;
+  const rec = Store.record(st.wid, st.y, st.m);
+  if (!rec) return;
+  const meta = monthMeta(st.y, st.m);
+  const includeSun = $("#mIncludeSun").checked;
+  const wd = includeSun ? meta.dim : meta.workingDays;
+  rec.includeSundays = includeSun;
+  rec.presentDays = clamp(Math.round(num($("#mPresent").value)), 0, wd);
+  rec.absentDays = clamp(Math.round(num($("#mAbsent").value)), 0, wd);
+  if (rec.presentDays + rec.absentDays > wd) rec.absentDays = Math.max(0, wd - rec.presentDays);
+  if ($("#mHours")) rec.totalHours = Math.max(0, num($("#mHours").value));
+  rec.bonus = Math.max(0, num($("#mBonus").value));
+  rec.note = $("#mNote").value;
+  rec.status = $("#mStatus").value;
+  rec.paidOn = $("#mPaidOn").value;
+  $("#advList") && (rec.advances = $$("#advList .adv-row").map((row) => ({
+    id: row.dataset.id, date: $(".a-date", row).value, note: $(".a-note", row).value, amount: num($(".a-amt", row).value)
+  })));
+  $("#dedList") && (rec.deductions = $$("#dedList .ded-row").map((row) => ({
+    id: row.dataset.id, label: $(".d-label", row).value, amount: num($(".d-amt", row).value)
+  })));
+  Store.persistRecord(rec);
+}
+
+function refreshRecModal() {
+  const st = UI.openRec;
+  if (!st) return;
+  const w = Store.worker(st.wid), rec = currentModalRec();
+  if (!w || !rec) return;
+  const c = calc(w, rec, Store.data.settings);
+
+  const set = (sel, val) => { const el = $(sel); if (el) el.innerHTML = val; };
+  set('[data-live="advTotal"]', money(c.advTotal));
+  set('[data-live="dedTotal"]', money(c.dedTotal));
+  set('[data-live="rateMain"]', money(c.isHourly ? c.perHour : c.perDay));
+  set('[data-live="qtyMain"]', c.isHourly ? c.totalHours + " hrs" : c.present + " days");
+  set('[data-live="earned"]', money(c.earned));
+  set('[data-live="sunDates"]', c.includeSundays ? "Counting Sundays as working" : "Excluded · " + c.meta.sundayDates.slice(0, 8).join(", ") + (c.meta.sundayDates.length > 8 ? "…" : ""));
+  set('[data-live="wdHint"]', c.meta.dim + " days − " + c.sundays + " Sundays");
+  set('[data-live="rateMainLbl"]', c.isHourly ? "PER HOUR RATE" : "PER DAY RATE");
+  set('[data-live="qtyMainLbl"]', c.isHourly ? "TOTAL HOURS" : "PRESENT DAYS");
+  set('[data-live="rateMainBasis"]', c.isHourly ? "Hourly wage (fixed rate)" : money0(c.rate) + " ÷ 30 (fixed 30-day month)");
+  set('[data-live="qtyMainBasis"]', c.isHourly ? "Hours worked this month" : money(c.perDay) + " per present day");
+  set('[data-live="earnedBasis"]', c.isHourly ? c.totalHours + " hrs × " + money(c.rate) : c.present + " days × " + money(c.perDay));
+  set('[data-live="hoursHint"]', c.isHourly ? "Pay = " + c.totalHours + " hrs × " + money(c.rate) + " = " + money(c.earned) : "");
+
+  const sunEl = $("#mSundays"); if (sunEl) sunEl.value = c.sundays;
+  const wdEl = $("#mWorkDays"); if (wdEl) wdEl.value = c.workingDays;
+
+  const warn = $("#attWarn");
+  if (warn) {
+    if (c.overAttendance) warn.innerHTML = '<div class="banner warn" style="margin-top:10px;margin-bottom:0"><span>⚠️</span><div>Present + absent (' + (c.present + c.absent) + ") is more than the " + c.workingDays + " payable working days. Attendance has been auto-adjusted.</div></div>";
+    else if (c.present + c.absent < c.workingDays) warn.innerHTML = '<div class="banner info" style="margin-top:10px;margin-bottom:0"><span>ℹ️</span><div>' + (c.workingDays - c.present - c.absent) + " working day(s) not accounted for — they will <b>not</b> be paid. Increase present days if the worker was on duty.</div></div>";
+    else warn.innerHTML = "";
+  }
+
+  const earn = $("#sumEarn"), ded = $("#sumDed");
+  if (earn) earn.innerHTML =
+    line(c.isHourly ? "Earned wages (" + c.totalHours + " hrs × " + money(c.rate) + ")" : "Earned wages (" + c.present + " days)", money(c.earned), "plus") +
+    (c.bonus ? line("Bonus / allowance", money(c.bonus), "plus") : "") +
+    line("<b>Gross earnings</b>", "<b>" + money(c.grossEarnings) + "</b>") +
+    (c.isHourly ? line("Hourly rate", money(c.rate) + " / hr") : line("Per-day rate (÷30)", money(c.perDay))) +
+    (c.absent ? line("Unpaid absent days (" + c.absent + ")", "−" + money(c.absentValue), "minus") : "");
+  if (ded) ded.innerHTML =
+    line("Advances (" + c.advances.length + ")", c.advTotal ? "−" + money(c.advTotal) : money(0), c.advTotal ? "minus" : "") +
+    line("Other deductions (" + c.deductions.length + ")", c.dedTotal ? "−" + money(c.dedTotal) : money(0), c.dedTotal ? "minus" : "") +
+    line("<b>Total deductions</b>", "<b>−" + money(c.totalDeductions) + "</b>") +
+    line("Net payable", "<b style='color:#4f46e5'>" + money(c.net) + "</b>");
+
+  const nb = $("#netBox");
+  if (nb) nb.innerHTML =
+    '<div class="netbox ' + (c.negative ? "neg" : "pos") + '">' +
+      "<div><div class=\"l\">" + (c.negative ? "ADVANCES EXCEED EARNINGS" : "FINAL PAYABLE — " + MONTHS[st.m].toUpperCase() + " " + st.y) + "</div>" +
+      '<div class="words">' + esc(inWords(c.net)) + "</div></div>" +
+      '<div class="v">' + money(c.net) + "</div></div>";
+
+  const stSel = $("#mStatus");
+  if (stSel) stSel.value = rec.status;
+}
+
+function line(label, value, cls) {
+  return '<div class="sum-line ' + (cls || "") + '"><span>' + label + "</span><b>" + value + "</b></div>";
+}
+
+function renderAdvDedLists() {
+  const rec = currentModalRec();
+  if (!rec) return;
+  const al = $("#advList");
+  if (al) {
+    al.innerHTML = (rec.advances || []).map((a) =>
+      '<div class="adv-item adv-row" data-id="' + a.id + '">' +
+        '<input class="inp a-date" type="date" value="' + esc(a.date || "") + '">' +
+        '<input class="inp a-note" placeholder="Note (festival advance…)" value="' + esc(a.note || "") + '">' +
+        '<input class="inp a-amt" type="number" min="0" step="1" placeholder="Amount" value="' + (num(a.amount) || "") + '">' +
+        '<button class="x" data-act="delAdv" data-id="' + a.id + '" style="width:30px;height:30px;font-size:13px" title="Remove">✕</button>' +
+      "</div>").join("") ||
+      '<div style="font-size:12px;color:var(--muted);padding:8px 0">No advances this month. Use “+ Add advance” to record one.</div>';
+  }
+  const dl = $("#dedList");
+  if (dl) {
+    dl.innerHTML = (rec.deductions || []).map((d) =>
+      '<div class="adv-item ded-row" data-id="' + d.id + '" style="grid-template-columns:1fr 110px 32px">' +
+        '<input class="inp d-label" placeholder="Reason (food, fine, uniform…)" value="' + esc(d.label || "") + '">' +
+        '<input class="inp d-amt" type="number" min="0" step="1" placeholder="Amount" value="' + (num(d.amount) || "") + '">' +
+        '<button class="x" data-act="delDed" data-id="' + d.id + '" style="width:30px;height:30px;font-size:13px" title="Remove">✕</button>' +
+      "</div>").join("") ||
+      '<div style="font-size:12px;color:var(--muted);padding:8px 0">No other deductions.</div>';
+  }
+}
+
+function renderPrevMonths(wid, y, m) {
+  const el = $("#prevMonths");
+  if (!el) return;
+  const prev = Store.data.records.filter((r) => r.workerId === wid && (r.year < y || (r.year === y && r.month < m)))
+    .sort((a, b) => (b.year - a.year) || (b.month - a.month)).slice(0, 3);
+  if (!prev.length) { el.innerHTML = ""; return; }
+  el.innerHTML = '<div class="sec-title">Previous months</div><div style="display:flex;gap:8px;flex-wrap:wrap">' +
+    prev.map((r) => {
+      const w = Store.worker(wid); const c = calc(w, r, Store.data.settings);
+      return '<div style="flex:1;min-width:150px;border:1px solid var(--line);border-radius:10px;padding:9px 11px">' +
+        '<div style="font-size:11px;color:var(--muted);font-weight:700">' + MONTHS_S[r.month] + " " + r.year + "</div>" +
+        '<div style="font-weight:800">' + money(c.net) + "</div>" +
+        '<div style="font-size:11px">' + (r.status === "paid" ? "✔ Paid" : "● Pending") + " · " + c.present + "/" + c.workingDays + " days" + "</div>" +
+        "</div>";
+    }).join("") + "</div>";
+}
+
+/* ---------------------------- 13. PRINT VIEW ---------------------------- */
+function statementHTML(w, rec, c) {
+  const s = Store.data.settings;
+  const advRows = c.advances.concat(c.deductions.map((d) => ({ date: "", note: d.label, amount: d.amount, _ded: true })));
+  return '<div class="stmt"><div class="pad">' +
+    '<div class="hd"><div><div class="shop">' + esc(s.shopName || "My Shop") + "<small>" + esc(s.address || "") + (s.phone ? " · " + esc(s.phone) : "") + "</small></div></div>" +
+      '<div class="rt"><div class="ttl">SALARY STATEMENT</div><div class="hi">मासिक वेतन विवरण</div>' +
+      "<div style=\"margin-top:4px\">" + monthLabel(rec.year, rec.month) + "</div>" +
+      "<div>" + (rec.status === "paid" ? '<span class="watermark">' + esc(s.paidLabel || "PAID") + "</span>" : "PENDING") + "</div></div></div>" +
+
+    '<div class="meta"><div>' +
+      mRow("Worker", w.name) + mRow("Role", w.role || "—") + mRow("Phone", w.phone || "—") +
+    '</div><div>' +
+      mRow("Salary type", w.type === "monthly" ? "Monthly salary" : "Hourly wage") +
+      mRow("Rate", w.type === "monthly" ? money(w.rate) + " per month" : money(w.rate) + " per hour") +
+      mRow("Statement no.", "HSB/" + rec.year + "-" + String(rec.month + 1).padStart(2, "0") + "/" + w.id.slice(0, 4).toUpperCase()) +
+    "</div></div>" +
+
+    '<h4 class="sec">Attendance</h4>' +
+    '<table><thead><tr><th>Days in month</th><th>Sundays excluded</th><th>Working days</th><th>Present</th><th>Absent</th><th class="r">Paid leave</th></tr></thead>' +
+    "<tbody><tr><td>" + c.meta.dim + "</td><td>" + c.sundays + "</td><td>" + c.workingDays + "</td><td><b>" + c.present + "</b></td><td>" + c.absent + "</td><td class=\"r\">" + (c.includeSundays ? "Sun. included" : "—") + "</td></tr></tbody></table>" +
+
+    '<h4 class="sec">Salary computation</h4>' +
+    '<table><thead><tr><th>Particulars</th><th>Basis</th><th class="r">Amount (₹)</th></tr></thead><tbody>' +
+      (w.type === "monthly"
+        ? '<tr><td>Monthly salary</td><td>Fixed monthly</td><td class="r">' + money(c.rate) + "</td></tr>" +
+          '<tr><td>Salary per day</td><td>' + money(c.rate) + " \u00f7 30 (fixed)</td><td class=\"r\">" + money(c.perDay) + "</td></tr>" +
+          '<tr><td><b>Earned wages</b></td><td>' + money(c.perDay) + " \u00d7 " + c.present + ' days</td><td class="r"><b>' + money(c.earned) + "</b></td></tr>"
+        : '<tr><td>Hourly wage</td><td>Rate per hour</td><td class="r">' + money(c.rate) + "</td></tr>" +
+          '<tr><td>Total hours worked</td><td>' + c.present + " din attendance</td><td class=\"r\">" + c.totalHours + " hrs</td></tr>" +
+          '<tr><td><b>Earned wages</b></td><td>' + money(c.rate) + " \u00d7 " + c.totalHours + ' hrs</td><td class="r"><b>' + money(c.earned) + "</b></td></tr>") +
+      (c.bonus ? '<tr><td>Bonus / allowance</td><td>—</td><td class="r">' + money(c.bonus) + "</td></tr>" : "") +
+      '<tr><td><b>Gross earnings</b></td><td></td><td class="r"><b>' + money(c.grossEarnings) + "</b></td></tr>" +
+    "</tbody></table>" +
+
+    '<h4 class="sec">Advances &amp; deductions</h4>' +
+    (advRows.length
+      ? '<table><thead><tr><th>Date</th><th>Particulars</th><th class="r">Amount (₹)</th></tr></thead><tbody>' +
+        advRows.map((a) => "<tr><td>" + esc(a.date || "—") + "</td><td>" + esc(a.note || (a._ded ? "Deduction" : "Advance")) + '</td><td class="r">' + money(a.amount) + "</td></tr>").join("") +
+        '<tr><td></td><td><b>Total deductions</b></td><td class="r"><b>' + money(c.totalDeductions) + "</b></td></tr></tbody></table>"
+      : '<table><tbody><tr><td style="color:#6b7280">No advances or deductions this month.</td><td class="r"><b>Total deductions: ' + money(0) + "</b></td></tr></tbody></table>") +
+
+    (c.absent ? '<div class="inwords">Unpaid absence: <b>' + c.absent + " day(s)</b> = " + money(c.absentValue) + " not included in earned wages.</div>" : "") +
+
+    '<div class="net"><div><div class="l">Final payable amount</div>' +
+      (rec.status === "paid" ? '<div style="font-size:11px;opacity:.75">Paid on ' + esc(rec.paidOn || "—") + "</div>" : '<div style="font-size:11px;opacity:.75">Payment pending</div>') +
+      '</div><div class="v">' + money(c.net) + "</div></div>" +
+    '<div class="inwords">Amount in words: <b>' + esc(inWords(c.net)) + "</b></div>" +
+    (rec.note ? '<div class="inwords">Note: ' + esc(rec.note) + "</div>" : "") +
+
+    '<div class="sign"><div>Worker signature</div><div>' + esc(s.ownerName || "Authorised signatory") + "</div></div>" +
+    '<div class="ft"><span>' + esc(s.statementNote || "") + "</span><span>Generated " + new Date().toLocaleDateString("en-IN") + "</span></div>" +
+    "</div></div>";
+}
+function mRow(k, v) { return '<div class="r"><span>' + esc(k) + "</span><b>" + esc(v) + "</b></div>"; }
+
+function printStatement(wid, y, m) {
+  const w = Store.worker(wid); if (!w) return;
+  const rec = Store.ensureRecord(wid, y, m, false);
+  const c = calc(w, rec, Store.data.settings);
+  $("#print-root").innerHTML = statementHTML(w, rec, c);
+  setTimeout(() => window.print(), 60);
+}
+function printAll() {
+  const rows = rowsForMonth(UI.year, UI.month);
+  if (!rows.length) return toast("No workers to print", "bad");
+  $("#print-root").innerHTML = rows.map(({ w, rec, c }) => statementHTML(w, rec, c)).join('<div style="page-break-after:always"></div>');
+  setTimeout(() => window.print(), 80);
+}
+
+/* ------------------------- 14. PDF ENGINE (offline) --------------------- */
+/* A tiny PDF writer — no libraries, no internet needed. */
+const HELV_W = [278,278,355,556,556,889,667,191,333,333,389,584,278,333,278,278,556,556,556,556,556,556,556,556,556,556,278,278,584,584,584,556,1015,667,667,722,722,667,611,778,722,278,500,667,556,833,722,778,667,778,722,667,611,722,667,944,667,667,611,278,278,278,469,556,333,556,556,500,556,556,278,556,556,222,222,500,222,833,556,556,556,556,333,500,278,556,500,722,500,500,500,334,260,334,584];
+
+function toAscii(str) {
+  const map = { "₹": "Rs.", "–": "-", "—": "-", "’": "'", "‘": "'", "“": '"', "”": '"', "•": "-", "…": "...", "≤": "<=", "≥": ">=", "✔": "v", "✕": "x", "✖": "x", "→": "->", "×": "x", "÷": "/", "−": "-", "⚡": "*", "⧉": "|", "°": " deg", "\n": " " };
+  let out = "";
+  for (const ch of String(str == null ? "" : str)) {
+    if (map[ch] !== undefined) out += map[ch];
+    else if (ch.charCodeAt(0) < 128) out += ch;
+    else if (ch.charCodeAt(0) < 256) out += ch;
+    else out += "?";
+  }
+  return out;
+}
+function pdfEsc(s) { return toAscii(s).replace(/\\/g, "\\\\").replace(/\(/g, "\\(").replace(/\)/g, "\\)"); }
+function pdfWidth(str, size, bold) {
+  const s = toAscii(str);
+  let w = 0;
+  for (let i = 0; i < s.length; i++) {
+    const code = s.charCodeAt(i);
+    w += (code >= 32 && code <= 126) ? HELV_W[code - 32] : 556;
+  }
+  return (w * size) / 1000 * (bold ? 1.045 : 1);
+}
+
+function PdfDoc() { this.pages = []; this.cur = null; this.newPage(); }
+PdfDoc.prototype.newPage = function () { this.cur = []; this.pages.push(this.cur); this.y = 800; return this; };
+PdfDoc.prototype.op = function (s) { this.cur.push(s); };
+PdfDoc.prototype.text = function (x, y, size, str, opt) {
+  opt = opt || {};
+  const bold = !!opt.bold;
+  const col = opt.color || [0.06, 0.09, 0.16];
+  let xx = x;
+  if (opt.align === "right") xx = x - pdfWidth(str, size, bold);
+  else if (opt.align === "center") xx = x - pdfWidth(str, size, bold) / 2;
+  this.op("BT /" + (bold ? "F2" : "F1") + " " + size + " Tf " + col[0] + " " + col[1] + " " + col[2] + " rg 1 0 0 1 " + xx.toFixed(2) + " " + y.toFixed(2) + " Tm (" + pdfEsc(str) + ") Tj ET");
+  return this;
+};
+PdfDoc.prototype.line = function (x1, y1, x2, y2, color, w) {
+  const c = color || [0.85, 0.87, 0.9];
+  this.op((w || 0.7) + " w " + c[0] + " " + c[1] + " " + c[2] + " RG " + x1.toFixed(2) + " " + y1.toFixed(2) + " m " + x2.toFixed(2) + " " + y2.toFixed(2) + " l S");
+  return this;
+};
+PdfDoc.prototype.rect = function (x, y, w, h, color) {
+  const c = color || [0.96, 0.97, 0.99];
+  this.op(c[0] + " " + c[1] + " " + c[2] + " rg " + x.toFixed(2) + " " + y.toFixed(2) + " " + w.toFixed(2) + " " + h.toFixed(2) + " re f");
+  return this;
+};
+PdfDoc.prototype.box = function (x, y, w, h, stroke, fill) {
+  if (fill) this.rect(x, y, w, h, fill);
+  const c = stroke || [0.87, 0.89, 0.92];
+  this.op("0.7 w " + c[0] + " " + c[1] + " " + c[2] + " RG " + x.toFixed(2) + " " + y.toFixed(2) + " " + w.toFixed(2) + " " + h.toFixed(2) + " re S");
+  return this;
+};
+PdfDoc.prototype.wrap = function (str, size, maxW, bold) {
+  const words = toAscii(str).split(/\s+/);
+  const lines = []; let cur = "";
+  words.forEach((word) => {
+    const test = cur ? cur + " " + word : word;
+    if (pdfWidth(test, size, bold) > maxW && cur) { lines.push(cur); cur = word; }
+    else cur = test;
+  });
+  if (cur) lines.push(cur);
+  return lines;
+};
+PdfDoc.prototype.build = function () {
+  const objs = [];
+  objs.push("<< /Type /Catalog /Pages 2 0 R >>");
+  objs.push(""); // pages placeholder
+  objs.push("<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica /Encoding /WinAnsiEncoding >>");
+  objs.push("<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica-Bold /Encoding /WinAnsiEncoding >>");
+  const kids = [];
+  this.pages.forEach((ops) => {
+    const body = ops.join("\n");
+    const cid = objs.length + 1;
+    objs.push("<< /Length " + body.length + " >>\nstream\n" + body + "\nendstream");
+    const pid = objs.length + 1;
+    objs.push("<< /Type /Page /Parent 2 0 R /MediaBox [0 0 595.28 841.89] /Resources << /Font << /F1 3 0 R /F2 4 0 R >> >> /Contents " + cid + " 0 R >>");
+    kids.push(pid);
+  });
+  objs[1] = "<< /Type /Pages /Kids [" + kids.map((k) => k + " 0 R").join(" ") + "] /Count " + kids.length + " >>";
+  let out = "%PDF-1.4\n";
+  const offsets = [];
+  objs.forEach((body, i) => { offsets.push(out.length); out += (i + 1) + " 0 obj\n" + body + "\nendobj\n"; });
+  const xref = out.length;
+  out += "xref\n0 " + (objs.length + 1) + "\n0000000000 65535 f \n";
+  offsets.forEach((o) => { out += String(o).padStart(10, "0") + " 00000 n \n"; });
+  out += "trailer\n<< /Size " + (objs.length + 1) + " /Root 1 0 R >>\nstartxref\n" + xref + "\n%%EOF";
+  return out;
+};
+
+/* ---- statement drawing ---- */
+const C = { ink: [0.06, 0.09, 0.16], muted: [0.42, 0.45, 0.5], line: [0.85, 0.87, 0.9], light: [0.96, 0.97, 0.99], primary: [0.31, 0.27, 0.9], dark: [0.06, 0.09, 0.16], white: [1, 1, 1], green: [0.02, 0.6, 0.4], red: [0.78, 0.13, 0.13], hdr: [0.95, 0.96, 0.98] };
+const PW = 595.28, M = 40, CW = PW - M * 2, RIGHT = PW - M;
+
+function pdfHeader(p, title, year, month, d) {
+  p.text(M, 800, 16, d.shopName || "My Shop", { bold: true, color: C.ink });
+  let yy = 786;
+  p.wrap(toAscii(d.address || ""), 8.5, 300).forEach((l) => { p.text(M, yy, 8.5, l, { color: C.muted }); yy -= 10.5; });
+  if (d.phone) { p.text(M, yy, 8.5, "Phone: " + d.phone, { color: C.muted }); yy -= 10.5; }
+  p.text(RIGHT, 800, 12, title, { bold: true, align: "right", color: C.ink });
+  p.text(RIGHT, 787, 8.5, "Masik Vetan Vivaran", { align: "right", color: C.muted });
+  p.text(RIGHT, 776, 9, monthLabel(year, month), { align: "right", color: C.ink, bold: true });
+  p.line(M, 764, RIGHT, 764, C.ink, 1.6);
+  p.y = 748;
+}
+
+function pdfKV(p, x, y, w, k, v) {
+  p.text(x, y, 7.8, k.toUpperCase(), { color: C.muted, bold: true });
+  p.text(x + w, y, 9, v, { align: "right", color: C.ink, bold: true });
+  p.line(x, y - 4, x + w, y - 4, [0.92, 0.93, 0.95], 0.5);
+}
+
+function pdfSectionTitle(p, text) {
+  if (p.y < 120) { p.newPage(); }
+  p.y -= 14;
+  p.text(M, p.y, 8.2, text.toUpperCase(), { bold: true, color: C.primary });
+  p.y -= 4.5;
+  p.line(M, p.y, RIGHT, p.y, C.line, 0.8);
+  p.y -= 13;
+}
+
+function pdfTableHeader(p, cols) {
+  const h = 15;
+  p.rect(M, p.y - h + 3, CW, h, C.hdr);
+  cols.forEach((c) => {
+    if (c.align === "right") p.text(M + c.x + c.w, p.y - 5, 7.6, c.t.toUpperCase(), { align: "right", color: C.muted, bold: true });
+    else p.text(M + c.x, p.y - 5, 7.6, c.t.toUpperCase(), { color: C.muted, bold: true });
+  });
+  p.y -= h;
+  p.line(M, p.y + 3, RIGHT, p.y + 3, C.line, 0.7);
+}
+
+function pdfRow(p, cols, vals, opt) {
+  opt = opt || {};
+  if (p.y < 90) {
+    p.newPage();
+    pdfTableHeader(p, cols);
+  }
+  const h = 14.5;
+  if (opt.bg) p.rect(M, p.y - h + 2.5, CW, h, opt.bg);
+  cols.forEach((c, i) => {
+    const v = vals[i] == null ? "" : String(vals[i]);
+    const bold = opt.bold || (c.bold && true);
+    if (c.wrap) {
+      const lines = p.wrap(v, 8.6, c.w);
+      lines.slice(0, 2).forEach((l, li) => p.text(M + c.x, p.y - 5 - li * 10, 8.6, l, { color: opt.color || C.ink, bold: bold }));
+    } else if (c.align === "right") p.text(M + c.x + c.w, p.y - 5, 8.8, v, { align: "right", color: opt.color || C.ink, bold: bold });
+    else p.text(M + c.x, p.y - 5, 8.8, v, { color: opt.color || C.ink, bold: bold });
+  });
+  p.y -= h;
+  p.line(M, p.y + 2.5, RIGHT, p.y + 2.5, [0.92, 0.93, 0.95], 0.5);
+}
+
+function drawStatement(p, w, rec, c) {
+  const d = Store.data.settings;
+  pdfHeader(p, "SALARY STATEMENT", rec.year, rec.month, d);
+
+  /* worker identity band */
+  p.rect(M, p.y - 34, CW, 37, [0.97, 0.98, 1]);
+  p.text(M + 10, p.y - 13, 12.5, w.name, { bold: true, color: C.ink });
+  p.text(M + 10, p.y - 26, 8.5, (w.role || "-") + (w.phone ? "  |  " + w.phone : ""), { color: C.muted });
+  const st = rec.status === "paid" ? "PAID on " + (rec.paidOn || "-") : "PAYMENT PENDING";
+  p.text(RIGHT - 10, p.y - 13, 8.6, st, { align: "right", bold: true, color: rec.status === "paid" ? C.green : C.red });
+  p.text(RIGHT - 10, p.y - 26, 8.2, "Statement No: HSB/" + rec.year + "-" + String(rec.month + 1).padStart(2, "0") + "/" + w.id.slice(0, 4).toUpperCase(), { align: "right", color: C.muted });
+  p.y -= 50;
+
+  /* attendance boxes */
+  pdfSectionTitle(p, "Attendance summary");
+  const boxes = [
+    ["Days in month", String(c.meta.dim)],
+    ["Sundays excluded", String(c.sundays)],
+    ["Working days", String(c.workingDays)],
+    ["Present days", String(c.present)],
+    ["Absent days", String(c.absent)]
+  ];
+  const bw = (CW - 8 * 4) / 5;
+  boxes.forEach((b, i) => {
+    const x = M + i * (bw + 8);
+    p.box(x, p.y - 30, bw, 32, C.line, C.light);
+    p.text(x + bw / 2, p.y - 13, 7.4, b[0].toUpperCase(), { align: "center", color: C.muted, bold: true });
+    p.text(x + bw / 2, p.y - 26, 12, b[1], { align: "center", color: C.ink, bold: true });
+  });
+  p.y -= 44;
+
+  /* salary computation */
+  pdfSectionTitle(p, "Salary computation");
+  const c1 = [{ t: "Particulars", x: 8, w: 190, wrap: false }, { t: "Basis", x: 204, w: 218 }, { t: "Amount (Rs.)", x: 430, w: CW - 438, align: "right" }];
+  pdfTableHeader(p, c1);
+  if (w.type === "monthly") {
+    pdfRow(p, c1, ["Monthly salary", "Fixed monthly salary", money(c.rate)]);
+    pdfRow(p, c1, ["Salary per day", money(c.rate) + " / 30 days (fixed)", money(c.perDay)]);
+    pdfRow(p, c1, ["Earned wages", money(c.perDay) + " x " + c.present + " present days", money(c.earned)], { bold: true });
+  } else {
+    pdfRow(p, c1, ["Hourly wage", "Rate per hour (fixed)", money(c.rate)]);
+    pdfRow(p, c1, ["Total hours worked", c.present + " days attendance", c.totalHours + " hrs"]);
+    pdfRow(p, c1, ["Earned wages", money(c.rate) + " x " + c.totalHours + " hours", money(c.earned)], { bold: true });
+  }
+  if (c.bonus) pdfRow(p, c1, ["Bonus / allowance", "-", money(c.bonus)]);
+  if (c.absent) pdfRow(p, c1, ["Unpaid absent days (not payable)", c.absent + " days x " + money(c.perDay), "(" + money(c.absentValue) + ")"], { color: C.muted });
+  pdfRow(p, c1, ["GROSS EARNINGS", "", money(c.grossEarnings)], { bold: true, bg: [0.95, 0.96, 0.99] });
+
+  /* deductions */
+  pdfSectionTitle(p, "Advances & deductions");
+  const c2 = [{ t: "Date", x: 8, w: 60 }, { t: "Particulars", x: 78, w: 330 }, { t: "Amount (Rs.)", x: 425, w: CW - 433, align: "right" }];
+  pdfTableHeader(p, c2);
+  const entries = c.advances.map((a) => ({ date: a.date || "-", label: a.note || "Advance", amount: num(a.amount), kind: "Advance" }))
+    .concat(c.deductions.map((x) => ({ date: "-", label: x.label || "Deduction", amount: num(x.amount), kind: "Deduction" })));
+  if (!entries.length) pdfRow(p, c2, ["-", "No advances or deductions this month", money(0)]);
+  entries.forEach((e) => pdfRow(p, c2, [e.date, (e.label || e.kind) + (e.label && e.label.toLowerCase().indexOf(e.kind.toLowerCase()) === -1 && e.kind === "Advance" ? "" : ""), money(e.amount)], { color: C.red }));
+  pdfRow(p, c2, ["", "TOTAL DEDUCTIONS", money(c.totalDeductions)], { bold: true, bg: [0.99, 0.96, 0.96] });
+
+  /* net box */
+  if (p.y < 150) p.newPage();
+  p.y -= 10;
+  const netColor = c.negative ? [0.6, 0.11, 0.11] : [0.06, 0.09, 0.16];
+  p.rect(M, p.y - 44, CW, 46, netColor);
+  p.text(M + 14, p.y - 18, 8.4, c.negative ? "ADVANCES EXCEED EARNINGS" : "FINAL PAYABLE AMOUNT", { color: [0.75, 0.8, 0.9], bold: true });
+  p.text(M + 14, p.y - 34, 9, "Gross " + money(c.grossEarnings) + "  -  Deductions " + money(c.totalDeductions), { color: [0.75, 0.8, 0.9] });
+  p.text(RIGHT - 14, p.y - 26, 19, money(c.net), { align: "right", bold: true, color: C.white });
+  p.y -= 56;
+
+  /* words */
+  const wl = p.wrap("Amount in words: " + inWords(c.net), 8.6, CW - 20);
+  const wh = wl.length * 11 + 12;
+  p.box(M, p.y - wh + 4, CW, wh, [0.85, 0.87, 0.9], [0.98, 0.99, 1]);
+  wl.forEach((l, i) => p.text(M + 10, p.y - 8 - i * 11, 8.6, l, { color: C.ink }));
+  p.y -= wh + 6;
+
+  if (rec.note) {
+    const nl = p.wrap("Note: " + rec.note, 8.2, CW - 20);
+    nl.forEach((l, i) => p.text(M + 2, p.y - 8 - i * 10, 8.2, l, { color: C.muted }));
+    p.y -= nl.length * 10 + 4;
+  }
+
+  /* signatures */
+  if (p.y < 150) p.newPage();
+  const sy = Math.max(96, Math.min(p.y - 40, 150));
+  p.line(M + 10, sy, M + 170, sy, [0.6, 0.62, 0.66], 0.8);
+  p.text(M + 10, sy - 11, 8, "Worker signature", { color: C.muted });
+  p.line(RIGHT - 170, sy, RIGHT - 10, sy, [0.6, 0.62, 0.66], 0.8);
+  p.text(RIGHT - 170, sy - 11, 8, (d.ownerName || "Authorised signatory") + " / For " + (d.shopName || ""), { color: C.muted });
+
+  p.line(M, 48, RIGHT, 48, C.line, 0.6);
+  p.text(M, 38, 7.2, p.wrap(d.statementNote || "", 7.2, 380)[0] || "", { color: C.muted });
+  p.text(RIGHT, 38, 7.2, "Generated " + new Date().toLocaleDateString("en-IN"), { align: "right", color: C.muted });
+}
+
+function drawSummaryPage(p, rows, year, month) {
+  const d = Store.data.settings;
+  pdfHeader(p, "MONTHLY PAYROLL SUMMARY", year, month, d);
+  let g = 0, ad = 0, dd = 0, nt = 0;
+  rows.forEach(({ c }) => { g += c.grossEarnings; ad += c.advTotal; dd += c.dedTotal; nt += c.net; });
+
+  p.text(M, p.y, 10.5, "All workers - " + monthLabel(year, month), { bold: true });
+  p.text(RIGHT, p.y, 9, monthMeta(year, month).dim + " days | " + monthMeta(year, month).sundays + " Sundays excluded | " + monthMeta(year, month).workingDays + " working days", { align: "right", color: C.muted });
+  p.y -= 18;
+
+  const cols = [
+    { t: "Worker", x: 8, w: 112 },
+    { t: "Type", x: 124, w: 38 },
+    { t: "Pres.", x: 166, w: 24, align: "right" },
+    { t: "Abs.", x: 194, w: 22, align: "right" },
+    { t: "Rate / hrs", x: 218, w: 56, align: "right" },
+    { t: "Gross", x: 280, w: 58, align: "right" },
+    { t: "Advance", x: 344, w: 58, align: "right" },
+    { t: "Net", x: 408, w: 58, align: "right" },
+    { t: "Status", x: 472, w: 43, align: "right" }
+  ];
+  pdfTableHeader(p, cols);
+  rows.forEach(({ w, rec, c }) => {
+    pdfRow(p, cols, [w.name, w.type === "monthly" ? "Monthly" : "Hourly", String(c.present), String(c.absent), (c.isHourly ? c.totalHours + " hrs" : money(c.perDay)), money(c.grossEarnings), money(c.advTotal), money(c.net), rec && rec.status === "paid" ? "PAID" : "PENDING"],
+      { color: C.ink, bold: false });
+  });
+  pdfRow(p, cols, ["TOTAL (" + rows.length + " workers)", "", "", "", "", money(g), money(ad + dd), money(nt), ""], { bold: true, bg: [0.95, 0.96, 0.99] });
+
+  p.y -= 12;
+  p.rect(M, p.y - 44, CW, 46, C.dark);
+  p.text(M + 14, p.y - 18, 8.4, "TOTAL NET PAYABLE - " + monthLabel(year, month).toUpperCase(), { color: [0.75, 0.8, 0.9], bold: true });
+  p.text(M + 14, p.y - 34, 9, "Gross " + money(g) + "  -  Advances " + money(ad) + "  -  Other deductions " + money(dd), { color: [0.75, 0.8, 0.9] });
+  p.text(RIGHT - 14, p.y - 26, 19, money(nt), { align: "right", bold: true, color: C.white });
+  p.y -= 60;
+  p.text(M, p.y, 7.4, p.wrap(d.statementNote || "", 7.4, CW)[0] || "", { color: C.muted });
+}
+
+function savePdf(filename, str) {
+  try {
+    /* write as raw Latin-1 bytes so the xref offsets stay exact */
+    const bytes = new Uint8Array(str.length);
+    for (let i = 0; i < str.length; i++) bytes[i] = str.charCodeAt(i) & 0xff;
+    const blob = new Blob([bytes], { type: "application/pdf" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url; a.download = filename; a.style.display = "none";
+    document.body.appendChild(a); a.click();
+    setTimeout(() => { URL.revokeObjectURL(url); a.remove(); }, 2000);
+    toast("PDF downloaded: " + filename, "ok");
+  } catch (e) { toast("Could not create PDF — open the file in a browser tab and retry", "bad"); }
+}
+function safeName(s) { return String(s || "worker").replace(/[^A-Za-z0-9]+/g, "_").replace(/^_|_$/g, ""); }
+
+function downloadStatementPdf(wid, y, m) {
+  const w = Store.worker(wid); if (!w) return;
+  const rec = Store.ensureRecord(wid, y, m, false);
+  const c = calc(w, rec, Store.data.settings);
+  const p = new PdfDoc();
+  drawStatement(p, w, rec, c);
+  savePdf("Salary_" + safeName(w.name) + "_" + MONTHS_S[m] + "-" + y + ".pdf", p.build());
+}
+function downloadAllPdfs() {
+  const rows = rowsForMonth(UI.year, UI.month);
+  if (!rows.length) return toast("No workers to export", "bad");
+  const p = new PdfDoc();
+  drawSummaryPage(p, rows, UI.year, UI.month);
+  rows.forEach(({ w, rec, c }) => { p.newPage(); drawStatement(p, w, rec, c); });
+  savePdf("Payroll_" + MONTHS_S[UI.month] + "-" + UI.year + ".pdf", p.build());
+}
+
+/* --------------------------- 15. SHARED ACTIONS ------------------------- */
+function togglePaid(wid, y, m) {
+  const rec = Store.ensureRecord(wid, y, m, true);
+  if (rec.status === "paid") { rec.status = "pending"; rec.paidOn = ""; toast("Marked as pending"); }
+  else {
+    rec.status = "paid";
+    if (!rec.paidOn) { const d = new Date(); rec.paidOn = d.getFullYear() + "-" + String(d.getMonth() + 1).padStart(2, "0") + "-" + String(d.getDate()).padStart(2, "0"); }
+    toast("Marked as paid ✔", "ok");
+  }
+  Store.persistRecord(rec);
+}
+
+function autoFillAll() {
+  confirmDialog("Auto-fill attendance?", "Set <b>present days = all payable working days</b> and absent = 0 for every active worker in " + monthLabel(UI.year, UI.month) + ". Existing values will be overwritten.", "Yes, auto-fill", () => {
+    Store.activeWorkers().forEach((w) => {
+      const rec = Store.ensureRecord(w.id, UI.year, UI.month, true);
+      const meta = monthMeta(UI.year, UI.month);
+      const wd = rec.includeSundays ? meta.dim : meta.workingDays;
+      rec.presentDays = wd; rec.absentDays = 0;
+      Store.persistRecord(rec);
+    });
+    render(); toast("Attendance auto-filled", "ok");
+  });
+}
+function copyPreviousMonth() {
+  const pm = UI.month === 0 ? { y: UI.year - 1, m: 11 } : { y: UI.year, m: UI.month - 1 };
+  let n = 0;
+  Store.activeWorkers().forEach((w) => {
+    const src = Store.record(w.id, pm.y, pm.m);
+    if (!src) return;
+    const rec = Store.ensureRecord(w.id, UI.year, UI.month, true);
+    rec.presentDays = src.presentDays; rec.absentDays = src.absentDays; rec.includeSundays = src.includeSundays;
+    Store.persistRecord(rec); n++;
+  });
+  render();
+  toast(n ? "Copied attendance from " + MONTHS_S[pm.m] + " for " + n + " workers" : "No records found for " + monthLabel(pm.y, pm.m), n ? "ok" : "bad");
+}
+function markAllPaid() {
+  confirmDialog("Mark all as paid?", "Set every worker’s " + monthLabel(UI.year, UI.month) + " record to <b>PAID</b> with today’s date.", "Mark all paid", () => {
+    Store.activeWorkers().forEach((w) => {
+      const rec = Store.ensureRecord(w.id, UI.year, UI.month, true);
+      rec.status = "paid";
+      const d = new Date();
+      rec.paidOn = d.getFullYear() + "-" + String(d.getMonth() + 1).padStart(2, "0") + "-" + String(d.getDate()).padStart(2, "0");
+      Store.persistRecord(rec);
+    });
+    render(); toast("All workers marked paid", "ok");
+  });
+}
+function exportData() {
+  const blob = new Blob([JSON.stringify(Store.data, null, 2)], { type: "application/json" });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url; a.download = "hisaab-backup-" + new Date().toISOString().slice(0, 10) + ".json";
+  document.body.appendChild(a); a.click();
+  setTimeout(() => { URL.revokeObjectURL(url); a.remove(); }, 1500);
+  toast("Backup downloaded", "ok");
+}
+function importData() {
+  const inp = document.createElement("input");
+  inp.type = "file"; inp.accept = "application/json,.json";
+  inp.onchange = () => {
+    const f = inp.files[0]; if (!f) return;
+    const rd = new FileReader();
+    rd.onload = () => {
+      try {
+        const d = JSON.parse(rd.result);
+        if (!d.workers || !d.records) throw new Error("bad");
+        Store.data = { settings: { ...DEFAULT_SETTINGS, ...(d.settings || {}) }, workers: d.workers, records: d.records };
+        Store.save(); render(); toast("Backup restored", "ok");
+      } catch (e) { toast("Invalid backup file", "bad"); }
+    };
+    rd.readAsText(f);
+  };
+  inp.click();
+}
+
+/* ------------------ 18. CLOUD LOGIN & SYNC (Supabase) ------------------- */
+const CLOUD_KEY = "hisaabPro.cloud.v1";
+const SUPABASE_CDN = "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2";
+
+function loadScriptOnce(src) {
+  return new Promise((resolve, reject) => {
+    const s = document.createElement("script");
+    s.src = src; s.async = true;
+    s.onload = () => resolve(true);
+    s.onerror = () => reject(new Error("Could not load " + src));
+    document.head.appendChild(s);
+  });
+}
+
+const Cloud = {
+  cfg: null, client: null, user: null, mode: "in",
+  status: "local", lastSync: 0, dirty: false, busy: false, pushTimer: null, blocked: false,
+
+  readCfg() {
+    try { const r = localStorage.getItem(CLOUD_KEY); this.cfg = r ? JSON.parse(r) : null; }
+    catch (e) { this.cfg = null; }
+    return this.cfg;
+  },
+  writeCfg(c) {
+    this.cfg = c;
+    try { if (c) localStorage.setItem(CLOUD_KEY, JSON.stringify(c)); else localStorage.removeItem(CLOUD_KEY); } catch (e) {}
+  },
+  configured() { return !!(this.cfg && this.cfg.url && this.cfg.key); },
+
+  async initClient() {
+    if (this.client) return this.client;
+    if (!window.supabase) await loadScriptOnce(SUPABASE_CDN);
+    if (!window.supabase) throw new Error("Supabase library load failed");
+    this.client = window.supabase.createClient(this.cfg.url, this.cfg.key, { auth: { persistSession: true, autoRefreshToken: true } });
+    return this.client;
+  },
+
+  async boot() {
+    this.readCfg();
+    if (!this.configured()) { this.status = "local"; updateCloudBadge(); return; }
+    try {
+      await this.initClient();
+      const res = await this.client.auth.getSession();
+      const session = res && res.data ? res.data.session : null;
+      this.user = session ? session.user : null;
+      if (this.user) {
+        this.status = "synced"; showLogin(false);
+        await this.maybePull(true);
+      } else { this.status = "loggedout"; showLogin(true); }
+    } catch (e) {
+      this.status = "error"; showLogin(true);
+    }
+    updateCloudBadge();
+  },
+
+  setStatus(s, msg) { this.status = s; updateCloudBadge(msg); },
+
+  async signIn(email, password) {
+    await this.initClient();
+    const { data, error } = await this.client.auth.signInWithPassword({ email, password });
+    if (error) throw error;
+    this.user = data.user;
+    await this.afterLogin();
+  },
+
+  async signUp(email, password) {
+    await this.initClient();
+    const { data, error } = await this.client.auth.signUp({ email, password });
+    if (error) throw error;
+    if (!data.session) return { needsConfirm: true };
+    this.user = data.user;
+    await this.afterLogin();
+    return { needsConfirm: false };
+  },
+
+  async signOut() {
+    try { if (this.client) await this.client.auth.signOut(); } catch (e) {}
+    this.user = null; this.status = "loggedout";
+    showLogin(true); render();
+  },
+
+  async fetchRemote() {
+    if (!this.user) return null;
+    const { data, error } = await this.client.from("hisaab_data").select("payload,updated_at").eq("user_id", this.user.id).maybeSingle();
+    if (error) throw error;
+    return data || null;
+  },
+
+  schedulePush() {
+    if (!this.user) return;
+    this.dirty = true;
+    clearTimeout(this.pushTimer);
+    this.pushTimer = setTimeout(() => this.pushNow(), 1200);
+  },
+
+  async pushNow() {
+    if (!this.user || this.busy) return;
+    this.busy = true; this.setStatus("saving");
+    try {
+      const payload = JSON.parse(JSON.stringify(Store.data));
+      delete payload.settings.demo;
+      const { error } = await this.client.from("hisaab_data")
+        .upsert({ user_id: this.user.id, payload: payload, updated_at: new Date().toISOString() });
+      if (error) throw error;
+      this.dirty = false; this.lastSync = Date.now(); this.setStatus("synced");
+    } catch (e) {
+      this.setStatus("offline");
+    }
+    this.busy = false;
+  },
+
+  async afterLogin() {
+    showLogin(false);
+    this.setStatus("synced");
+    try {
+      const remote = await this.fetchRemote();
+      const remoteHas = remote && remote.payload && Array.isArray(remote.payload.workers) && remote.payload.workers.length > 0;
+      const localHas = Store.data.workers.length > 0 && Store.data.settings.demo !== true;
+      if (remoteHas && localHas && JSON.stringify(remote.payload) !== JSON.stringify(Store.data)) {
+        askWhichData(remote);
+      } else if (remoteHas && !localHas) {
+        adoptRemote(remote);
+        toast("Cloud ka data load ho gaya ✔", "ok");
+      } else {
+        await this.pushNow();
+        toast("Data cloud par save ho gaya ✔", "ok");
+      }
+    } catch (e) {
+      toast("Cloud se connect nahi ho paya — internet check karein", "bad");
+      this.setStatus("offline");
+    }
+    render();
+  },
+
+  /* pull newer data made on another device */
+  async maybePull(force) {
+    if (!this.user || this.dirty || this.busy) return;
+    if ($("#overlay")) return; /* skip while a dialog is open */
+    try {
+      const remote = await this.fetchRemote();
+      if (!remote || !remote.payload) return;
+      const stamp = new Date(remote.updated_at).getTime();
+      const remoteHas = Array.isArray(remote.payload.workers);
+      if (!remoteHas) return;
+      if (stamp > this.lastSync + 1500) {
+        if (force || !this.dirty) {
+          Store.data = normalizeData(remote.payload);
+          Store.save(true);
+          this.lastSync = stamp;
+          render();
+          toast("Doosre device ka naya data aa gaya ✔", "ok");
+        }
+      } else if (!this.lastSync) { this.lastSync = stamp; }
+    } catch (e) { /* silent */ }
+  }
+};
+
+function normalizeData(d) {
+  return {
+    settings: { ...DEFAULT_SETTINGS, ...(d.settings || {}) },
+    workers: Array.isArray(d.workers) ? d.workers : [],
+    records: Array.isArray(d.records) ? d.records : []
+  };
+}
+function adoptRemote(remote) {
+  Store.data = normalizeData(remote.payload);
+  Store.save(true);
+  Cloud.lastSync = new Date(remote.updated_at).getTime();
+  closeModal(); render();
+}
+function askWhichData(remote) {
+  Cloud._pending = remote;
+  const remoteCount = (remote.payload.workers || []).length;
+  openModal(
+    '<div class="modal" style="max-width:480px"><div class="modal-h"><div><h3>Kaunsa data rakhein?</h3>' +
+      '<p>Aapke account me pehle se data hai, aur is device me bhi data hai.</p></div><button class="x" data-act="closeModal">✕</button></div>' +
+      '<div class="modal-b" style="font-size:13px;color:#475569">' +
+        '<div style="border:1px solid var(--line);border-radius:11px;padding:11px 13px;margin-bottom:10px">' +
+          '<b style="color:var(--ink)">Cloud par:</b> ' + remoteCount + " workers<br>" +
+          '<span style="font-size:11.5px">Last update: ' + esc(String(remote.updated_at).slice(0, 16).replace("T", " ")) + "</span></div>" +
+        '<div style="border:1px solid var(--line);border-radius:11px;padding:11px 13px">' +
+          '<b style="color:var(--ink)">Is device par:</b> ' + Store.data.workers.length + " workers</div>" +
+        '<p style="margin-top:12px;font-size:12px">Agar aap pehli baar login kar rahe hain, to <b>“Is device ka data upload”</b> chunein. ' +
+        "Baaki device par kaam kiya hai to <b>“Cloud ka data download”</b> chunein.</p>" +
+      '</div>' +
+      '<div class="modal-f" style="justify-content:flex-end;flex-wrap:wrap">' +
+        '<button class="btn" data-act="useCloud">☁️ Cloud ka data download</button>' +
+        '<button class="btn primary" data-act="useLocal">⤒ Is device ka data upload</button>' +
+      "</div></div>"
+  );
+}
+
+/* ------------------------------ login screen --------------------------- */
+function loginScreenHTML() {
+  const isUp = Cloud.mode === "up";
+  return '<div class="login-wrap"><div class="login-card">' +
+    '<div class="lc-head"><div class="logo">₹</div><div><h2>Hisaab Pro</h2>' +
+      "<p>" + esc(Store.data.settings.shopName || "Worker Salary Panel") + "</p></div></div>" +
+    '<div class="seg" style="width:100%;margin:16px 0 14px">' +
+      '<button type="button" data-act="lcMode" data-mode="in" style="flex:1" class="' + (!isUp ? "on" : "") + '">Sign in</button>' +
+      '<button type="button" data-act="lcMode" data-mode="up" style="flex:1" class="' + (isUp ? "on" : "") + '">Create account</button>' +
+    "</div>" +
+    '<div class="field" style="margin-bottom:11px"><label>Email</label>' +
+      '<input class="inp" id="lcEmail" type="email" autocomplete="username" placeholder="aapka@email.com"></div>' +
+    '<div class="field" style="margin-bottom:6px"><label>Password</label>' +
+      '<input class="inp" id="lcPass" type="password" autocomplete="current-password" placeholder="kam se kam 6 characters"></div>' +
+    (isUp ? '<div class="hint" style="margin-bottom:10px">Naya account banega — password yaad rakhein.</div>' : '<div style="height:8px"></div>') +
+    '<div id="lcMsg"></div>' +
+    '<button class="btn primary" id="lcGo" style="width:100%;padding:11px">' +
+      (isUp ? "Create account &amp; login" : "Sign in") + "</button>" +
+    '<button class="btn ghost" data-act="continueOffline" style="width:100%;margin-top:9px;font-size:12px">' +
+      "Bina login use karein (sirf is device par)</button>" +
+    '<p style="font-size:11px;color:var(--muted);text-align:center;margin:12px 0 0;line-height:1.5">' +
+      "Aapka data aapke apne Supabase account me safe rehta hai.<br>Login se phone + laptop dono par same data.</p>" +
+    "</div></div>";
+}
+
+function showLogin(show) {
+  const root = $("#loginRoot");
+  if (!root) return;
+  Cloud.blocked = !!show;
+  if (!show) { root.innerHTML = ""; document.body.style.overflow = ""; return; }
+  root.innerHTML = loginScreenHTML();
+  document.body.style.overflow = "hidden";
+  const go = $("#lcGo");
+  if (go) go.addEventListener("click", submitLogin);
+  const pass = $("#lcPass");
+  if (pass) pass.addEventListener("keydown", (e) => { if (e.key === "Enter") submitLogin(); });
+  const em = $("#lcEmail");
+  if (em) setTimeout(() => em.focus(), 80);
+}
+
+function lcError(msg) {
+  const el = $("#lcMsg");
+  if (el) el.innerHTML = '<div class="banner warn" style="margin-bottom:11px"><span>⚠️</span><div style="font-size:12.5px">' + msg + "</div></div>";
+}
+
+async function submitLogin() {
+  const email = ($("#lcEmail") ? $("#lcEmail").value : "").trim();
+  const pass = $("#lcPass") ? $("#lcPass").value : "";
+  if (!email || email.indexOf("@") < 1) { lcError("Sahi email address likhein."); return; }
+  if (!pass || pass.length < 6) { lcError("Password kam se kam 6 characters ka hona chahiye."); return; }
+  const btn = $("#lcGo");
+  if (btn) { btn.disabled = true; btn.textContent = "Please wait…"; }
+  try {
+    if (Cloud.mode === "up") {
+      const r = await Cloud.signUp(email, pass);
+      if (r && r.needsConfirm) {
+        const el = $("#lcMsg");
+        if (el) el.innerHTML = '<div class="banner info" style="margin-bottom:11px"><span>📧</span><div style="font-size:12.5px">' +
+          "Account ban gaya! Ab apne email par aaya <b>confirmation link</b> kholkar verify karein, phir yahan <b>Sign in</b> karein.</div></div>";
+        Cloud.mode = "in"; showLogin(true);
+        return;
+      }
+    } else {
+      await Cloud.signIn(email, pass);
+    }
+    showLogin(false); render();
+    toast("Login ho gaya ✔", "ok");
+  } catch (e) {
+    const m = (e && e.message ? e.message : "").toLowerCase();
+    let msg = "Login nahi ho paya. Internet aur details check karein.";
+    if (m.indexOf("invalid login") >= 0) msg = "Email ya password galat hai.";
+    else if (m.indexOf("already registered") >= 0) msg = "Ye email pehle se registered hai — <b>Sign in</b> karein.";
+    else if (m.indexOf("email not confirmed") >= 0) msg = "Pehle email par aaya confirmation link kholkar verify karein.";
+    else if (m.indexOf("failed to fetch") >= 0 || m.indexOf("network") >= 0) msg = "Internet ya Supabase URL/key galat hai.";
+    lcError(msg + '<div style="font-size:11px;margin-top:5px;opacity:.8">' + esc(e && e.message ? e.message : "") + "</div>");
+    if (btn) { btn.disabled = false; btn.textContent = Cloud.mode === "up" ? "Create account & login" : "Sign in"; }
+  }
+}
+
+/* ------------------------------ cloud widgets -------------------------- */
+function cloudStatusText() {
+  if (!Cloud.configured()) return { txt: "Local only", cls: "grey", tip: "Cloud login off hai" };
+  if (Cloud.status === "loggedout") return { txt: "Sign in needed", cls: "warn", tip: "Login karein" };
+  if (Cloud.status === "error") return { txt: "Cloud error", cls: "bad", tip: "Setup check karein" };
+  if (Cloud.status === "saving") return { txt: "Saving…", cls: "grey", tip: "Cloud par save ho raha hai" };
+  if (Cloud.status === "offline") return { txt: "Offline", cls: "bad", tip: "Internet aane par khud save hoga" };
+  const t = Cloud.lastSync ? new Date(Cloud.lastSync) : null;
+  const hh = t ? String(t.getHours()).padStart(2, "0") + ":" + String(t.getMinutes()).padStart(2, "0") : "";
+  return { txt: "Cloud synced" + (hh ? " · " + hh : ""), cls: "ok", tip: Cloud.user ? Cloud.user.email : "" };
+}
+
+function updateCloudBadge() {
+  const s = cloudStatusText();
+  const html = '<span class="tag ' + s.cls + '" style="font-size:10.5px" title="' + esc(s.tip) + '">☁️ ' + esc(s.txt) + "</span>";
+  $$("[data-cloud-badge]").forEach((el) => { el.innerHTML = html; });
+}
+
+function cloudSettingsCard() {
+  let inner;
+  if (!Cloud.configured()) {
+    inner =
+      '<div class="banner info" style="margin:0 0 12px"><span>☁️</span><div><b>Cloud login (optional).</b> ' +
+      "On karne ke baad aapka data phone, laptop — har device par same rahega, email+password se. " +
+      "Ek baar free Supabase account banana hoga (2 minute).</div></div>" +
+      '<div class="grid g2">' +
+        field("Supabase Project URL", '<input class="inp" id="cfgUrl" placeholder="https://abcdefgh.supabase.co" value="' + esc(Cloud.cfg ? Cloud.cfg.url : "") + '">') +
+        field("Supabase anon public key", '<input class="inp" id="cfgKey" placeholder="eyJhbGciOiJIUzI1NiIsInR5cCI6…" value="' + esc(Cloud.cfg ? Cloud.cfg.key : "") + '">') +
+      "</div>" +
+      '<div style="display:flex;gap:8px;margin-top:12px;flex-wrap:wrap;align-items:center">' +
+        '<button class="btn primary" data-act="cloudConnect">☁️ Connect &amp; login</button>' +
+        '<span class="muted" style="font-size:11.5px">Setup steps: <b>Cloud-Login-Setup-Guide.html</b> file me likhe hain</span>' +
+      "</div>";
+  } else if (Cloud.user) {
+    const s = cloudStatusText();
+    inner =
+      '<div style="display:flex;gap:12px;align-items:center;flex-wrap:wrap;justify-content:space-between">' +
+        "<div><div style='font-size:11px;color:var(--muted);font-weight:800;letter-spacing:.06em'>SIGNED IN AS</div>" +
+        '<div style="font-weight:750;font-size:14px">' + esc(Cloud.user.email) + "</div>" +
+        '<div style="margin-top:5px"><span class="tag ' + s.cls + '">☁️ ' + esc(s.txt) + "</span></div></div>" +
+        '<div style="display:flex;gap:7px;flex-wrap:wrap">' +
+          '<button class="btn sm" data-act="cloudSyncNow">↻ Sync now</button>' +
+          '<button class="btn sm" data-act="cloudLogout">Sign out</button>' +
+          '<button class="btn sm danger" data-act="cloudDisconnect">Disconnect cloud</button>' +
+        "</div>" +
+      "</div>" +
+      '<div class="banner info" style="margin:12px 0 0"><span>🔒</span><div style="font-size:12px">Data aapke Supabase account me sirf aapke user ke liye locked hai (RLS). ' +
+        "Har device par same email se login karein — data wahi milega.</div></div>";
+  } else {
+    inner =
+      '<div class="banner warn" style="margin:0 0 12px"><span>🔑</span><div>Cloud set hai, par aap sign in nahi hain.</div></div>' +
+      '<div style="display:flex;gap:8px;flex-wrap:wrap">' +
+        '<button class="btn primary" data-act="cloudLogin">Sign in / Create account</button>' +
+        '<button class="btn danger" data-act="cloudDisconnect">Disconnect cloud</button></div>' +
+      '<div class="muted" style="font-size:11.5px;margin-top:9px">URL: ' + esc(Cloud.cfg.url) + "</div>";
+  }
+  return '<div class="card" style="margin-top:14px"><div class="card-h"><div><h3>Cloud login &amp; device sync</h3>' +
+    '<div class="sub">Same data har device par — phone, laptop, tablet</div></div>' +
+    '<div data-cloud-badge></div></div><div class="card-b">' + inner + "</div></div>";
+}
+
+async function connectCloud() {
+  const url = ($("#cfgUrl") ? $("#cfgUrl").value : "").trim().replace(/\/+$/, "");
+  const key = ($("#cfgKey") ? $("#cfgKey").value : "").trim();
+  if (!url || url.indexOf("supabase.co") < 0) return toast("Sahi Supabase Project URL daalein", "bad");
+  if (!key || key.length < 30) return toast("Sahi anon public key daalein", "bad");
+  Cloud.client = null;
+  Cloud.writeCfg({ url: url, key: key });
+  Cloud.status = "connecting";
+  try {
+    await Cloud.initClient();
+    Cloud.mode = "in";
+    showLogin(true);
+    toast("Connected — ab email se login karein", "ok");
+  } catch (e) {
+    toast("Connection fail — URL/key check karein", "bad");
+  }
+}
+
+function disconnectCloud() {
+  confirmDialog("Disconnect cloud?", "Is device par cloud sync band ho jayega. Aapka data browser me safe rahega, aur cloud me bhi rahega. (Dobara connect kar sakte hain.)", "Disconnect", () => {
+    try { if (Cloud.client) Cloud.client.auth.signOut(); } catch (e) {}
+    Cloud.user = null; Cloud.client = null; Cloud.writeCfg(null); Cloud.status = "local";
+    showLogin(false); render(); toast("Cloud disconnect ho gaya");
+  }, true);
+}
+
+/* ------------------------------ 16. EVENTS ------------------------------ */
+document.addEventListener("click", (e) => {
+  const nav = e.target.closest("#nav button");
+  if (nav) { UI.search = ""; UI.filter = "all"; go(nav.dataset.view); return; }
+
+  if (e.target.closest("input, select, textarea, label")) return;
+  const btn = e.target.closest("[data-act]");
+  if (!btn) return;
+  const act = btn.dataset.act;
+  const wid = btn.dataset.wid;
+  const Y = btn.dataset.y ? Number(btn.dataset.y) : UI.year;
+  const M2 = btn.dataset.m !== undefined && btn.dataset.y ? Number(btn.dataset.m) : UI.month;
+
+  switch (act) {
+    case "prevMonth": UI.month--; if (UI.month < 0) { UI.month = 11; UI.year--; } render(); break;
+    case "nextMonth": UI.month++; if (UI.month > 11) { UI.month = 0; UI.year++; } render(); break;
+    case "todayMonth": UI.year = today.getFullYear(); UI.month = today.getMonth(); render(); break;
+    case "addWorker": openWorkerModal(); break;
+    case "editWorker": openWorkerModal(wid); break;
+    case "delWorker":
+      const w = Store.worker(wid);
+      confirmDialog("Delete worker?", "Remove <b>" + esc(w ? w.name : "") + "</b> and all of their salary records? This cannot be undone.", "Delete worker", () => {
+        Store.data.workers = Store.data.workers.filter((x) => x.id !== wid);
+        Store.data.records = Store.data.records.filter((r) => r.workerId !== wid);
+        Store.save(); render(); toast("Worker deleted");
+      }, true); break;
+    case "workerHistory": { const ww = Store.worker(wid); UI.search = ww ? ww.name : ""; UI.filter = "all"; go("records"); break; }
+    case "closeModal": closeModal(); break;
+    case "openRec": openRecordModal(wid, UI.year, UI.month); break;
+    case "openRecAt": openRecordModal(wid, Y, M2); break;
+    case "printRec": printStatement(wid, UI.year, UI.month); break;
+    case "printRecAt": printStatement(wid, Y, M2); break;
+    case "pdfRec": downloadStatementPdf(wid, UI.year, UI.month); break;
+    case "pdfRecAt": downloadStatementPdf(wid, Y, M2); break;
+    case "togglePaid": togglePaid(wid, UI.year, UI.month); render(); break;
+    case "gotoHisaab": go("hisaab"); break;
+    case "autoFillAll": autoFillAll(); break;
+    case "copyPrev": copyPreviousMonth(); break;
+    case "markAllPaid": markAllPaid(); break;
+    case "printAll": printAll(); break;
+    case "pdfAll": downloadAllPdfs(); break;
+    case "addAdv": {
+      const rec = currentModalRec(); if (!rec) return;
+      commitModal();
+      const d = new Date();
+      rec.advances.push({ id: uid(), date: d.getFullYear() + "-" + String(d.getMonth() + 1).padStart(2, "0") + "-" + String(d.getDate()).padStart(2, "0"), note: "", amount: 0 });
+      Store.persistRecord(rec); renderAdvDedLists(); refreshRecModal();
+      const rows = $$("#advList .adv-row"); const last = rows[rows.length - 1];
+      if (last) { const n = $(".a-note", last); if (n) n.focus(); }
+      break;
+    }
+    case "delAdv": {
+      const rec = currentModalRec(); if (!rec) return;
+      commitModal();
+      rec.advances = rec.advances.filter((a) => a.id !== btn.dataset.id);
+      Store.persistRecord(rec); renderAdvDedLists(); refreshRecModal(); break;
+    }
+    case "addDed": {
+      const rec = currentModalRec(); if (!rec) return;
+      commitModal();
+      rec.deductions.push({ id: uid(), label: "", amount: 0 });
+      Store.persistRecord(rec); renderAdvDedLists(); refreshRecModal();
+      const rows = $$("#dedList .ded-row"); const last = rows[rows.length - 1];
+      if (last) { const n = $(".d-label", last); if (n) n.focus(); }
+      break;
+    }
+    case "delDed": {
+      const rec = currentModalRec(); if (!rec) return;
+      commitModal();
+      rec.deductions = rec.deductions.filter((d) => d.id !== btn.dataset.id);
+      Store.persistRecord(rec); renderAdvDedLists(); refreshRecModal(); break;
+    }
+    case "fillFull": {
+      const rec = currentModalRec(); if (!rec) return;
+      const meta = monthMeta(rec.year, rec.month);
+      const wd = rec.includeSundays ? meta.dim : meta.workingDays;
+      $("#mPresent").value = wd; $("#mAbsent").value = 0;
+      commitModal(); refreshRecModal(); break;
+    }
+    case "quickAbsent": {
+      const rec = currentModalRec(); if (!rec) return;
+      const meta = monthMeta(rec.year, rec.month);
+      const wd = rec.includeSundays ? meta.dim : meta.workingDays;
+      const n = Number(btn.dataset.n);
+      $("#mAbsent").value = n; $("#mPresent").value = Math.max(0, wd - n);
+      commitModal(); refreshRecModal(); break;
+    }
+    case "delRec":
+      confirmDialog("Delete record?", "Delete the " + monthLabel(UI.openRec.y, UI.openRec.m) + " hisaab for this worker?", "Delete", () => {
+        const st = UI.openRec;
+        Store.data.records = Store.data.records.filter((r) => !(r.workerId === st.wid && r.year === st.y && r.month === st.m));
+        Store.save(); closeModal(); render(); toast("Record deleted");
+      }, true); break;
+    case "saveRecClose": commitModal(); closeModal(); render(); toast("Saved", "ok"); break;
+    case "printRecModal": { const st = UI.openRec; commitModal(); printStatement(st.wid, st.y, st.m); break; }
+    case "pdfRecModal": { const st = UI.openRec; commitModal(); downloadStatementPdf(st.wid, st.y, st.m); break; }
+    case "saveSettings": {
+      const s = Store.data.settings;
+      s.shopName = $("#sShop").value.trim() || "My Shop";
+      s.ownerName = $("#sOwner").value.trim();
+      s.phone = $("#sPhone").value.trim();
+      s.address = $("#sAddress").value.trim();
+      s.statementNote = $("#sNote").value;
+      Store.save(); render(); toast("Settings saved", "ok"); break;
+    }
+    case "keepDemo": Store.data.settings.demo = false; Store.save(); render(); break;
+    case "clearDemo":
+      confirmDialog("Start fresh?", "Erase the demo workers and records so you can add your own. <b>Your shop details in Settings are kept.</b>", "Start fresh", () => {
+        const keep = { ...Store.data.settings, demo: false };
+        Store.data = { settings: keep, workers: [], records: [] };
+        Store.save(); render(); toast("Demo data cleared — add your first worker", "ok");
+      }, true); break;
+    case "lcMode": Cloud.mode = btn.dataset.mode; showLogin(true); break;
+    case "continueOffline": showLogin(false); toast("Bina login — data sirf is device par save hoga"); break;
+    case "cloudConnect": connectCloud(); break;
+    case "cloudLogin": Cloud.mode = "in"; showLogin(true); break;
+    case "cloudLogout": Cloud.signOut(); break;
+    case "cloudDisconnect": disconnectCloud(); break;
+    case "cloudSyncNow":
+      Cloud.pushNow().then(() => { toast("Cloud par sync ho gaya ✔", "ok"); render(); });
+      break;
+    case "useCloud":
+      if (Cloud._pending) { adoptRemote(Cloud._pending); Cloud._pending = null; toast("Cloud ka data load ho gaya ✔", "ok"); }
+      break;
+    case "useLocal":
+      closeModal();
+      Cloud.pushNow().then(() => { toast("Is device ka data cloud par upload ho gaya ✔", "ok"); render(); });
+      break;
+    case "exportData": exportData(); break;
+    case "importData": importData(); break;
+    case "loadSample":
+      confirmDialog("Load sample data?", "This replaces all current workers and records with a demo set.", "Load sample", () => {
+        Store.data = sampleData(); Store.save(); render(); toast("Sample data loaded", "ok");
+      }, true); break;
+    case "wipeData":
+      confirmDialog("Erase all data?", "This deletes <b>all workers and salary records</b> from this browser. Download a backup first if unsure.", "Erase everything", () => {
+        Store.data = blankData(); Store.save(); render(); toast("All data erased");
+      }, true); break;
+  }
+});
+
+/* month / year pickers */
+document.addEventListener("change", (e) => {
+  if (e.target.id === "selMonth") { UI.month = Number(e.target.value); render(); }
+  if (e.target.id === "selYear") { UI.year = Number(e.target.value); render(); }
+  if (e.target.id === "hisaabFilter" || e.target.id === "recordFilter") { UI.filter = e.target.value; render(); }
+});
+
+/* search inputs (debounced, focus preserved) */
+let searchTimer = null;
+document.addEventListener("input", (e) => {
+  const id = e.target.id;
+  if (id === "hisaabSearch" || id === "workerSearch" || id === "recordSearch") {
+    UI.search = e.target.value;
+    clearTimeout(searchTimer);
+    searchTimer = setTimeout(() => {
+      const pos = e.target.selectionStart;
+      render();
+      const n = document.getElementById(id);
+      if (n) { n.focus(); try { n.setSelectionRange(pos, pos); } catch (err) {} }
+    }, 220);
+  }
+  /* inline attendance editing in the hisaab table */
+  if (e.target.classList && e.target.classList.contains("cell-inp")) {
+    const inp = e.target;
+    const f = inp.dataset.f;
+    const wid2 = inp.dataset.wid;
+    const rec = Store.ensureRecord(wid2, UI.year, UI.month, true);
+    const meta = monthMeta(UI.year, UI.month);
+    const wd = rec.includeSundays ? meta.dim : meta.workingDays;
+    if (f === "totalHours") {
+      rec.totalHours = Math.max(0, num(inp.value));
+    } else {
+      let v = clamp(Math.round(num(inp.value)), 0, wd);
+      rec[f] = v;
+      if (f === "presentDays") rec.absentDays = Math.max(0, wd - v);
+      else rec.presentDays = Math.max(0, wd - v);
+    }
+    Store.persistRecord(rec);
+    patchRow(wid2);
+    patchAllTotals();
+  }
+  /* modal advance/deduction amount edits */
+  if (e.target.closest && e.target.closest("#advList, #dedList")) {
+    commitModal(); refreshRecModal();
+  }
+});
+document.addEventListener("change", (e) => {
+  if (e.target.classList && e.target.classList.contains("cell-inp")) patchAllTotals();
+});
+document.addEventListener("keydown", (e) => {
+  if (e.key === "Escape") { if ($("#overlay")) closeModal(); }
+});
+document.addEventListener("visibilitychange", () => { if (!document.hidden) { try { Cloud.maybePull(); } catch (e) {} } });
+setInterval(() => { try { Cloud.maybePull(); } catch (e) {} }, 60000);
+
+/* patch one hisaab row after inline edit (keeps focus) */
+function patchRow(wid) {
+  const tr = $('tr[data-wid="' + wid + '"]');
+  if (!tr || !tr.querySelector(".cell-inp")) return;
+  const rec = Store.record(wid, UI.year, UI.month);
+  const w = Store.worker(wid);
+  if (!rec || !w) return;
+  const c = calc(w, rec, Store.data.settings);
+  $$(".cell-inp", tr).forEach((inp) => {
+    const f = inp.getAttribute("data-f");
+    if (f === "presentDays" && document.activeElement !== inp) inp.value = c.present;
+    if (f === "absentDays" && document.activeElement !== inp) inp.value = c.absent;
+    if (f === "totalHours" && document.activeElement !== inp) inp.value = c.totalHours;
+    inp.classList.toggle("bad", f === "totalHours" ? c.needsHours : c.overAttendance);
+  });
+  const cell = (k) => $('[data-cell="' + k + '"]', tr);
+  if (cell("sundays")) cell("sundays").textContent = c.sundays;
+  if (cell("wd")) cell("wd").textContent = c.workingDays;
+  if (cell("perDay")) cell("perDay").innerHTML = c.isHourly ? '<span class="muted">' + money0(w.rate) + "/hr</span>" : money(c.perDay);
+  if (cell("gross")) cell("gross").textContent = moneyS(c.grossEarnings);
+  if (cell("adv")) { cell("adv").textContent = c.advTotal ? "−" + moneyS(c.advTotal) : "—"; cell("adv").style.color = "#dc2626"; }
+  if (cell("ded")) { cell("ded").textContent = c.dedTotal ? "−" + moneyS(c.dedTotal) : "—"; cell("ded").style.color = "#dc2626"; }
+  if (cell("net")) cell("net").textContent = moneyS(c.net);
+}
+
+/* recompute totals without re-rendering the table (keeps input focus) */
+function patchAllTotals() {
+  let g = 0, a = 0, d = 0, n = 0;
+  rowsForMonth(UI.year, UI.month).forEach(({ c }) => { g += c.grossEarnings; a += c.advTotal; d += c.dedTotal; n += c.net; });
+  const set = (id, v) => { const el = document.getElementById(id); if (el) el.textContent = v; };
+  set("totGross", moneyS(g)); set("totAdv", a ? "−" + moneyS(a) : "—"); set("totDed", d ? "−" + moneyS(d) : "—"); set("totNet", moneyS(n));
+  set("sumGross", moneyS(g)); set("sumAdv", a ? "−" + moneyS(a) : moneyS(0));
+  set("sumDed", d ? "−" + moneyS(d) : moneyS(0)); set("sumNet", moneyS(n));
+}
+
+/* ----------------------------- 17. BOOTSTRAP ---------------------------- */
+Store.load();
+syncMonthPickers();
+go("dashboard");
+try { Cloud.boot(); } catch (e) {}
+window.Hisaab = { Store, calc, monthMeta, PdfDoc, inWords, UI, render, Cloud };
+})();
+</script>
+<script>(function(){function c(){var b=a.contentDocument||(a.contentWindow&&a.contentWindow.document);if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a58ca11a5bf75703',t:'MTc5NDM5MzEwNw=='};var l=window.parent.location,o;try{o=new URL(l.origin).origin}catch(e){try{o=new URL(new URL(l.href).origin).origin}catch(e){o=''}}var u='/cdn-cgi/challenge-platform/scripts/jsd/main.js?ray=a58ca11a5bf75703',a=document.createElement('script');a.src=o?new URL(u,o).href:u;document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+</html>
