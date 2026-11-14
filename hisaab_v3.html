@@ -664,13 +664,29 @@ table.tbl td.num, table.tbl td .tag{white-space:nowrap}
 .ct-datebar{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
 .ct-datebar input[type="date"].inp{width:auto;min-width:162px;font-weight:750;font-family:inherit}
 .ct-items{display:flex;flex-direction:column;gap:7px;overflow-x:auto;-webkit-overflow-scrolling:touch;padding-bottom:2px}
-.ct-rowhead,.ct-row{display:grid;grid-template-columns:minmax(150px,1.9fr) 76px 92px 104px 108px 30px;gap:7px;align-items:center;min-width:580px}
+.ct-rowhead,.ct-row{display:grid;grid-template-columns:minmax(150px,1.9fr) 76px 92px 158px 112px 30px;gap:7px;align-items:center;min-width:640px}
 .ct-rowhead{font-size:9.7px;font-weight:800;letter-spacing:.07em;text-transform:uppercase;color:var(--faint);margin-bottom:3px}
 .ct-rowhead span:nth-child(5){text-align:right}
 .ct-row .inp{padding:8px 9px;font-size:12.6px}
 .ct-row select.inp{padding-right:26px}
 .ct-row .amt{text-align:right;font-weight:800;font-size:12.8px;font-variant-numeric:tabular-nums;color:var(--ink);white-space:nowrap}
 .ct-row .amt.zero{color:var(--faint);font-weight:700}
+.ct-row .amt small{display:block;font-size:9.7px;font-weight:750;color:var(--muted);letter-spacing:.01em;margin-top:1px;white-space:nowrap}
+.ct-price{display:flex;gap:5px;align-items:center;min-width:0}
+.ct-price .inp{flex:1 1 auto;min-width:50px}
+select.ct-pm{
+  flex:0 0 auto;border:1px solid var(--line);background:var(--surface-2);color:var(--ink-2);
+  border-radius:8px;padding:8px 3px;font-size:10.2px;font-weight:800;font-family:inherit;cursor:pointer;
+  outline:none;flex:0 1 auto;max-width:94px;transition:.14s;white-space:nowrap;text-overflow:ellipsis
+}
+select.ct-pm:hover{border-color:color-mix(in srgb,var(--primary) 34%,var(--line))}
+select.ct-pm:focus{border-color:var(--primary);box-shadow:0 0 0 3px color-mix(in srgb,var(--primary) 14%,transparent)}
+select.ct-pm option{font-size:11.5px;font-weight:700}
+.ct-tip{display:flex;gap:9px;align-items:flex-start;background:var(--primary-soft);
+  border:1px solid color-mix(in srgb,var(--primary) 22%,var(--line));border-radius:11px;
+  padding:9px 12px;font-size:11.5px;color:var(--ink-2);margin-bottom:10px;line-height:1.55}
+.ct-tip b{color:var(--ink)}
+.ct-tip span{font-size:13px;line-height:1.2}
 .ct-row .del{width:28px;height:28px;border-radius:8px;border:1px solid var(--line);background:var(--surface);color:var(--bad);cursor:pointer;font-size:13px;line-height:1}
 .ct-row .del:hover{background:var(--bad-soft);border-color:transparent}
 .ct-lump{display:flex;gap:12px;align-items:center;flex-wrap:wrap;background:var(--primary-soft);
@@ -725,6 +741,10 @@ table.tbl td.num, table.tbl td .tag{white-space:nowrap}
   .ct-totalbox{margin-left:0;text-align:left;width:100%}
   .ct-datebar input[type="date"].inp{flex:1;min-width:0}
   .ct-act .am{margin-left:0;width:100%;text-align:left}
+  .ct-price{flex-wrap:wrap}
+  .ct-price .inp{flex:1 1 100%}
+  select.ct-pm{flex:1 1 100%;max-width:none;text-align:center}
+  .ct-tip{font-size:11px;padding:8px 10px}
 }
 @media print{
   .ct-print-hide{display:none !important}
@@ -802,7 +822,7 @@ const uid = () => Math.random().toString(36).slice(2, 10) + Date.now().toString(
 const num = (v) => { const n = parseFloat(v); return isFinite(n) ? n : 0; };
 const r2 = (n) => Math.round((n + Number.EPSILON) * 100) / 100;
 const clamp = (n, lo, hi) => Math.min(hi, Math.max(lo, n));
-const APP_VERSION = "3.1";
+const APP_VERSION = "3.2";
 const esc = (s) => String(s == null ? "" : s).replace(/[&<>"']/g, (m) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[m]));
 
 const MONTHS = ["January","February","March","April","May","June","July","August","September","October","November","December"];
@@ -2060,6 +2080,7 @@ function viewSettings(){
 
     '<div style="text-align:center;font-size:11.5px;color:var(--muted);margin-top:18px;line-height:1.7">'+
       'Panel <b style="color:var(--ink)">v<span data-ver></span></b> · Auto-update enabled<br>'+
+      'v3.2 — <b style="color:var(--ink)">Canteen price-mode fix</b>: har item line par chunaav — <b>₹ / unit</b> ya <b>₹ poori line</b>. 4 kg Maggi = ₹360 likho to total ₹360 hi rahega, rate apne aap ₹90/kg<br>'+
       'v3.1 — <b style="color:var(--ink)">Canteen module</b>: saman entry (rate-wise ya ek-saath total), din &amp; mahine ka ledger, rate list, udhaar/baki, poori activity log'+
     '</div>'
   );
@@ -3451,21 +3472,51 @@ function ctTime(ts) {
 /* ------------------------- 21b. DATA SHAPE ------------------------- */
 function blankCanteen() { return { entries: [], rates: [], log: [], demo: false }; }
 
+/* Item ka price do tarah se likha ja sakta hai:
+   - "unit"  : price = 1 unit (1 kg) ka daam  -> amount = qty × rate
+   - "line"  : price = POORI line ka total    -> amount = lineTotal, rate = lineTotal ÷ qty
+   Canonical fields: rate hamesha PER-UNIT hota hai; line mode me wo khud nikalta hai. */
 function normCtItem(i) {
   i = i || {};
+  const qty = Math.max(0, num(i.qty));
+  const unit = String(i.unit == null || i.unit === "" ? "kg" : i.unit).slice(0, 18);
+  const priceMode = i.priceMode === "line" ? "line" : "unit";
+  let rate = Math.max(0, num(i.rate));
+  let lineTotal = Math.max(0, num(i.lineTotal));
+  if (priceMode === "line") {
+    /* poori line ka total likha hai — per-unit rate isi se banta hai (360 ÷ 4 = 90/kg) */
+    rate = qty > 0 ? lineTotal / qty : lineTotal;
+  } else {
+    lineTotal = qty * rate;
+  }
   return {
     name: String(i.name == null ? "" : i.name).slice(0, 90),
-    qty: Math.max(0, num(i.qty)),
-    unit: String(i.unit == null || i.unit === "" ? "kg" : i.unit).slice(0, 18),
-    rate: Math.max(0, num(i.rate))
+    qty: qty,
+    unit: unit,
+    rate: r2(rate),
+    lineTotal: r2(lineTotal),
+    priceMode: priceMode
   };
+}
+/* kisi item line ka asli amount — mode ke hisaab se */
+function ctItemAmt(i) {
+  i = i || {};
+  if (i.priceMode === "line") return r2(Math.max(0, num(i.lineTotal)));
+  return r2(Math.max(0, num(i.qty)) * Math.max(0, num(i.rate)));
+}
+/* line mode me per-unit rate (dikhane / rate list ke liye) */
+function ctItemUnitRate(i) {
+  i = i || {};
+  const q = Math.max(0, num(i.qty));
+  if (i.priceMode === "line") return q > 0 ? r2(Math.max(0, num(i.lineTotal)) / q) : r2(Math.max(0, num(i.lineTotal)));
+  return r2(Math.max(0, num(i.rate)));
 }
 function normCtEntry(e) {
   e = e || {};
   const kind = CT_KINDS.indexOf(e.kind) >= 0 ? e.kind : "purchase";
   const mode = e.mode === "total" ? "total" : "itemized";
   const items = (Array.isArray(e.items) ? e.items : []).map(normCtItem);
-  const itemsTotal = r2(items.reduce((t, i) => t + i.qty * i.rate, 0));
+  const itemsTotal = r2(items.reduce((t, i) => t + ctItemAmt(i), 0));
   const amount = r2(Math.max(0, mode === "total" ? num(e.amount) : (num(e.amount) || itemsTotal)));
   const payMode = CT_PAY[e.payMode] ? e.payMode : "cash";
   return {
@@ -3528,7 +3579,7 @@ function ctKindOf(e) { return CT_KIND[(e && e.kind) || "purchase"] || CT_KIND.pu
 function ctAmount(e) { return r2(Math.max(0, num(e && e.amount))); }
 function ctPaid(e) { return r2(clamp(num(e && e.paid), 0, 1e12)); }
 function ctBalance(e) { return r2(Math.max(0, ctAmount(e) - Math.min(ctPaid(e), ctAmount(e)))); }
-function ctItemsSum(e) { return r2(((e && e.items) || []).reduce((t, i) => t + num(i.qty) * num(i.rate), 0)); }
+function ctItemsSum(e) { return r2(((e && e.items) || []).reduce((t, i) => t + ctItemAmt(i), 0)); }
 function ctNetOf(e) { return r2(ctKindOf(e).sign * ctAmount(e)); }
 function ctItemCount(e) { return ((e && e.items) || []).filter((i) => i.name || i.qty || i.rate).length; }
 function ctItemLabel(e) {
@@ -3619,16 +3670,17 @@ function ctItemAgg(list) {
       if (!nm) return;
       const unit = String(i.unit || "kg");
       const key = nm.toLowerCase() + "|" + unit.toLowerCase();
-      const cur = map.get(key) || { name: nm, unit: unit, qty: 0, amt: 0, n: 0, lastRate: 0, lastDate: "", kind: e.kind };
+      const cur = map.get(key) || { name: nm, unit: unit, qty: 0, amt: 0, n: 0, lastRate: 0, lastDate: "", kind: e.kind, lineItems: 0 };
       cur.qty += num(i.qty);
-      cur.amt += num(i.qty) * num(i.rate);
+      cur.amt += ctItemAmt(i);
       cur.n += 1;
-      if (!cur.lastDate || e.date >= cur.lastDate) { cur.lastDate = e.date; cur.lastRate = num(i.rate); }
+      if (i.priceMode === "line") cur.lineItems += 1;
+      if (!cur.lastDate || e.date >= cur.lastDate) { cur.lastDate = e.date; cur.lastRate = ctItemUnitRate(i); }
       map.set(key, cur);
     });
   });
   const out = Array.from(map.values()).map((x) => ({
-    name: x.name, unit: x.unit, kind: x.kind, n: x.n,
+    name: x.name, unit: x.unit, kind: x.kind, n: x.n, lineItems: x.lineItems || 0,
     qty: r2(x.qty), amt: r2(x.amt), lastRate: r2(x.lastRate), lastDate: x.lastDate,
     avgRate: x.qty ? r2(x.amt / x.qty) : 0
   }));
@@ -3681,10 +3733,11 @@ function ctSyncRates(entry, ratesArr) {
   const rates = Array.isArray(ratesArr) ? ratesArr : ct().rates;
   (entry.items || []).forEach((i) => {
     const nm = String(i.name || "").trim();
-    if (!nm || num(i.rate) <= 0) return;
+    const perUnit = ctItemUnitRate(i);      /* line mode me bhi per-unit rate hi save hota hai */
+    if (!nm || perUnit <= 0) return;
     const hit = rates.find((r) => String(r.name).trim().toLowerCase() === nm.toLowerCase());
-    if (hit) { hit.rate = r2(num(i.rate)); if (i.unit) hit.unit = i.unit; }
-    else rates.push(normCtRate({ name: nm, unit: i.unit || "kg", rate: num(i.rate), cat: "" }));
+    if (hit) { hit.rate = r2(perUnit); if (i.unit) hit.unit = i.unit; }
+    else rates.push(normCtRate({ name: nm, unit: i.unit || "kg", rate: perUnit, cat: "" }));
   });
 }
 function ctLastRateInfo(name) {
@@ -3742,8 +3795,10 @@ function sampleCanteen(y, m, pm) {
   /* rate-wise entry: har item ka qty + rate */
   mk({ date: dstr(Math.max(1, todayD - 3)), kind: "purchase", party: "Sabzi Mandi — Ramesh", billNo: "SM-204", mode: "itemized",
        items: [ { name: "Aata", qty: 20, unit: "kg", rate: 42 }, { name: "Cheeni", qty: 10, unit: "kg", rate: 46 },
-                { name: "Chai patti", qty: 5, unit: "kg", rate: 260 }, { name: "Doodh", qty: 30, unit: "ltr", rate: 58 } ],
-       paid: 2000, payMode: "cash", note: "Hafte ka saman" });
+                { name: "Chai patti", qty: 5, unit: "kg", rate: 260 }, { name: "Doodh", qty: 30, unit: "ltr", rate: 58 },
+                /* poori line ka total: 4 kg Maggi = ₹360 (₹90/kg apne aap) */
+                { name: "Maggi", qty: 4, unit: "kg", rate: 0, lineTotal: 360, priceMode: "line" } ],
+       paid: 2000, payMode: "cash", note: "Hafte ka saman — Maggi poori line ke total se" });
   /* ek-saath total: item ka rate nahi likha, sirf pura bill ka total */
   mk({ date: dstr(Math.max(1, todayD - 2)), kind: "purchase", party: "Kirana Store — Gupta ji", billNo: "", mode: "total",
        items: [ { name: "Namak, tel, masala, biscuit", qty: 1, unit: "pkt", rate: 0 } ],
@@ -3928,7 +3983,8 @@ function ctDayLedger() {
 
   const totModeSum = r2(totalMode.reduce((s, e) => s + ctAmount(e), 0));
   const itemRows = items.map((i) =>
-    "<tr><td>" + esc(i.name) + "</td>" +
+    "<tr><td>" + esc(i.name) +
+      (i.lineItems ? ' <span class="ct-modeTag tot" title="' + i.lineItems + ' line poori-line total se likhi gayi — rate yahan se nikla hai">Σ</span>' : "") + "</td>" +
     '<td class="num strong">' + num(i.qty) + "</td>" +
     '<td class="muted">' + esc(i.unit) + "</td>" +
     '<td class="num">' + (i.avgRate ? moneyS(i.avgRate) : "—") + "</td>" +
@@ -4078,7 +4134,9 @@ function ctMonthLedger() {
           "<th>Item</th>" + '<th class="num">Qty</th><th class="num">Avg rate</th><th class="num">Amount</th><th></th>' +
           "</tr></thead><tbody>" +
           items.slice(0, 14).map((i) =>
-            "<tr><td>" + esc(i.name) + ' <span class="muted" style="font-size:11px">' + esc(i.unit) + " · " + i.n + "×</span></td>" +
+            "<tr><td>" + esc(i.name) +
+              (i.lineItems ? ' <span class="ct-modeTag tot" title="' + i.lineItems + ' line poori-line total se">Σ</span>' : "") +
+              ' <span class="muted" style="font-size:11px">' + esc(i.unit) + " · " + i.n + "×</span></td>" +
             '<td class="num strong">' + num(i.qty) + "</td>" +
             '<td class="num">' + moneyS(i.avgRate) + "</td>" +
             '<td class="num strong">' + moneyS(i.amt) + "</td>" +
@@ -4340,11 +4398,11 @@ function ctDefaultDate() {
   if (dp.y === UI.year && dp.m === UI.month) return u.date;
   return monthFirst(UI.year, UI.month);
 }
-function ctBlankItem() { return { name: "", qty: 1, unit: "kg", rate: 0 }; }
+function ctBlankItem() { return { name: "", qty: 1, unit: "kg", rate: 0, lineTotal: 0, priceMode: "unit" }; }
 function ctDraftAmount(d) {
   if (!d) return 0;
   if (d.mode === "total") return r2(Math.max(0, num(d.amount)));
-  return r2((d.items || []).reduce((t, i) => t + num(i.qty) * num(i.rate), 0));
+  return r2((d.items || []).reduce((t, i) => t + ctItemAmt(i), 0));
 }
 
 function openCtModal(id, dateOverride) {
@@ -4458,7 +4516,11 @@ function ctItemsWrapHTML() {
         '<span class="ct-note">Total mode me rate column band rehta hai — sirf naam aur qty yaad rakhne ke liye.</span>' +
       "</div>";
   }
-  return '<div class="ct-rowhead"><span>Item ka naam</span><span>Qty</span><span>Unit</span><span>Rate ₹</span><span>Amount</span><span></span></div>' +
+  return '<div class="ct-tip"><span>💡</span><div><b>Price kaise likhein:</b> default me price = <b>1 unit ka daam</b> ' +
+      "(₹/kg) aur amount = qty × price. Agar parche par <b>poori line ka total</b> likha hai — jaise " +
+      "<b>4 kg Maggi = ₹360</b> — to us line ke select me <b>“₹ poori line”</b> chuno: amount ₹360 rahega aur " +
+      "rate apne aap <b>₹90/kg</b> ban jayega.</div></div>" +
+    '<div class="ct-rowhead"><span>Item ka naam</span><span>Qty</span><span>Unit</span><span>Price ₹ + mode</span><span>Amount</span><span></span></div>' +
     '<div class="ct-items" id="ctItems">' + rows + "</div>" +
     '<div style="display:flex;gap:9px;align-items:center;flex-wrap:wrap;margin-top:10px">' +
       '<button class="btn sm primary" data-act="ctAddItem">＋ Item add karo</button>' +
@@ -4469,21 +4531,49 @@ function ctItemsWrapHTML() {
 }
 
 function ctRowHTML(i, it, isTotal) {
-  const amt = isTotal ? null : r2(num(it.qty) * num(it.rate));
+  const amt = isTotal ? null : ctItemAmt(it);
   const units = CT_UNITS.slice();
   if (it.unit && units.indexOf(it.unit) < 0) units.push(it.unit);
   const unitSel = '<select class="inp" data-ct-item="' + i + '" data-ct-f="unit">' +
     units.map((u) => '<option value="' + esc(u) + '"' + (u === (it.unit || "kg") ? " selected" : "") + ">" + esc(u) + "</option>").join("") + "</select>";
+  const pm = it.priceMode === "line" ? "line" : "unit";
+  const unitLbl = String(it.unit || "kg");
+  const priceCell = isTotal
+    ? '<input class="inp" value="—" disabled style="text-align:center;color:var(--faint)" title="Ek-saath total mode me item ka rate nahi likhte">'
+    : '<div class="ct-price">' +
+        '<input class="inp" type="number" min="0" step="0.5" placeholder="' + (pm === "line" ? "Poori line ₹" : "Rate ₹") +
+          '" value="' + (pm === "line" ? (num(it.lineTotal) || "") : (num(it.rate) || "")) +
+          '" data-ct-item="' + i + '" data-ct-f="' + (pm === "line" ? "lineTotal" : "rate") + '">' +
+        '<select class="ct-pm" data-ct-item="' + i + '" data-ct-f="priceMode" title="Ye price kiska hai — 1 unit ka ya poori line ka?">' +
+          '<option value="unit"' + (pm === "unit" ? " selected" : "") + ">₹ / " + esc(unitLbl) + "</option>" +
+          '<option value="line"' + (pm === "line" ? " selected" : "") + ">₹ poori line</option>" +
+        "</select>" +
+      "</div>";
   return '<div class="ct-row" data-row="' + i + '">' +
     '<input class="inp" list="ctItemNames" placeholder="Item ka naam" value="' + esc(it.name) + '" data-ct-item="' + i + '" data-ct-f="name" autocomplete="off">' +
     '<input class="inp" type="number" min="0" step="0.5" placeholder="Qty" value="' + (num(it.qty) || "") + '" data-ct-item="' + i + '" data-ct-f="qty">' +
     unitSel +
-    (isTotal
-      ? '<input class="inp" value="—" disabled style="text-align:center;color:var(--faint)" title="Ek-saath total mode me item ka rate nahi likhte">'
-      : '<input class="inp" type="number" min="0" step="0.5" placeholder="Rate ₹" value="' + (num(it.rate) || "") + '" data-ct-item="' + i + '" data-ct-f="rate">') +
-    '<span class="amt' + (amt ? "" : " zero") + '">' + (amt == null ? "—" : moneyS(amt)) + "</span>" +
+    priceCell +
+    '<span class="amt' + (amt ? "" : " zero") + '">' + ctAmtHTML(it, isTotal) + "</span>" +
     '<button class="del" data-act="ctDelItem" data-i="' + i + '" title="Line hatao">✕</button>' +
   "</div>";
+}
+/* amount cell ka HTML — line mode me per-unit rate bhi chhota sa dikhta hai */
+function ctAmtHTML(it, isTotal) {
+  if (isTotal) return "—";
+  const v = ctItemAmt(it);
+  if (!v) return "—";
+  const extra = it.priceMode === "line" && num(it.qty) > 0
+    ? '<small>= ' + moneyS(ctItemUnitRate(it)) + "/" + esc(String(it.unit || "kg")) + "</small>"
+    : "";
+  return moneyS(v) + extra;
+}
+function ctPatchRowAmt(row, it) {
+  if (!row) return;
+  const a = $(".amt", row);
+  if (!a) return;
+  a.innerHTML = ctAmtHTML(it, false);
+  a.classList.toggle("zero", !ctItemAmt(it));
 }
 
 function ctRepaintItems() {
@@ -4505,7 +4595,7 @@ function ctPatchTotals() {
   if (balEl) balEl.value = moneyS(Math.max(0, amt - num(paidEl ? paidEl.value : d.paid)));
   const cnt = $("#ctItemsCount");
   if (cnt) {
-    const n = (d.items || []).filter((i) => i.name || num(i.qty) || num(i.rate)).length;
+    const n = (d.items || []).filter((i) => i.name || num(i.qty) || num(i.rate) || num(i.lineTotal)).length;
     cnt.textContent = n ? n + " item line" + (n > 1 ? "s" : "") : "Koi item nahi";
   }
   const hint = $("#ctKindHint");
@@ -4521,13 +4611,29 @@ function ctFieldInput(el) {
     const i = Number(idx), f = el.dataset.ctF;
     const it = (d.items || [])[i];
     if (!it) return;
-    if (f === "name" || f === "unit") it[f] = el.value;
-    else it[f] = Math.max(0, num(el.value));
     const row = el.closest ? el.closest(".ct-row") : null;
-    if (row && d.mode !== "total") {
-      const a = $(".amt", row);
-      if (a) { const v = r2(num(it.qty) * num(it.rate)); a.textContent = v ? moneyS(v) : "—"; a.classList.toggle("zero", !v); }
+    if (f === "priceMode") {
+      /* “₹ / unit”  ↔  “₹ poori line” — likha hua number carry hota hai */
+      const nv = el.value === "line" ? "line" : "unit";
+      if (nv === (it.priceMode === "line" ? "line" : "unit")) return;
+      if (nv === "line") it.lineTotal = r2(num(it.qty) * num(it.rate));
+      else it.rate = num(it.qty) > 0 ? r2(num(it.lineTotal) / num(it.qty)) : r2(num(it.lineTotal));
+      it.priceMode = nv;
+      ctRepaintItems();
+      return;
     }
+    if (f === "name" || f === "unit") {
+      it[f] = el.value;
+      if (f === "unit" && row) {
+        const o = $('.ct-pm option[value="unit"]', row);
+        if (o) o.textContent = "₹ / " + (el.value || "kg");
+      }
+    } else if (f === "lineTotal") {
+      it.lineTotal = Math.max(0, num(el.value));
+    } else {
+      it[f] = Math.max(0, num(el.value));
+    }
+    if (row && d.mode !== "total") ctPatchRowAmt(row, it);
     ctPatchTotals();
     return;
   }
@@ -4551,24 +4657,26 @@ function ctAutoRate(el) {
   if (!hit) return;
   const rate = num(hit.rate);
   if (!rate) return;
-  if (!num(it.rate)) {
-    it.rate = rate;
-    const row = el.closest(".ct-row");
-    const rInp = row ? $('[data-ct-f="rate"]', row) : null;
-    if (rInp) rInp.value = rate;
+  const row = el.closest(".ct-row");
+  if (!num(it.rate) && !num(it.lineTotal)) {
+    /* rate list ka rate PER-UNIT hai — line mode me line total isi se banta hai */
+    it.rate = r2(rate);
+    if (it.priceMode === "line") it.lineTotal = r2(num(it.qty) * rate);
+    const pInp = row ? $(".ct-price .inp", row) : null;
+    if (pInp) pInp.value = it.priceMode === "line" ? (num(it.lineTotal) || "") : (num(it.rate) || "");
   }
   if (hit.unit && it.unit !== hit.unit) {
     it.unit = hit.unit;
-    const row = el.closest(".ct-row");
     const uSel = row ? $('[data-ct-f="unit"]', row) : null;
     if (uSel) {
       if (!Array.from(uSel.options).some((o) => o.value === hit.unit)) uSel.add(new Option(hit.unit, hit.unit));
       uSel.value = hit.unit;
     }
+    const o = row ? $('.ct-pm option[value="unit"]', row) : null;
+    if (o) o.textContent = "₹ / " + hit.unit;
   }
+  if (row) ctPatchRowAmt(row, it);
   ctPatchTotals();
-  const row = el.closest(".ct-row");
-  if (row) { const a = $(".amt", row); if (a) { const v = r2(num(it.qty) * num(it.rate)); a.textContent = v ? moneyS(v) : "—"; a.classList.toggle("zero", !v); } }
 }
 
 /* ------------------------- 21j. SAVE / DELETE ------------------------- */
@@ -4584,14 +4692,14 @@ function ctSave() {
   const paidRaw = Math.max(0, num(el("ctPaid") ? el("ctPaid").value : d.paid));
   const lumpRaw = Math.max(0, num(el("ctLump") ? el("ctLump").value : d.amount));
 
-  const items = (d.items || []).map(normCtItem).filter((i) => i.name || i.qty || i.rate);
-  const itemsTotal = r2(items.reduce((t, i) => t + i.qty * i.rate, 0));
+  const items = (d.items || []).map(normCtItem).filter((i) => i.name || i.qty || i.rate || i.lineTotal);
+  const itemsTotal = r2(items.reduce((t, i) => t + ctItemAmt(i), 0));
   const amount = d.mode === "total" ? r2(lumpRaw) : itemsTotal;
 
   if (!/^\d{4}-\d{2}-\d{2}$/.test(String(date))) return toast("Sahi date chuno", "bad");
-  if (amount <= 0 && !items.length) return toast("Kuch to likho — item ka rate ya pura total", "bad");
+  if (amount <= 0 && !items.length) return toast("Kuch to likho — item ka price ya pura total", "bad");
   if (amount <= 0 && d.mode !== "total") {
-    return toast("Rate nahi bhara. Ya har item ka rate likho, ya “Σ Ek saath pura total” chuno.", "bad");
+    return toast("Price nahi bhara. Har line me price likho — ₹/unit, ya select me “₹ poori line” chun kar line ka total — ya “Σ Ek saath pura total” chuno.", "bad");
   }
   if (amount <= 0 && d.mode === "total") return toast("Pura total (₹) likho — jaise 3450", "bad");
 
@@ -4895,7 +5003,7 @@ function ctCsvList() {
 function ctCsv() {
   const list = ctCsvList();
   if (!list.length) return toast("Export karne ke liye koi entry nahi", "bad");
-  const head = ["Date", "Day", "Type", "Party", "Bill no", "Mode", "Item", "Qty", "Unit", "Rate", "Item amount",
+  const head = ["Date", "Day", "Type", "Party", "Bill no", "Mode", "Item", "Qty", "Unit", "Price mode", "Rate (per unit)", "Item amount",
                 "Entry total", "Paid", "Balance", "Pay mode", "Note"];
   const lines = [head.join(",")];
   list.slice().sort((a, b) => (a.date === b.date ? num(a.createdAt) - num(b.createdAt) : (a.date < b.date ? -1 : 1))).forEach((e) => {
@@ -4904,9 +5012,11 @@ function ctCsv() {
                   e.mode === "total" ? "Lump-sum total" : "Item-wise rate"];
     const tail = [ctAmount(e), Math.min(ctPaid(e), ctAmount(e)), ctBalance(e), CT_PAY[e.payMode] || "Cash", e.note || ""];
     if (e.mode === "itemized" && its.length) {
-      its.forEach((i) => lines.push(base.concat([i.name, num(i.qty), i.unit, num(i.rate), r2(num(i.qty) * num(i.rate))], tail).map(csvCell).join(",")));
+      its.forEach((i) => lines.push(base.concat([i.name, num(i.qty), i.unit,
+        i.priceMode === "line" ? "Poori line ka total" : "Per unit (1 " + (i.unit || "kg") + ")",
+        ctItemUnitRate(i), ctItemAmt(i)], tail).map(csvCell).join(",")));
     } else {
-      lines.push(base.concat([its.length ? ctItemLabel(e) : "(ek saath total)", "", "", "", ""], tail).map(csvCell).join(","));
+      lines.push(base.concat([its.length ? ctItemLabel(e) : "(ek saath total)", "", "", "", "", ""], tail).map(csvCell).join(","));
     }
   });
   const t = ctTotals(list);

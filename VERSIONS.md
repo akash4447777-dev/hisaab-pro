@@ -65,17 +65,18 @@ File ka naam me version hona chahiye: **`Hisaab-Pro-v<number>.<number>.html`**
 
 | Version | Date | Kya badla | File |
 |---|---|---|---|
+| v3.2 | 2026-11-14 | **Canteen rate fix — "poori line ka total" mode.** Har item line par ab select hai: **`₹ / unit`** (default, pehle jaisa) ya **`₹ poori line`**. `4 kg Maggi = ₹360` likhne par ab total **₹360** hi judta hai (pehle galat 4 × 360 = ₹1440 ho jata tha) aur per-unit rate **₹90/kg apne aap** nikal kar amount ke neeche dikhta hai. Rate list, auto-fill, din/mahine ke ledger aur CSV — sab jagah **per-unit rate** hi rehta hai. Purani saved entries ka hisaab **bilkul nahi badla**. CSV me naya `Price mode` column. | `Hisaab-Pro-v3.2.html` |
 | v3.1 | 2026-11-14 | **Naya Canteen module** — saman entry (rate-wise **ya** ek-saath pura total), bikri/kharcha, **din ka ledger**, **mahine ka ledger**, rate list, udhaar/baki, poori activity log, CSV + print + WhatsApp. Dashboard par canteen card, Settings me canteen card. **Loader `index.html` wapas add hua** (root URL ka 404 fix). | `Hisaab-Pro-v3.1.html` + `index.html` |
 | v3.0 | — | v3 UI, dark mode, ledger (advances), worker profile drawer, CSV & WhatsApp share, cloud login/sync | `hisaab_v3.html` |
 | v2.0 | 2026-11-11 | Auto-update loader + fixed working hours/overtime removed. Hourly worker = rate × total hours (naya Hours column). Monthly = ÷30 fixed, Sunday auto-exclude. Version badge. | `Hisaab-Pro-v2.0.html` |
 
 > **File ka rule:** `hisaab_v3.html` = working/source file (yahan change hota hai).
-> `Hisaab-Pro-v3.1.html` = usi ka release copy, taaki upar wala loader apne aap sabse naya version utha le.
-> Dono ka content abhi **bilkul same** hai.
+> `Hisaab-Pro-v3.2.html` = usi ka release copy, taaki upar wala loader apne aap sabse naya version utha le.
+> Dono ka content abhi **bilkul same** hai. Purane `Hisaab-Pro-v3.1.html` / `v2.0` repo me pade rehne do.
 
 ---
 
-# 🍽 Canteen module (v3.1) — kaise use karein
+# 🍽 Canteen module (v3.1+, price-mode fix v3.2) — kaise use karein
 
 Sidebar me **Canteen** dabao (ya keyboard par `g` phir `c`).
 
@@ -91,11 +92,28 @@ Sidebar me **Canteen** dabao (ya keyboard par `g` phir `c`).
 
 Saman ka hisaab likhne ke **do mode** hain:
 
-1. **₹ Item-wise rate** — har item ka `naam · qty · unit · rate`. Total apne aap banta hai.
+1. **₹ Item-wise rate** — har item ka `naam · qty · unit · price`. Total apne aap banta hai.
    *Item ka naam likhte hi Rate list se rate aur unit apne aap bhar jata hai.*
 2. **Σ Ek saath pura total** — single-single item ka price **nahi** likhna, to bill/parche ka
    **ek saath pura total** daal do. Rate column band rehta hai; chaaho to sirf naam-qty
    yaad rakhne ke liye likh sakte ho. Dono mode ledger me barabar judte hain.
+
+### v3.2 — price kis cheez ka hai? (har line par select)
+
+Item-wise mode me har line ke price box ke saath ek chhota select hai:
+
+| Select | Matlab | Amount | Rate list / ledger me |
+|---|---|---|---|
+| **`₹ / kg`** (default) | price = **1 unit ka daam** | `qty × price` | wahi price |
+| **`₹ poori line`** | price = **poori line ka total** (jaise parche par likha `4 kg Maggi = ₹360`) | **₹360 hi** (qty se multiply nahi hota) | `360 ÷ 4 = ₹90/kg` apne aap nikal jata hai |
+
+- Line mode me amount ke neeche chhota **`= ₹90/kg`** dikhta hai, aur item-wise table/summary me
+  us line ke naam ke aage **Σ** chip lagta hai.
+- Mode badalne par likha hua number **saath chalta hai**: `₹ / kg` → `₹ poori line` karne par
+  `qty × rate` line total ban jata hai; wapas `₹ / kg` karne par line total ÷ qty = rate.
+- **Purani entries safe** — jinme `priceMode` nahi tha wo `₹ / unit` maani jati hain, hisaab wahi purana.
+- CSV me item rows par naya **`Price mode`** column hai (`Per unit (1 kg)` / `Poori line ka total`)
+  aur `Rate (per unit)` column me hamesha per-unit rate hi jata hai.
 
 Payment section me: kitna diya, kaise diya (Cash / UPI / Bank / Udhaar), aur **baki** apne aap.
 `✔ Poora paid` aur `📒 Poora udhaar` quick buttons bhi hain.
@@ -120,12 +138,12 @@ red badge = is mahine kitni entries ka paisa baki hai.
 
 - Sab kuch **usi browser** me save hota hai (`localStorage`) — workers/records ke saath.
 - Cloud login on ho to canteen data bhi sync hota hai.
-- **⤓ Canteen CSV** — item-level rows (Date, Day, Type, Party, Bill, Mode, Item, Qty, Unit, Rate, Item amount, Entry total, Paid, Balance, Pay mode, Note) + totals.
+- **⤓ Canteen CSV** — item-level rows (Date, Day, Type, Party, Bill, Mode, Item, Qty, Unit, **Price mode**, Rate (per unit), Item amount, Entry total, Paid, Balance, Pay mode, Note) + totals.
 - **🖨 Print din / Print mahina** — A4 ledger, shop details ke saath.
 - Settings → **🗑 Sirf canteen data erase** (workers/salary safe, undo milta hai).
 - Purana backup (jis me canteen key nahi) restore karne par canteen apne aap khaali ban jata hai — kuch tootta nahi.
 
 ## 5. Developer tests
 
-`tests/` folder me jsdom smoke tests hain (~150 checks) — app ke liye zaroori nahi, sirf
+`tests/` folder me jsdom smoke tests hain (~174 canteen + ~27 loader checks) — app ke liye zaroori nahi, sirf
 change ke baad verify karne ke liye. Details: `tests/README.md`.

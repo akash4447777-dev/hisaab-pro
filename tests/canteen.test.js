@@ -65,7 +65,7 @@ const iso = (d) => d.getFullYear() + "-" + String(d.getMonth() + 1).padStart(2, 
   ok(H().Store.data.canteen.entries.length > 0, "sample canteen entries load hui (" + H().Store.data.canteen.entries.length + ")");
   ok(H().Store.data.workers.length === 4, "workers safe (4 demo)");
   const verEl = $("[data-ver]");
-  ok(verEl && verEl.textContent === "3.1", "version badge 3.1", verEl && verEl.textContent);
+  ok(verEl && verEl.textContent === "3.2", "version badge 3.2", verEl && verEl.textContent);
   ok(root().innerHTML.indexOf("Canteen") >= 0, "dashboard par canteen card dikha");
   ok(root().innerHTML.indexOf("Saman aaya") >= 0, "dashboard canteen strip me 'Saman aaya'");
 
@@ -138,6 +138,58 @@ const iso = (d) => d.getFullYear() + "-" + String(d.getMonth() + 1).padStart(2, 
   ok(lump.length === 1 && lump[0].amount === 3450 && lump[0].mode === "total", "lump entry 3450 / total mode");
   ok(lump[0].paid === 3450, "poora paid");
   ok(!H().canteen.data().rates.some((r) => /tel namak/i.test(r.name)), "total-mode item rate list me nahi gaya");
+
+  section("Line-total price mode \u2014 4 kg Maggi = \u20b9360 (poori line ka daam)");
+  click('[data-act="ctAdd"]');
+  setInput('[data-ct-item="0"][data-ct-f="name"]', "Maggi Test Pack");
+  setInput('[data-ct-item="0"][data-ct-f="qty"]', "4");
+  setInput("#ctParty", "Line Test");
+  ok(!!$('[data-ct-item="0"][data-ct-f="priceMode"]'), "har line par price-mode select hai");
+  ok($('[data-ct-item="0"][data-ct-f="priceMode"]').value === "unit", "default mode = per unit");
+  /* pehle galat behaviour confirm: unit mode me 4 x 360 = 1440 */
+  setInput('[data-ct-item="0"][data-ct-f="rate"]', "360");
+  ok($("#ctTotalBig").textContent.replace(/,/g, "").indexOf("1440") >= 0,
+     "unit mode me 4 x 360 = 1440 (purana hisaab)", $("#ctTotalBig").textContent);
+  /* ab poori line chuno */
+  const pmSel = $('[data-ct-item="0"][data-ct-f="priceMode"]');
+  pmSel.value = "line";
+  pmSel.dispatchEvent(new window.Event("change", { bubbles: true }));
+  await wait(20);
+  ok(!!$('[data-ct-item="0"][data-ct-f="lineTotal"]'), "line mode me price input lineTotal se juda");
+  ok($('[data-ct-item="0"][data-ct-f="lineTotal"]').value === "1440", "purana amount carry hua (1440)");
+  setInput('[data-ct-item="0"][data-ct-f="lineTotal"]', "360");
+  ok($("#ctTotalBig").textContent.replace(/,/g, "").indexOf("360") >= 0,
+     "entry total ab 360 hai (1440 nahi)", $("#ctTotalBig").textContent);
+  const amtCell = $('.ct-row .amt');
+  ok(amtCell.textContent.indexOf("360") >= 0, "row amount 360", amtCell.textContent);
+  ok(amtCell.textContent.indexOf("90") >= 0, "per-unit rate 360/4 = 90 dikha", amtCell.textContent);
+  setInput("#ctPaid", "360");
+  click('[data-act="ctSave"]');
+  await wait(40);
+  const mag = H().canteen.entries().find((e) => e.party === "Line Test");
+  ok(!!mag, "line-mode entry save hui");
+  ok(mag && mag.amount === 360, "entry amount 360 (4x360 nahi)", mag && mag.amount);
+  const mi = mag && mag.items.find((i) => i.name === "Maggi Test Pack");
+  ok(mi && mi.priceMode === "line" && mi.lineTotal === 360, "item par priceMode=line, lineTotal=360", mi);
+  ok(mi && mi.rate === 90, "per-unit rate 90 derive hua", mi && mi.rate);
+  ok(H().canteen.data().rates.some((r) => r.name === "Maggi Test Pack" && r.rate === 90),
+     "rate list me 90/kg gaya (360 nahi)");
+  /* edit karke wapas kholo */
+  H().canteen.openModal(mag.id);
+  await wait(20);
+  ok($('[data-ct-item="0"][data-ct-f="priceMode"]').value === "line", "edit me line mode selected");
+  ok(String($('[data-ct-item="0"][data-ct-f="lineTotal"]').value) === "360", "edit me 360 dikha");
+  const pm2 = $('[data-ct-item="0"][data-ct-f="priceMode"]');
+  pm2.value = "unit";
+  pm2.dispatchEvent(new window.Event("change", { bubbles: true }));
+  await wait(20);
+  ok(String($('[data-ct-item="0"][data-ct-f="rate"]').value) === "90", "unit mode par rate 90 aaya");
+  ok($("#ctTotalBig").textContent.replace(/,/g, "").indexOf("360") >= 0, "amount 360 hi raha (4 x 90)");
+  click('[data-act="closeModal"]');
+  /* day ledger me item-wise table me per-unit avg 90 */
+  H().UI.ct.tab = "day"; H().UI.ct.date = mag.date; H().render();
+  ok(root().innerHTML.indexOf("90") >= 0, "din ke item-wise table me 90/kg dikha");
+  ok(root().innerHTML.indexOf("\u03a3") >= 0, "line-total wali line par \u03a3 chip");
 
   section("Validation \u2014 khaali entry");
   click('[data-act="ctAdd"]');
@@ -325,6 +377,14 @@ const iso = (d) => d.getFullYear() + "-" + String(d.getMonth() + 1).padStart(2, 
   ok(csvText.indexOf("Item-wise rate") >= 0, "itemized row CSV me");
   ok(csvText.indexOf("TOTALS") >= 0, "CSV me totals block");
   ok(csvText.indexOf("Aata") >= 0, "item ka naam CSV me");
+  ok(csvText.indexOf("Price mode") >= 0, "CSV header me 'Price mode' column", csvText.split("\n")[0]);
+  ok(csvText.indexOf("Rate (per unit)") >= 0, "CSV header me 'Rate (per unit)'");
+  const lineRow = csvText.split("\n").filter((l) => l.indexOf("Maggi Test Pack") >= 0)[0] || "";
+  ok(lineRow.indexOf("Poori line ka total") >= 0, "line-mode item row CSV me mode likha", lineRow);
+  ok(/,90,360,/.test(lineRow) || (lineRow.indexOf("90") >= 0 && lineRow.indexOf("360") >= 0),
+     "line row: per-unit 90 + amount 360", lineRow);
+  ok(lineRow.split(",").length === csvText.replace(/^\ufeff/, "").split("\n")[0].split(",").length,
+     "item row ki columns header jitni hain (" + lineRow.split(",").length + ")");
 
   section("Print (din + mahina)");
   H().UI.ct.tab = "day"; H().UI.ct.date = todayIso; H().render();

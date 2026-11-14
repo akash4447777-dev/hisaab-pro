@@ -97,6 +97,23 @@ const wait = (ms) => new Promise((r) => setTimeout(r, ms));
     dom.window.close();
   }
 
+  console.log("\n\u25b8 boot: v3.1 + v3.2 dono ho \u2192 v3.2 khule");
+  {
+    const files = [
+      { name: "index.html", type: "file", size: 9000 },
+      { name: "Hisaab-Pro-v3.1.html", type: "file", size: 319379 },
+      { name: "Hisaab-Pro-v3.2.html", type: "file", size: 326000 },
+      { name: "Hisaab-Pro-v2.0.html", type: "file", size: 143224 }
+    ];
+    const dom = makeDom({ files });
+    await wait(200);
+    ok(dom.window.__getRedirect() === "/hisaab-pro/Hisaab-Pro-v3.2.html",
+       "sabse naya version v3.2 chuna", dom.window.__getRedirect());
+    ok(dom.window.localStorage.getItem("hisaabPro.loader.v1") === "Hisaab-Pro-v3.2.html", "v3.2 cache hua");
+    await wait(80);
+    dom.window.close();
+  }
+
   console.log("\n\u25b8 boot: API fail \u2192 HEAD probe fallback");
   {
     const files = [
@@ -138,7 +155,10 @@ const wait = (ms) => new Promise((r) => setTimeout(r, ms));
     const dom = makeDom({ files: [], url: "file:///sdcard/Download/index.html" });
     await wait(100);
     ok(dom.window.document.getElementById("err").hidden === false, "file mode me chooser dikha");
-    ok(dom.window.document.getElementById("errBtns").textContent.indexOf("Hisaab-Pro-v3.1.html") >= 0, "v3.1 link pehla");
+    const btns = dom.window.document.getElementById("errBtns").textContent;
+    ok(btns.indexOf("Hisaab-Pro-v3.2.html") >= 0, "file mode me v3.2 link bhi hai");
+    ok(btns.indexOf("Hisaab-Pro-v3.1.html") >= 0, "v3.1 link bhi hai");
+    ok(btns.indexOf("Hisaab-Pro-v3.2.html") < btns.indexOf("Hisaab-Pro-v3.1.html"), "naya version pehle");
     await wait(80);
     dom.window.close();
   }
