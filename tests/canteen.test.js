@@ -66,7 +66,7 @@ const iso = (d) => d.getFullYear() + "-" + String(d.getMonth() + 1).padStart(2, 
   ok(H().Store.data.canteen.entries.length > 0, "sample canteen entries load hui (" + H().Store.data.canteen.entries.length + ")");
   ok(H().Store.data.workers.length === 4, "workers safe (4 demo)");
   const verEl = $("[data-ver]");
-  ok(verEl && verEl.textContent === "3.4", "version badge 3.4", verEl && verEl.textContent);
+  ok(verEl && verEl.textContent === "3.5", "version badge 3.5", verEl && verEl.textContent);
   ok(root().innerHTML.indexOf("Canteen") >= 0, "dashboard par canteen card dikha");
   ok(root().innerHTML.indexOf("Saman aaya") >= 0, "dashboard canteen strip me 'Saman aaya'");
 
@@ -498,6 +498,73 @@ const iso = (d) => d.getFullYear() + "-" + String(d.getMonth() + 1).padStart(2, 
   ok(mText.indexOf("Mahine ka ledger") >= 0, "PDF me mahine ka title");
   ok(mText.indexOf("Party-wise") >= 0, "PDF me party-wise table");
   window.Blob = RB;
+
+  section("\ud83d\udccb Bulk paste (v3.5) \u2014 parser");
+  const BP = (t) => H().canteen.bulkParse(t, todayIso);
+  let br = BP("Maggi 4 kg 360").rows[0];
+  ok(br && br.name === "Maggi" && br.qty === 4 && br.unit === "kg" && br.priceMode === "line" && br.amt === 360 && br.rate === 90,
+     "Maggi 4 kg 360 \u2192 poori line 360, 90/kg", br);
+  br = BP("Hara dhaniya 600 gram 45").rows[0];
+  ok(br && br.qty === 600 && br.unit === "gram" && br.amt === 45 && br.rate === 0.075, "600 gram 45 \u2192 0.075/gram", br);
+  br = BP("Aata 20 kg @ 42").rows[0];
+  ok(br && br.priceMode === "unit" && br.rate === 42 && br.amt === 840, "@ 42 \u2192 per-unit rate, 840", br);
+  br = BP("Maggi 4x90").rows[0];
+  ok(br && br.priceMode === "unit" && br.rate === 90 && br.amt === 360, "4x90 \u2192 per-unit rate", br);
+  br = BP("Doodh 30 ltr 1,740").rows[0];
+  ok(br && br.amt === 1740 && br.unit === "ltr", "comma wala number 1,740 \u2192 1740", br);
+  br = BP("Maggi 360").rows[0];
+  ok(br && br.qty === 1 && br.amt === 360, "sirf price likha \u2192 qty 1, line total", br);
+  br = BP("Anda farm 2 dozen 180").rows[0];
+  ok(br && br.unit === "dozen" && br.amt === 180, "dozen unit parse hua", br);
+  br = BP("4 kg Maggi 360").rows[0];
+  ok(br && br.name === "Maggi" && br.qty === 4 && br.amt === 360, "qty pehle likha ho to bhi naam sahi", br);
+  br = BP("14/11/2026\nMaggi 4 kg 360").rows[0];
+  ok(br && br.date === "2026-11-14", "date line \u2192 uske baad ki lines us date par", br);
+  br = BP("\u20b9 Maggi 4 kg \u20b9360").rows[0];
+  ok(br && br.amt === 360, "\u20b9 sign ignore hua", br);
+  ok(BP("Maggi").skipped.length === 1, "bina number wali line skip hoti hai");
+  ok(BP("4 kg 360").skipped.length === 1, "bina naam wali line skip hoti hai");
+
+  section("\ud83d\udccb Bulk paste \u2014 UI se alag-alag entries");
+  const nBulkBefore = H().canteen.entries().length;
+  click('[data-act="ctBulk"]');
+  ok(!!$("#ctBulkText"), "bulk paste modal khula");
+  ok(!!$('[data-act="ctBulkSave"]'), "save button hai");
+  setInput("#ctBulkParty", "Bulk Mandi");
+  let bta = $("#ctBulkText");
+  bta.value = "Maggi 4 kg 360\nHara dhaniya 600 gram 45\nDoodh 30 ltr 1740";
+  bta.dispatchEvent(new window.Event("input", { bubbles: true }));
+  await wait(30);
+  ok($("#ctBulkPrev").textContent.indexOf("3 item lines") >= 0, "preview me 3 item lines", $("#ctBulkPrev").textContent.slice(0, 60));
+  ok($("#ctBulkSaveBtn").textContent.indexOf("3 entries") >= 0, "button par '3 entries save karo'", $("#ctBulkSaveBtn").textContent);
+  click('[data-act="ctBulkSave"]');
+  await wait(40);
+  const bulkE = H().canteen.entries().filter((e) => e.party === "Bulk Mandi");
+  ok(bulkE.length === 3, "paste se teen ALAG entries bani", bulkE.length);
+  ok(bulkE.map((e) => e.amount).sort((a, b) => a - b).join(",") === "45,360,1740",
+     "amounts 45 / 360 / 1740", bulkE.map((e) => e.amount).join(","));
+  ok(bulkE.every((e) => e.items.length === 1 && e.mode === "itemized"), "har entry me apni item line");
+  ok(H().canteen.entries().length === nBulkBefore + 3, "kul entries +3");
+  ok(H().canteen.data().rates.some((x) => x.name === "Hara dhaniya" && x.rate === 0.075) ||
+     H().canteen.data().rates.some((x) => x.name === "Pudina leaves"), "rate list paste se bhi update hoti hai");
+  click('[data-act="doUndo"]');
+  await wait(30);
+  ok(H().canteen.entries().length === nBulkBefore, "undo se teeno entries hatt gayi");
+  /* sab lines = ek entry */
+  click('[data-act="ctBulk"]');
+  click('[data-act="ctBulkSplit"][data-v="0"]');
+  ok(!!$('[data-act="ctBulkSplit"][data-v="0"].on'), "ek-entry mode select hua");
+  setInput("#ctBulkParty", "Bulk Mandi");
+  bta = $("#ctBulkText");
+  bta.value = "Maggi 4 kg 360\nDoodh 30 ltr 1740";
+  bta.dispatchEvent(new window.Event("input", { bubbles: true }));
+  await wait(30);
+  ok($("#ctBulkSaveBtn").textContent.indexOf("1 entry") >= 0, "button par '1 entry save karo'", $("#ctBulkSaveBtn").textContent);
+  click('[data-act="ctBulkSave"]');
+  await wait(40);
+  const oneE = H().canteen.entries().filter((e) => e.party === "Bulk Mandi");
+  ok(oneE.length === 1 && oneE[0].items.length === 2 && oneE[0].amount === 2100,
+     "ek entry me 2 item lines, total 2100", oneE[0] && oneE[0].amount);
 
   section("CSV export");
   let csvText = "";

@@ -845,7 +845,7 @@ const rRate = (n) => { const x = Math.max(0, num(n)); return x >= 1 ? r2(x) : Ma
 /* rate dikhane ka format: <₹1 ho to 0.075 jaisa khula number, warna moneyS */
 const rateS = (n) => { const x = num(n); if (x > 0 && x < 1) return "₹" + String(Math.round((x + Number.EPSILON) * 10000) / 10000); return moneyS(x); };
 const clamp = (n, lo, hi) => Math.min(hi, Math.max(lo, n));
-const APP_VERSION = "3.4";
+const APP_VERSION = "3.5";
 const esc = (s) => String(s == null ? "" : s).replace(/[&<>"']/g, (m) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[m]));
 
 const MONTHS = ["January","February","March","April","May","June","July","August","September","October","November","December"];
@@ -2106,7 +2106,7 @@ function viewSettings(){
 
     '<div style="text-align:center;font-size:11.5px;color:var(--muted);margin-top:18px;line-height:1.7">'+
       'Panel <b style="color:var(--ink)">v<span data-ver></span></b> · Auto-update enabled<br>'+
-      'v3.4 — <b style="color:var(--ink)">Canteen photo + PDF</b>: entry ke saath bill/parche ki <b>📷 photo</b> lagao (ledger me tap karke badi khulti hai); din aur mahine ka ledger <b>📄 PDF</b> download; item ka <b>naam likhte hi unit</b> apne aap (doodh→ltr, kesar/dhaniya→gram, anda→dozen, bread→pcs)<br>'+'v3.3 — <b style="color:var(--ink)">Gram/line-total smart default</b>: nayi item line seedha <b>“₹ poori line”</b> par khulti hai (600 gram = ₹45 → total ₹45, ₹0.075/gram apne aap); rate list me rate milte hi naam likhte hi line <b>“₹ / unit”</b> par palat kar rate bhar leti hai<br>'+'v3.2 — <b style="color:var(--ink)">Canteen price-mode fix</b>: har item line par chunaav — <b>₹ / unit</b> ya <b>₹ poori line</b>. 4 kg Maggi = ₹360 likho to total ₹360 hi rahega, rate apne aap ₹90/kg<br>'+
+      'v3.5 — <b style="color:var(--ink)">📋 Paste se entries</b>: Word/WhatsApp/parche ka text ek saath paste karo — har item ki <b>alag entry</b> ban jati hai (line format: <b>naam qty unit price</b>, @ ya x se per-unit rate, date wali line se date); preview ke saath, undo bhi hai<br>'+'v3.4 — <b style="color:var(--ink)">Canteen photo + PDF</b>: entry ke saath bill/parche ki <b>📷 photo</b> lagao (ledger me tap karke badi khulti hai); din aur mahine ka ledger <b>📄 PDF</b> download; item ka <b>naam likhte hi unit</b> apne aap (doodh→ltr, kesar/dhaniya→gram, anda→dozen, bread→pcs)<br>'+'v3.3 — <b style="color:var(--ink)">Gram/line-total smart default</b>: nayi item line seedha <b>“₹ poori line”</b> par khulti hai (600 gram = ₹45 → total ₹45, ₹0.075/gram apne aap); rate list me rate milte hi naam likhte hi line <b>“₹ / unit”</b> par palat kar rate bhar leti hai<br>'+'v3.2 — <b style="color:var(--ink)">Canteen price-mode fix</b>: har item line par chunaav — <b>₹ / unit</b> ya <b>₹ poori line</b>. 4 kg Maggi = ₹360 likho to total ₹360 hi rahega, rate apne aap ₹90/kg<br>'+
       'v3.1 — <b style="color:var(--ink)">Canteen module</b>: saman entry (rate-wise ya ek-saath total), din &amp; mahine ka ledger, rate list, udhaar/baki, poori activity log'+
     '</div>'
   );
@@ -3905,6 +3905,7 @@ function viewCanteen() {
         (u.tab === "day" ? '<button class="btn sm" data-act="ctPdfDay">📄 PDF din</button>' : "") +
         (u.tab === "month" ? '<button class="btn sm" data-act="ctPrintMonth">🖨 Print mahina</button>' : "") +
         (u.tab === "month" ? '<button class="btn sm" data-act="ctPdfMonth">📄 PDF mahina</button>' : "") +
+        '<button class="btn sm" data-act="ctBulk" title="Word/WhatsApp se text ek saath paste karo — har item ki alag entry">📋 Paste se entries</button>' +
         '<button class="btn sm" data-act="ctCsv">⤓ CSV</button>' +
         '<button class="btn sm primary" data-act="ctAdd">＋ Entry add karo</button>' +
       "</div>" +
@@ -5430,6 +5431,220 @@ function ctPdfMonth(y, m) {
   p.text(M, 40, 7.5, "Hisaab Pro canteen · mahine ka ledger · " + monthLabel(y, m), { color: C.muted });
   savePdf("Canteen_" + MONTHS_S[m] + "-" + y + ".pdf", p.build());
 }
+
+/* ---------- 📋 BULK PASTE (v3.5): ek saath text paste → alag-alag entries ---------- */
+const CT_BULK_UNITS = {
+  "kg": "kg", "k.g": "kg", "kilo": "kg", "quintal": "bag",
+  "gram": "gram", "gm": "gram", "g": "gram",
+  "ltr": "ltr", "litre": "ltr", "liter": "ltr", "l": "ltr", "ml": "ml",
+  "pcs": "pcs", "pc": "pcs", "piece": "pcs", "pieces": "pcs",
+  "pkt": "pkt", "packet": "pkt", "pack": "pkt",
+  "dozen": "dozen", "dz": "dozen",
+  "box": "box", "bag": "bag", "plate": "plate", "cup": "cup", "bundle": "bundle", "carton": "carton"
+};
+const CT_BULK_GLUE = /^(\d+(?:\.\d+)?)(kg|kilo|gram|gm|g|ltr|litre|liter|l|ml|pcs|pc|piece|pkt|packet|dozen|dz|box|bag|plate|cup|bundle|carton)$/;
+/* ek line → ek item row. Formats:
+   "Maggi 4 kg 360"        → poori line ka total (₹360, ₹90/kg apne aap)
+   "Aata 20 kg @ 42"       → per-unit rate (42/kg)
+   "Maggi 4x90"            → per-unit rate
+   "Maggi 4 kg 90 360"     → qty rate total (rate wala jeetta)
+   "Maggi 360"             → qty 1, poori line ka total
+   "14/11/2026"            → iske baad ki lines us date par */
+function ctParseBulk(text, baseDate) {
+  const rows = [], skipped = [];
+  let curDate = String(baseDate || isoDate(new Date()));
+  String(text == null ? "" : text).split(/\r?\n/).forEach((raw, idx) => {
+    let t = String(raw).trim();
+    if (!t) return;
+    t = t.replace(/₹|rs\.?|rp\.?/gi, "");
+    let prev = "";
+    while (prev !== t) { prev = t; t = t.replace(/(\d),(\d)/g, "$1$2"); }   /* 1,740 → 1740 */
+    const dm = t.match(/^(\d{4})-(\d{2})-(\d{2})$/);
+    const dm2 = !dm && t.match(/^(\d{1,2})[\/.](\d{1,2})[\/.](\d{2,4})$/);
+    if (dm) { curDate = dm[0]; return; }
+    if (dm2) {
+      let dd = Number(dm2[1]), mm = Number(dm2[2]), yy = Number(dm2[3]);
+      if (mm > 12 && dd <= 12) { const s = dd; dd = mm; mm = s; }            /* dd/mm hi maano */
+      if (yy < 100) yy += 2000;
+      if (mm >= 1 && mm <= 12 && dd >= 1 && dd <= 31) {
+        curDate = yy + "-" + String(mm).padStart(2, "0") + "-" + String(dd).padStart(2, "0");
+        return;
+      }
+    }
+    const words = t.split(/\s+/);
+    const nameParts = []; const nums = [];
+    let unit = "", nextRate = false;
+    words.forEach((w0) => {
+      const w = w0.replace(/[,;|]+$/, "").toLowerCase();
+      if (CT_BULK_UNITS[w]) { unit = CT_BULK_UNITS[w]; return; }
+      if (w === "x" || w === "×" || w === "@") { nextRate = true; return; }
+      const xm = w.match(/^(\d+(?:\.\d+)?)[x×@](\d+(?:\.\d+)?)$/);   /* "4x90" / "4@90" */
+      if (xm) {
+        nums.push({ v: Number(xm[1]), rate: false, eq: false });
+        nums.push({ v: Number(xm[2]), rate: true, eq: false });
+        return;
+      }
+      const gm = w.match(CT_BULK_GLUE);
+      if (gm) { nums.push({ v: Number(gm[1]), rate: false, eq: false }); if (!unit) unit = CT_BULK_UNITS[gm[2]] || ""; return; }
+      const nm = w.match(/^=?(\d+(?:\.\d+)?)$/);
+      if (nm) { nums.push({ v: Number(nm[1]), rate: nextRate, eq: w[0] === "=" }); nextRate = false; return; }
+      nextRate = false;
+      nameParts.push(w0);
+    });
+    const name = nameParts.join(" ").replace(/[-–—:=]+$/, "").trim();
+    if (!name) { skipped.push({ line: idx + 1, raw: raw, why: "item ka naam nahi mila" }); return; }
+    if (!nums.length) { skipped.push({ line: idx + 1, raw: raw, why: "koi number (qty/price) nahi mila" }); return; }
+    let qty = 1, unit2 = unit || "", mode = "line", rate = 0, lineTotal = 0;
+    const rateNum = nums.find((n) => n.rate);
+    if (rateNum) {
+      mode = "unit";
+      qty = Math.max(0, (nums.find((n) => !n.rate && !n.eq) || { v: 1 }).v);
+      rate = rRate(rateNum.v);
+    } else if (nums.length >= 3) {
+      mode = "unit"; qty = Math.max(0, nums[0].v); rate = rRate(nums[1].v);
+    } else if (nums.length === 2) {
+      qty = Math.max(0, nums[0].v); lineTotal = r2(nums[1].v);
+    } else {
+      lineTotal = r2(nums[0].v);
+    }
+    if (!unit2) {
+      const hm = CT_UNIT_HINTS.find((h) => h[0].test(name));
+      unit2 = hm ? hm[1] : "kg";
+    }
+    const it = normCtItem({ name: name, qty: qty, unit: unit2, rate: rate, lineTotal: lineTotal, priceMode: mode });
+    rows.push({
+      name: it.name, qty: it.qty, unit: it.unit, rate: it.rate, lineTotal: it.lineTotal,
+      priceMode: it.priceMode, amt: ctItemAmt(it), date: curDate, raw: raw
+    });
+  });
+  return { rows: rows, skipped: skipped };
+}
+function ctBulkOpen() {
+  const u = ctUI();
+  u.bulk = { text: "", kind: "purchase", date: u.date || isoDate(new Date()), party: "", split: true };
+  ctRenderBulk();
+}
+function ctBulkPrevHTML(parsed, b) {
+  if (!parsed.rows.length && !parsed.skipped.length) {
+    return '<div class="ct-note">Upar paste karo — yahan preview dikhega ki kaun si line kya banegi.</div>';
+  }
+  const tot = r2(parsed.rows.reduce((t, r) => t + r.amt, 0));
+  const tbl = parsed.rows.length
+    ? '<div class="twrap"><table class="tbl" style="min-width:640px"><thead><tr>' +
+      "<th>#</th><th>Item</th><th class=\"num\">Qty</th><th>Unit</th><th>Price mode</th>" +
+      '<th class="num">Amount</th><th>Date</th></tr></thead><tbody>' +
+      parsed.rows.map((r, i) =>
+        "<tr><td class=\"muted\">" + (i + 1) + "</td><td style=\"font-weight:750\">" + esc(r.name) + "</td>" +
+        '<td class="num">' + r.qty + "</td><td>" + esc(r.unit) + "</td>" +
+        "<td>" + (r.priceMode === "line" ? '<span class="ct-modeTag tot">₹ poori line</span>' : '<span class="ct-modeTag">₹ / ' + esc(r.unit) + "</span>") + "</td>" +
+        '<td class="num strong">' + moneyS(r.amt) + "</td>" +
+        '<td class="muted" style="white-space:nowrap">' + esc(ctShort(r.date)) + (r.date !== b.date ? " ✱" : "") + "</td></tr>").join("") +
+      "</tbody></table></div>"
+    : "";
+  const skip = parsed.skipped.length
+    ? '<div class="ct-note" style="margin-top:9px;color:var(--bad)">⚠ ' + parsed.skipped.length + " line skip hui: " +
+      parsed.skipped.slice(0, 4).map((s) => "“" + esc(String(s.raw).slice(0, 40)) + "” (" + esc(s.why) + ")").join(", ") + "</div>"
+    : "";
+  return tbl + skip +
+    '<div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-top:10px">' +
+      '<span class="tag warn">' + parsed.rows.length + " item line" + (parsed.rows.length === 1 ? "" : "s") + "</span>" +
+      '<span class="tag grey">total ' + moneyS(tot) + "</span>" +
+      '<span class="ct-note">' + (b.split
+        ? "💾 Save karne par <b>har item ki alag entry</b> banegi" + (parsed.rows.some((r) => r.date !== b.date) ? " (✱ = paste me likhi date)" : "")
+        : "💾 Save karne par <b>ek entry</b> me saari item lines ayengi") + "</span>" +
+    "</div>";
+}
+function ctRenderBulk() {
+  const b = ctUI().bulk;
+  if (!b) return;
+  const parsed = ctParseBulk(b.text, b.date);
+  openModal(
+    '<div class="modal" style="max-width:880px">' +
+      '<div class="modal-h"><div><h3>📋 Paste se entries (bulk)</h3>' +
+        "<p>Word/WhatsApp/parche se text ek saath paste karo — har item ki alag entry ban jayegi</p></div>" +
+        '<button class="x" data-act="closeModal">✕</button></div>' +
+      '<div class="modal-b">' +
+        '<div class="grid g3">' +
+          field("Date (jis din ka saman)", '<input type="date" class="inp" id="ctBulkDate" value="' + esc(b.date) + '">') +
+          field("Party / supplier (sab entries par)", '<input class="inp" id="ctBulkParty" value="' + esc(b.party) + '" placeholder="Jaise: Sabzi Mandi">') +
+          field("Type", '<select class="inp" id="ctBulkKind">' +
+            CT_KINDS.map((k) => '<option value="' + k + '"' + (b.kind === k ? " selected" : "") + ">" + esc(CT_KIND[k].label) + "</option>").join("") +
+          "</select>") +
+        "</div>" +
+        '<div class="seg" style="width:100%;display:flex;margin-top:10px">' +
+          '<button data-act="ctBulkSplit" data-v="1" class="' + (b.split ? "on" : "") + '" style="flex:1;min-width:0">📚 Har line = alag entry</button>' +
+          '<button data-act="ctBulkSplit" data-v="0" class="' + (!b.split ? "on" : "") + '" style="flex:1;min-width:0">🧾 Sab lines = ek entry</button>' +
+        "</div>" +
+        '<div style="margin-top:11px">' +
+          '<textarea class="inp" id="ctBulkText" style="min-height:132px;font-family:ui-monospace,Menlo,monospace;font-size:12.2px;line-height:1.7" ' +
+          'placeholder="Ek line = ek item. Jaise:&#10;Maggi 4 kg 360&#10;Hara dhaniya 600 gram 45&#10;Doodh 30 ltr 1740&#10;Aata 20 kg @ 42&#10;14/11/2026&#10;Gas cylinder 1 pcs 1150&#10;&#10;(aakhri number = poori line ka total; @ ya x ke baad number = 1 unit ka rate; date wali line = uske baad ki entries us date par)">' +
+          esc(b.text) + "</textarea>" +
+        "</div>" +
+        '<div class="sec-title">Preview — kya banega</div>' +
+        '<div id="ctBulkPrev">' + ctBulkPrevHTML(parsed, b) + "</div>" +
+      "</div>" +
+      '<div class="modal-f">' +
+        '<div class="left"><span class="ct-note">Purana data safe — ye sirf nayi entries jodta hai</span></div>' +
+        '<button class="btn" data-act="closeModal">Cancel</button>' +
+        '<button class="btn primary" data-act="ctBulkSave" id="ctBulkSaveBtn">✅ ' +
+          (parsed.rows.length ? parsed.rows.length + " entries save karo" : "Save karo") + "</button>" +
+      "</div>" +
+    "</div>"
+  );
+}
+function ctBulkPatch() {
+  const b = ctUI().bulk;
+  if (!b) return;
+  const parsed = ctParseBulk(b.text, b.date);
+  const pv = document.getElementById("ctBulkPrev");
+  if (pv) pv.innerHTML = ctBulkPrevHTML(parsed, b);
+  const btn = document.getElementById("ctBulkSaveBtn");
+  if (btn) btn.textContent = "✅ " + (parsed.rows.length ? (b.split ? parsed.rows.length + " entries" : "1 entry") + " save karo" : "Save karo");
+}
+function ctBulkSave() {
+  const b = ctUI().bulk;
+  if (!b) return;
+  const parsed = ctParseBulk(b.text, b.date);
+  if (!parsed.rows.length) return toast("Paste me se koi valid line nahi mili — preview dekhe", "bad");
+  const CC = ct();
+  const made = [];
+  const build = (rows, date) => normCtEntry({
+    id: uid(), date: date, kind: b.kind, mode: "itemized",
+    items: rows.map((r) => ({ name: r.name, qty: r.qty, unit: r.unit, rate: r.rate, lineTotal: r.lineTotal, priceMode: r.priceMode })),
+    amount: r2(rows.reduce((t, r) => t + r.amt, 0)),
+    party: b.party, billNo: "", paid: 0, payMode: "cash", note: "📋 paste se aayi entry"
+  });
+  if (b.split) {
+    parsed.rows.forEach((r) => { const e = build([r], r.date); CC.entries.push(e); made.push(e); });
+  } else {
+    const groups = [];
+    parsed.rows.forEach((r) => {
+      const g = groups[groups.length - 1];
+      if (g && g.date === r.date) g.rows.push(r); else groups.push({ date: r.date, rows: [r] });
+    });
+    groups.forEach((g) => { const e = build(g.rows, g.date); CC.entries.push(e); made.push(e); });
+  }
+  made.forEach((e) => ctSyncRates(e));
+  const sum = r2(made.reduce((t, e) => t + ctAmount(e), 0));
+  ctLogIt("add", made[0], null, "📋 Paste se " + made.length + " entry" + (made.length > 1 ? "s" : "") + " · " + money0(sum));
+  if (!Store.save()) {
+    made.forEach((e) => { const j = CC.entries.indexOf(e); if (j >= 0) CC.entries.splice(j, 1); });
+    if (CC.log.length) CC.log.pop();
+    return toast("Save NAHIN hua — browser storage bhara hai", "bad");
+  }
+  closeModal();
+  ctUI().bulk = null;
+  const p0 = ctParts(made[0].date);
+  ctUI().date = made[0].date;
+  UI.year = p0.y; UI.month = p0.m;
+  if (UI.view !== "canteen") go("canteen"); else render();
+  setUndo(() => {
+    const C2 = ct();
+    made.forEach((e) => { const j = C2.entries.findIndex((x) => x.id === e.id); if (j >= 0) C2.entries.splice(j, 1); });
+    ctLogIt("delete", made[0], made[0], "📋 paste undo — " + made.length + " entries hati");
+    Store.save(); render(); toast(made.length + " entries hata di (undo)", "ok");
+  }, "📋 " + made.length + " entries aa gayi · total " + money0(sum));
+}
 function ctShareDay() {
   const u = ctUI();
   const iso = u.date;
@@ -5669,6 +5884,13 @@ document.addEventListener("click", (e) => {
     case "ctRateDel": ctRateDel(btn.dataset.id); break;
     case "ctCsv": ctCsv(); break;
     case "ctPrintDay": ctPrintDay(); break;
+    case "ctBulk": ctBulkOpen(); break;
+    case "ctBulkSplit": {
+      const b = ctUI().bulk;
+      if (b) { b.split = btn.dataset.v === "1"; ctRenderBulk(); }
+      break;
+    }
+    case "ctBulkSave": ctBulkSave(); break;
     case "ctPdfDay": ctPdfDay(ctUI().date); break;
     case "ctPdfMonth": ctPdfMonth(UI.year, UI.month); break;
     case "ctPhotoView": {
@@ -5780,11 +6002,15 @@ document.addEventListener("input", (e) => {
     const body = document.getElementById("ctEntriesBody");
     if (body) body.innerHTML = ctEntriesTable();
   }
+  if (el.id === "ctBulkText") { const b = ctUI().bulk; if (b) { b.text = el.value; ctBulkPatch(); } return; }
+  if (el.id === "ctBulkDate") { const b = ctUI().bulk; if (b && el.value) { b.date = el.value; ctBulkPatch(); } return; }
+  if (el.id === "ctBulkParty") { const b = ctUI().bulk; if (b) b.party = el.value; return; }
 });
 document.addEventListener("change", (e) => {
   const el = e.target;
   if (!el) return;
   if (el.dataset && el.dataset.ctPhoto !== undefined) { ctPhotoPick(el); return; }
+  if (el.id === "ctBulkKind") { const b = ctUI().bulk; if (b) b.kind = el.value; return; }
   if (el.dataset && el.dataset.ctItem !== undefined) {
     ctFieldInput(el);
     if (el.dataset.ctF === "name") ctAutoRate(el);
@@ -5892,7 +6118,8 @@ window.Hisaab = { Store, calc, monthMeta, PdfDoc, inWords, UI, render, go, Cloud
   canteen: { data: ct, totals: ctTotals, entries: ctAll, onDate: ctOnDate, inMonth: ctInMonth,
              dayLedger: ctDayLedger, monthLedger: ctMonthLedger, openModal: openCtModal, save: ctSave,
              csv: ctCsv, printDay: ctPrintDay, printMonth: ctPrintMonth, blank: blankCanteen,
-             pdfDay: ctPdfDay, pdfMonth: ctPdfMonth, renderModal: ctRenderModal, photoBox: ctPhotoBoxHTML } };
+             pdfDay: ctPdfDay, pdfMonth: ctPdfMonth, renderModal: ctRenderModal, photoBox: ctPhotoBoxHTML,
+             bulkParse: ctParseBulk, bulkOpen: ctBulkOpen, bulkSave: ctBulkSave } };
 })();
 </script>
 </body>
