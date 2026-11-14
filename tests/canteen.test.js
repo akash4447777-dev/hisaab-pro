@@ -66,7 +66,7 @@ const iso = (d) => d.getFullYear() + "-" + String(d.getMonth() + 1).padStart(2, 
   ok(H().Store.data.canteen.entries.length > 0, "sample canteen entries load hui (" + H().Store.data.canteen.entries.length + ")");
   ok(H().Store.data.workers.length === 4, "workers safe (4 demo)");
   const verEl = $("[data-ver]");
-  ok(verEl && verEl.textContent === "3.3", "version badge 3.3", verEl && verEl.textContent);
+  ok(verEl && verEl.textContent === "3.4", "version badge 3.4", verEl && verEl.textContent);
   ok(root().innerHTML.indexOf("Canteen") >= 0, "dashboard par canteen card dikha");
   ok(root().innerHTML.indexOf("Saman aaya") >= 0, "dashboard canteen strip me 'Saman aaya'");
 
@@ -413,6 +413,91 @@ const iso = (d) => d.getFullYear() + "-" + String(d.getMonth() + 1).padStart(2, 
   click('[data-act="doUndo"]');
   await wait(30);
   ok(H().canteen.data().rates.length === ratesBefore + 1, "rate undo se wapas");
+
+  section("Bill photo (v3.4) \u2014 upload box, save, lightbox, hatao");
+  const PH = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg==";
+  click('[data-act="ctAdd"]');
+  ok(!!$('[data-ct-photo]'), "modal me photo upload input hai");
+  ok(!!$(".ct-phDrop"), "photo lagane ka box dikha");
+  ok($(".ct-phDrop").textContent.indexOf("Ek saath pura total") >= 0, "box me total-mode ka hint");
+  /* jsdom me camera/canvas nahi \u2014 draft me photo seedha karke UI render karo */
+  H().UI.ct.edit.photo = PH;
+  H().canteen.renderModal(false);
+  ok(!!$(".ct-phThumb"), "photo judne par thumbnail dikha");
+  ok(!$('[data-ct-photo]'), "upload input hat gaya (photo lagi hai)");
+  ok(!!$('[data-act="ctPhotoDel"]'), "photo hatane ka button");
+  click('[data-act="ctSetMode"][data-mode="total"]');
+  setInput("#ctLump", "500");
+  setInput("#ctParty", "Photo Test");
+  click('[data-act="ctSave"]');
+  await wait(40);
+  const ph = H().canteen.entries().find((e) => e.party === "Photo Test");
+  ok(!!ph && ph.photo === PH, "entry ke saath photo save hui", ph && String(ph.photo).slice(0, 24));
+  ok(JSON.parse(JSON.stringify(H().Store.data.canteen)).entries.some((e) => e.party === "Photo Test" && e.photo === PH),
+     "localStorage data me bhi photo hai");
+  H().UI.ct.tab = "day"; H().UI.ct.date = ph.date; H().render();
+  ok(!!$(".ct-phTag"), "din ke ledger me \ud83d\udcf7 photo tag");
+  click(".ct-phTag");
+  await wait(10);
+  ok(!!$(".ct-lb"), "photo tap karne par lightbox khula");
+  ok($(".ct-lb img").getAttribute("src") === PH, "lightbox me wahi photo");
+  $(".ct-lb").click();
+  await wait(10);
+  ok(!$(".ct-lb"), "lightbox band hua");
+  /* photo hatao */
+  H().canteen.openModal(ph.id);
+  await wait(20);
+  ok(!!$(".ct-phThumb"), "edit modal me photo dikhi");
+  click('[data-act="ctPhotoDel"]');
+  ok(!!$('[data-ct-photo]'), "photo hatane par upload box wapas");
+  click('[data-act="ctSave"]');
+  await wait(40);
+  ok(H().canteen.entries().find((e) => e.id === ph.id).photo === "", "photo entry se hat gayi");
+
+  section("Unit auto from naam (v3.4) \u2014 naam likhte hi unit");
+  click('[data-act="ctAdd"]');
+  setName('[data-ct-item="0"][data-ct-f="name"]', "Kesar");
+  ok($('[data-ct-item="0"][data-ct-f="unit"]').value === "gram", "Kesar \u2192 gram", $('[data-ct-item="0"][data-ct-f="unit"]').value);
+  ok($('.ct-row .ct-pm option[value="unit"]').textContent.indexOf("gram") >= 0, "mode label \u20b9 / gram");
+  setName('[data-ct-item="0"][data-ct-f="name"]', "Til ka tel");
+  ok($('[data-ct-item="0"][data-ct-f="unit"]').value === "ltr", "Til ka tel \u2192 ltr", $('[data-ct-item="0"][data-ct-f="unit"]').value);
+  setName('[data-ct-item="0"][data-ct-f="name"]', "Anda farm");
+  ok($('[data-ct-item="0"][data-ct-f="unit"]').value === "dozen", "Anda \u2192 dozen", $('[data-ct-item="0"][data-ct-f="unit"]').value);
+  setName('[data-ct-item="0"][data-ct-f="name"]', "Marie biscuit");
+  ok($('[data-ct-item="0"][data-ct-f="unit"]').value === "pkt", "biscuit \u2192 pkt", $('[data-ct-item="0"][data-ct-f="unit"]').value);
+  setName('[data-ct-item="0"][data-ct-f="name"]', "Aata");
+  ok($('[data-ct-item="0"][data-ct-f="unit"]').value === "kg", "rate list wala item \u2192 uski unit (kg)");
+  ok(String($('[data-ct-item="0"][data-ct-f="rate"]').value) === "45", "Aata ka rate auto-fill (45)");
+  const uu = $('[data-ct-item="0"][data-ct-f="unit"]');
+  uu.value = "pcs"; uu.dispatchEvent(new window.Event("change", { bubbles: true }));
+  await wait(15);
+  setName('[data-ct-item="0"][data-ct-f="name"]', "Kesar");
+  ok($('[data-ct-item="0"][data-ct-f="unit"]').value === "pcs", "user ki chuni unit par auto-guess nahi chalta");
+  click('[data-act="closeModal"]');
+
+  section("PDF export (v3.4) \u2014 din + mahina");
+  let pdfBytes = null;
+  const RB = window.Blob;
+  window.Blob = function (parts, opts) { pdfBytes = parts[0]; return new RB(parts, opts); };
+  H().UI.ct.tab = "day"; H().UI.ct.date = todayIso; H().render();
+  ok(!!$('[data-act="ctPdfDay"]'), "din tab par PDF button");
+  click('[data-act="ctPdfDay"]');
+  await wait(30);
+  let pdfText = pdfBytes ? Buffer.from(pdfBytes).toString("latin1") : "";
+  ok(pdfText.indexOf("%PDF-") === 0, "din ki PDF file bani", pdfText.slice(0, 8));
+  ok(pdfText.indexOf("Din ka ledger") >= 0, "PDF me title 'Din ka ledger'");
+  ok(pdfText.indexOf("Saman item-wise") >= 0, "PDF me item-wise table");
+  ok(pdfText.indexOf("Photo Test") >= 0 || pdfText.indexOf("Test Supplier") >= 0, "PDF me entry party");
+  H().UI.ct.tab = "month"; H().render();
+  ok(!!$('[data-act="ctPdfMonth"]'), "mahine tab par PDF button");
+  pdfBytes = null;
+  click('[data-act="ctPdfMonth"]');
+  await wait(30);
+  const mText = pdfBytes ? Buffer.from(pdfBytes).toString("latin1") : "";
+  ok(mText.indexOf("%PDF-") === 0, "mahine ki PDF bani");
+  ok(mText.indexOf("Mahine ka ledger") >= 0, "PDF me mahine ka title");
+  ok(mText.indexOf("Party-wise") >= 0, "PDF me party-wise table");
+  window.Blob = RB;
 
   section("CSV export");
   let csvText = "";

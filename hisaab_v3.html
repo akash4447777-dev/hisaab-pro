@@ -687,6 +687,24 @@ select.ct-pm option{font-size:11.5px;font-weight:700}
   padding:9px 12px;font-size:11.5px;color:var(--ink-2);margin-bottom:10px;line-height:1.55}
 .ct-tip b{color:var(--ink)}
 .ct-tip span{font-size:13px;line-height:1.2}
+/* ---- bill photo (v3.4) ---- */
+.ct-phDrop{display:flex;gap:11px;align-items:center;border:1.6px dashed color-mix(in srgb,var(--primary) 42%,var(--line));
+  background:color-mix(in srgb,var(--primary) 5%,transparent);border-radius:12px;padding:11px 14px;cursor:pointer;transition:.15s}
+.ct-phDrop:hover{border-color:var(--primary);background:color-mix(in srgb,var(--primary) 9%,transparent)}
+.ct-phDrop .big{font-size:22px;line-height:1}
+.ct-phDrop b{font-size:12.5px;color:var(--ink);display:block}
+.ct-phRow{display:flex;gap:12px;align-items:center}
+.ct-phThumb{width:74px;height:74px;object-fit:cover;border-radius:10px;border:1px solid var(--line);
+  box-shadow:0 2px 8px rgb(10 14 30 / .12);cursor:zoom-in;background:var(--surface-2)}
+.ct-phRow b{font-size:12.5px}
+.ct-phTag{display:inline-flex;align-items:center;gap:3px;font-size:10px;font-weight:800;color:var(--primary-ink);
+  background:var(--primary-soft);border:1px solid color-mix(in srgb,var(--primary) 24%,var(--line));
+  border-radius:99px;padding:1px 7px;margin-left:6px;vertical-align:1px;cursor:zoom-in}
+.ct-lb{position:fixed;inset:0;z-index:140;background:rgb(5 9 20 / .86);backdrop-filter:blur(3px);
+  display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;padding:26px;cursor:zoom-out}
+.ct-lb img{max-width:min(94vw,880px);max-height:76vh;border-radius:14px;box-shadow:0 18px 60px rgb(0 0 0 / .5);cursor:default}
+.ct-lb .x{position:absolute;top:14px;right:16px}
+.ct-lb .cap{color:#e8ecf8;font-size:12px;font-weight:700;background:rgb(255 255 255 / .1);border-radius:99px;padding:5px 14px}
 .ct-row .del{width:28px;height:28px;border-radius:8px;border:1px solid var(--line);background:var(--surface);color:var(--bad);cursor:pointer;font-size:13px;line-height:1}
 .ct-row .del:hover{background:var(--bad-soft);border-color:transparent}
 .ct-lump{display:flex;gap:12px;align-items:center;flex-wrap:wrap;background:var(--primary-soft);
@@ -827,7 +845,7 @@ const rRate = (n) => { const x = Math.max(0, num(n)); return x >= 1 ? r2(x) : Ma
 /* rate dikhane ka format: <₹1 ho to 0.075 jaisa khula number, warna moneyS */
 const rateS = (n) => { const x = num(n); if (x > 0 && x < 1) return "₹" + String(Math.round((x + Number.EPSILON) * 10000) / 10000); return moneyS(x); };
 const clamp = (n, lo, hi) => Math.min(hi, Math.max(lo, n));
-const APP_VERSION = "3.3";
+const APP_VERSION = "3.4";
 const esc = (s) => String(s == null ? "" : s).replace(/[&<>"']/g, (m) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[m]));
 
 const MONTHS = ["January","February","March","April","May","June","July","August","September","October","November","December"];
@@ -970,11 +988,14 @@ const Store = {
     if (changed) this.save(true);
   },
   save(silent) {
+    let ok = true;
     try { localStorage.setItem(KEY, JSON.stringify(this.data)); } catch (e) {
+      ok = false;
       if (!silent) toast("Could not save — browser storage full or blocked", "bad");
     }
     if (!silent) flashSaved();
     try { Cloud.schedulePush(); } catch (e) {}
+    return ok;
   },
   workers() { return this.data.workers; },
   activeWorkers() { return this.data.workers.filter((w) => w.active !== false); },
@@ -2085,7 +2106,7 @@ function viewSettings(){
 
     '<div style="text-align:center;font-size:11.5px;color:var(--muted);margin-top:18px;line-height:1.7">'+
       'Panel <b style="color:var(--ink)">v<span data-ver></span></b> · Auto-update enabled<br>'+
-      'v3.3 — <b style="color:var(--ink)">Gram/line-total smart default</b>: nayi item line seedha <b>“₹ poori line”</b> par khulti hai (600 gram = ₹45 → total ₹45, ₹0.075/gram apne aap); rate list me rate milte hi naam likhte hi line <b>“₹ / unit”</b> par palat kar rate bhar leti hai<br>'+'v3.2 — <b style="color:var(--ink)">Canteen price-mode fix</b>: har item line par chunaav — <b>₹ / unit</b> ya <b>₹ poori line</b>. 4 kg Maggi = ₹360 likho to total ₹360 hi rahega, rate apne aap ₹90/kg<br>'+
+      'v3.4 — <b style="color:var(--ink)">Canteen photo + PDF</b>: entry ke saath bill/parche ki <b>📷 photo</b> lagao (ledger me tap karke badi khulti hai); din aur mahine ka ledger <b>📄 PDF</b> download; item ka <b>naam likhte hi unit</b> apne aap (doodh→ltr, kesar/dhaniya→gram, anda→dozen, bread→pcs)<br>'+'v3.3 — <b style="color:var(--ink)">Gram/line-total smart default</b>: nayi item line seedha <b>“₹ poori line”</b> par khulti hai (600 gram = ₹45 → total ₹45, ₹0.075/gram apne aap); rate list me rate milte hi naam likhte hi line <b>“₹ / unit”</b> par palat kar rate bhar leti hai<br>'+'v3.2 — <b style="color:var(--ink)">Canteen price-mode fix</b>: har item line par chunaav — <b>₹ / unit</b> ya <b>₹ poori line</b>. 4 kg Maggi = ₹360 likho to total ₹360 hi rahega, rate apne aap ₹90/kg<br>'+
       'v3.1 — <b style="color:var(--ink)">Canteen module</b>: saman entry (rate-wise ya ek-saath total), din &amp; mahine ka ledger, rate list, udhaar/baki, poori activity log'+
     '</div>'
   );
@@ -3533,6 +3554,8 @@ function normCtEntry(e) {
     paid: r2(clamp(num(e.paid), 0, amount || num(e.paid) || 0)),
     payMode: payMode,
     note: String(e.note == null ? "" : e.note).slice(0, 500),
+    /* v3.4 — bill/parche ki photo (compressed dataURL); purani entries me ye field nahi hoti */
+    photo: typeof e.photo === "string" ? e.photo.slice(0, 400000) : "",
     createdAt: num(e.createdAt) || Date.now(),
     updatedAt: num(e.updatedAt) || Date.now()
   };
@@ -3879,7 +3902,9 @@ function viewCanteen() {
       "</div>" +
       '<div class="toolbar" style="margin-left:auto">' +
         (u.tab === "day" ? '<button class="btn sm" data-act="ctPrintDay">🖨 Print din</button>' : "") +
+        (u.tab === "day" ? '<button class="btn sm" data-act="ctPdfDay">📄 PDF din</button>' : "") +
         (u.tab === "month" ? '<button class="btn sm" data-act="ctPrintMonth">🖨 Print mahina</button>' : "") +
+        (u.tab === "month" ? '<button class="btn sm" data-act="ctPdfMonth">📄 PDF mahina</button>' : "") +
         '<button class="btn sm" data-act="ctCsv">⤓ CSV</button>' +
         '<button class="btn sm primary" data-act="ctAdd">＋ Entry add karo</button>' +
       "</div>" +
@@ -3954,7 +3979,8 @@ function ctDayLedger() {
     const il = ctItemLabel(e);
     return '<tr class="clickable" data-act="ctEdit" data-id="' + e.id + '">' +
       "<td>" + ctKindTag(e) + "</td>" +
-      '<td><div class="nm" style="font-weight:750">' + esc(e.party || (e.kind === "sale" ? "Canteen counter" : "—")) + "</div>" +
+      '<td><div class="nm" style="font-weight:750">' + esc(e.party || (e.kind === "sale" ? "Canteen counter" : "—")) +
+        (e.photo ? '<span class="ct-phTag" data-act="ctPhotoView" data-id="' + e.id + '" title="Bill / parche ki photo dekhe">📷 photo</span>' : "") + "</div>" +
         (il ? '<div class="ct-ilist">' + esc(il.length > 96 ? il.slice(0, 96) + "…" : il) + "</div>" : "") +
         (e.note ? '<div class="ct-ilist" style="font-style:italic">“' + esc(e.note) + "”</div>" : "") + "</td>" +
       '<td class="muted" style="white-space:nowrap">' + esc(e.billNo || "—") + "</td>" +
@@ -4231,7 +4257,8 @@ function ctEntriesTable() {
       '<td style="white-space:nowrap"><b>' + esc(ctShort(e.date)) + "</b>" +
         '<div class="ct-ilist">' + esc(ctDayName(e.date).slice(0, 3)) + " " + esc(ctParts(e.date).y) + (ctIsToday(e.date) ? " · aaj" : "") + "</div></td>" +
       "<td>" + ctKindTag(e) + "</td>" +
-      '<td><div style="font-weight:750">' + esc(e.party || "—") + "</div>" +
+      '<td><div style="font-weight:750">' + esc(e.party || "—") +
+        (e.photo ? '<span class="ct-phTag" data-act="ctPhotoView" data-id="' + e.id + '" title="Bill / parche ki photo dekhe">📷 photo</span>' : "") + "</div>" +
         (il ? '<div class="ct-ilist">' + esc(il.length > 80 ? il.slice(0, 80) + "…" : il) + "</div>" : "") + "</td>" +
       '<td class="muted" style="white-space:nowrap">' + esc(e.billNo || "—") + "</td>" +
       "<td>" + ctModeTag(e) + "</td>" +
@@ -4395,6 +4422,75 @@ function ctActivityView() {
 }
 
 /* ------------------------- 21i. ENTRY MODAL ------------------------- */
+/* ---- bill/parche photo (v3.4): upload → compress → entry ke saath save ---- */
+function ctPhotoBoxHTML(d) {
+  if (d && d.photo) {
+    return '<div class="ct-phRow">' +
+      '<img class="ct-phThumb" src="' + d.photo + '" alt="Bill photo" data-act="ctPhotoView" title="Badi dekho">' +
+      '<div><b>📷 Bill / parche ki photo judi hai</b>' +
+      '<div class="ct-note">Entry ke saath save hogi — ledger me 📷 dikhega, tap karke badi khulegi.</div>' +
+      '<div style="display:flex;gap:7px;margin-top:6px">' +
+        '<button class="btn xs" data-act="ctPhotoView">👀 Badi dekho</button>' +
+        '<button class="btn xs" data-act="ctPhotoDel" style="color:var(--bad)">🗑 Photo hatao</button>' +
+      "</div></div></div>";
+  }
+  return '<label class="ct-phDrop" title="Bill ya parche ki photo lagao">' +
+    '<input type="file" accept="image/*" capture="environment" data-ct-photo="1" style="display:none">' +
+    '<span class="big">📷</span>' +
+    '<div><b>Bill / parche ki photo lagao (optional)</b>' +
+    '<div class="ct-note">Camera ya gallery se — photo entry ke saath save hogi. Photo me single item ke rate ' +
+    'na ho to koi baat nahi: neeche <b>“Σ Ek saath pura total”</b> me sirf amount likh do.</div></div></label>';
+}
+/* file → chhota JPEG dataURL (localStorage meAtana hi rahe jitna zaroori) */
+function ctReadPhoto(file, cb) {
+  if (!file) return;
+  if (!/^image\//.test(file.type || "")) return toast("Sirf photo (image) file chahiye", "bad");
+  if (file.size > 15 * 1024 * 1024) return toast("Photo bahut badi hai — 15MB se chhoti lo", "bad");
+  const fr = new FileReader();
+  fr.onload = () => {
+    const img = new Image();
+    img.onload = () => {
+      try {
+        const MAX = 1100;
+        const s = Math.min(1, MAX / Math.max(img.width || MAX, img.height || MAX));
+        const w = Math.max(1, Math.round((img.width || MAX) * s));
+        const h = Math.max(1, Math.round((img.height || MAX) * s));
+        const cv = document.createElement("canvas");
+        cv.width = w; cv.height = h;
+        cv.getContext("2d").drawImage(img, 0, 0, w, h);
+        let q = 0.72, url = cv.toDataURL("image/jpeg", q);
+        while (url.length > 320000 && q > 0.38) { q -= 0.08; url = cv.toDataURL("image/jpeg", q); }
+        cb(url);
+      } catch (err) { toast("Photo process nahi hui — dobara try karo", "bad"); }
+    };
+    img.onerror = () => toast("Photo padhi nahi gayi — dobara try karo", "bad");
+    img.src = fr.result;
+  };
+  fr.onerror = () => toast("Photo padhi nahi gayi — dobara try karo", "bad");
+  fr.readAsDataURL(file);
+}
+function ctPhotoPick(input) {
+  const d = ctUI().edit;
+  if (!d) return;
+  const f = input.files && input.files[0];
+  ctReadPhoto(f, (url) => {
+    d.photo = url;
+    const box = document.getElementById("ctPhotoBox");
+    if (box) box.innerHTML = ctPhotoBoxHTML(d);
+    toast("Photo jud gayi 📷 — entry save karte hi ye bhi save hogi", "ok");
+  });
+}
+/* poori photo — modal ke upar lightbox (entry modal kharab nahi hota) */
+function ctLightbox(src, caption) {
+  if (!src) return;
+  const ov = document.createElement("div");
+  ov.className = "ct-lb";
+  ov.innerHTML = '<button class="x" title="Band karo">✕</button>' +
+    '<img src="' + src + '" alt="Bill photo">' +
+    (caption ? '<div class="cap">' + esc(caption) + "</div>" : "");
+  ov.addEventListener("click", () => ov.remove());
+  document.body.appendChild(ov);
+}
 function ctDefaultDate() {
   const u = ctUI();
   if (u.tab === "day") return u.date;
@@ -4462,6 +4558,8 @@ function ctRenderModal(isEdit) {
         "</div>" +
         '<datalist id="ctPartyList">' + partyOpts + "</datalist>" +
         '<datalist id="ctItemNames">' + itemOpts + "</datalist>" +
+
+        '<div style="margin-top:12px" id="ctPhotoBox">' + ctPhotoBoxHTML(d) + "</div>" +
 
         '<div class="sec-title">Saman ka hisaab</div>' +
         '<div class="seg" id="ctModeSeg" style="width:100%;display:flex">' +
@@ -4636,6 +4734,7 @@ function ctFieldInput(el) {
     if (f === "name" || f === "unit") {
       it[f] = el.value;
       if (f === "unit" && row) {
+        it.unitTouched = true;   /* user ne khud unit chuni — auto-guess ab nahi */
         const o = $('.ct-pm option[value="unit"]', row);
         if (o) o.textContent = "₹ / " + (el.value || "kg");
       }
@@ -4657,6 +4756,35 @@ function ctFieldInput(el) {
   else if (id === "ctDateM") { if (el.value) d.date = el.value; }
   else if (id === "ctPayMode") { d.payMode = CT_PAY[el.value] ? el.value : "cash"; }
 }
+/* v3.4 — item ke NAAM se unit ka andaza (jab rate list me rate na ho):
+   naam likhte hi unit apne aap — doodh→ltr, kesar/dhaniya→gram, anda→dozen, bread→pcs… */
+const CT_UNIT_HINTS = [
+  [/doodh|dudh|milk|pani|paani|water|cola|juice|ras\b|sharbat|lassi|chhaach|dahi|curd|oil|tel\b|ghee|syrup|squash|nimbu pani/i, "ltr"],
+  [/kesar|zafron|zafran|elaichi|cardamom|zeera|jeera|saunf|ajwain|heeng|hing|tejpatta|pudina|mint|dhaniya|coriander|adrak|ginger|lahsun|garlic|mirch|chilli|haldi|turmeric|sounth|masala|namak|salt|kali mirch|long|laung|dalchini/i, "gram"],
+  [/anda|egg/i, "dozen"],
+  [/biscuit|biskut|namkeen|chips|kurkure|bhujia|wafer|waffer|chocolate|toffee|candy|muran|papad|soup packet/i, "pkt"],
+  [/bread|pav\b|pao\b|bun\b|cup\b|glass|gilas|spoon|chammach|cylinder|regulator|stove|chulha|kadai|tawa|bartan|knife|chaku|dibba|box|bottle|boti|cap\b|lid\b/i, "pcs"],
+  [/aata|flour|chawal|rice|dal\b|daal|cheeni|sugar|chai|tea|maggi|noodle|sabzi|sabji|vegetable|aloo|pyaz|onion|tamatar|tomato|gobhi|bhindi|baigan|gajar|mooli|koyla|coal|lakdi|wood|barf|ice|maida|suji|besan/i, "kg"]
+];
+function ctAutoUnit(el, it) {
+  if (!it || it.unitTouched) return;
+  const nm = String(el.value || "");
+  if (!nm.trim()) return;
+  const m = CT_UNIT_HINTS.find((h) => h[0].test(nm));
+  const hitU = m ? m[1] : "";
+  if (!hitU || hitU === it.unit) return;
+  it.unit = hitU;
+  const row = el.closest ? el.closest(".ct-row") : null;
+  if (row) {
+    const uSel = $('[data-ct-f="unit"]', row);
+    if (uSel) {
+      if (!Array.from(uSel.options).some((o) => o.value === hitU)) uSel.add(new Option(hitU, hitU));
+      uSel.value = hitU;
+    }
+    const o = $('.ct-pm option[value="unit"]', row);
+    if (o) o.textContent = "₹ / " + hitU;
+  }
+}
 /* item ka naam blur/change hone par rate list se rate + unit bhar do */
 function ctAutoRate(el) {
   const d = ctUI().edit;
@@ -4665,7 +4793,7 @@ function ctAutoRate(el) {
   const it = (d.items || [])[i];
   if (!it) return;
   const hit = ctRateFor(el.value) || ctLastRateInfo(el.value);
-  if (!hit) return;
+  if (!hit) { ctAutoUnit(el, it); return; }
   const rate = num(hit.rate);
   if (!rate) return;
   const row = el.closest(".ct-row");
@@ -4682,7 +4810,7 @@ function ctAutoRate(el) {
     const pmSel = row ? $(".ct-pm", row) : null;
     if (pmSel) pmSel.value = "unit";
   }
-  if (hit.unit && it.unit !== hit.unit) {
+  if (hit.unit && it.unit !== hit.unit && !it.unitTouched) {
     it.unit = hit.unit;
     const uSel = row ? $('[data-ct-f="unit"]', row) : null;
     if (uSel) {
@@ -4729,6 +4857,7 @@ function ctSave() {
     id: isNew ? uid() : d.id,
     date: date, kind: d.kind, mode: d.mode, items: items, amount: amount,
     party: party, billNo: billNo, paid: r2(clamp(paidRaw, 0, amount)), payMode: payMode, note: note,
+    photo: String(d.photo || ""),
     createdAt: prevSnap ? prevSnap.createdAt : Date.now(), updatedAt: Date.now()
   });
 
@@ -4740,7 +4869,15 @@ function ctSave() {
   ctSyncRates(entry);
   ctLogIt(isNew ? "add" : "edit", entry, prevSnap, ctLogText(entry) + (isNew ? "" : " — edited"));
 
-  Store.save();
+  /* storage bhara ho (photo ki wajah se) to entry wapas nikal do — data kharab na ho */
+  if (!Store.save()) {
+    const j = C.entries.findIndex((x) => x.id === entry.id);
+    if (isNew) { if (j >= 0) C.entries.splice(j, 1); }
+    else if (prevSnap) { if (j >= 0) C.entries[j] = prevSnap; }
+    else if (j >= 0) C.entries.splice(j, 1);
+    if (C.log.length) C.log.pop();
+    return toast("Save NAHIN hua — browser storage bhara hai. Photo hata kar dobara save karo, ya purani entries ka backup le lo.", "bad");
+  }
   closeModal();
   const u = ctUI();
   u.edit = null;
@@ -5169,6 +5306,130 @@ function ctPrintMonth() {
   $("#print-root").innerHTML = ctPrintHTML("month");
   setTimeout(() => window.print(), 80);
 }
+
+/* ---------- CANTEEN PDF (v3.4) — din / mahine ka ledger, seedha PDF file ---------- */
+function ctPdfHead(p, title, sub) {
+  const s = Store.data.settings || {};
+  p.text(M, 806, 15, s.shopName || "My Shop", { bold: true, color: C.ink });
+  const sub2 = [s.address, s.phone].filter(Boolean).join(" · ");
+  if (sub2) p.text(M, 793, 8.5, sub2, { color: C.muted });
+  p.text(RIGHT, 806, 12.5, title, { bold: true, align: "right", color: C.primary });
+  p.text(RIGHT, 793, 8.5, sub, { align: "right", color: C.muted });
+  p.line(M, 784, RIGHT, 784, C.line, 1);
+  return 768;
+}
+/* chhota table helper: cols = [{l,w,r?}], rows = [[cell,...]] — wrap + page-break ke saath */
+function ctPdfTable(p, y, cols, rows) {
+  const head = () => {
+    p.rect(M, y - 5, CW, 16, C.hdr);
+    let x = M;
+    cols.forEach((c) => {
+      p.text(c.r ? x + c.w - 4 : x + 4, y + 2, 8, c.l, { bold: true, color: C.muted, align: c.r ? "right" : undefined });
+      x += c.w;
+    });
+    return y - 19;
+  };
+  y = head();
+  rows.forEach((r) => {
+    const cells = r.map((v, i) => p.wrap(String(v == null ? "" : v), 8.5, cols[i].w - 8, !!cols[i].b));
+    const lines = Math.max.apply(null, cells.map((c) => c.length).concat([1]));
+    const h = lines * 11 + 7;
+    if (y - h < 64) { p.newPage(); y = head() ; }
+    let x = M;
+    cells.forEach((cs, i) => {
+      cs.forEach((ln, li) => {
+        p.text(cols[i].r ? x + cols[i].w - 4 : x + 4, y - 4 - li * 11, 8.5, ln,
+          { align: cols[i].r ? "right" : undefined, bold: !!cols[i].b, color: cols[i].color || C.ink });
+      });
+      x += cols[i].w;
+    });
+    y -= h;
+    p.line(M, y + 4, M + CW, y + 4, C.line, 0.6);
+  });
+  return y - 12;
+}
+function ctPdfTotalsBlock(p, y, t, label) {
+  const cells = [
+    ["Saman (purchase)", t.purchase, C.red], ["Bikri (sale)", t.sale, C.green],
+    ["Kharcha", t.expense, C.red], ["Net", t.net, t.net >= 0 ? C.green : C.red],
+    ["Paid", t.paid, C.ink], ["Baki / udhaar", t.balance, t.balance > 0 ? C.red : C.muted]
+  ];
+  p.text(M, y, 10, label, { bold: true, color: C.ink });
+  y -= 14;
+  const w = CW / 3;
+  cells.forEach((c, i) => {
+    const x = M + (i % 3) * w, yy = y - Math.floor(i / 3) * 24;
+    p.box(x + 2, yy - 12, w - 6, 20, C.line, C.light);
+    p.text(x + 7, yy + 1, 7.5, c[0], { color: C.muted });
+    p.text(x + w - 11, yy + 1, 9.5, moneyS(c[1]), { bold: true, align: "right", color: c[2] });
+  });
+  return y - 2 * 24 - 8;
+}
+function ctPdfDay(iso) {
+  const list = ctOnDate(iso);
+  if (!list.length) return toast("Is din koi entry nahi — PDF me kya jayega?", "bad");
+  const t = ctTotals(list);
+  const p = new PdfDoc();
+  let y = ctPdfHead(p, "Din ka ledger", ctPretty(iso) + " · " + ctDayName(iso));
+  y = ctPdfTable(p, y, [
+    { l: "Type", w: 62 }, { l: "Party / bill", w: 118 }, { l: "Saman / note", w: 190 },
+    { l: "Amount", w: 55, r: 1 }, { l: "Paid", w: 45, r: 1 }, { l: "Baki", w: 50, r: 1 }
+  ], list.map((e) => {
+    const k = ctKindOf(e);
+    const il = ctItemLabel(e);
+    const bits = [k.label + (e.photo ? " · photo 📷".replace("📷", "[photo]") : ""), (e.party || "—") + (e.billNo ? " · " + e.billNo : ""),
+      (il || (e.mode === "total" ? "Ek-saath total" : "")) + (e.note ? " · “" + e.note + "”" : "")];
+    return [bits[0], bits[1], bits[2], moneyS(ctAmount(e)), moneyS(Math.min(ctPaid(e), ctAmount(e))),
+      ctBalance(e) > 0.005 ? moneyS(ctBalance(e)) : "-"];
+  }));
+  y = ctPdfTotalsBlock(p, y - 4, t, ctPretty(iso) + " ka total");
+  const items = ctItemAgg(list);
+  if (items.length) {
+    p.text(M, y, 10, "Saman item-wise", { bold: true, color: C.ink });
+    y = ctPdfTable(p, y - 14, [
+      { l: "Item", w: 190 }, { l: "Qty", w: 60, r: 1 }, { l: "Unit", w: 50 },
+      { l: "Rate (per unit)", w: 80, r: 1 }, { l: "Amount", w: 70, r: 1 }, { l: "Lines", w: 65, r: 1 }
+    ], items.map((i) => [i.name + (i.lineItems ? " (Σ line-total)" : ""), String(i.qty), i.unit,
+      rateS(i.avgRate), moneyS(i.amt), String(i.n)]));
+  }
+  p.text(M, 40, 7.5, "Hisaab Pro canteen · din ka ledger · " + ctPretty(iso) + " · photo wali entry me [photo] likha hai",
+    { color: C.muted });
+  savePdf("Canteen_Din_" + iso + ".pdf", p.build());
+}
+function ctPdfMonth(y, m) {
+  const list = ctInMonth(y, m);
+  if (!list.length) return toast("Is mahine koi entry nahi — PDF me kya jayega?", "bad");
+  const t = ctTotals(list);
+  const p = new PdfDoc();
+  let yy = ctPdfHead(p, "Mahine ka ledger", monthLabel(y, m));
+  const days = ctMonthDays(y, m).filter((d) => d.list.length);
+  yy = ctPdfTable(p, yy, [
+    { l: "Date", w: 78 }, { l: "Din", w: 62 }, { l: "Entries", w: 48, r: 1 },
+    { l: "Saman", w: 66, r: 1 }, { l: "Bikri", w: 66, r: 1 }, { l: "Kharcha", w: 62, r: 1 },
+    { l: "Net", w: 66, r: 1 }, { l: "Baki", w: 61, r: 1 }
+  ], days.map((d) => [ctPretty(d.iso), d.day.slice(0, 3), String(d.list.length),
+    moneyS(d.t.purchase), moneyS(d.t.sale), moneyS(d.t.expense), moneyS(d.t.net),
+    d.t.balance > 0.005 ? moneyS(d.t.balance) : "-"]));
+  yy = ctPdfTotalsBlock(p, yy - 4, t, monthLabel(y, m) + " ka total");
+  const items = ctItemAgg(list);
+  if (items.length) {
+    p.text(M, yy, 10, "Saman item-wise (" + monthLabel(y, m) + ")", { bold: true, color: C.ink });
+    yy = ctPdfTable(p, yy - 14, [
+      { l: "Item", w: 175 }, { l: "Qty", w: 60, r: 1 }, { l: "Unit", w: 48 },
+      { l: "Avg rate", w: 75, r: 1 }, { l: "Amount", w: 72, r: 1 }, { l: "Lines", w: 85, r: 1 }
+    ], items.slice(0, 40).map((i) => [i.name + (i.lineItems ? " (Σ)" : ""), String(i.qty), i.unit,
+      rateS(i.avgRate), moneyS(i.amt), String(i.n)]));
+  }
+  const parties = ctPartyAgg(list);
+  if (parties.length && yy > 120) {
+    p.text(M, yy, 10, "Party-wise", { bold: true, color: C.ink });
+    yy = ctPdfTable(p, yy - 14, [
+      { l: "Party", w: 220 }, { l: "Entries", w: 70, r: 1 }, { l: "Amount", w: 110, r: 1 }, { l: "Baki", w: 115, r: 1 }
+    ], parties.slice(0, 25).map((x) => [x.name || "—", String(x.n), moneyS(x.amt), x.bal > 0.005 ? moneyS(x.bal) : "-"]));
+  }
+  p.text(M, 40, 7.5, "Hisaab Pro canteen · mahine ka ledger · " + monthLabel(y, m), { color: C.muted });
+  savePdf("Canteen_" + MONTHS_S[m] + "-" + y + ".pdf", p.build());
+}
 function ctShareDay() {
   const u = ctUI();
   const iso = u.date;
@@ -5408,6 +5669,20 @@ document.addEventListener("click", (e) => {
     case "ctRateDel": ctRateDel(btn.dataset.id); break;
     case "ctCsv": ctCsv(); break;
     case "ctPrintDay": ctPrintDay(); break;
+    case "ctPdfDay": ctPdfDay(ctUI().date); break;
+    case "ctPdfMonth": ctPdfMonth(UI.year, UI.month); break;
+    case "ctPhotoView": {
+      const pid = btn.dataset.id;
+      const pe = pid ? ctEntry(pid) : null;
+      const src = pid ? (pe || {}).photo : (ctUI().edit || {}).photo;
+      if (src) ctLightbox(src, pe ? ctPretty(pe.date) + " · " + (pe.party || ctKindOf(pe).label) : "Bill / parche ki photo");
+      break;
+    }
+    case "ctPhotoDel": {
+      const d = ctUI().edit;
+      if (d) { d.photo = ""; const b = document.getElementById("ctPhotoBox"); if (b) b.innerHTML = ctPhotoBoxHTML(d); }
+      break;
+    }
     case "ctPrintMonth": ctPrintMonth(); break;
     case "ctShareDay": ctShareDay(); break;
     case "ctRestore": ctRestoreLog(btn.dataset.log); break;
@@ -5509,6 +5784,7 @@ document.addEventListener("input", (e) => {
 document.addEventListener("change", (e) => {
   const el = e.target;
   if (!el) return;
+  if (el.dataset && el.dataset.ctPhoto !== undefined) { ctPhotoPick(el); return; }
   if (el.dataset && el.dataset.ctItem !== undefined) {
     ctFieldInput(el);
     if (el.dataset.ctF === "name") ctAutoRate(el);
@@ -5615,7 +5891,8 @@ window.Hisaab = { Store, calc, monthMeta, PdfDoc, inWords, UI, render, go, Cloud
   /* canteen module API */
   canteen: { data: ct, totals: ctTotals, entries: ctAll, onDate: ctOnDate, inMonth: ctInMonth,
              dayLedger: ctDayLedger, monthLedger: ctMonthLedger, openModal: openCtModal, save: ctSave,
-             csv: ctCsv, printDay: ctPrintDay, printMonth: ctPrintMonth, blank: blankCanteen } };
+             csv: ctCsv, printDay: ctPrintDay, printMonth: ctPrintMonth, blank: blankCanteen,
+             pdfDay: ctPdfDay, pdfMonth: ctPdfMonth, renderModal: ctRenderModal, photoBox: ctPhotoBoxHTML } };
 })();
 </script>
 </body>
