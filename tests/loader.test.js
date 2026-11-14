@@ -97,20 +97,21 @@ const wait = (ms) => new Promise((r) => setTimeout(r, ms));
     dom.window.close();
   }
 
-  console.log("\n\u25b8 boot: v3.1 + v3.2 + v3.3 dono ho \u2192 v3.3 khule");
+  console.log("\n\u25b8 boot: purane + v3.4 sab ho \u2192 v3.4 khule");
   {
     const files = [
       { name: "index.html", type: "file", size: 9000 },
       { name: "Hisaab-Pro-v3.1.html", type: "file", size: 319379 },
       { name: "Hisaab-Pro-v3.2.html", type: "file", size: 326000 },
       { name: "Hisaab-Pro-v3.3.html", type: "file", size: 327000 },
+      { name: "Hisaab-Pro-v3.4.html", type: "file", size: 335000 },
       { name: "Hisaab-Pro-v2.0.html", type: "file", size: 143224 }
     ];
     const dom = makeDom({ files });
     await wait(200);
-    ok(dom.window.__getRedirect() === "/hisaab-pro/Hisaab-Pro-v3.3.html",
-       "sabse naya version v3.3 chuna", dom.window.__getRedirect());
-    ok(dom.window.localStorage.getItem("hisaabPro.loader.v1") === "Hisaab-Pro-v3.3.html", "v3.3 cache hua");
+    ok(dom.window.__getRedirect() === "/hisaab-pro/Hisaab-Pro-v3.4.html",
+       "sabse naya version v3.4 chuna", dom.window.__getRedirect());
+    ok(dom.window.localStorage.getItem("hisaabPro.loader.v1") === "Hisaab-Pro-v3.4.html", "v3.4 cache hua");
     await wait(80);
     dom.window.close();
   }
@@ -157,9 +158,9 @@ const wait = (ms) => new Promise((r) => setTimeout(r, ms));
     await wait(100);
     ok(dom.window.document.getElementById("err").hidden === false, "file mode me chooser dikha");
     const btns = dom.window.document.getElementById("errBtns").textContent;
-    ok(btns.indexOf("Hisaab-Pro-v3.3.html") >= 0, "file mode me v3.3 link bhi hai");
-    ok(btns.indexOf("Hisaab-Pro-v3.2.html") >= 0, "v3.2 link bhi hai");
-    ok(btns.indexOf("Hisaab-Pro-v3.3.html") < btns.indexOf("Hisaab-Pro-v3.2.html") &&
+    ok(btns.indexOf("Hisaab-Pro-v3.4.html") >= 0, "file mode me v3.4 link bhi hai");
+    ok(btns.indexOf("Hisaab-Pro-v3.4.html") < btns.indexOf("Hisaab-Pro-v3.3.html") &&
+       btns.indexOf("Hisaab-Pro-v3.3.html") < btns.indexOf("Hisaab-Pro-v3.2.html") &&
        btns.indexOf("Hisaab-Pro-v3.2.html") < btns.indexOf("Hisaab-Pro-v3.1.html"), "naya version pehle");
     await wait(80);
     dom.window.close();
