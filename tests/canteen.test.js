@@ -66,7 +66,7 @@ const iso = (d) => d.getFullYear() + "-" + String(d.getMonth() + 1).padStart(2, 
   ok(H().Store.data.canteen.entries.length > 0, "sample canteen entries load hui (" + H().Store.data.canteen.entries.length + ")");
   ok(H().Store.data.workers.length === 4, "workers safe (4 demo)");
   const verEl = $("[data-ver]");
-  ok(verEl && verEl.textContent === "3.5", "version badge 3.5", verEl && verEl.textContent);
+  ok(verEl && verEl.textContent === "3.6", "version badge 3.6", verEl && verEl.textContent);
   ok(root().innerHTML.indexOf("Canteen") >= 0, "dashboard par canteen card dikha");
   ok(root().innerHTML.indexOf("Saman aaya") >= 0, "dashboard canteen strip me 'Saman aaya'");
 
@@ -565,6 +565,86 @@ const iso = (d) => d.getFullYear() + "-" + String(d.getMonth() + 1).padStart(2, 
   const oneE = H().canteen.entries().filter((e) => e.party === "Bulk Mandi");
   ok(oneE.length === 1 && oneE[0].items.length === 2 && oneE[0].amount === 2100,
      "ek entry me 2 item lines, total 2100", oneE[0] && oneE[0].amount);
+
+  section("Advanced parser (v3.6) \u2014 code/rate-token/total-line sab");
+  const BP2 = (t) => H().canteen.bulkParse(t, todayIso);
+  let ar = BP2("101 Maggi 4 360").rows[0];
+  ok(ar && ar.qty === 4 && ar.amt === 360 && ar.priceMode === "line", "item-code 101 ignore, qty 4 total 360", ar);
+  ar = BP2("Maggi 4 90 360").rows[0];
+  ok(ar && ar.priceMode === "unit" && ar.rate === 90 && ar.amt === 360, "qty rate total \u2192 per-unit 90", ar);
+  ar = BP2("Maggi 4 kg 90/kg").rows[0];
+  ok(ar && ar.priceMode === "unit" && ar.rate === 90 && ar.unit === "kg" && ar.amt === 360, "90/kg token \u2192 per-unit", ar);
+  ar = BP2("Aata 20 kg 42 per kg").rows[0];
+  ok(ar && ar.priceMode === "unit" && ar.rate === 42 && ar.amt === 840, "'42 per kg' \u2192 per-unit", ar);
+  ar = BP2("Doodh 30 ltr 1,740/-").rows[0];
+  ok(ar && ar.amt === 1740, "1,740/- \u2192 1740", ar);
+  ar = BP2("Maggi (4) 360").rows[0];
+  ok(ar && ar.qty === 4 && ar.amt === 360, "bracket qty (4)", ar);
+  ar = BP2("Bread 10 nos 180").rows[0];
+  ok(ar && ar.unit === "pcs" && ar.amt === 180, "nos \u2192 pcs", ar);
+  ar = BP2("Maggi 2-minute 4 pkt 360").rows[0];
+  ok(ar && ar.name.indexOf("2-minute") >= 0 && ar.qty === 4 && ar.amt === 360, "naam me number ho to bhi sahi", ar && ar.name);
+  const vt = BP2("Maggi 4 kg 360\nDoodh 2 ltr 116\nTotal 476");
+  ok(vt.verify === 476 && vt.rows.length === 2, "Total line pakdi (verify 476), 2 rows", vt.verify);
+  ok(BP2("Paid 2000").rows.length === 0 && BP2("Paid 2000").paid === 2000, "Paid line \u2192 info, entry nahi");
+  ok(BP2("Balance 500").rows.length === 0, "Baki line \u2192 info");
+  ok(BP2("qty: 4 Maggi 360").rows[0].qty === 4, "qty: label ignore", BP2("qty: 4 Maggi 360").rows[0]);
+
+  section("Editable preview + TOTAL verify chip (v3.6)");
+  click('[data-act="ctBulk"]');
+  bta = $("#ctBulkText");
+  bta.value = "Maggi 4 kg 360\nTotal 360";
+  bta.dispatchEvent(new window.Event("input", { bubbles: true }));
+  await wait(30);
+  ok($("#ctBulkPrev").textContent.indexOf("hisaab mila") >= 0, "TOTAL == preview \u2192 \u2705 chip", $("#ctBulkPrev").textContent.slice(0, 120));
+  const pr0 = $('[data-br="0"][data-f="price"]');
+  pr0.value = "400";
+  pr0.dispatchEvent(new window.Event("input", { bubbles: true }));
+  await wait(20);
+  ok($('[data-bamt="0"]').textContent.indexOf("400") >= 0, "preview cell edit \u2192 amount 400", $('[data-bamt="0"]').textContent);
+  ok($("#ctBulkTot").textContent.indexOf("400") >= 0 && $("#ctBulkTot").textContent.indexOf("\u26a0") >= 0,
+     "total chip update + TOTAL mismatch warning", $("#ctBulkTot").textContent);
+  const pmSel2 = $('[data-br="0"][data-f="priceMode"]');
+  pmSel2.value = "unit";
+  pmSel2.dispatchEvent(new window.Event("change", { bubbles: true }));
+  await wait(20);
+  ok(String($('[data-br="0"][data-f="price"]').value) === "100", "line\u2192unit par number carry (400/4=100)", $('[data-br="0"][data-f="price"]').value);
+  ok($('[data-bamt="0"]').textContent.indexOf("400") >= 0, "amount 400 hi raha (4 x 100)");
+  click('[data-act="ctBulkSave"]');
+  await wait(40);
+  const edE = H().canteen.entries().filter((e) => (e.items || []).some((i) => i.name === "Maggi" && i.rate === 100));
+  ok(edE.length >= 1 && edE[0].amount === 400, "edit ki hui row save hui (400)", edE[0] && edE[0].amount);
+
+  section("OCR stub (v3.6) \u2014 photo \u2192 text \u2192 entries");
+  let ocrCalls = 0;
+  window.Tesseract = {
+    recognize: (img, lang, opt) => {
+      ocrCalls++;
+      if (opt && opt.logger) opt.logger({ status: "recognizing text", progress: 0.5 });
+      return Promise.resolve({ data: { text: "Maggi 4 kg 360\nDoodh 2 ltr 116\n" } });
+    }
+  };
+  const ocrText = await H().canteen.ocrRun("data:image/png;base64,AAAA", () => {});
+  ok(ocrCalls === 1 && ocrText.indexOf("Maggi 4 kg 360") >= 0, "ocrRun engine se text lata hai", ocrText);
+  const ocrParsed = H().canteen.bulkParse(ocrText, todayIso);
+  ok(ocrParsed.rows.length === 2 && ocrParsed.rows[0].amt === 360, "OCR text parse hokar 2 rows");
+  click('[data-act="ctBulk"]');
+  ok(!!$('[data-act="ctOcrPick"]'), "bulk modal me OCR button");
+  /* entry modal me photo ho to OCR button */
+  click('[data-act="ctAdd"]');
+  H().UI.ct.edit.photo = "data:image/png;base64,AAAA";
+  H().canteen.renderModal(false);
+  ok(!!$('[data-act="ctPhotoOcr"]'), "entry modal me photo ke saath OCR button");
+  click('[data-act="ctPhotoOcr"]');
+  await wait(60);
+  ok(!!$("#ctBulkText") && $("#ctBulkText").value.indexOf("Maggi 4 kg 360") >= 0,
+     "photo OCR \u2192 bulk modal me text aa gaya", $("#ctBulkText") && $("#ctBulkText").value.slice(0, 40));
+  ok(H().UI.ct.bulk.photo === "data:image/png;base64,AAAA", "photo bulk draft me judi (entries me lagegi)");
+  click('[data-act="ctBulkSave"]');
+  await wait(40);
+  const ocrE = H().canteen.entries().filter((e) => e.photo === "data:image/png;base64,AAAA");
+  ok(ocrE.length === 2, "OCR wali 2 entries photo ke saath save hui", ocrE.length);
+  delete window.Tesseract;
 
   section("CSV export");
   let csvText = "";
