@@ -9,11 +9,12 @@ ki **Canteen module** (aur purane salary features) toot to nahi gaye.
 ```bash
 cd tests
 npm install          # ek hi baar (jsdom install hota hai)
-npm test             # hisaab_v3.html par ~135 checks
+npm test             # canteen module (~150 checks) + loader (~25 checks)
 node canteen.test.js ../Hisaab-Pro-v3.1.html   # kisi aur file par chalana ho
+node loader.test.js  # sirf index.html loader ke tests
 ```
 
-Sab theek ho to aakhri line aati hai: `✅ SAB CHECKS PASS`
+Sab theek ho to aakhri line aati hai: `✅ SAB CHECKS PASS` / `✅ LOADER SAB TESTS PASS`
 
 ## Kya-kya test hota hai
 

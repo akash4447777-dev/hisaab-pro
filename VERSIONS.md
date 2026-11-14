@@ -2,10 +2,18 @@
 
 ## Ab kaise kaam karta hai
 
-Repo me **`index.html` ek chhota "loader" hai** (9 KB). Ye har baar khulte hi check karta hai ki repo me
+Repo me **`index.html` ek chhota "loader" hai**. Ye har baar khulte hi check karta hai ki repo me
 sabse naya version kaun sa hai, aur **seedha usi ko khol deta hai**.
 
 Iska matlab: **link kabhi nahi badalta, `index.html` bhi kabhi nahi badalna.**
+
+> ⚠️ **v3.1 me loader wapas aaya.** Pehle `index.html` repo se delete ho gaya tha, isi liye
+> `https://<username>.github.io/<repo>/` par **404 "File not found"** aa raha tha
+> (GitHub Pages root URL ke liye `index.html` maangta hai). Ab loader dobara repo me hai.
+>
+> Loader kaise chunta hai: GitHub API se file-list → sabse bada `Hisaab-Pro-v<major>.<minor>.html`.
+> API na chale to pichhla chuna hua naam (localStorage cache) aur phir jaane hue naam HEAD-probe.
+> Kuch na mile to screen par direct links + retry. `file://` (Android download) par seedha file-chooser.
 
 ```
 https://<username>.github.io/<repo>/        <- yahi link hamesha
@@ -50,13 +58,14 @@ File ka naam me version hona chahiye: **`Hisaab-Pro-v<number>.<number>.html`**
 | Purana panel khul raha hai | Page refresh karo; 10–20 sec baad phir try karo (GitHub Pages ko build hone me 1–2 min lagta hai) |
 | Sidebar me version nahi dikh raha | Purana build chal raha hai — loader wala naya `index.html` upload hua ya nahi check karo |
 | "App file nahi mili" screen | Repo me `Hisaab-Pro-vX.Y.html` upload karo, ya naam me version daalo |
+| Root URL par **404 "File not found"** | Repo me `index.html` (loader) maujood hona chahiye — ye v3.1 me wapas add hua |
 | Internet slow | Loader GitHub ki file-list 1 baar padhta hai; fail hone par purana cached version khol deta hai |
 
 ## Version history
 
 | Version | Date | Kya badla | File |
 |---|---|---|---|
-| v3.1 | 2026-11-14 | **Naya Canteen module** — saman entry (rate-wise **ya** ek-saath pura total), bikri/kharcha, **din ka ledger**, **mahine ka ledger**, rate list, udhaar/baki, poori activity log, CSV + print + WhatsApp. Dashboard par canteen card, Settings me canteen card. | `Hisaab-Pro-v3.1.html` |
+| v3.1 | 2026-11-14 | **Naya Canteen module** — saman entry (rate-wise **ya** ek-saath pura total), bikri/kharcha, **din ka ledger**, **mahine ka ledger**, rate list, udhaar/baki, poori activity log, CSV + print + WhatsApp. Dashboard par canteen card, Settings me canteen card. **Loader `index.html` wapas add hua** (root URL ka 404 fix). | `Hisaab-Pro-v3.1.html` + `index.html` |
 | v3.0 | — | v3 UI, dark mode, ledger (advances), worker profile drawer, CSV & WhatsApp share, cloud login/sync | `hisaab_v3.html` |
 | v2.0 | 2026-11-11 | Auto-update loader + fixed working hours/overtime removed. Hourly worker = rate × total hours (naya Hours column). Monthly = ÷30 fixed, Sunday auto-exclude. Version badge. | `Hisaab-Pro-v2.0.html` |
 
