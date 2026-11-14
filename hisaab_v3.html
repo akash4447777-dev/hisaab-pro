@@ -655,6 +655,80 @@ table.tbl td.num, table.tbl td .tag{white-space:nowrap}
 .modal-f .btn.danger{background:transparent;color:var(--bad);border:1px solid color-mix(in srgb,var(--bad) 34%,var(--line));box-shadow:none;font-size:12px}
 .modal-f .btn.danger:hover{background:var(--bad-soft)}
 @media(max-width:720px){ .modal-f .btn.danger{align-self:flex-start} }
+
+/* ============================================================
+   CANTEEN MODULE — din/mahine ka ledger, saman entry, rate list
+   ============================================================ */
+.ct-head{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-bottom:14px}
+.ct-seg{flex-wrap:wrap;max-width:100%}
+.ct-datebar{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.ct-datebar input[type="date"].inp{width:auto;min-width:162px;font-weight:750;font-family:inherit}
+.ct-items{display:flex;flex-direction:column;gap:7px;overflow-x:auto;-webkit-overflow-scrolling:touch;padding-bottom:2px}
+.ct-rowhead,.ct-row{display:grid;grid-template-columns:minmax(150px,1.9fr) 76px 92px 104px 108px 30px;gap:7px;align-items:center;min-width:580px}
+.ct-rowhead{font-size:9.7px;font-weight:800;letter-spacing:.07em;text-transform:uppercase;color:var(--faint);margin-bottom:3px}
+.ct-rowhead span:nth-child(5){text-align:right}
+.ct-row .inp{padding:8px 9px;font-size:12.6px}
+.ct-row select.inp{padding-right:26px}
+.ct-row .amt{text-align:right;font-weight:800;font-size:12.8px;font-variant-numeric:tabular-nums;color:var(--ink);white-space:nowrap}
+.ct-row .amt.zero{color:var(--faint);font-weight:700}
+.ct-row .del{width:28px;height:28px;border-radius:8px;border:1px solid var(--line);background:var(--surface);color:var(--bad);cursor:pointer;font-size:13px;line-height:1}
+.ct-row .del:hover{background:var(--bad-soft);border-color:transparent}
+.ct-lump{display:flex;gap:12px;align-items:center;flex-wrap:wrap;background:var(--primary-soft);
+  border:1px solid color-mix(in srgb,var(--primary) 26%,var(--line));border-radius:var(--r);padding:12px 14px;margin-bottom:11px}
+.ct-lump .l{font-size:11.2px;font-weight:800;color:var(--primary-ink);letter-spacing:.02em;line-height:1.5}
+.ct-lump .l small{display:block;font-weight:600;opacity:.85;font-size:10.6px;margin-top:2px}
+.ct-lump input.inp{max-width:210px;font-weight:800;font-size:16px;font-variant-numeric:tabular-nums}
+.ct-totalbox{margin-left:auto;text-align:right;min-width:150px}
+.ct-totalbox small{display:block;font-size:9.9px;font-weight:800;letter-spacing:.09em;text-transform:uppercase;color:var(--primary-ink);opacity:.85}
+.ct-totalbox b{font-size:21px;font-weight:800;letter-spacing:-.02em;color:var(--primary-ink);font-variant-numeric:tabular-nums}
+.ct-itemnames{display:flex;flex-wrap:wrap;gap:5px;margin-top:8px}
+.ct-chip{display:inline-flex;align-items:center;gap:5px;background:var(--surface-3);border:1px solid var(--line);
+  border-radius:99px;padding:3px 9px;font-size:11.2px;font-weight:700;color:var(--ink-2)}
+.ct-chip b{font-variant-numeric:tabular-nums;color:var(--muted);font-weight:700}
+.ct-ilist{font-size:11.2px;color:var(--muted);margin-top:2px;line-height:1.5}
+.ct-act{display:flex;gap:11px;align-items:flex-start;padding:11px 2px;border-bottom:1px dashed var(--line-2)}
+.ct-act:last-child{border-bottom:0}
+.ct-act .ai{width:31px;height:31px;flex:0 0 31px;border-radius:9px;display:grid;place-items:center;background:var(--surface-3);font-size:14px}
+.ct-act .ai.add{background:var(--ok-soft);color:var(--ok)}
+.ct-act .ai.edit{background:var(--warn-soft);color:var(--warn)}
+.ct-act .ai.delete{background:var(--bad-soft);color:var(--bad)}
+.ct-act .ai.pay{background:var(--primary-soft);color:var(--primary)}
+.ct-act .ai.rate{background:var(--cyan-soft);color:var(--cyan)}
+.ct-act .tx{font-size:12.6px;font-weight:650;color:var(--ink);line-height:1.45}
+.ct-act .tm{font-size:10.5px;color:var(--faint);font-variant-numeric:tabular-nums;margin-top:2px}
+.ct-act .am{margin-left:auto;text-align:right;font-weight:800;font-size:12.8px;font-variant-numeric:tabular-nums;white-space:nowrap}
+.ct-dayhead{display:flex;gap:9px;align-items:center;background:var(--surface-2);border-top:1px solid var(--line);
+  padding:8px 12px;font-size:11.4px;font-weight:800;color:var(--ink-2);letter-spacing:.01em;flex-wrap:wrap}
+.ct-dayhead .muted{font-weight:650}
+.ct-dayhead .rt{margin-left:auto;font-variant-numeric:tabular-nums}
+.ct-bal{display:flex;gap:10px;align-items:center;flex-wrap:wrap;background:var(--bad-soft);
+  border:1px solid color-mix(in srgb,var(--bad) 28%,var(--line));border-radius:var(--r);padding:11px 13px;font-size:12.4px;color:var(--ink-2)}
+.ct-bal b{color:var(--bad);font-variant-numeric:tabular-nums}
+.ct-2bar{display:flex;gap:3px;align-items:flex-end;height:100%;width:100%;max-width:52px;justify-content:center}
+.ct-2bar i{display:block;width:46%;border-radius:6px 6px 3px 3px;min-height:3px;transition:.2s}
+.ct-2bar i.a{background:linear-gradient(180deg,#fbbf24,#f59e0b)}
+.ct-2bar i.b{background:linear-gradient(180deg,#34d399,#059669)}
+.ct-note{font-size:11.6px;color:var(--muted);line-height:1.55}
+.ct-modeTag{font-size:9.6px;font-weight:800;letter-spacing:.05em;text-transform:uppercase;padding:2px 7px;border-radius:99px;
+  background:var(--surface-3);color:var(--muted);border:1px solid var(--line);white-space:nowrap}
+.ct-modeTag.tot{background:var(--cyan-soft);color:var(--cyan);border-color:color-mix(in srgb,var(--cyan) 26%,var(--line))}
+.ct-emptyline{padding:26px 16px;text-align:center;color:var(--muted);font-size:12.6px}
+.ct-hbar{height:6px;border-radius:99px;background:var(--surface-3);overflow:hidden;min-width:44px}
+.ct-hbar i{display:block;height:100%;border-radius:99px;background:var(--grad)}
+@media(max-width:960px){
+  .ct-head{gap:8px}
+  .ct-head .toolbar{margin-left:0 !important;width:100%}
+}
+@media(max-width:720px){
+  .ct-lump{gap:9px}
+  .ct-lump input.inp{max-width:none;flex:1;min-width:130px}
+  .ct-totalbox{margin-left:0;text-align:left;width:100%}
+  .ct-datebar input[type="date"].inp{flex:1;min-width:0}
+  .ct-act .am{margin-left:0;width:100%;text-align:left}
+}
+@media print{
+  .ct-print-hide{display:none !important}
+}
 </style>
 </head>
 <body>
@@ -669,6 +743,7 @@ table.tbl td.num, table.tbl td .tag{white-space:nowrap}
       <button data-view="hisaab"><span class="ico">₹</span>Monthly Hisaab<span class="nav-badge" id="navPend" style="display:none">0</span></button>
       <button data-view="workers"><span class="ico">☰</span>Workers</button>
       <button data-view="ledger"><span class="ico">⇄</span>Ledger</button>
+      <button data-view="canteen"><span class="ico">🍽</span>Canteen<span class="nav-badge" id="navCtBal" style="display:none">0</span></button>
       <button data-view="records"><span class="ico">◷</span>Records</button>
       <button data-view="settings"><span class="ico">⚙</span>Settings</button>
     </nav>
@@ -727,7 +802,7 @@ const uid = () => Math.random().toString(36).slice(2, 10) + Date.now().toString(
 const num = (v) => { const n = parseFloat(v); return isFinite(n) ? n : 0; };
 const r2 = (n) => Math.round((n + Number.EPSILON) * 100) / 100;
 const clamp = (n, lo, hi) => Math.min(hi, Math.max(lo, n));
-const APP_VERSION = "3";
+const APP_VERSION = "3.1";
 const esc = (s) => String(s == null ? "" : s).replace(/[&<>"']/g, (m) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[m]));
 
 const MONTHS = ["January","February","March","April","May","June","July","August","September","October","November","December"];
@@ -795,7 +870,7 @@ const DEFAULT_SETTINGS = {
 };
 
 function blankData() {
-  return { settings: { ...DEFAULT_SETTINGS }, workers: [], records: [] };
+  return { settings: { ...DEFAULT_SETTINGS }, workers: [], records: [], canteen: blankCanteen() };
 }
 
 function sampleData() {
@@ -830,7 +905,7 @@ function sampleData() {
   mk(workers[1], pm.y, pm.m, pmeta.workingDays - 3, 3, [], "paid");
   mk(workers[2], pm.y, pm.m, pmeta.workingDays - 1, 1, [], "paid");
   mk(workers[3], pm.y, pm.m, pmeta.workingDays, 0, [], "paid", 1000);
-  return { settings: { ...DEFAULT_SETTINGS, demo: true }, workers, records: recs };
+  return { settings: { ...DEFAULT_SETTINGS, demo: true }, workers, records: recs, canteen: sampleCanteen(y, m, pm) };
 }
 
 const Store = {
@@ -844,7 +919,8 @@ const Store = {
       this.data = {
         settings: { ...DEFAULT_SETTINGS, ...(d.settings || {}) },
         workers: Array.isArray(d.workers) ? d.workers : [],
-        records: Array.isArray(d.records) ? d.records : []
+        records: Array.isArray(d.records) ? d.records : [],
+        canteen: normCanteen(d.canteen)
       };
     } catch (e) { this.data = blankData(); }
     this.migrate();
@@ -861,6 +937,11 @@ const Store = {
       if (r.otHours !== undefined) { delete r.otHours; changed = true; }
       if (r.otMultiplier !== undefined) { delete r.otMultiplier; changed = true; }
     });
+    /* v3.1 — canteen module: purane backup me canteen key nahi hoti thi */
+    if (!this.data.canteen || typeof this.data.canteen !== "object" || !Array.isArray(this.data.canteen.entries)) {
+      this.data.canteen = normCanteen(this.data.canteen);
+      changed = true;
+    }
     if (changed) this.save(true);
   },
   save(silent) {
@@ -954,7 +1035,9 @@ const UI = {
   month: today.getMonth(),
   search: "",
   filter: "all",
-  openRec: null
+  openRec: null,
+  /* canteen module state (tab / date / filters) — see ctUI() */
+  ct: { tab: "day", date: isoDate(today), kind: "all", q: "", from: "", to: "", scope: "month", logScope: "month", edit: null }
 };
 let saveTimer = null;
 
@@ -975,12 +1058,22 @@ function flashSaved() {
 function updateSideStats() {
   const el = $("#sideStats");
   const act = Store.activeWorkers().length;
-  if (el) el.textContent = act + " active worker" + (act === 1 ? "" : "s") + " · " + Store.data.records.length + " records";
+  const ctCount = ((Store.data.canteen && Store.data.canteen.entries) || []).length;
+  if (el) el.textContent = act + " active worker" + (act === 1 ? "" : "s") + " · " + Store.data.records.length + " records" +
+    (ctCount ? " · " + ctCount + " canteen" : "");
   const badge = $("#navPend");
   if (badge) {
     const pend = rowsForMonth(UI.year, UI.month).filter(({ rec }) => !rec || rec.status !== "paid").length;
     badge.textContent = pend;
     badge.style.display = pend ? "inline-block" : "none";
+  }
+  /* canteen nav badge: is mahine kitni entry ka paisa baki (udhaar) hai */
+  const ctBadge = $("#navCtBal");
+  if (ctBadge) {
+    let bal = 0;
+    try { bal = ctInMonth(UI.year, UI.month).filter((e) => ctBalance(e) > 0.005).length; } catch (err) { bal = 0; }
+    ctBadge.textContent = bal;
+    ctBadge.style.display = bal ? "inline-block" : "none";
   }
 }
 
@@ -990,6 +1083,7 @@ const VIEW_META = {
   hisaab:    ["Monthly Hisaab", "Attendance, advances and final payable for every worker"],
   workers:   ["Workers", "Add, edit, search and manage your workforce"],
   ledger:    ["Ledger", "Is mahine ke saare advances aur deductions ek jagah"],
+  canteen:   ["Canteen", "Saman entry (rate-wise ya ek-saath total) · din aur mahine ka ledger · poori activity"],
   records:   ["Records & History", "Month-wise salary records with payment status"],
   settings:  ["Settings", "Shop details, salary rules and your data"]
 };
@@ -1010,12 +1104,18 @@ function render() {
   else if (UI.view === "hisaab") root.innerHTML = viewHisaab();
   else if (UI.view === "workers") root.innerHTML = viewWorkers();
   else if (UI.view === "ledger") root.innerHTML = viewLedger();
+  else if (UI.view === "canteen") root.innerHTML = viewCanteen();
   else if (UI.view === "records") root.innerHTML = viewRecords();
   else if (UI.view === "settings") root.innerHTML = viewSettings();
   updateSideStats();
   syncMonthPickers();
   document.querySelectorAll("[data-ver]").forEach((el) => { el.textContent = APP_VERSION; });
-  document.querySelectorAll("[data-ver]").forEach((el) => { el.textContent = APP_VERSION; });
+  /* topbar ka primary button canteen view par entry add karta hai */
+  const topAdd = document.querySelector(".topbar-actions .btn.primary");
+  if (topAdd) {
+    if (UI.view === "canteen") { topAdd.dataset.act = "ctAdd"; topAdd.textContent = "＋ Canteen entry"; }
+    else { topAdd.dataset.act = "addWorker"; topAdd.textContent = "+ Add Worker"; }
+  }
   /* on phones the top bar scrolls sideways — keep the active tab visible */
   const bar = document.querySelector(".sidebar"), act = document.querySelector(".nav button.active");
   if (bar && act && bar.scrollWidth > bar.clientWidth + 4) bar.scrollLeft = Math.max(0, act.offsetLeft - 70);
@@ -1030,6 +1130,7 @@ function syncMonthPickers() {
   ms.value = String(UI.month);
   const years = new Set([today.getFullYear() - 3, today.getFullYear() - 2, today.getFullYear() - 1, today.getFullYear(), today.getFullYear() + 1, today.getFullYear() + 2, UI.year]);
   Store.data.records.forEach((r) => years.add(r.year));
+  ((Store.data.canteen && Store.data.canteen.entries) || []).forEach((e) => years.add(ctParts(e.date).y));
   const list = Array.from(years).sort((a, b) => a - b);
   ys.innerHTML = list.map((y) => '<option value="' + y + '">' + y + "</option>").join("");
   ys.value = String(UI.year);
@@ -1578,6 +1679,8 @@ function viewDashboard(){
         '<div><small>Salary base</small><b style="font-size:13px">Monthly ÷ 30</b><div class="sub">fixed rule</div></div>'+
       '</div></div>' +
 
+    ctDashCard(UI.year, UI.month) +
+
     '<div class="card"><div class="card-h"><div><h3>Worker-wise summary</h3>'+
       '<div class="sub">Row par tap karo — poora hisaab khulega</div></div>'+
       '<div class="toolbar">'+
@@ -1939,6 +2042,8 @@ function viewSettings(){
         '</div></div>'+
     '</div>'+
 
+    ctSettingsCard()+
+
     '<div class="card" style="margin-top:14px"><div class="card-h"><div><h3>Data &amp; backup</h3>'+
       '<div class="sub">Sab kuch is browser me private rehta hai · Panel <b>v<span data-ver></span></b></div></div>'+
       '<span class="k-ico">💾</span></div>'+
@@ -1946,6 +2051,7 @@ function viewSettings(){
         '<button class="btn" data-act="exportData">⤓ Backup (JSON)</button>'+
         '<button class="btn" data-act="importData">⤒ Restore</button>'+
         '<button class="btn" data-act="exportCsv">⤓ CSV export</button>'+
+        '<button class="btn" data-act="ctCsv">⤓ Canteen CSV</button>'+
         '<button class="btn" data-act="loadSample">▤ Sample data</button>'+
         '<button class="btn danger" data-act="wipeData">🗑 Erase all data</button>'+
       '</div></div>'+
@@ -1954,7 +2060,7 @@ function viewSettings(){
 
     '<div style="text-align:center;font-size:11.5px;color:var(--muted);margin-top:18px;line-height:1.7">'+
       'Panel <b style="color:var(--ink)">v<span data-ver></span></b> · Auto-update enabled<br>'+
-      'v3 — naya UI, dark mode, ledger, worker profile, CSV &amp; WhatsApp share'+
+      'v3.1 — <b style="color:var(--ink)">Canteen module</b>: saman entry (rate-wise ya ek-saath total), din &amp; mahine ka ledger, rate list, udhaar/baki, poori activity log'+
     '</div>'
   );
 }
@@ -2046,6 +2152,12 @@ function cmdkItems(){
     { t:"Monthly Hisaab", k:"g h", act:"nav", v:"hisaab", ic:"₹" },
     { t:"Workers", k:"g w", act:"nav", v:"workers", ic:"☰" },
     { t:"Ledger (advances)", k:"g l", act:"nav", v:"ledger", ic:"⇄" },
+    { t:"Canteen — din ka ledger", k:"g c", act:"nav", v:"canteen", ic:"🍽" },
+    { t:"Canteen — mahine ka ledger", k:"", act:"ctTabNav", v:"month", ic:"🗓" },
+    { t:"Canteen — sab entries", k:"", act:"ctTabNav", v:"entries", ic:"🧾" },
+    { t:"Canteen — rate list", k:"", act:"ctTabNav", v:"rates", ic:"🏷" },
+    { t:"Canteen — poori activity", k:"", act:"ctTabNav", v:"activity", ic:"🕘" },
+    { t:"＋ Canteen entry add karo (saman / bikri / kharcha)", k:"", act:"ctAddNew", ic:"＋" },
     { t:"Records & History", k:"g r", act:"nav", v:"records", ic:"◷" },
     { t:"Settings", k:"g s", act:"nav", v:"settings", ic:"⚙" },
     { t:"+ Naya worker add karo", k:"", act:"addWorker", ic:"＋" },
@@ -2076,6 +2188,8 @@ function openCmdk(){
     const it = shown[i]; if (!it) return;
     closeCmdk();
     if (it.act === "nav") go(it.v);
+    else if (it.act === "ctTabNav") { ctUI().tab = it.v; go("canteen"); }
+    else if (it.act === "ctAddNew") { if (UI.view !== "canteen") go("canteen"); openCtModal(); }
     else if (it.act === "openRec") openRecordModal(it.wid, UI.year, UI.month);
     else if (it.act === "addWorker") openWorkerModal();
     else if (it.act === "exportCsv") exportCsv();
@@ -2910,7 +3024,7 @@ function importData() {
       try {
         const d = JSON.parse(rd.result);
         if (!d.workers || !d.records) throw new Error("bad");
-        Store.data = { settings: { ...DEFAULT_SETTINGS, ...(d.settings || {}) }, workers: d.workers, records: d.records };
+        Store.data = { settings: { ...DEFAULT_SETTINGS, ...(d.settings || {}) }, workers: d.workers, records: d.records, canteen: normCanteen(d.canteen) };
         Store.save(); render(); toast("Backup restored", "ok");
       } catch (e) { toast("Invalid backup file", "bad"); }
     };
@@ -3037,7 +3151,7 @@ const Cloud = {
       const remote = await this.fetchRemote();
       const remoteHas = remote && remote.payload && Array.isArray(remote.payload.workers) && remote.payload.workers.length > 0;
       const localHas = Store.data.workers.length > 0 && Store.data.settings.demo !== true;
-      if (remoteHas && localHas && JSON.stringify(remote.payload) !== JSON.stringify(Store.data)) {
+      if (remoteHas && localHas && !samePayload(remote.payload, Store.data)) {
         askWhichData(remote);
       } else if (remoteHas && !localHas) {
         adoptRemote(remote);
@@ -3080,7 +3194,8 @@ function normalizeData(d) {
   return {
     settings: { ...DEFAULT_SETTINGS, ...(d.settings || {}) },
     workers: Array.isArray(d.workers) ? d.workers : [],
-    records: Array.isArray(d.records) ? d.records : []
+    records: Array.isArray(d.records) ? d.records : [],
+    canteen: normCanteen(d.canteen)
   };
 }
 function adoptRemote(remote) {
@@ -3088,6 +3203,15 @@ function adoptRemote(remote) {
   Store.save(true);
   Cloud.lastSync = new Date(remote.updated_at).getTime();
   closeModal(); render();
+}
+/* dono taraf normalize kar ke compare — warna naya canteen key har login par
+   "kaunsa data rakhein?" dialog dikha deta, jabki asal me kuch badla hi nahi hota */
+function samePayload(a, b) {
+  try { return JSON.stringify(normalizeData(a)) === JSON.stringify(normalizeData(b)); }
+  catch (e) { return false; }
+}
+function ctCountOf(payload) {
+  return ((payload && payload.canteen && Array.isArray(payload.canteen.entries)) ? payload.canteen.entries : []).length;
 }
 function askWhichData(remote) {
   Cloud._pending = remote;
@@ -3097,10 +3221,11 @@ function askWhichData(remote) {
       '<p>Aapke account me pehle se data hai, aur is device me bhi data hai.</p></div><button class="x" data-act="closeModal">✕</button></div>' +
       '<div class="modal-b" style="font-size:13px;color:#475569">' +
         '<div style="border:1px solid var(--line);border-radius:11px;padding:11px 13px;margin-bottom:10px">' +
-          '<b style="color:var(--ink)">Cloud par:</b> ' + remoteCount + " workers<br>" +
+          '<b style="color:var(--ink)">Cloud par:</b> ' + remoteCount + " workers · " + ctCountOf(remote.payload) + " canteen entries<br>" +
           '<span style="font-size:11.5px">Last update: ' + esc(String(remote.updated_at).slice(0, 16).replace("T", " ")) + "</span></div>" +
         '<div style="border:1px solid var(--line);border-radius:11px;padding:11px 13px">' +
-          '<b style="color:var(--ink)">Is device par:</b> ' + Store.data.workers.length + " workers</div>" +
+          '<b style="color:var(--ink)">Is device par:</b> ' + Store.data.workers.length + " workers · " +
+          ctCountOf(Store.data) + " canteen entries</div>" +
         '<p style="margin-top:12px;font-size:12px">Agar aap pehli baar login kar rahe hain, to <b>“Is device ka data upload”</b> chunein. ' +
         "Baaki device par kaam kiya hai to <b>“Cloud ka data download”</b> chunein.</p>" +
       '</div>' +
@@ -3277,6 +3402,1674 @@ function disconnectCloud() {
   }, true);
 }
 
+/* ============================================================================
+   21. CANTEEN MODULE
+   Canteen me aane wala saman — rate-wise entry YA ek-saath pura total.
+   Bikri / kharcha bhi. Din ka ledger, mahine ka ledger, rate list,
+   udhaar (baki) aur poori activity log.
+   Data: Store.data.canteen = { entries[], rates[], log[] }
+   ========================================================================== */
+
+const CT_KIND = {
+  purchase: { label: "Saman aaya",      en: "Purchase", sign: -1, ico: "⬇", tone: "k-warn", tag: "warn", col: "#f59e0b" },
+  sale:     { label: "Bikri / income",  en: "Sale",     sign:  1, ico: "⬆", tone: "k-ok",   tag: "ok",   col: "#10b981" },
+  expense:  { label: "Kharcha",         en: "Expense",  sign: -1, ico: "↯", tone: "k-bad",  tag: "bad",  col: "#ef4444" }
+};
+const CT_KINDS = ["purchase", "sale", "expense"];
+const CT_PAY = { cash: "Cash", upi: "UPI", bank: "Bank / cheque", udhaar: "Udhaar (baad me)" };
+const CT_UNITS = ["kg", "gram", "ltr", "ml", "pkt", "pcs", "dozen", "box", "bag", "plate", "cup", "bundle", "carton"];
+const CT_LOG_MAX = 1500;
+
+/* ------------------------- 21a. DATE HELPERS ------------------------- */
+function isoDate(d) {
+  const x = d instanceof Date ? d : new Date(d);
+  const t = isNaN(x.getTime()) ? new Date() : x;
+  return t.getFullYear() + "-" + String(t.getMonth() + 1).padStart(2, "0") + "-" + String(t.getDate()).padStart(2, "0");
+}
+function ctParts(iso) {
+  const p = String(iso || "").split("-");
+  const now = new Date();
+  const y = Number(p[0]) || now.getFullYear();
+  const m = clamp((Number(p[1]) || now.getMonth() + 1) - 1, 0, 11);
+  const d = clamp(Number(p[2]) || 1, 1, 31);
+  return { y, m, d };
+}
+function ctDateObj(iso) { const p = ctParts(iso); return new Date(p.y, p.m, p.d); }
+function ctDayName(iso) { return DAYS[ctDateObj(iso).getDay()]; }
+function ctPretty(iso) { const p = ctParts(iso); return String(p.d).padStart(2, "0") + " " + MONTHS_S[p.m] + " " + p.y; }
+function ctShort(iso) { const p = ctParts(iso); return String(p.d).padStart(2, "0") + " " + MONTHS_S[p.m]; }
+function ctShiftDate(iso, days) { const t = ctDateObj(iso); t.setDate(t.getDate() + days); return isoDate(t); }
+function ctIsToday(iso) { return String(iso) === isoDate(new Date()); }
+function monthFirst(y, m) { return y + "-" + String(m + 1).padStart(2, "0") + "-01"; }
+function monthLast(y, m) { return y + "-" + String(m + 1).padStart(2, "0") + "-" + String(new Date(y, m + 1, 0).getDate()).padStart(2, "0"); }
+function ctTime(ts) {
+  const d = new Date(num(ts) || Date.now());
+  let h = d.getHours(); const ap = h >= 12 ? "pm" : "am"; h = h % 12 || 12;
+  return h + ":" + String(d.getMinutes()).padStart(2, "0") + " " + ap;
+}
+
+/* ------------------------- 21b. DATA SHAPE ------------------------- */
+function blankCanteen() { return { entries: [], rates: [], log: [], demo: false }; }
+
+function normCtItem(i) {
+  i = i || {};
+  return {
+    name: String(i.name == null ? "" : i.name).slice(0, 90),
+    qty: Math.max(0, num(i.qty)),
+    unit: String(i.unit == null || i.unit === "" ? "kg" : i.unit).slice(0, 18),
+    rate: Math.max(0, num(i.rate))
+  };
+}
+function normCtEntry(e) {
+  e = e || {};
+  const kind = CT_KINDS.indexOf(e.kind) >= 0 ? e.kind : "purchase";
+  const mode = e.mode === "total" ? "total" : "itemized";
+  const items = (Array.isArray(e.items) ? e.items : []).map(normCtItem);
+  const itemsTotal = r2(items.reduce((t, i) => t + i.qty * i.rate, 0));
+  const amount = r2(Math.max(0, mode === "total" ? num(e.amount) : (num(e.amount) || itemsTotal)));
+  const payMode = CT_PAY[e.payMode] ? e.payMode : "cash";
+  return {
+    id: String(e.id || uid()),
+    date: /^\d{4}-\d{2}-\d{2}$/.test(String(e.date || "")) ? String(e.date) : isoDate(new Date()),
+    kind: kind, mode: mode, items: items, amount: amount,
+    party: String(e.party == null ? "" : e.party).slice(0, 90),
+    billNo: String(e.billNo == null ? "" : e.billNo).slice(0, 40),
+    paid: r2(clamp(num(e.paid), 0, amount || num(e.paid) || 0)),
+    payMode: payMode,
+    note: String(e.note == null ? "" : e.note).slice(0, 500),
+    createdAt: num(e.createdAt) || Date.now(),
+    updatedAt: num(e.updatedAt) || Date.now()
+  };
+}
+function normCtRate(r) {
+  r = r || {};
+  return {
+    id: String(r.id || uid()),
+    name: String(r.name == null ? "" : r.name).slice(0, 90),
+    unit: String(r.unit == null || r.unit === "" ? "kg" : r.unit).slice(0, 18),
+    rate: Math.max(0, num(r.rate)),
+    cat: String(r.cat == null ? "" : r.cat).slice(0, 40)
+  };
+}
+function normCanteen(c) {
+  const b = blankCanteen();
+  if (!c || typeof c !== "object") return b;
+  b.entries = (Array.isArray(c.entries) ? c.entries : []).map(normCtEntry);
+  b.rates = (Array.isArray(c.rates) ? c.rates : []).map(normCtRate).filter((r) => r.name);
+  b.log = (Array.isArray(c.log) ? c.log : []).slice(-CT_LOG_MAX);
+  b.demo = !!c.demo;
+  return b;
+}
+/* safe accessor — hamesha ek valid canteen object deta hai */
+function ct() {
+  const d = Store.data;
+  if (!d.canteen || typeof d.canteen !== "object" || !Array.isArray(d.canteen.entries) ||
+      !Array.isArray(d.canteen.rates) || !Array.isArray(d.canteen.log)) {
+    d.canteen = normCanteen(d.canteen);
+  }
+  return d.canteen;
+}
+function ctUI() {
+  if (!UI.ct || typeof UI.ct !== "object") UI.ct = {};
+  const u = UI.ct;
+  if (["day", "month", "entries", "rates", "activity"].indexOf(u.tab) < 0) u.tab = "day";
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(String(u.date || ""))) u.date = isoDate(new Date());
+  if (u.kind !== "all" && CT_KINDS.indexOf(u.kind) < 0) u.kind = "all";
+  if (u.q == null) u.q = "";
+  if (u.from == null) u.from = "";
+  if (u.to == null) u.to = "";
+  if (u.scope !== "all" && u.scope !== "custom") u.scope = "month";
+  if (u.logScope !== "all") u.logScope = "month";
+  return u;
+}
+
+/* ------------------------- 21c. ENTRY MATH ------------------------- */
+function ctKindOf(e) { return CT_KIND[(e && e.kind) || "purchase"] || CT_KIND.purchase; }
+function ctAmount(e) { return r2(Math.max(0, num(e && e.amount))); }
+function ctPaid(e) { return r2(clamp(num(e && e.paid), 0, 1e12)); }
+function ctBalance(e) { return r2(Math.max(0, ctAmount(e) - Math.min(ctPaid(e), ctAmount(e)))); }
+function ctItemsSum(e) { return r2(((e && e.items) || []).reduce((t, i) => t + num(i.qty) * num(i.rate), 0)); }
+function ctNetOf(e) { return r2(ctKindOf(e).sign * ctAmount(e)); }
+function ctItemCount(e) { return ((e && e.items) || []).filter((i) => i.name || i.qty || i.rate).length; }
+function ctItemLabel(e) {
+  const its = ((e && e.items) || []).filter((i) => i.name);
+  if (!its.length) return "";
+  return its.map((i) => i.name + (i.qty ? " (" + num(i.qty) + (i.unit || "") + ")" : "")).join(", ");
+}
+function ctTotals(list) {
+  const t = { count: list.length, purchase: 0, sale: 0, expense: 0, paid: 0, balance: 0,
+              items: 0, itemizedAmt: 0, totalModeAmt: 0, totalModeCount: 0, net: 0, out: 0 };
+  (list || []).forEach((e) => {
+    const a = ctAmount(e);
+    if (e.kind === "sale") t.sale += a;
+    else if (e.kind === "expense") t.expense += a;
+    else t.purchase += a;
+    t.paid += Math.min(ctPaid(e), a);
+    t.balance += ctBalance(e);
+    t.items += ctItemCount(e);
+    if (e.mode === "total") { t.totalModeAmt += a; t.totalModeCount++; } else t.itemizedAmt += a;
+  });
+  t.purchase = r2(t.purchase); t.sale = r2(t.sale); t.expense = r2(t.expense);
+  t.paid = r2(t.paid); t.balance = r2(t.balance);
+  t.itemizedAmt = r2(t.itemizedAmt); t.totalModeAmt = r2(t.totalModeAmt);
+  t.out = r2(t.purchase + t.expense);
+  t.net = r2(t.sale - t.out);
+  return t;
+}
+
+/* ------------------------- 21d. QUERIES ------------------------- */
+function ctAll() {
+  return ct().entries.slice().sort((a, b) =>
+    a.date === b.date ? num(b.createdAt) - num(a.createdAt) : (a.date < b.date ? 1 : -1));
+}
+function ctEntry(id) { return ct().entries.find((e) => e.id === id) || null; }
+function ctOnDate(iso) { return ctAll().filter((e) => e.date === iso); }
+function ctInMonth(y, m) { return ctAll().filter((e) => { const p = ctParts(e.date); return p.y === y && p.m === m; }); }
+function ctMonthDays(y, m) {
+  /* har din ka roll-up — mahine ka ledger */
+  const dim = new Date(y, m + 1, 0).getDate();
+  const byDay = {};
+  ctInMonth(y, m).forEach((e) => { (byDay[e.date] = byDay[e.date] || []).push(e); });
+  const out = [];
+  for (let d = 1; d <= dim; d++) {
+    const iso = y + "-" + String(m + 1).padStart(2, "0") + "-" + String(d).padStart(2, "0");
+    const list = byDay[iso] || [];
+    out.push({ iso: iso, d: d, day: DAYS[new Date(y, m, d).getDay()], list: list, t: ctTotals(list) });
+  }
+  return out;
+}
+function ctLast6(y, m) {
+  const out = [];
+  for (let i = 5; i >= 0; i--) {
+    let mm = m - i, yy = y;
+    while (mm < 0) { mm += 12; yy--; }
+    const t = ctTotals(ctInMonth(yy, mm));
+    out.push({ y: yy, m: mm, label: MONTHS_S[mm], t: t, now: i === 0 });
+  }
+  return out;
+}
+function ctFilteredEntries() {
+  const u = ctUI();
+  const q = String(u.q || "").trim().toLowerCase();
+  let list = ctAll();
+  const from = /^\d{4}-\d{2}-\d{2}$/.test(String(u.from || "")) ? u.from : "";
+  const to = /^\d{4}-\d{2}-\d{2}$/.test(String(u.to || "")) ? u.to : "";
+  if (from) list = list.filter((e) => e.date >= from);
+  if (to) list = list.filter((e) => e.date <= to);
+  if (!from && !to && u.scope !== "all") {
+    list = list.filter((e) => { const p = ctParts(e.date); return p.y === UI.year && p.m === UI.month; });
+  }
+  if (u.kind !== "all") list = list.filter((e) => e.kind === u.kind);
+  if (q) {
+    list = list.filter((e) =>
+      String(e.party || "").toLowerCase().indexOf(q) >= 0 ||
+      String(e.billNo || "").toLowerCase().indexOf(q) >= 0 ||
+      String(e.note || "").toLowerCase().indexOf(q) >= 0 ||
+      String(ctAmount(e)).indexOf(q) >= 0 ||
+      ctItemLabel(e).toLowerCase().indexOf(q) >= 0);
+  }
+  return list;
+}
+function ctItemAgg(list) {
+  const map = new Map();
+  (list || []).forEach((e) => {
+    if (e.mode !== "itemized") return;
+    (e.items || []).forEach((i) => {
+      const nm = String(i.name || "").trim();
+      if (!nm) return;
+      const unit = String(i.unit || "kg");
+      const key = nm.toLowerCase() + "|" + unit.toLowerCase();
+      const cur = map.get(key) || { name: nm, unit: unit, qty: 0, amt: 0, n: 0, lastRate: 0, lastDate: "", kind: e.kind };
+      cur.qty += num(i.qty);
+      cur.amt += num(i.qty) * num(i.rate);
+      cur.n += 1;
+      if (!cur.lastDate || e.date >= cur.lastDate) { cur.lastDate = e.date; cur.lastRate = num(i.rate); }
+      map.set(key, cur);
+    });
+  });
+  const out = Array.from(map.values()).map((x) => ({
+    name: x.name, unit: x.unit, kind: x.kind, n: x.n,
+    qty: r2(x.qty), amt: r2(x.amt), lastRate: r2(x.lastRate), lastDate: x.lastDate,
+    avgRate: x.qty ? r2(x.amt / x.qty) : 0
+  }));
+  out.sort((a, b) => b.amt - a.amt || a.name.localeCompare(b.name));
+  return out;
+}
+function ctPartyAgg(list) {
+  const map = new Map();
+  (list || []).forEach((e) => {
+    const nm = String(e.party || "").trim();
+    if (!nm) return;
+    const key = nm.toLowerCase();
+    const cur = map.get(key) || { name: nm, amt: 0, paid: 0, bal: 0, n: 0, purchase: 0, sale: 0, expense: 0, last: "" };
+    const a = ctAmount(e);
+    cur.amt += a; cur.paid += Math.min(ctPaid(e), a); cur.bal += ctBalance(e); cur.n += 1;
+    cur[e.kind] = (cur[e.kind] || 0) + a;
+    if (!cur.last || e.date > cur.last) cur.last = e.date;
+    map.set(key, cur);
+  });
+  const out = Array.from(map.values()).map((x) => ({
+    name: x.name, n: x.n, last: x.last,
+    amt: r2(x.amt), paid: r2(x.paid), bal: r2(x.bal),
+    purchase: r2(x.purchase || 0), sale: r2(x.sale || 0), expense: r2(x.expense || 0)
+  }));
+  out.sort((a, b) => b.amt - a.amt || a.name.localeCompare(b.name));
+  return out;
+}
+function ctBakiList(list) {
+  return (list || ctAll()).filter((e) => ctBalance(e) > 0.005)
+    .sort((a, b) => ctBalance(b) - ctBalance(a) || (a.date < b.date ? -1 : 1));
+}
+function ctParties() {
+  const s = new Set();
+  ct().entries.forEach((e) => { if (e.party) s.add(e.party); });
+  return Array.from(s).sort();
+}
+/* signed money — 0 par koi sign nahi (warna "−₹0" ajeeb lagta hai) */
+function ctSgn(v) { return (v < 0 ? "−" : v > 0 ? "+" : "") + money0(Math.abs(v)); }
+function ctSgnS(v) { return (v < 0 ? "−" : v > 0 ? "+" : "") + moneyS(Math.abs(v)); }
+
+/* ------------------------- 21e. RATE LIST ------------------------- */
+function ctRateFor(name) {
+  const nm = String(name || "").trim().toLowerCase();
+  if (!nm) return null;
+  return ct().rates.find((r) => String(r.name).trim().toLowerCase() === nm) || null;
+}
+/* itemized entry se rate list apne aap tazaa hoti hai (aakhri rate yaad rehta hai) */
+function ctSyncRates(entry, ratesArr) {
+  if (!entry || entry.mode !== "itemized") return;
+  const rates = Array.isArray(ratesArr) ? ratesArr : ct().rates;
+  (entry.items || []).forEach((i) => {
+    const nm = String(i.name || "").trim();
+    if (!nm || num(i.rate) <= 0) return;
+    const hit = rates.find((r) => String(r.name).trim().toLowerCase() === nm.toLowerCase());
+    if (hit) { hit.rate = r2(num(i.rate)); if (i.unit) hit.unit = i.unit; }
+    else rates.push(normCtRate({ name: nm, unit: i.unit || "kg", rate: num(i.rate), cat: "" }));
+  });
+}
+function ctLastRateInfo(name) {
+  const nm = String(name || "").trim().toLowerCase();
+  if (!nm) return null;
+  let best = null;
+  ctAll().forEach((e) => {
+    if (e.mode !== "itemized") return;
+    (e.items || []).forEach((i) => {
+      if (String(i.name || "").trim().toLowerCase() !== nm || num(i.rate) <= 0) return;
+      if (!best || e.date >= best.date) best = { rate: num(i.rate), date: e.date, unit: i.unit };
+    });
+  });
+  return best;
+}
+
+/* ------------------------- 21f. ACTIVITY LOG ------------------------- */
+function ctLogText(e) {
+  const k = ctKindOf(e);
+  const n = ctItemCount(e);
+  return k.label + (e.party ? " · " + e.party : "") +
+    (n ? " · " + n + " item" + (n > 1 ? "s" : "") : "") +
+    (e.mode === "total" ? " · ek-saath total" : (n ? " · rate-wise" : ""));
+}
+function ctLogIt(action, entry, snapshot, text) {
+  const C = ct();
+  C.demo = false;            /* user ne khud kuch kiya — ab demo nahi raha */
+  const L = C.log;
+  L.push({
+    id: uid(), ts: Date.now(), action: action,
+    entryId: entry ? entry.id : "", kind: entry ? entry.kind : "",
+    date: entry ? entry.date : "", amount: entry ? ctAmount(entry) : 0,
+    text: text || (entry ? ctLogText(entry) : ""),
+    snapshot: snapshot ? JSON.parse(JSON.stringify(snapshot)) : null
+  });
+  if (L.length > CT_LOG_MAX) L.splice(0, L.length - CT_LOG_MAX);
+}
+function ctLogs() {
+  const u = ctUI();
+  let list = ct().log.slice();
+  if (u.logScope !== "all") {
+    list = list.filter((l) => { const d = new Date(num(l.ts)); return d.getFullYear() === UI.year && d.getMonth() === UI.month; });
+  }
+  list.sort((a, b) => num(b.ts) - num(a.ts));
+  return list;
+}
+
+/* ------------------------- 21g. SAMPLE DATA ------------------------- */
+function sampleCanteen(y, m, pm) {
+  const c = blankCanteen();
+  const dim = new Date(y, m + 1, 0).getDate();
+  const todayD = (y === new Date().getFullYear() && m === new Date().getMonth()) ? new Date().getDate() : dim;
+  const dstr = (d) => y + "-" + String(m + 1).padStart(2, "0") + "-" + String(clamp(d, 1, dim)).padStart(2, "0");
+  const mk = (o) => { const e = normCtEntry(o); c.entries.push(e); ctSyncRates(e, c.rates); return e; };
+  /* rate-wise entry: har item ka qty + rate */
+  mk({ date: dstr(Math.max(1, todayD - 3)), kind: "purchase", party: "Sabzi Mandi — Ramesh", billNo: "SM-204", mode: "itemized",
+       items: [ { name: "Aata", qty: 20, unit: "kg", rate: 42 }, { name: "Cheeni", qty: 10, unit: "kg", rate: 46 },
+                { name: "Chai patti", qty: 5, unit: "kg", rate: 260 }, { name: "Doodh", qty: 30, unit: "ltr", rate: 58 } ],
+       paid: 2000, payMode: "cash", note: "Hafte ka saman" });
+  /* ek-saath total: item ka rate nahi likha, sirf pura bill ka total */
+  mk({ date: dstr(Math.max(1, todayD - 2)), kind: "purchase", party: "Kirana Store — Gupta ji", billNo: "", mode: "total",
+       items: [ { name: "Namak, tel, masala, biscuit", qty: 1, unit: "pkt", rate: 0 } ],
+       amount: 3450, paid: 3450, payMode: "upi", note: "Pura saman ek saath — bill ka total" });
+  mk({ date: dstr(Math.max(1, todayD - 1)), kind: "sale", party: "Canteen counter", mode: "total", amount: 2180,
+       paid: 2180, payMode: "cash", note: "Din bhar ki bikri" });
+  mk({ date: dstr(Math.max(1, todayD - 1)), kind: "expense", party: "Gas cylinder", mode: "total", amount: 915,
+       paid: 915, payMode: "cash", note: "" });
+  mk({ date: dstr(todayD), kind: "purchase", party: "Sabzi Mandi — Ramesh", mode: "itemized",
+       items: [ { name: "Aata", qty: 15, unit: "kg", rate: 42 }, { name: "Doodh", qty: 25, unit: "ltr", rate: 58 } ],
+       amount: 0, paid: 0, payMode: "udhaar", note: "Udhaar liya — baad me denge" });
+  mk({ date: dstr(todayD), kind: "sale", party: "Canteen counter", mode: "total", amount: 1640, paid: 1640, payMode: "cash" });
+  if (pm) {
+    const pdim = new Date(pm.y, pm.m + 1, 0).getDate();
+    const pstr = (d) => pm.y + "-" + String(pm.m + 1).padStart(2, "0") + "-" + String(clamp(d, 1, pdim)).padStart(2, "0");
+    mk({ date: pstr(6), kind: "purchase", party: "Sabzi Mandi — Ramesh", mode: "itemized",
+         items: [ { name: "Aata", qty: 25, unit: "kg", rate: 41 }, { name: "Cheeni", qty: 12, unit: "kg", rate: 45 } ],
+         paid: 2300, payMode: "cash" });
+    mk({ date: pstr(14), kind: "purchase", party: "Kirana Store — Gupta ji", mode: "total", amount: 4120, paid: 4120, payMode: "bank" });
+    mk({ date: pstr(14), kind: "sale", party: "Canteen counter", mode: "total", amount: 3260, paid: 3260, payMode: "cash" });
+    mk({ date: pstr(21), kind: "expense", party: "Bijli bill", mode: "total", amount: 1840, paid: 1840, payMode: "upi" });
+  }
+  /* activity log bhi sample ke saath */
+  c.entries.forEach((e) => {
+    c.log.push({ id: uid(), ts: e.createdAt || Date.now(), action: "add", entryId: e.id, kind: e.kind, date: e.date,
+                 amount: ctAmount(e), text: ctLogText(e) + " (sample)", snapshot: null });
+  });
+  c.demo = true;
+  return c;
+}
+
+/* ------------------------- 21h. CANTEEN VIEWS ------------------------- */
+function ctKindTag(e) {
+  const k = ctKindOf(e);
+  return '<span class="tag ' + k.tag + '" style="white-space:nowrap">' + k.ico + " " + esc(k.label) + "</span>";
+}
+function ctModeTag(e) {
+  return e && e.mode === "total"
+    ? '<span class="ct-modeTag tot" title="Item ka alag rate nahi likha — pura saman ek saath total">Σ Ek-saath total</span>'
+    : '<span class="ct-modeTag" title="Har item ka qty × rate likha hai">₹ Rate-wise</span>';
+}
+function ctPayTag(e) {
+  const bal = ctBalance(e);
+  return bal > 0.005
+    ? '<span class="tag bad" style="white-space:nowrap">Baki ' + moneyS(bal) + "</span>"
+    : '<span class="tag ok" style="white-space:nowrap">✔ Paid</span>';
+}
+function ctSignMoney(e) {
+  const k = ctKindOf(e);
+  const col = k.sign > 0 ? "var(--ok)" : "var(--bad)";
+  return '<span class="strong" style="color:' + col + '">' + (k.sign > 0 ? "+" : "−") + moneyS(ctAmount(e)) + "</span>";
+}
+function ctEmpty(ico, title, msg, act, btn) {
+  return '<div class="empty"><div class="big">' + ico + '</div><h4>' + esc(title) + "</h4><p>" + esc(msg) + "</p>" +
+    (act ? '<button class="btn primary" data-act="' + act + '">' + esc(btn) + "</button>" : "") + "</div>";
+}
+
+function viewCanteen() {
+  const u = ctUI();
+  const tabs = [
+    ["day", "📅 Din ka ledger"],
+    ["month", "🗓 Mahine ka ledger"],
+    ["entries", "🧾 Sab entries"],
+    ["rates", "🏷 Rate list"],
+    ["activity", "🕘 Activity"]
+  ];
+  const head =
+    '<div class="ct-head">' +
+      '<div class="seg ct-seg">' +
+        tabs.map((t) => '<button data-act="ctTab" data-tab="' + t[0] + '" class="' + (u.tab === t[0] ? "on" : "") + '">' + t[1] + "</button>").join("") +
+      "</div>" +
+      '<div class="toolbar" style="margin-left:auto">' +
+        (u.tab === "day" ? '<button class="btn sm" data-act="ctPrintDay">🖨 Print din</button>' : "") +
+        (u.tab === "month" ? '<button class="btn sm" data-act="ctPrintMonth">🖨 Print mahina</button>' : "") +
+        '<button class="btn sm" data-act="ctCsv">⤓ CSV</button>' +
+        '<button class="btn sm primary" data-act="ctAdd">＋ Entry add karo</button>' +
+      "</div>" +
+    "</div>";
+  let body;
+  if (u.tab === "day") body = ctDayLedger();
+  else if (u.tab === "month") body = ctMonthLedger();
+  else if (u.tab === "entries") body = ctEntriesView();
+  else if (u.tab === "rates") body = ctRatesView();
+  else body = ctActivityView();
+  return head + body;
+}
+
+/* ============ DIN KA LEDGER ============ */
+function ctDayLedger() {
+  const u = ctUI();
+  const iso = u.date;
+  const p = ctParts(iso);
+  const list = ctOnDate(iso);
+  const t = ctTotals(list);
+  const mt = ctTotals(ctInMonth(p.y, p.m));
+  const items = ctItemAgg(list);
+  const totalMode = list.filter((e) => e.mode === "total" && e.kind === "purchase");
+  const baki = ctBakiList(list);
+  const isToday = ctIsToday(iso);
+  const first = !!ct().entries.length;
+
+  const dateBar =
+    '<div class="card" style="margin-bottom:14px"><div class="card-b" style="padding:12px 15px">' +
+      '<div class="ct-datebar">' +
+        '<button class="btn sm" data-act="ctDayShift" data-d="-1" title="Pichhla din">‹ Pichhla</button>' +
+        '<input type="date" class="inp" id="ctDatePick" value="' + esc(iso) + '">' +
+        '<button class="btn sm" data-act="ctDayShift" data-d="1" title="Agla din">Agla ›</button>' +
+        '<button class="btn sm' + (isToday ? " primary" : "") + '" data-act="ctGoToday">⦿ Aaj</button>' +
+        '<span class="tag ' + (isToday ? "ok" : "grey") + '">' + esc(ctDayName(iso)) + (isToday ? " · aaj" : "") + "</span>" +
+        '<div class="toolbar" style="margin-left:auto">' +
+          '<button class="btn sm" data-act="ctAdd" data-date="' + esc(iso) + '">＋ ' + esc(ctPretty(iso)) + " ki entry</button>" +
+        "</div>" +
+      "</div>" +
+    "</div></div>";
+
+  const kpis =
+    '<div class="kpis">' +
+      kpiCard({ label: "Saman aaya", value: money0(t.purchase), icon: "⬇", tone: "k-warn",
+        sub: list.filter((e) => e.kind === "purchase").length + " entry · " + mt.count + " is mahine ab tak" }) +
+      kpiCard({ label: "Bikri / income", value: money0(t.sale), icon: "⬆", tone: "k-ok",
+        sub: "Din bhar ki kamai" }) +
+      kpiCard({ label: "Kharcha", value: money0(t.expense), icon: "↯", tone: "k-bad",
+        sub: "Saman ke alawa" }) +
+      kpiCard({ label: "Din ka net", value: (t.net < 0 ? "−" : "") + money0(Math.abs(t.net)), icon: "∑",
+        tone: t.net >= 0 ? "k-cyan" : "k-bad", sub: "Bikri − saman − kharcha" }) +
+    "</div>";
+
+  const strip =
+    '<div class="card" style="margin-bottom:14px"><div class="card-h"><div><h3>' + esc(ctPretty(iso)) + " — din ka hisaab</h3>" +
+      '<div class="sub">' + esc(ctDayName(iso)) + " · " + t.count + " entries" + (t.items ? " · " + t.items + " item lines" : "") + "</div></div>" +
+      '<div class="toolbar">' +
+        '<button class="btn sm" data-act="ctPrintDay">🖨 Print</button>' +
+        '<button class="btn sm" data-act="ctShareDay">✆ WhatsApp</button>' +
+      "</div></div>" +
+      '<div class="strip">' +
+        '<div><small>Saman (purchase)</small><b style="color:var(--warn)">' + ctSgn(-t.purchase) + '</b><div class="sub">canteen me aaya</div></div>' +
+        '<div><small>Bikri (sale)</small><b style="color:var(--ok)">' + ctSgn(t.sale) + '</b><div class="sub">canteen se gayi</div></div>' +
+        '<div><small>Kharcha</small><b style="color:var(--bad)">' + ctSgn(-t.expense) + '</b><div class="sub">gas, bijli, mazdoori…</div></div>' +
+        '<div><small>Din ka net</small><b>' + (t.net < 0 ? "−" : "") + money0(Math.abs(t.net)) + '</b><div class="sub">bikri − saman − kharcha</div></div>' +
+        '<div><small>Paisa diya (paid)</small><b>' + money0(t.paid) + '</b><div class="sub">cash / upi / bank</div></div>' +
+        '<div><small>Baki (udhaar)</small><b style="color:' + (t.balance > 0 ? "var(--bad)" : "var(--muted)") + '">' + money0(t.balance) + '</b><div class="sub">abhi dena banta hai</div></div>' +
+        '<div><small>Is mahine saman</small><b>' + money0(mt.purchase) + '</b><div class="sub">' + MONTHS[p.m] + " total</div></div>" +
+      "</div></div>";
+
+  const entryRows = list.map((e) => {
+    const il = ctItemLabel(e);
+    return '<tr class="clickable" data-act="ctEdit" data-id="' + e.id + '">' +
+      "<td>" + ctKindTag(e) + "</td>" +
+      '<td><div class="nm" style="font-weight:750">' + esc(e.party || (e.kind === "sale" ? "Canteen counter" : "—")) + "</div>" +
+        (il ? '<div class="ct-ilist">' + esc(il.length > 96 ? il.slice(0, 96) + "…" : il) + "</div>" : "") +
+        (e.note ? '<div class="ct-ilist" style="font-style:italic">“' + esc(e.note) + "”</div>" : "") + "</td>" +
+      '<td class="muted" style="white-space:nowrap">' + esc(e.billNo || "—") + "</td>" +
+      "<td>" + ctModeTag(e) + "</td>" +
+      '<td class="num">' + ctSignMoney(e) + "</td>" +
+      '<td class="num muted">' + moneyS(Math.min(ctPaid(e), ctAmount(e))) + "</td>" +
+      '<td class="num">' + (ctBalance(e) > 0.005 ? '<b style="color:var(--bad)">' + moneyS(ctBalance(e)) + "</b>" : '<span class="muted">—</span>') + "</td>" +
+      '<td><div class="row-actions">' +
+        (ctBalance(e) > 0.005 ? '<button class="btn xs" data-act="ctPay" data-id="' + e.id + '" title="Paisa diya likho">₹</button>' : "") +
+        '<button class="btn xs" data-act="ctEdit" data-id="' + e.id + '" title="Edit">✎</button>' +
+        '<button class="btn xs" data-act="ctDup" data-id="' + e.id + '" title="Duplicate (aaj ki date)">⧉</button>' +
+      "</div></td></tr>";
+  }).join("");
+
+  const entriesCard =
+    '<div class="card"><div class="card-h"><div><h3>Din ki entries</h3>' +
+      '<div class="sub">Row par tap karo — poori entry khulegi</div></div>' +
+      '<span class="tag grey">' + t.count + " entries</span></div>" +
+      (list.length
+        ? '<div class="twrap"><table class="tbl" style="min-width:720px"><thead><tr>' +
+          "<th>Type</th><th>Party / saman</th><th>Bill</th><th>Mode</th>" +
+          '<th class="num">Amount</th><th class="num">Paid</th><th class="num">Baki</th><th></th>' +
+          "</tr></thead><tbody>" + entryRows + "</tbody>" +
+          '<tfoot><tr><td colspan="4">Din ka total</td>' +
+            '<td class="num">' + ctSgnS(t.net) + "</td>" +
+            '<td class="num">' + moneyS(t.paid) + "</td>" +
+            '<td class="num">' + (t.balance ? moneyS(t.balance) : "—") + "</td><td></td></tr></tfoot>" +
+          "</table></div>"
+        : ctEmpty("🍽", first ? "Is din koi entry nahi" : "Canteen ki pehli entry daalo",
+            first ? ctPretty(iso) + " ke liye saman, bikri ya kharcha add karo." :
+              "Saman aaya, bikri ya kharcha — jo bhi ho, ek entry se shuru karo.", "ctAdd", "＋ Entry add karo")) +
+    "</div>";
+
+  const totModeSum = r2(totalMode.reduce((s, e) => s + ctAmount(e), 0));
+  const itemRows = items.map((i) =>
+    "<tr><td>" + esc(i.name) + "</td>" +
+    '<td class="num strong">' + num(i.qty) + "</td>" +
+    '<td class="muted">' + esc(i.unit) + "</td>" +
+    '<td class="num">' + (i.avgRate ? moneyS(i.avgRate) : "—") + "</td>" +
+    '<td class="num">' + (i.lastRate && i.lastRate !== i.avgRate ? '<span class="muted" style="font-size:11px">aakhri ' + moneyS(i.lastRate) + "</span>" : "") + "</td>" +
+    '<td class="num strong">' + moneyS(i.amt) + "</td>" +
+    '<td class="num muted">' + i.n + "</td></tr>").join("");
+  const itemCard =
+    '<div class="card"><div class="card-h"><div><h3>Saman item-wise (rate ke saath)</h3>' +
+      '<div class="sub">Sirf rate-wise entries ka item detail — qty × rate</div></div>' +
+      '<span class="tag warn">' + moneyS(t.itemizedAmt) + "</span></div>" +
+      (totModeSum > 0
+        ? '<div class="banner" style="margin:12px 14px 0;background:var(--cyan-soft);border-color:color-mix(in srgb,var(--cyan) 26%,var(--line))">' +
+          "<span>Σ</span><div><b>" + totalMode.length + " entry me sirf total likha hai</b> — item ka alag rate nahi. " +
+          "Unka jod: <b>" + money0(totModeSum) + "</b>. Item-wise rate chahiye to entry khol kar “Rate-wise” mode me daalo.</div></div>"
+        : "") +
+      (items.length
+        ? '<div class="twrap"><table class="tbl" style="min-width:520px"><thead><tr>' +
+          "<th>Item</th>" + '<th class="num">Qty</th><th>Unit</th><th class="num">Avg rate</th><th class="num">Aakhri rate</th>' +
+          '<th class="num">Amount</th><th class="num">Entries</th>' +
+          "</tr></thead><tbody>" + itemRows + "</tbody>" +
+          '<tfoot><tr><td colspan="5">Item-wise total</td><td class="num">' + moneyS(t.itemizedAmt) + "</td><td></td></tr></tfoot>" +
+          "</table></div>"
+        : '<div class="ct-emptyline">Is din koi rate-wise item nahi.</div>') +
+    "</div>";
+
+  const bakiCard = baki.length
+    ? '<div class="card" style="margin-top:14px"><div class="card-h"><div><h3>Baki / udhaar — is din</h3>' +
+      '<div class="sub">Jin entries ka paisa poora nahi diya</div></div><span class="tag bad">' + moneyS(t.balance) + "</span></div>" +
+      '<div class="card-b" style="display:flex;flex-direction:column;gap:9px">' +
+      baki.map((e) => '<div class="ct-bal"><span>' + ctKindOf(e).ico + "</span>" +
+        "<div style=\"flex:1;min-width:120px\"><b>" + esc(e.party || "—") + "</b> · " + ctKindOf(e).label +
+        ' <span class="muted">(' + moneyS(ctAmount(e)) + " me se " + moneyS(Math.min(ctPaid(e), ctAmount(e))) + " diya)</span></div>" +
+        '<button class="btn xs primary" data-act="ctPay" data-id="' + e.id + '">₹ Paid likho</button></div>').join("") +
+      "</div></div>"
+    : "";
+
+  return dateBar + kpis + strip + '<div class="grid g2">' + entriesCard + itemCard + "</div>" + bakiCard;
+}
+
+/* ============ MAHINE KA LEDGER ============ */
+function ctMonthLedger() {
+  const y = UI.year, m = UI.month;
+  const list = ctInMonth(y, m);
+  const t = ctTotals(list);
+  const pm = m === 0 ? { y: y - 1, m: 11 } : { y: y, m: m - 1 };
+  const pt = ctTotals(ctInMonth(pm.y, pm.m));
+  const days = ctMonthDays(y, m);
+  const active = days.filter((d) => d.list.length);
+  const hist = ctLast6(y, m);
+  const items = ctItemAgg(list);
+  const parties = ctPartyAgg(list);
+  const bakiAll = ctBakiList(ctAll());
+
+  const kpis =
+    '<div class="kpis">' +
+      kpiCard({ label: "Saman aaya — " + MONTHS_S[m], value: money0(t.purchase), icon: "⬇", tone: "k-warn",
+        delta: moneyDelta(t.purchase, pt.purchase), spark: hist.map((h) => h.t.purchase), sparkColor: "#f59e0b",
+        sub: list.filter((e) => e.kind === "purchase").length + " entries · " + active.length + " din" }) +
+      kpiCard({ label: "Bikri / income", value: money0(t.sale), icon: "⬆", tone: "k-ok",
+        delta: moneyDelta(t.sale, pt.sale), spark: hist.map((h) => h.t.sale), sparkColor: "#10b981",
+        sub: "canteen ki kamai" }) +
+      kpiCard({ label: "Kharcha", value: money0(t.expense), icon: "↯", tone: "k-bad",
+        delta: moneyDelta(t.expense, pt.expense), sub: "gas, bijli, mazdoori, misc" }) +
+      kpiCard({ label: "Mahine ka net", value: (t.net < 0 ? "−" : "") + money0(Math.abs(t.net)), icon: "∑",
+        tone: t.net >= 0 ? "k-cyan" : "k-bad", delta: moneyDelta(t.net, pt.net),
+        sub: "Baki udhaar " + money0(t.balance) }) +
+    "</div>";
+
+  const maxBar = Math.max.apply(null, hist.map((h) => Math.max(h.t.purchase, h.t.sale))) || 1;
+  const chartCard =
+    '<div class="card chartcard"><div class="card-h"><div><h3>6 mahine ka trend</h3>' +
+      '<div class="sub"><span style="color:#f59e0b;font-weight:800">▮</span> Saman &nbsp; <span style="color:#10b981;font-weight:800">▮</span> Bikri</div></div>' +
+      '<span class="tag grey">' + monthLabel(y, m) + "</span></div>" +
+      '<div class="card-b"><div class="chart">' +
+        hist.map((h) => {
+          const mx = Math.max(h.t.purchase, h.t.sale);
+          const wrapH = Math.max(3, (mx / maxBar) * 100);
+          const aH = mx ? Math.max(3, (h.t.purchase / mx) * 100) : 0;
+          const bH = mx ? Math.max(3, (h.t.sale / mx) * 100) : 0;
+          return '<div class="col' + (h.now ? " now" : "") + '" title="' + h.label + ": saman " + money0(h.t.purchase) + " · bikri " + money0(h.t.sale) + '">' +
+            '<div class="val">' + money0(h.t.net) + "</div>" +
+            '<div class="ct-2bar" style="height:' + wrapH + '%"><i class="a" style="height:' + aH + '%"></i><i class="b" style="height:' + bH + '%"></i></div>' +
+            '<div class="cap">' + h.label + "</div></div>";
+        }).join("") +
+      "</div></div></div>";
+
+  const donutCard =
+    '<div class="card"><div class="card-h"><div><h3>Paisa kahan gaya</h3>' +
+      '<div class="sub">' + monthLabel(y, m) + " ka breakdown</div></div></div>" +
+      '<div class="card-b"><div class="donut-wrap">' +
+        donutSVG([
+          { label: "Saman", value: Math.max(0, t.purchase), color: "#f59e0b" },
+          { label: "Kharcha", value: Math.max(0, t.expense), color: "#ef4444" },
+          { label: "Bikri", value: Math.max(0, t.sale), color: "#10b981" }
+        ], 132, { l: "NET", v: (t.net < 0 ? "−" : "") + money0(Math.abs(t.net)) }) +
+        '<div class="donut-legend">' +
+          '<div><span class="sw" style="background:#f59e0b"></span>Saman aaya<b>' + money0(t.purchase) + "</b></div>" +
+          '<div><span class="sw" style="background:#ef4444"></span>Kharcha<b>' + money0(t.expense) + "</b></div>" +
+          '<div><span class="sw" style="background:#10b981"></span>Bikri<b>' + money0(t.sale) + "</b></div>" +
+          '<div><span class="sw" style="background:#6366f1"></span>Paid kiya<b>' + money0(t.paid) + "</b></div>" +
+          '<div><span class="sw" style="background:#dc2626"></span>Baki / udhaar<b>' + money0(t.balance) + "</b></div>" +
+        "</div></div>" +
+        (t.totalModeCount ? '<div class="ct-note" style="margin-top:12px">Σ <b>' + t.totalModeCount + "</b> entry me item ka alag rate nahi — sirf ek-saath total (" +
+          money0(t.totalModeAmt) + ").</div>" : "") +
+      "</div></div>";
+
+  const dayRows = active.map((d) =>
+    '<tr class="clickable" data-act="ctOpenDay" data-date="' + d.iso + '">' +
+      '<td style="white-space:nowrap"><b>' + String(d.d).padStart(2, "0") + " " + MONTHS_S[m] + "</b>" + (ctIsToday(d.iso) ? ' <span class="tag ok">aaj</span>' : "") + "</td>" +
+      '<td class="muted" style="white-space:nowrap">' + esc(d.day.slice(0, 3)) + "</td>" +
+      '<td class="num muted">' + d.list.length + "</td>" +
+      '<td class="num">' + (d.t.purchase ? '<span style="color:var(--bad)">−' + moneyS(d.t.purchase) + "</span>" : "—") + "</td>" +
+      '<td class="num">' + (d.t.sale ? '<span style="color:var(--ok)">+' + moneyS(d.t.sale) + "</span>" : "—") + "</td>" +
+      '<td class="num">' + (d.t.expense ? '<span style="color:var(--bad)">−' + moneyS(d.t.expense) + "</span>" : "—") + "</td>" +
+      '<td class="num strong" style="color:' + (d.t.net >= 0 ? "var(--ok)" : "var(--bad)") + '">' + ctSgnS(d.t.net) + "</td>" +
+      '<td class="num muted">' + moneyS(d.t.paid) + "</td>" +
+      '<td class="num">' + (d.t.balance > 0.005 ? '<b style="color:var(--bad)">' + moneyS(d.t.balance) + "</b>" : "—") + "</td></tr>").join("");
+
+  const dayCard =
+    '<div class="card" style="margin-top:14px"><div class="card-h"><div><h3>Din-wise ledger — ' + monthLabel(y, m) + "</h3>" +
+      '<div class="sub">Kisi din par tap karo — us din ka poora ledger khul jayega</div></div>' +
+      '<div class="toolbar"><button class="btn sm" data-act="ctPrintMonth">🖨 Print</button>' +
+      '<button class="btn sm" data-act="ctCsv">⤓ CSV</button></div></div>' +
+      (active.length
+        ? '<div class="twrap"><table class="tbl" style="min-width:760px"><thead><tr>' +
+          "<th>Date</th><th>Din</th>" + '<th class="num">Entries</th><th class="num">Saman</th><th class="num">Bikri</th>' +
+          '<th class="num">Kharcha</th><th class="num">Net</th><th class="num">Paid</th><th class="num">Baki</th>' +
+          "</tr></thead><tbody>" + dayRows + "</tbody>" +
+          '<tfoot><tr><td colspan="2">Mahine ka total (' + active.length + " din)</td>" +
+            '<td class="num">' + t.count + "</td>" +
+            '<td class="num">−' + moneyS(t.purchase) + "</td>" +
+            '<td class="num">+' + moneyS(t.sale) + "</td>" +
+            '<td class="num">−' + moneyS(t.expense) + "</td>" +
+            '<td class="num">' + ctSgnS(t.net) + "</td>" +
+            '<td class="num">' + moneyS(t.paid) + "</td>" +
+            '<td class="num">' + (t.balance ? moneyS(t.balance) : "—") + "</td></tr></tfoot></table></div>"
+        : ctEmpty("🗓", "Is mahine koi canteen entry nahi", monthLabel(y, m) + " me saman, bikri ya kharcha add karo.", "ctAdd", "＋ Entry add karo")) +
+    "</div>";
+
+  const maxItem = items.length ? items[0].amt || 1 : 1;
+  const itemCard =
+    '<div class="card"><div class="card-h"><div><h3>Item-wise summary</h3>' +
+      '<div class="sub">Rate-wise entries ke items · sabse zyada pehle</div></div>' +
+      '<span class="tag warn">' + items.length + " items</span></div>" +
+      (items.length
+        ? '<div class="twrap"><table class="tbl" style="min-width:460px"><thead><tr>' +
+          "<th>Item</th>" + '<th class="num">Qty</th><th class="num">Avg rate</th><th class="num">Amount</th><th></th>' +
+          "</tr></thead><tbody>" +
+          items.slice(0, 14).map((i) =>
+            "<tr><td>" + esc(i.name) + ' <span class="muted" style="font-size:11px">' + esc(i.unit) + " · " + i.n + "×</span></td>" +
+            '<td class="num strong">' + num(i.qty) + "</td>" +
+            '<td class="num">' + moneyS(i.avgRate) + "</td>" +
+            '<td class="num strong">' + moneyS(i.amt) + "</td>" +
+            '<td style="width:60px"><div class="ct-hbar"><i style="width:' + Math.max(4, Math.round((i.amt / maxItem) * 100)) + '%"></i></div></td></tr>').join("") +
+          "</tbody></table></div>" +
+          (items.length > 14 ? '<div class="ct-emptyline">…aur ' + (items.length - 14) + " items. Poori list “Sab entries” → item search me.</div>" : "")
+        : '<div class="ct-emptyline">Is mahine koi rate-wise item nahi. Entry karte waqt “Item-wise rate” chuno to yahan summary banegi.</div>') +
+    "</div>";
+
+  const partyCard =
+    '<div class="card"><div class="card-h"><div><h3>Party / supplier-wise</h3>' +
+      '<div class="sub">Kis se kitna saman aaya, kitna diya, kitna baki</div></div></div>' +
+      (parties.length
+        ? '<div class="twrap"><table class="tbl" style="min-width:460px"><thead><tr>' +
+          "<th>Party</th>" + '<th class="num">Entries</th><th class="num">Total</th><th class="num">Paid</th><th class="num">Baki</th>' +
+          "</tr></thead><tbody>" +
+          parties.slice(0, 12).map((p) =>
+            "<tr><td>" + esc(p.name) + '<div class="ct-ilist">aakhri ' + esc(ctShort(p.last)) + "</div></td>" +
+            '<td class="num muted">' + p.n + "</td>" +
+            '<td class="num strong">' + moneyS(p.amt) + "</td>" +
+            '<td class="num muted">' + moneyS(p.paid) + "</td>" +
+            '<td class="num">' + (p.bal > 0.005 ? '<b style="color:var(--bad)">' + moneyS(p.bal) + "</b>" : '<span class="muted">—</span>') + "</td></tr>").join("") +
+          "</tbody></table></div>"
+        : '<div class="ct-emptyline">Koi party nahi likhi gayi.</div>') +
+    "</div>";
+
+  const bakiCard = bakiAll.length
+    ? '<div class="card" style="margin-top:14px"><div class="card-h"><div><h3>Baki / udhaar — sab time ka</h3>' +
+      '<div class="sub">Jin entries ka paisa abhi baki hai</div></div>' +
+      '<span class="tag bad">' + money0(bakiAll.reduce((s, e) => s + ctBalance(e), 0)) + "</span></div>" +
+      '<div class="twrap"><table class="tbl" style="min-width:560px"><thead><tr>' +
+      "<th>Date</th><th>Party</th><th>Type</th>" + '<th class="num">Amount</th><th class="num">Paid</th><th class="num">Baki</th><th></th>' +
+      "</tr></thead><tbody>" +
+      bakiAll.slice(0, 25).map((e) =>
+        '<tr class="clickable" data-act="ctEdit" data-id="' + e.id + '">' +
+        '<td style="white-space:nowrap">' + esc(ctShort(e.date)) + "</td>" +
+        "<td>" + esc(e.party || "—") + "</td>" +
+        "<td>" + ctKindTag(e) + "</td>" +
+        '<td class="num">' + moneyS(ctAmount(e)) + "</td>" +
+        '<td class="num muted">' + moneyS(Math.min(ctPaid(e), ctAmount(e))) + "</td>" +
+        '<td class="num strong" style="color:var(--bad)">' + moneyS(ctBalance(e)) + "</td>" +
+        '<td><button class="btn xs primary" data-act="ctPay" data-id="' + e.id + '">₹ Paid</button></td></tr>').join("") +
+      "</tbody></table></div>" +
+      (bakiAll.length > 25 ? '<div class="ct-emptyline">…aur ' + (bakiAll.length - 25) + " entries.</div>" : "") +
+      "</div>"
+    : "";
+
+  return kpis + '<div class="grid g2" style="margin-bottom:14px">' + chartCard + donutCard + "</div>" +
+    dayCard + '<div class="grid g2" style="margin-top:14px">' + itemCard + partyCard + "</div>" + bakiCard;
+}
+
+/* ============ SAB ENTRIES ============ */
+function ctEntriesView() {
+  const u = ctUI();
+  const filterBar =
+    '<div class="card" style="margin-bottom:14px"><div class="card-b" style="padding:12px 15px">' +
+      '<div class="ct-datebar">' +
+        '<div class="seg">' +
+          '<button data-act="ctScope" data-scope="month" class="' + (u.scope === "month" && !u.from && !u.to ? "on" : "") + '">' + esc(monthLabel(UI.year, UI.month)) + "</button>" +
+          '<button data-act="ctScope" data-scope="all" class="' + (u.scope === "all" && !u.from && !u.to ? "on" : "") + '">Sab time</button>' +
+          '<button data-act="ctScope" data-scope="custom" class="' + (u.from || u.to ? "on" : "") + '">Custom range</button>' +
+        "</div>" +
+        '<span class="muted" style="font-size:11.6px;font-weight:700">From</span>' +
+        '<input type="date" class="inp" id="ctFrom" value="' + esc(u.from || "") + '" style="width:auto">' +
+        '<span class="muted" style="font-size:11.6px;font-weight:700">To</span>' +
+        '<input type="date" class="inp" id="ctTo" value="' + esc(u.to || "") + '" style="width:auto">' +
+        '<select class="inp" id="ctKindSel" style="width:auto;min-width:150px">' +
+          '<option value="all"' + (u.kind === "all" ? " selected" : "") + ">Sab type</option>" +
+          CT_KINDS.map((k) => '<option value="' + k + '"' + (u.kind === k ? " selected" : "") + ">" + CT_KIND[k].ico + " " + esc(CT_KIND[k].label) + "</option>").join("") +
+        "</select>" +
+        '<input class="inp" id="ctSearch" placeholder="Party, item, bill no. dhoondo…" value="' + esc(u.q) + '" autocomplete="off" style="min-width:190px;flex:1">' +
+        (u.q || u.from || u.to || u.kind !== "all" || u.scope !== "month"
+          ? '<button class="btn sm" data-act="ctResetFilter">✕ Reset</button>' : "") +
+      "</div>" +
+    "</div></div>";
+  return filterBar + '<div id="ctEntriesBody">' + ctEntriesTable() + "</div>";
+}
+
+function ctEntriesTable() {
+  const list = ctFilteredEntries();
+  const t = ctTotals(list);
+  const rows = list.map((e) => {
+    const il = ctItemLabel(e);
+    return '<tr class="clickable" data-act="ctEdit" data-id="' + e.id + '">' +
+      '<td style="white-space:nowrap"><b>' + esc(ctShort(e.date)) + "</b>" +
+        '<div class="ct-ilist">' + esc(ctDayName(e.date).slice(0, 3)) + " " + esc(ctParts(e.date).y) + (ctIsToday(e.date) ? " · aaj" : "") + "</div></td>" +
+      "<td>" + ctKindTag(e) + "</td>" +
+      '<td><div style="font-weight:750">' + esc(e.party || "—") + "</div>" +
+        (il ? '<div class="ct-ilist">' + esc(il.length > 80 ? il.slice(0, 80) + "…" : il) + "</div>" : "") + "</td>" +
+      '<td class="muted" style="white-space:nowrap">' + esc(e.billNo || "—") + "</td>" +
+      "<td>" + ctModeTag(e) + "</td>" +
+      '<td class="num muted">' + (ctItemCount(e) || "—") + "</td>" +
+      '<td class="num">' + ctSignMoney(e) + "</td>" +
+      '<td class="num muted">' + moneyS(Math.min(ctPaid(e), ctAmount(e))) + "</td>" +
+      '<td class="num">' + (ctBalance(e) > 0.005 ? '<b style="color:var(--bad)">' + moneyS(ctBalance(e)) + "</b>" : '<span class="muted">—</span>') + "</td>" +
+      '<td class="muted" style="white-space:nowrap;font-size:11.4px">' + esc(CT_PAY[e.payMode] || "Cash") + "</td>" +
+      '<td><div class="row-actions">' +
+        (ctBalance(e) > 0.005 ? '<button class="btn xs" data-act="ctPay" data-id="' + e.id + '" title="Paid likho">₹</button>' : "") +
+        '<button class="btn xs" data-act="ctEdit" data-id="' + e.id + '" title="Edit">✎</button>' +
+        '<button class="btn xs" data-act="ctDup" data-id="' + e.id + '" title="Duplicate">⧉</button>' +
+        '<button class="btn xs" data-act="ctDel" data-id="' + e.id + '" title="Delete" style="color:var(--bad)">✕</button>' +
+      "</div></td></tr>";
+  }).join("");
+  return '<div class="card"><div class="card-h"><div><h3>Entries</h3>' +
+      '<div class="sub">' + t.count + " entries · naya pehle · row par tap = edit</div></div>" +
+      '<div class="toolbar"><span class="tag warn">Saman ' + money0(t.purchase) + "</span>" +
+      '<span class="tag ok">Bikri ' + money0(t.sale) + "</span>" +
+      '<span class="tag bad">Kharcha ' + money0(t.expense) + "</span></div></div>" +
+    (list.length
+      ? '<div class="twrap"><table class="tbl" style="min-width:980px"><thead><tr>' +
+        "<th>Date</th><th>Type</th><th>Party / saman</th><th>Bill</th><th>Mode</th>" +
+        '<th class="num">Items</th><th class="num">Amount</th><th class="num">Paid</th><th class="num">Baki</th><th>Pay</th><th></th>' +
+        "</tr></thead><tbody>" + rows + "</tbody>" +
+        '<tfoot><tr><td colspan="6">Total (' + t.count + " entries)</td>" +
+          '<td class="num">' + ctSgnS(t.net) + "</td>" +
+          '<td class="num">' + moneyS(t.paid) + "</td>" +
+          '<td class="num">' + (t.balance ? moneyS(t.balance) : "—") + "</td><td></td><td></td></tr></tfoot>" +
+        "</table></div>"
+      : ctEmpty("🧾", "Koi entry nahi mili", "Filter badlo ya nayi canteen entry add karo.", "ctAdd", "＋ Entry add karo")) +
+    "</div>";
+}
+
+/* ============ RATE LIST ============ */
+function ctRatesView() {
+  const rates = ct().rates.slice().sort((a, b) => a.name.localeCompare(b.name));
+  const used = ctItemAgg(ctAll());
+  const unitOpts = (sel) => CT_UNITS.map((u) => '<option value="' + u + '"' + (u === sel ? " selected" : "") + ">" + u + "</option>").join("");
+  const rows = rates.map((r) => {
+    const last = ctLastRateInfo(r.name);
+    const agg = used.find((x) => x.name.toLowerCase() === r.name.toLowerCase());
+    return "<tr>" +
+      '<td><b>' + esc(r.name) + "</b>" + (r.cat ? '<div class="ct-ilist">' + esc(r.cat) + "</div>" : "") + "</td>" +
+      '<td class="muted">' + esc(r.unit) + "</td>" +
+      '<td class="num strong">' + (r.rate ? moneyS(r.rate) : "—") + "</td>" +
+      '<td class="num">' + (last ? moneyS(last.rate) + ' <span class="muted" style="font-size:10.6px">' + esc(ctShort(last.date)) + "</span>" : '<span class="muted">—</span>') + "</td>" +
+      '<td class="num muted">' + (agg ? num(agg.qty) + " " + esc(agg.unit) : "—") + "</td>" +
+      '<td class="num muted">' + (agg ? moneyS(agg.amt) : "—") + "</td>" +
+      '<td class="num muted">' + (agg ? agg.n : 0) + "</td>" +
+      '<td><div class="row-actions">' +
+        '<button class="btn xs" data-act="ctRateEdit" data-id="' + r.id + '" title="Edit">✎</button>' +
+        '<button class="btn xs" data-act="ctRateDel" data-id="' + r.id + '" title="Delete" style="color:var(--bad)">✕</button>' +
+      "</div></td></tr>";
+  }).join("");
+
+  const addForm =
+    '<div class="card" style="margin-bottom:14px"><div class="card-h"><div><h3>Naya item / rate add karo</h3>' +
+      '<div class="sub">Yahan rate daaloge to entry karte waqt item ka naam likhte hi rate apne aap aa jayega</div></div>' +
+      '<span class="k-ico">🏷</span></div>' +
+      '<div class="card-b">' +
+        '<div class="ct-datebar">' +
+          '<input class="inp" id="nrName" placeholder="Item ka naam — jaise Aata, Doodh, Gas cylinder" style="min-width:200px;flex:2" list="ctRateNames">' +
+          '<select class="inp" id="nrUnit" style="width:auto;min-width:96px">' + unitOpts("kg") + "</select>" +
+          '<input class="inp" id="nrRate" type="number" min="0" step="0.5" placeholder="Rate ₹" style="width:120px">' +
+          '<input class="inp" id="nrCat" placeholder="Category (optional)" style="min-width:140px;flex:1">' +
+          '<button class="btn primary" data-act="ctRateAdd">＋ Rate list me daalo</button>' +
+        "</div>" +
+        '<datalist id="ctRateNames">' + rates.map((r) => '<option value="' + esc(r.name) + '"></option>').join("") + "</datalist>" +
+      "</div></div>";
+
+  return addForm +
+    '<div class="banner info"><span>💡</span><div><b>Rate list apne aap banti hai.</b> Jab aap koi “Rate-wise” entry save karte ho, ' +
+      'uske items aur unka rate is list me khud add / update ho jata hai. “Ek-saath total” wali entry rate list ko nahi chhedti.</div></div>' +
+    '<div class="card"><div class="card-h"><div><h3>Item rate list</h3>' +
+      '<div class="sub">' + rates.length + " items · default rate + aakhri kharida hua rate</div></div>" +
+      '<span class="tag grey">' + money0(rates.reduce((s, r) => s + num(r.rate), 0)) + " (sab rates ka jod)</span></div>" +
+      (rates.length
+        ? '<div class="twrap"><table class="tbl" style="min-width:760px"><thead><tr>' +
+          "<th>Item</th><th>Unit</th>" + '<th class="num">Default rate</th><th class="num">Aakhri kharida</th>' +
+          '<th class="num">Ab tak qty</th><th class="num">Ab tak amount</th><th class="num">Entries</th><th></th>' +
+          "</tr></thead><tbody>" + rows + "</tbody></table></div>"
+        : ctEmpty("🏷", "Rate list khaali hai", "Upar form se item aur rate daalo, ya koi rate-wise entry save karo — list apne aap ban jayegi.", "ctAdd", "＋ Entry add karo")) +
+    "</div>";
+}
+
+/* ============ ACTIVITY ============ */
+function ctActivityView() {
+  const u = ctUI();
+  const logs = ctLogs();
+  const ICO = { add: ["＋", "add"], edit: ["✎", "edit"], delete: ["🗑", "delete"], payment: ["₹", "pay"], rate: ["🏷", "rate"], restore: ["↺", "add"] };
+  const groups = [];
+  const byDay = {};
+  logs.forEach((l) => {
+    const iso = isoDate(new Date(num(l.ts)));
+    if (!byDay[iso]) { byDay[iso] = []; groups.push({ iso: iso, items: byDay[iso] }); }
+    byDay[iso].push(l);
+  });
+  const head =
+    '<div class="card" style="margin-bottom:14px"><div class="card-b" style="padding:12px 15px">' +
+      '<div class="ct-datebar">' +
+        '<div class="seg">' +
+          '<button data-act="ctLogScope" data-scope="month" class="' + (u.logScope === "month" ? "on" : "") + '">Is mahine ki activity</button>' +
+          '<button data-act="ctLogScope" data-scope="all" class="' + (u.logScope === "all" ? "on" : "") + '">Poori activity</button>' +
+        "</div>" +
+        '<span class="tag grey">' + logs.length + " events</span>" +
+        '<div class="toolbar" style="margin-left:auto">' +
+          '<button class="btn sm" data-act="ctCsv">⤓ CSV</button>' +
+          '<button class="btn sm primary" data-act="ctAdd">＋ Entry add karo</button>' +
+        "</div>" +
+      "</div></div></div>";
+
+  if (!logs.length) {
+    return head + '<div class="card">' + ctEmpty("🕘", "Koi activity nahi",
+      "Jab bhi aap canteen me entry add, edit ya delete karoge, yahan poori history dikhegi.", "ctAdd", "＋ Entry add karo") + "</div>";
+  }
+
+  return head +
+    '<div class="card"><div class="card-h"><div><h3>Poori activity log</h3>' +
+      '<div class="sub">Har add / edit / delete / payment time ke saath · delete ko wapas la sakte ho</div></div>' +
+      '<span class="tag grey">max ' + CT_LOG_MAX + " events</span></div>" +
+      '<div class="card-b" style="padding:6px 18px 14px">' +
+      groups.map((g) => {
+        const daySum = { add: 0, edit: 0, del: 0, pay: 0 };
+        g.items.forEach((l) => {
+          if (l.action === "add") daySum.add++;
+          else if (l.action === "edit") daySum.edit++;
+          else if (l.action === "delete") daySum.del++;
+          else if (l.action === "payment") daySum.pay++;
+        });
+        const bits = [];
+        if (daySum.add) bits.push(daySum.add + " add");
+        if (daySum.edit) bits.push(daySum.edit + " edit");
+        if (daySum.del) bits.push(daySum.del + " delete");
+        if (daySum.pay) bits.push(daySum.pay + " payment");
+        return '<div class="ct-dayhead"><span>' + esc(ctPretty(g.iso)) + "</span>" +
+            '<span class="muted">' + esc(ctDayName(g.iso).slice(0, 3)) + " · " + bits.join(" · ") + "</span>" +
+            (ctIsToday(g.iso) ? '<span class="tag ok">aaj</span>' : "") +
+            '<span class="rt muted">' + g.items.length + " events</span></div>" +
+          g.items.map((l) => {
+            const ic = ICO[l.action] || ["•", "edit"];
+            const k = CT_KIND[l.kind];
+            const amt = num(l.amount);
+            const canRestore = l.action === "delete" && l.snapshot && !ctEntry(l.entryId);
+            return '<div class="ct-act">' +
+              '<span class="ai ' + ic[1] + '">' + ic[0] + "</span>" +
+              '<div style="flex:1;min-width:0">' +
+                '<div class="tx">' + esc(l.text || (k ? k.label : "Canteen")) + "</div>" +
+                '<div class="tm">' + esc(ctTime(l.ts)) +
+                  (l.date ? " · entry date " + esc(ctShort(l.date)) : "") +
+                  " · " + esc(l.action === "delete" ? "deleted" : l.action === "payment" ? "payment" : l.action === "restore" ? "restored" : l.action) +
+                "</div>" +
+              "</div>" +
+              (canRestore ? '<button class="btn xs" data-act="ctRestore" data-log="' + l.id + '" title="Wapas la do">↺ Restore</button>' : "") +
+              '<span class="am" style="color:' + (l.action === "delete" ? "var(--bad)" : (k && k.sign > 0 ? "var(--ok)" : "var(--ink)")) + '">' +
+                (amt ? ((k && k.sign > 0 && l.action !== "delete") ? "+" : "") + moneyS(amt) : "—") + "</span>" +
+            "</div>";
+          }).join("");
+      }).join("") +
+      "</div></div>";
+}
+
+/* ------------------------- 21i. ENTRY MODAL ------------------------- */
+function ctDefaultDate() {
+  const u = ctUI();
+  if (u.tab === "day") return u.date;
+  const nowIso = isoDate(new Date());
+  const np = ctParts(nowIso);
+  if (np.y === UI.year && np.m === UI.month) return nowIso;
+  const dp = ctParts(u.date);
+  if (dp.y === UI.year && dp.m === UI.month) return u.date;
+  return monthFirst(UI.year, UI.month);
+}
+function ctBlankItem() { return { name: "", qty: 1, unit: "kg", rate: 0 }; }
+function ctDraftAmount(d) {
+  if (!d) return 0;
+  if (d.mode === "total") return r2(Math.max(0, num(d.amount)));
+  return r2((d.items || []).reduce((t, i) => t + num(i.qty) * num(i.rate), 0));
+}
+
+function openCtModal(id, dateOverride) {
+  const existing = id ? ctEntry(id) : null;
+  let d;
+  if (existing) {
+    d = JSON.parse(JSON.stringify(existing));
+  } else {
+    d = { id: "", date: dateOverride || ctDefaultDate(), kind: "purchase", mode: "itemized",
+          items: [ctBlankItem()], amount: 0, party: "", billNo: "", paid: 0, payMode: "cash", note: "" };
+  }
+  if (!Array.isArray(d.items) || !d.items.length) d.items = [ctBlankItem()];
+  d.items = d.items.map(normCtItem);
+  if (!d.date) d.date = ctDefaultDate();
+  ctUI().edit = d;
+  ctRenderModal(!!existing);
+}
+
+function ctRenderModal(isEdit) {
+  const d = ctUI().edit;
+  if (!d) return;
+  const k = CT_KIND[d.kind] || CT_KIND.purchase;
+  const amt = ctDraftAmount(d);
+  const paid = r2(clamp(num(d.paid), 0, amt || num(d.paid) || 0));
+  const bal = r2(Math.max(0, amt - paid));
+  const partyOpts = ctParties().map((p) => '<option value="' + esc(p) + '"></option>').join("");
+  const itemOpts = ct().rates.map((r) => '<option value="' + esc(r.name) + '"></option>').join("");
+
+  openModal(
+    '<div class="modal" style="max-width:920px">' +
+      '<div class="modal-h"><div><h3>' + (isEdit ? "Entry edit karo" : "Nayi canteen entry") + "</h3>" +
+        '<p>' + esc(ctPretty(d.date)) + " · " + esc(ctDayName(d.date)) + (ctIsToday(d.date) ? " · aaj" : "") +
+        (isEdit ? " · entry " + esc(String(d.id).slice(0, 6)) : "") + "</p></div>" +
+        '<button class="x" data-act="closeModal">✕</button></div>' +
+
+      '<div class="modal-b">' +
+        '<div class="seg" id="ctKindSeg" style="width:100%;display:flex">' +
+          CT_KINDS.map((kk) => '<button data-act="ctSetKind" data-kind="' + kk + '" class="' + (d.kind === kk ? "on" : "") +
+            '" style="flex:1;min-width:0">' + CT_KIND[kk].ico + " " + esc(CT_KIND[kk].label) + "</button>").join("") +
+        "</div>" +
+        '<div class="ct-note" style="margin-top:7px" id="ctKindHint">' + esc(ctKindHint(d.kind)) + "</div>" +
+
+        '<div class="grid g3" style="margin-top:13px">' +
+          field("Date (kab)", '<input type="date" class="inp" id="ctDateM" value="' + esc(d.date) + '">') +
+          field(d.kind === "sale" ? "Kahan se / counter" : "Party / supplier / dukaan",
+            '<input class="inp" id="ctParty" list="ctPartyList" value="' + esc(d.party) + '" placeholder="' + (d.kind === "sale" ? "Canteen counter" : "Jaise: Sabzi Mandi, Gupta Kirana") + '">') +
+          field("Bill / parcha no. (optional)", '<input class="inp" id="ctBill" value="' + esc(d.billNo) + '" placeholder="Jaise SM-204">') +
+        "</div>" +
+        '<datalist id="ctPartyList">' + partyOpts + "</datalist>" +
+        '<datalist id="ctItemNames">' + itemOpts + "</datalist>" +
+
+        '<div class="sec-title">Saman ka hisaab</div>' +
+        '<div class="seg" id="ctModeSeg" style="width:100%;display:flex">' +
+          '<button data-act="ctSetMode" data-mode="itemized" class="' + (d.mode !== "total" ? "on" : "") + '" style="flex:1;min-width:0">₹ Item-wise rate (qty × rate)</button>' +
+          '<button data-act="ctSetMode" data-mode="total" class="' + (d.mode === "total" ? "on" : "") + '" style="flex:1;min-width:0">Σ Ek saath pura total</button>' +
+        "</div>" +
+        '<div id="ctItemsWrap" style="margin-top:12px">' + ctItemsWrapHTML() + "</div>" +
+
+        '<div class="sec-title">Payment</div>' +
+        '<div class="grid g3">' +
+          field("Kitna paisa diya / mila (₹)", '<input class="inp" type="number" id="ctPaid" min="0" step="1" value="' + (paid || "") + '" placeholder="0">', "Chhod doge to baki (udhaar) me chala jayega") +
+          field("Kaise", '<select class="inp" id="ctPayMode">' +
+            Object.keys(CT_PAY).map((p) => '<option value="' + p + '"' + (d.payMode === p ? " selected" : "") + ">" + esc(CT_PAY[p]) + "</option>").join("") + "</select>") +
+          field("Baki / udhaar", '<input class="inp" id="ctBal" value="' + moneyS(bal) + '" readonly style="background:var(--surface-2);font-weight:800">') +
+        "</div>" +
+        '<div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:10px">' +
+          '<button class="btn sm" data-act="ctPayFull">✔ Poora paid</button>' +
+          '<button class="btn sm" data-act="ctPayNone">📒 Poora udhaar (0 diya)</button>' +
+        "</div>" +
+
+        '<div style="margin-top:14px">' + field("Note (optional)",
+          '<textarea class="inp" id="ctNote" style="min-height:54px" placeholder="Koi baat yaad rakhni ho…">' + esc(d.note) + "</textarea>") + "</div>" +
+      "</div>" +
+
+      '<div class="modal-f">' +
+        '<div class="left">' +
+          (isEdit ? '<button class="btn danger" data-act="ctDel" data-id="' + d.id + '">🗑 Delete</button>' : "") +
+          (isEdit ? '<button class="btn" data-act="ctDup" data-id="' + d.id + '">⧉ Duplicate</button>' : "") +
+        "</div>" +
+        '<button class="btn" data-act="closeModal">Cancel</button>' +
+        '<button class="btn primary" data-act="ctSave">💾 Save entry</button>' +
+      "</div>" +
+    "</div>"
+  );
+  ctPatchTotals();
+}
+
+function ctKindHint(kind) {
+  if (kind === "sale") return "Canteen ki kamai — chai, nashta, khana jo becha. Ye amount din ke ledger me + (plus) judta hai.";
+  if (kind === "expense") return "Saman ke alawa ka kharcha — gas, bijli, mazdoori, barbaadi. Ye amount din ke ledger me − (minus) hota hai.";
+  return "Canteen me aaya saman. Item-wise rate likho, ya rate na pata ho to “Ek saath pura total” chuno.";
+}
+
+function ctItemsWrapHTML() {
+  const d = ctUI().edit;
+  if (!d) return "";
+  const isTotal = d.mode === "total";
+  const rows = (d.items || []).map((it, i) => ctRowHTML(i, it, isTotal)).join("");
+  if (isTotal) {
+    return '<div class="ct-lump">' +
+        '<div class="l">Pura saman ka total (₹)' +
+          "<small>Har item ka alag rate likhne ki zaroorat nahi — bill / parche ka ek saath total daalo</small></div>" +
+        '<input class="inp" type="number" id="ctLump" min="0" step="1" value="' + (num(d.amount) || "") + '" placeholder="Jaise 3450">' +
+        '<div class="ct-totalbox"><small>Entry total</small><b id="ctTotalBig">' + moneyS(ctDraftAmount(d)) + "</b></div>" +
+      "</div>" +
+      '<div class="sec-title" style="margin-top:2px">Saman ka vivaran (optional — bina rate)</div>' +
+      '<div class="ct-rowhead"><span>Kya-kya aaya (naam)</span><span>Qty</span><span>Unit</span><span>Rate</span><span>Amount</span><span></span></div>' +
+      '<div class="ct-items" id="ctItems">' + rows + "</div>" +
+      '<div style="display:flex;gap:9px;align-items:center;flex-wrap:wrap;margin-top:10px">' +
+        '<button class="btn sm" data-act="ctAddItem">＋ Line add karo</button>' +
+        '<span class="ct-note">Total mode me rate column band rehta hai — sirf naam aur qty yaad rakhne ke liye.</span>' +
+      "</div>";
+  }
+  return '<div class="ct-rowhead"><span>Item ka naam</span><span>Qty</span><span>Unit</span><span>Rate ₹</span><span>Amount</span><span></span></div>' +
+    '<div class="ct-items" id="ctItems">' + rows + "</div>" +
+    '<div style="display:flex;gap:9px;align-items:center;flex-wrap:wrap;margin-top:10px">' +
+      '<button class="btn sm primary" data-act="ctAddItem">＋ Item add karo</button>' +
+      '<button class="btn sm" data-act="ctClearItems">✕ Lines khaali karo</button>' +
+      '<span class="ct-note" id="ctItemsCount"></span>' +
+      '<div class="ct-totalbox"><small>Item ka total</small><b id="ctTotalBig">' + moneyS(ctDraftAmount(d)) + "</b></div>" +
+    "</div>";
+}
+
+function ctRowHTML(i, it, isTotal) {
+  const amt = isTotal ? null : r2(num(it.qty) * num(it.rate));
+  const units = CT_UNITS.slice();
+  if (it.unit && units.indexOf(it.unit) < 0) units.push(it.unit);
+  const unitSel = '<select class="inp" data-ct-item="' + i + '" data-ct-f="unit">' +
+    units.map((u) => '<option value="' + esc(u) + '"' + (u === (it.unit || "kg") ? " selected" : "") + ">" + esc(u) + "</option>").join("") + "</select>";
+  return '<div class="ct-row" data-row="' + i + '">' +
+    '<input class="inp" list="ctItemNames" placeholder="Item ka naam" value="' + esc(it.name) + '" data-ct-item="' + i + '" data-ct-f="name" autocomplete="off">' +
+    '<input class="inp" type="number" min="0" step="0.5" placeholder="Qty" value="' + (num(it.qty) || "") + '" data-ct-item="' + i + '" data-ct-f="qty">' +
+    unitSel +
+    (isTotal
+      ? '<input class="inp" value="—" disabled style="text-align:center;color:var(--faint)" title="Ek-saath total mode me item ka rate nahi likhte">'
+      : '<input class="inp" type="number" min="0" step="0.5" placeholder="Rate ₹" value="' + (num(it.rate) || "") + '" data-ct-item="' + i + '" data-ct-f="rate">') +
+    '<span class="amt' + (amt ? "" : " zero") + '">' + (amt == null ? "—" : moneyS(amt)) + "</span>" +
+    '<button class="del" data-act="ctDelItem" data-i="' + i + '" title="Line hatao">✕</button>' +
+  "</div>";
+}
+
+function ctRepaintItems() {
+  const wrap = $("#ctItemsWrap");
+  if (!wrap) return;
+  const scroll = window.scrollY;
+  wrap.innerHTML = ctItemsWrapHTML();
+  window.scrollTo(0, scroll);
+  ctPatchTotals();
+}
+function ctPatchTotals() {
+  const d = ctUI().edit;
+  if (!d) return;
+  const amt = ctDraftAmount(d);
+  const big = $("#ctTotalBig");
+  if (big) big.textContent = moneyS(amt);
+  const paidEl = $("#ctPaid");
+  const balEl = $("#ctBal");
+  if (balEl) balEl.value = moneyS(Math.max(0, amt - num(paidEl ? paidEl.value : d.paid)));
+  const cnt = $("#ctItemsCount");
+  if (cnt) {
+    const n = (d.items || []).filter((i) => i.name || num(i.qty) || num(i.rate)).length;
+    cnt.textContent = n ? n + " item line" + (n > 1 ? "s" : "") : "Koi item nahi";
+  }
+  const hint = $("#ctKindHint");
+  if (hint) hint.textContent = ctKindHint(d.kind);
+}
+
+/* modal ke andar ka input — draft update + sirf totals patch (focus nahi tootta) */
+function ctFieldInput(el) {
+  const d = ctUI().edit;
+  if (!d || !el) return;
+  const idx = el.dataset ? el.dataset.ctItem : null;
+  if (idx !== undefined && idx !== null && idx !== "") {
+    const i = Number(idx), f = el.dataset.ctF;
+    const it = (d.items || [])[i];
+    if (!it) return;
+    if (f === "name" || f === "unit") it[f] = el.value;
+    else it[f] = Math.max(0, num(el.value));
+    const row = el.closest ? el.closest(".ct-row") : null;
+    if (row && d.mode !== "total") {
+      const a = $(".amt", row);
+      if (a) { const v = r2(num(it.qty) * num(it.rate)); a.textContent = v ? moneyS(v) : "—"; a.classList.toggle("zero", !v); }
+    }
+    ctPatchTotals();
+    return;
+  }
+  const id = el.id;
+  if (id === "ctLump") { d.amount = Math.max(0, num(el.value)); ctPatchTotals(); }
+  else if (id === "ctPaid") { d.paid = Math.max(0, num(el.value)); ctPatchTotals(); }
+  else if (id === "ctParty") d.party = el.value;
+  else if (id === "ctBill") d.billNo = el.value;
+  else if (id === "ctNote") d.note = el.value;
+  else if (id === "ctDateM") { if (el.value) d.date = el.value; }
+  else if (id === "ctPayMode") { d.payMode = CT_PAY[el.value] ? el.value : "cash"; }
+}
+/* item ka naam blur/change hone par rate list se rate + unit bhar do */
+function ctAutoRate(el) {
+  const d = ctUI().edit;
+  if (!d || d.mode === "total" || !el || el.dataset.ctF !== "name") return;
+  const i = Number(el.dataset.ctItem);
+  const it = (d.items || [])[i];
+  if (!it) return;
+  const hit = ctRateFor(el.value) || ctLastRateInfo(el.value);
+  if (!hit) return;
+  const rate = num(hit.rate);
+  if (!rate) return;
+  if (!num(it.rate)) {
+    it.rate = rate;
+    const row = el.closest(".ct-row");
+    const rInp = row ? $('[data-ct-f="rate"]', row) : null;
+    if (rInp) rInp.value = rate;
+  }
+  if (hit.unit && it.unit !== hit.unit) {
+    it.unit = hit.unit;
+    const row = el.closest(".ct-row");
+    const uSel = row ? $('[data-ct-f="unit"]', row) : null;
+    if (uSel) {
+      if (!Array.from(uSel.options).some((o) => o.value === hit.unit)) uSel.add(new Option(hit.unit, hit.unit));
+      uSel.value = hit.unit;
+    }
+  }
+  ctPatchTotals();
+  const row = el.closest(".ct-row");
+  if (row) { const a = $(".amt", row); if (a) { const v = r2(num(it.qty) * num(it.rate)); a.textContent = v ? moneyS(v) : "—"; a.classList.toggle("zero", !v); } }
+}
+
+/* ------------------------- 21j. SAVE / DELETE ------------------------- */
+function ctSave() {
+  const d = ctUI().edit;
+  if (!d) return;
+  const el = (id) => document.getElementById(id);
+  const party = el("ctParty") ? el("ctParty").value.trim() : String(d.party || "");
+  const billNo = el("ctBill") ? el("ctBill").value.trim() : String(d.billNo || "");
+  const note = el("ctNote") ? el("ctNote").value.trim() : String(d.note || "");
+  const date = el("ctDateM") && el("ctDateM").value ? el("ctDateM").value : d.date;
+  const payMode = el("ctPayMode") && CT_PAY[el("ctPayMode").value] ? el("ctPayMode").value : d.payMode;
+  const paidRaw = Math.max(0, num(el("ctPaid") ? el("ctPaid").value : d.paid));
+  const lumpRaw = Math.max(0, num(el("ctLump") ? el("ctLump").value : d.amount));
+
+  const items = (d.items || []).map(normCtItem).filter((i) => i.name || i.qty || i.rate);
+  const itemsTotal = r2(items.reduce((t, i) => t + i.qty * i.rate, 0));
+  const amount = d.mode === "total" ? r2(lumpRaw) : itemsTotal;
+
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(String(date))) return toast("Sahi date chuno", "bad");
+  if (amount <= 0 && !items.length) return toast("Kuch to likho — item ka rate ya pura total", "bad");
+  if (amount <= 0 && d.mode !== "total") {
+    return toast("Rate nahi bhara. Ya har item ka rate likho, ya “Σ Ek saath pura total” chuno.", "bad");
+  }
+  if (amount <= 0 && d.mode === "total") return toast("Pura total (₹) likho — jaise 3450", "bad");
+
+  const isNew = !d.id;
+  const C = ct();
+  const prev = isNew ? null : (C.entries.find((x) => x.id === d.id) || null);
+  const prevSnap = prev ? JSON.parse(JSON.stringify(prev)) : null;
+
+  const entry = normCtEntry({
+    id: isNew ? uid() : d.id,
+    date: date, kind: d.kind, mode: d.mode, items: items, amount: amount,
+    party: party, billNo: billNo, paid: r2(clamp(paidRaw, 0, amount)), payMode: payMode, note: note,
+    createdAt: prevSnap ? prevSnap.createdAt : Date.now(), updatedAt: Date.now()
+  });
+
+  if (isNew) C.entries.push(entry);
+  else {
+    const i = C.entries.findIndex((x) => x.id === entry.id);
+    if (i >= 0) C.entries[i] = entry; else C.entries.push(entry);
+  }
+  ctSyncRates(entry);
+  ctLogIt(isNew ? "add" : "edit", entry, prevSnap, ctLogText(entry) + (isNew ? "" : " — edited"));
+
+  Store.save();
+  closeModal();
+  const u = ctUI();
+  u.edit = null;
+  u.date = entry.date;
+  if (UI.view === "canteen") { const p = ctParts(entry.date); UI.year = p.y; UI.month = p.m; }
+  if (UI.view !== "canteen") go("canteen"); else render();
+
+  if (isNew) {
+    setUndo(() => {
+      const CC = ct();
+      const j = CC.entries.findIndex((x) => x.id === entry.id);
+      if (j >= 0) CC.entries.splice(j, 1);
+      ctLogIt("delete", entry, entry, ctLogText(entry) + " — undo");
+      Store.save(); render(); toast("Entry hata di", "ok");
+    }, "Entry save ho gayi — " + ctKindOf(entry).label + " " + money0(entry.amount));
+  } else {
+    toast("Entry update ho gayi ✔", "ok");
+  }
+}
+
+function ctDelEntry(id) {
+  const e = ctEntry(id);
+  if (!e) return;
+  confirmDialog("Entry delete karein?",
+    "<b>" + esc(ctKindOf(e).label) + "</b> · " + esc(e.party || "—") + " · <b>" + money0(ctAmount(e)) + "</b><br>" +
+    esc(ctPretty(e.date)) + " — ye entry ledger se hat jayegi. Delete ke baad <b>Undo</b> ya Activity → Restore se wapas la sakte ho.",
+    "Delete", () => {
+      const C = ct();
+      const i = C.entries.findIndex((x) => x.id === id);
+      if (i < 0) return closeModal();
+      const snap = JSON.parse(JSON.stringify(C.entries[i]));
+      C.entries.splice(i, 1);
+      ctLogIt("delete", snap, snap, ctLogText(snap) + " — deleted");
+      Store.save();
+      closeModal();
+      render();
+      setUndo(() => {
+        ct().entries.push(snap);
+        ctSyncRates(snap);
+        ctLogIt("restore", snap, null, ctLogText(snap) + " — restored");
+        Store.save(); render(); toast("Entry wapas aa gayi ✔", "ok");
+      }, "Entry delete ho gayi");
+    }, true);
+}
+
+function ctDupEntry(id) {
+  const e = ctEntry(id);
+  if (!e) return;
+  const copy = JSON.parse(JSON.stringify(e));
+  copy.id = "";
+  copy.date = isoDate(new Date());
+  copy.paid = 0;
+  copy.payMode = copy.payMode === "udhaar" ? "udhaar" : "cash";
+  closeModal();
+  openCtModal(null, copy.date);
+  const d = ctUI().edit;
+  Object.assign(d, copy, { id: "", createdAt: Date.now(), updatedAt: Date.now() });
+  ctRenderModal(false);
+  toast("Entry copy ho gayi — date aaj kar di. Check kar ke save karo.", "ok");
+}
+
+/* Activity log se delete ki hui entry wapas laao */
+function ctRestoreLog(logId) {
+  const C = ct();
+  const l = C.log.find((x) => x.id === logId);
+  if (!l || !l.snapshot) return toast("Is event se entry wapas nahi la sakte", "bad");
+  if (ctEntry(l.entryId)) return toast("Ye entry pehle se maujood hai", "bad");
+  const e = normCtEntry(l.snapshot);
+  C.entries.push(e);
+  ctSyncRates(e);
+  ctLogIt("restore", e, null, ctLogText(e) + " — activity se restore");
+  Store.save();
+  render();
+  toast("Entry wapas aa gayi ✔ — " + ctPretty(e.date), "ok");
+}
+
+/* ------------------------- 21k. PAYMENT (baki chukta) ------------------------- */
+function ctPayModal(id) {
+  const e = ctEntry(id);
+  if (!e) return;
+  const bal = ctBalance(e);
+  const paidNow = Math.min(ctPaid(e), ctAmount(e));
+  openModal(
+    '<div class="modal sm"><div class="modal-h"><div><h3>Paisa diya likho</h3>' +
+      "<p>" + esc(ctKindOf(e).label) + " · " + esc(e.party || "—") + " · " + esc(ctPretty(e.date)) + "</p></div>" +
+      '<button class="x" data-act="closeModal">✕</button></div>' +
+      '<div class="modal-b">' +
+        '<div class="strip" style="margin-bottom:13px">' +
+          "<div><small>Entry total</small><b>" + money0(ctAmount(e)) + "</b></div>" +
+          "<div><small>Pehle diya</small><b>" + money0(paidNow) + "</b></div>" +
+          '<div><small>Baki</small><b style="color:var(--bad)">' + money0(bal) + "</b></div>" +
+        "</div>" +
+        field("Kitna aur diya (₹)", '<input class="inp" type="number" id="ctPayAmt" min="0" step="1" value="' + (bal || "") + '" placeholder="0">',
+          "Poora baki bharna ho to ye number waise hi rehne do") +
+        '<div style="margin-top:12px">' + field("Kaise diya", '<select class="inp" id="ctPayModeP">' +
+          Object.keys(CT_PAY).filter((p) => p !== "udhaar").map((p) => '<option value="' + p + '">' + esc(CT_PAY[p]) + "</option>").join("") + "</select>") + "</div>" +
+      "</div>" +
+      '<div class="modal-f"><div class="left"><button class="btn" data-act="ctPayZero" data-id="' + e.id + '">Poora baki maaf (0)</button></div>' +
+      '<button class="btn" data-act="closeModal">Cancel</button>' +
+      '<button class="btn primary" data-act="ctPaySave" data-id="' + e.id + '">💾 Save payment</button></div></div>'
+  );
+}
+function ctPaySave(id) {
+  const e = ctEntry(id);
+  if (!e) return;
+  const amtEl = document.getElementById("ctPayAmt");
+  const add = Math.max(0, num(amtEl ? amtEl.value : 0));
+  const modeEl = document.getElementById("ctPayModeP");
+  const prev = JSON.parse(JSON.stringify(e));
+  e.paid = r2(clamp(Math.min(ctPaid(e), ctAmount(e)) + add, 0, ctAmount(e)));
+  if (modeEl && CT_PAY[modeEl.value] && add > 0) e.payMode = modeEl.value;
+  e.updatedAt = Date.now();
+  ctLogIt("payment", e, prev, "Payment diya · " + (e.party || "—") + " · " + money0(add) + " (baki " + money0(ctBalance(e)) + ")");
+  Store.save();
+  closeModal();
+  render();
+  toast(add > 0 ? money0(add) + " paid likh diya ✔" : "Payment 0 tha — kuch nahi badla", add > 0 ? "ok" : "");
+}
+function ctPayZero(id) {
+  const e = ctEntry(id);
+  if (!e) return;
+  confirmDialog("Poora baki maaf?", "Entry ka baki <b>" + money0(ctBalance(e)) + "</b> zero kar dein? Entry ka total nahi badlega — sirf “poora diya hua” maana jayega.",
+    "Haan, baki maaf", () => {
+      const prev = JSON.parse(JSON.stringify(e));
+      e.paid = ctAmount(e);
+      e.updatedAt = Date.now();
+      ctLogIt("payment", e, prev, "Baki maaf · " + (e.party || "—") + " · " + money0(ctAmount(e)) + " settled");
+      Store.save(); closeModal(); render(); toast("Baki zero kar diya", "ok");
+    }, true);
+}
+
+/* ------------------------- 21l. RATE LIST ACTIONS ------------------------- */
+function ctRateAdd() {
+  const nameEl = document.getElementById("nrName"), unitEl = document.getElementById("nrUnit"),
+        rateEl = document.getElementById("nrRate"), catEl = document.getElementById("nrCat");
+  const name = nameEl ? nameEl.value.trim() : "";
+  if (!name) { if (nameEl) nameEl.classList.add("err"); return toast("Item ka naam likho", "bad"); }
+  if (nameEl) nameEl.classList.remove("err");
+  const rate = Math.max(0, num(rateEl ? rateEl.value : 0));
+  const C = ct();
+  const hit = C.rates.find((r) => String(r.name).trim().toLowerCase() === name.toLowerCase());
+  const rec = normCtRate({ name: name, unit: unitEl ? unitEl.value : "kg", rate: rate, cat: catEl ? catEl.value.trim() : "" });
+  if (hit) Object.assign(hit, rec, { id: hit.id });
+  else C.rates.push(rec);
+  ctLogIt("rate", null, null, (hit ? "Rate update · " : "Rate list me add · ") + name + (rate ? " — " + money0(rate) + "/" + rec.unit : ""));
+  Store.save();
+  render();
+  toast(hit ? name + " ka rate update ho gaya" : name + " rate list me add ho gaya", "ok");
+}
+function ctRateEditModal(id) {
+  const r = ct().rates.find((x) => x.id === id);
+  if (!r) return;
+  openModal(
+    '<div class="modal sm"><div class="modal-h"><div><h3>Item rate edit</h3><p>' + esc(r.name) + "</p></div>" +
+      '<button class="x" data-act="closeModal">✕</button></div>' +
+      '<div class="modal-b">' +
+        field("Item ka naam", '<input class="inp" id="erName" value="' + esc(r.name) + '">') +
+        '<div class="grid g2" style="margin-top:12px">' +
+          field("Unit", '<select class="inp" id="erUnit">' +
+            (CT_UNITS.indexOf(r.unit) < 0 && r.unit ? CT_UNITS.concat([r.unit]) : CT_UNITS)
+              .map((u) => '<option value="' + esc(u) + '"' + (u === r.unit ? " selected" : "") + ">" + esc(u) + "</option>").join("") + "</select>") +
+          field("Rate (₹)", '<input class="inp" type="number" id="erRate" min="0" step="0.5" value="' + (num(r.rate) || "") + '">') +
+        "</div>" +
+        '<div style="margin-top:12px">' + field("Category (optional)", '<input class="inp" id="erCat" value="' + esc(r.cat || "") + '">') + "</div>" +
+      "</div>" +
+      '<div class="modal-f"><div class="left"><button class="btn danger" data-act="ctRateDel" data-id="' + r.id + '">🗑 Delete</button></div>' +
+      '<button class="btn" data-act="closeModal">Cancel</button>' +
+      '<button class="btn primary" data-act="ctRateSave" data-id="' + r.id + '">💾 Save</button></div></div>'
+  );
+}
+function ctRateSave(id) {
+  const r = ct().rates.find((x) => x.id === id);
+  if (!r) return;
+  const nm = document.getElementById("erName");
+  const name = nm ? nm.value.trim() : r.name;
+  if (!name) return toast("Item ka naam khaali nahi ho sakta", "bad");
+  const un = document.getElementById("erUnit"), rt = document.getElementById("erRate"), ca = document.getElementById("erCat");
+  Object.assign(r, normCtRate({ id: r.id, name: name, unit: un ? un.value : r.unit, rate: num(rt ? rt.value : r.rate), cat: ca ? ca.value.trim() : r.cat }));
+  ctLogIt("rate", null, null, "Rate edit · " + name + " — " + money0(r.rate) + "/" + r.unit);
+  Store.save(); closeModal(); render(); toast("Rate list update ho gayi", "ok");
+}
+function ctRateDel(id) {
+  const C = ct();
+  const i = C.rates.findIndex((x) => x.id === id);
+  if (i < 0) return;
+  const snap = JSON.parse(JSON.stringify(C.rates[i]));
+  const doIt = () => {
+    C.rates.splice(i, 1);
+    ctLogIt("rate", null, null, "Rate list se hataya · " + snap.name);
+    Store.save(); closeModal(); render();
+    setUndo(() => { ct().rates.push(snap); Store.save(); render(); toast("Item wapas aa gaya", "ok"); }, snap.name + " rate list se hat gaya");
+  };
+  if (document.getElementById("overlay")) {
+    confirmDialog("Item hatayein?", "<b>" + esc(snap.name) + "</b> rate list se hat jayega. Purani entries par koi asar nahi padega.", "Hata do", doIt, true);
+  } else doIt();
+}
+
+/* ------------------------- 21o. SETTINGS CARD ------------------------- */
+function ctSettingsCard() {
+  const C = ct();
+  const t = ctTotals(ctAll());
+  const baki = ctBakiList(ctAll());
+  const bakiSum = r2(baki.reduce((s, e) => s + ctBalance(e), 0));
+  const thisM = ctTotals(ctInMonth(UI.year, UI.month));
+  return '<div class="card" style="margin-top:14px"><div class="card-h"><div><h3>Canteen — saman aur ledger</h3>' +
+      '<div class="sub">Canteen ka saara data isi browser me (aur cloud on ho to wahan) save hota hai</div></div>' +
+      '<span class="k-ico">🍽</span></div>' +
+    '<div class="card-b">' +
+      '<div class="strip" style="margin-bottom:13px">' +
+        "<div><small>Total entries</small><b>" + C.entries.length + '</b><div class="sub">ab tak</div></div>' +
+        "<div><small>Rate list items</small><b>" + C.rates.length + '</b><div class="sub">default rate yaad</div></div>' +
+        "<div><small>Saman (sab time)</small><b>" + money0(t.purchase) + '</b><div class="sub">' + MONTHS_S[UI.month] + ": " + money0(thisM.purchase) + "</div></div>" +
+        "<div><small>Bikri (sab time)</small><b>" + money0(t.sale) + '</b><div class="sub">' + MONTHS_S[UI.month] + ": " + money0(thisM.sale) + "</div></div>" +
+        '<div><small>Baki / udhaar</small><b style="color:' + (bakiSum > 0 ? "var(--bad)" : "var(--muted)") + '">' + money0(bakiSum) + "</b>" +
+          "<div class=\"sub\">" + baki.length + " entries baki</div></div>" +
+        "<div><small>Activity events</small><b>" + C.log.length + '</b><div class="sub">max ' + CT_LOG_MAX + "</div></div>" +
+      "</div>" +
+      '<div class="banner info" style="margin:0 0 12px"><span>Σ</span><div><b>Do tarah se entry hoti hai:</b> ' +
+        "(1) <b>Item-wise rate</b> — har saman ka qty × rate, total apne aap banta hai; " +
+        "(2) <b>Ek saath pura total</b> — item ka alag rate na pata ho to bill ka ek total daal do. Dono ledger me barabar judte hain.</div></div>" +
+      '<div style="display:flex;gap:9px;flex-wrap:wrap">' +
+        '<button class="btn" data-act="gotoCanteen">🍽 Canteen kholo</button>' +
+        '<button class="btn" data-act="ctCsv">⤓ Canteen CSV</button>' +
+        '<button class="btn" data-act="ctPrintMonth">🖨 Mahine ka ledger print</button>' +
+        '<button class="btn danger" data-act="ctWipe">🗑 Sirf canteen data erase</button>' +
+      "</div></div></div>";
+}
+function ctWipe() {
+  const C = ct();
+  if (!C.entries.length && !C.rates.length && !C.log.length) return toast("Canteen me erase karne ko kuch nahi hai");
+  confirmDialog("Sirf canteen data erase karein?",
+    "<b>" + C.entries.length + " entries</b>, <b>" + C.rates.length + " rate-list items</b> aur <b>" + C.log.length + " activity events</b> delete ho jayenge.<br>" +
+    "Workers aur salary records <b>safe</b> rahenge. Pehle backup (JSON) ya CSV nikal lo to behtar.",
+    "Canteen data erase", () => {
+      const snap = JSON.parse(JSON.stringify(Store.data.canteen));
+      Store.data.canteen = blankCanteen();
+      Store.save(); render();
+      setUndo(() => { Store.data.canteen = snap; Store.save(); render(); toast("Canteen data wapas aa gaya ✔", "ok"); },
+        "Canteen data erase ho gaya");
+    }, true);
+}
+
+/* ------------------------- 21n. DASHBOARD CARD ------------------------- */
+function ctDashCard(y, m) {
+  const t = ctTotals(ctInMonth(y, m));
+  const pm = m === 0 ? { y: y - 1, m: 11 } : { y: y, m: m - 1 };
+  const pt = ctTotals(ctInMonth(pm.y, pm.m));
+  const td = ctTotals(ctOnDate(isoDate(new Date())));
+  const hist = ctLast6(y, m);
+  const bakiAll = r2(ctBakiList(ctAll()).reduce((s, e) => s + ctBalance(e), 0));
+  return '<div class="card" style="margin-bottom:14px"><div class="card-h"><div><h3>🍽 Canteen — ' + esc(monthLabel(y, m)) + "</h3>" +
+      '<div class="sub">Saman, bikri, kharcha aur baki — ek nazar me' +
+        (td.count ? " · aaj " + td.count + " entries (" + money0(td.purchase) + " saman)" : "") + "</div></div>" +
+      '<div class="toolbar">' + deltaChip(moneyDelta(t.purchase, pt.purchase)) +
+        sparkline(hist.map((h) => h.t.purchase), 70, 22, "#f59e0b") +
+        '<button class="btn sm" data-act="ctAdd">＋ Entry</button>' +
+        '<button class="btn sm primary" data-act="gotoCanteen">Canteen kholo →</button></div></div>' +
+    '<div class="strip">' +
+      '<div><small>Saman aaya</small><b style="color:var(--warn)">' + ctSgn(-t.purchase) + "</b>" +
+        '<div class="sub">' + t.count + " entries · " + MONTHS_S[pm.m] + " me " + money0(pt.purchase) + "</div></div>" +
+      '<div><small>Bikri / income</small><b style="color:var(--ok)">' + ctSgn(t.sale) + '</b><div class="sub">canteen ki kamai</div></div>' +
+      '<div><small>Kharcha</small><b style="color:var(--bad)">' + ctSgn(-t.expense) + '</b><div class="sub">gas, bijli, misc</div></div>' +
+      '<div><small>Mahine ka net</small><b>' + (t.net < 0 ? "−" : "") + money0(Math.abs(t.net)) + '</b><div class="sub">bikri − saman − kharcha</div></div>' +
+      '<div><small>Paisa diya</small><b>' + money0(t.paid) + '</b><div class="sub">cash / upi / bank</div></div>' +
+      '<div><small>Baki / udhaar</small><b style="color:' + (bakiAll > 0 ? "var(--bad)" : "var(--muted)") + '">' + money0(bakiAll) + "</b>" +
+        '<div class="sub">' + (bakiAll > 0 ? "dena banta hai" : "sab clear") + "</div></div>" +
+    "</div></div>";
+}
+
+/* ------------------------- 21m. CSV / PRINT / SHARE ------------------------- */
+function ctCsvList() {
+  const u = ctUI();
+  if (u.tab === "day") return ctOnDate(u.date);
+  if (u.tab === "entries") return ctFilteredEntries();
+  return ctInMonth(UI.year, UI.month);
+}
+function ctCsv() {
+  const list = ctCsvList();
+  if (!list.length) return toast("Export karne ke liye koi entry nahi", "bad");
+  const head = ["Date", "Day", "Type", "Party", "Bill no", "Mode", "Item", "Qty", "Unit", "Rate", "Item amount",
+                "Entry total", "Paid", "Balance", "Pay mode", "Note"];
+  const lines = [head.join(",")];
+  list.slice().sort((a, b) => (a.date === b.date ? num(a.createdAt) - num(b.createdAt) : (a.date < b.date ? -1 : 1))).forEach((e) => {
+    const its = (e.items || []).filter((i) => i.name || i.qty || i.rate);
+    const base = [e.date, ctDayName(e.date), ctKindOf(e).en, e.party || "", e.billNo || "",
+                  e.mode === "total" ? "Lump-sum total" : "Item-wise rate"];
+    const tail = [ctAmount(e), Math.min(ctPaid(e), ctAmount(e)), ctBalance(e), CT_PAY[e.payMode] || "Cash", e.note || ""];
+    if (e.mode === "itemized" && its.length) {
+      its.forEach((i) => lines.push(base.concat([i.name, num(i.qty), i.unit, num(i.rate), r2(num(i.qty) * num(i.rate))], tail).map(csvCell).join(",")));
+    } else {
+      lines.push(base.concat([its.length ? ctItemLabel(e) : "(ek saath total)", "", "", "", ""], tail).map(csvCell).join(","));
+    }
+  });
+  const t = ctTotals(list);
+  lines.push([]);
+  lines.push(["TOTALS", "", "", "", "", "", "", "", "", "", "", "", "", "", "", ""].map(csvCell).join(","));
+  lines.push(["", "", "Purchase (saman)", "", "", "", "", "", "", "", "", t.purchase].map(csvCell).join(","));
+  lines.push(["", "", "Sale", "", "", "", "", "", "", "", "", t.sale].map(csvCell).join(","));
+  lines.push(["", "", "Expense", "", "", "", "", "", "", "", "", t.expense].map(csvCell).join(","));
+  lines.push(["", "", "Net", "", "", "", "", "", "", "", "", t.net].map(csvCell).join(","));
+  lines.push(["", "", "Paid", "", "", "", "", "", "", "", "", t.paid].map(csvCell).join(","));
+  lines.push(["", "", "Balance", "", "", "", "", "", "", "", "", t.balance].map(csvCell).join(","));
+  const blob = new Blob(["\ufeff" + lines.join("\n")], { type: "text/csv;charset=utf-8" });
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(blob);
+  const u = ctUI();
+  a.download = u.tab === "day" ? "Canteen_Din_" + u.date + ".csv"
+    : u.tab === "entries" ? "Canteen_Entries_" + isoDate(new Date()) + ".csv"
+    : "Canteen_" + MONTHS_S[UI.month] + "-" + UI.year + ".csv";
+  document.body.appendChild(a); a.click(); a.remove();
+  setTimeout(() => URL.revokeObjectURL(a.href), 3000);
+  toast("Canteen CSV download ho gayi", "ok");
+}
+
+function ctStmtHead(title, sub, right) {
+  const s = Store.data.settings;
+  return '<div style="display:flex;justify-content:space-between;gap:18px;border-bottom:2.5px solid #0f172a;padding-bottom:12px">' +
+    '<div><div style="font-size:19px;font-weight:800">' + esc(s.shopName || "My Shop") + " — CANTEEN</div>" +
+      '<div style="font-size:11px;color:#4b5563;margin-top:3px;line-height:1.5">' +
+        esc(s.address || "") + (s.phone ? " · " + esc(s.phone) : "") + (s.ownerName ? " · " + esc(s.ownerName) : "") + "</div></div>" +
+    '<div style="text-align:right"><div style="font-size:14px;font-weight:800;letter-spacing:.04em">' + esc(title) + "</div>" +
+      '<div style="font-size:11px;color:#4b5563;margin-top:2px">' + esc(sub) + "</div>" +
+      '<div style="font-size:10.5px;color:#6b7280;margin-top:2px">' + esc(right || "") + "</div></div>" +
+  "</div>";
+}
+function ctPrintHTML(kind, arg) {
+  const y = UI.year, m = UI.month;
+  if (kind === "day") {
+    const list = ctOnDate(arg);
+    const t = ctTotals(list);
+    const items = ctItemAgg(list);
+    return '<div class="stmt"><div class="pad">' +
+      ctStmtHead("CANTEEN DAY LEDGER", ctPretty(arg) + " (" + ctDayName(arg) + ")", "Generated " + new Date().toLocaleString("en-IN")) +
+      '<div class="meta"><div>' +
+        mRow("Date", ctPretty(arg)) + mRow("Din", ctDayName(arg)) + mRow("Entries", String(t.count)) +
+      "</div><div>" +
+        mRow("Saman aaya", money(t.purchase)) + mRow("Bikri", money(t.sale)) + mRow("Kharcha", money(t.expense)) +
+      "</div></div>" +
+      '<h4 class="sec">Entries</h4>' +
+      (list.length
+        ? "<table><thead><tr><th>Type</th><th>Party</th><th>Bill</th><th>Mode</th><th>Saman</th>" +
+          '<th class="r">Amount (₹)</th><th class="r">Paid</th><th class="r">Baki</th></tr></thead><tbody>' +
+          list.slice().reverse().map((e) => "<tr><td>" + esc(ctKindOf(e).en) + "</td><td>" + esc(e.party || "—") + "</td>" +
+            "<td>" + esc(e.billNo || "—") + "</td><td>" + (e.mode === "total" ? "Lump-sum" : "Item-wise") + "</td>" +
+            "<td>" + esc(ctItemLabel(e) || "—") + "</td>" +
+            '<td class="r">' + money(ctAmount(e)) + "</td>" +
+            '<td class="r">' + money(Math.min(ctPaid(e), ctAmount(e))) + "</td>" +
+            '<td class="r">' + money(ctBalance(e)) + "</td></tr>").join("") +
+          "</tbody></table>"
+        : "<p style='color:#6b7280'>Is din koi entry nahi.</p>") +
+      (items.length
+        ? '<h4 class="sec">Saman item-wise (rate ke saath)</h4>' +
+          "<table><thead><tr><th>Item</th><th class=\"r\">Qty</th><th>Unit</th>" +
+          '<th class="r">Avg rate</th><th class="r">Amount (₹)</th></tr></thead><tbody>' +
+          items.map((i) => "<tr><td>" + esc(i.name) + '</td><td class="r">' + num(i.qty) + "</td><td>" + esc(i.unit) + "</td>" +
+            '<td class="r">' + money(i.avgRate) + '</td><td class="r">' + money(i.amt) + "</td></tr>").join("") +
+          '<tr><td colspan="4"><b>Item-wise total</b></td><td class="r"><b>' + money(t.itemizedAmt) + "</b></td></tr></tbody></table>"
+        : "") +
+      (t.totalModeCount ? '<div class="inwords">Σ ' + t.totalModeCount + " entry me sirf ek-saath total likha hai (item ka alag rate nahi) — " +
+        "<b>" + money(t.totalModeAmt) + "</b>.</div>" : "") +
+      '<div class="net"><div><div class="l">Din ka net (bikri − saman − kharcha)</div>' +
+        '<div style="font-size:11px;opacity:.75">Paid ' + money(t.paid) + " · Baki " + money(t.balance) + "</div></div>" +
+        '<div class="v">' + (t.net < 0 ? "−" : "") + money(Math.abs(t.net)) + "</div></div>" +
+      '<div class="sign"><div>Prepared by</div><div>' + esc(Store.data.settings.ownerName || "Authorised signatory") + "</div></div>" +
+      '<div class="ft"><span>' + esc(Store.data.settings.statementNote || "") + "</span><span>Hisaab Pro v" + APP_VERSION + "</span></div>" +
+      "</div></div>";
+  }
+  const list = ctInMonth(y, m);
+  const t = ctTotals(list);
+  const days = ctMonthDays(y, m).filter((d) => d.list.length);
+  const items = ctItemAgg(list);
+  const parties = ctPartyAgg(list);
+  return '<div class="stmt"><div class="pad">' +
+    ctStmtHead("CANTEEN MONTHLY LEDGER", monthLabel(y, m), "Generated " + new Date().toLocaleString("en-IN")) +
+    '<div class="meta"><div>' +
+      mRow("Saman aaya (purchase)", money(t.purchase)) + mRow("Bikri / income", money(t.sale)) + mRow("Kharcha", money(t.expense)) +
+    "</div><div>" +
+      mRow("Entries", t.count + " (" + days.length + " din)") + mRow("Paisa diya (paid)", money(t.paid)) + mRow("Baki / udhaar", money(t.balance)) +
+    "</div></div>" +
+    '<h4 class="sec">Din-wise ledger</h4>' +
+    (days.length
+      ? "<table><thead><tr><th>Date</th><th>Din</th>" + '<th class="r">Entries</th><th class="r">Saman</th><th class="r">Bikri</th>' +
+        '<th class="r">Kharcha</th><th class="r">Net</th><th class="r">Paid</th><th class="r">Baki</th></tr></thead><tbody>' +
+        days.map((d) => "<tr><td>" + esc(ctPretty(d.iso)) + "</td><td>" + esc(d.day.slice(0, 3)) + "</td>" +
+          '<td class="r">' + d.list.length + '</td><td class="r">' + money0(d.t.purchase) + '</td><td class="r">' + money0(d.t.sale) + "</td>" +
+          '<td class="r">' + money0(d.t.expense) + '</td><td class="r"><b>' + (d.t.net < 0 ? "−" : "") + money0(Math.abs(d.t.net)) + "</b></td>" +
+          '<td class="r">' + money0(d.t.paid) + '</td><td class="r">' + money0(d.t.balance) + "</td></tr>").join("") +
+        '<tr><td colspan="2"><b>Mahine ka total</b></td><td class="r"><b>' + t.count + '</b></td><td class="r"><b>' + money0(t.purchase) + "</b></td>" +
+        '<td class="r"><b>' + money0(t.sale) + '</b></td><td class="r"><b>' + money0(t.expense) + "</b></td>" +
+        '<td class="r"><b>' + (t.net < 0 ? "−" : "") + money0(Math.abs(t.net)) + '</b></td><td class="r"><b>' + money0(t.paid) + "</b></td>" +
+        '<td class="r"><b>' + money0(t.balance) + "</b></td></tr></tbody></table>"
+      : "<p style='color:#6b7280'>Is mahine koi entry nahi.</p>") +
+    (items.length
+      ? '<h4 class="sec">Item-wise summary (rate wali entries)</h4>' +
+        "<table><thead><tr><th>Item</th>" + '<th class="r">Qty</th><th>Unit</th><th class="r">Avg rate</th>' +
+        '<th class="r">Amount</th><th class="r">Entries</th></tr></thead><tbody>' +
+        items.map((i) => "<tr><td>" + esc(i.name) + '</td><td class="r">' + num(i.qty) + "</td><td>" + esc(i.unit) + "</td>" +
+          '<td class="r">' + money(i.avgRate) + '</td><td class="r">' + money(i.amt) + '</td><td class="r">' + i.n + "</td></tr>").join("") +
+        "</tbody></table>"
+      : "") +
+    (parties.length
+      ? '<h4 class="sec">Party / supplier-wise</h4>' +
+        "<table><thead><tr><th>Party</th>" + '<th class="r">Entries</th><th class="r">Total</th><th class="r">Paid</th><th class="r">Baki</th></tr></thead><tbody>' +
+        parties.map((p) => "<tr><td>" + esc(p.name) + '</td><td class="r">' + p.n + '</td><td class="r">' + money(p.amt) + "</td>" +
+          '<td class="r">' + money(p.paid) + '</td><td class="r">' + money(p.bal) + "</td></tr>").join("") +
+        "</tbody></table>"
+      : "") +
+    '<div class="net"><div><div class="l">Mahine ka net (bikri − saman − kharcha)</div>' +
+      '<div style="font-size:11px;opacity:.75">' + monthLabel(y, m) + " · Paid " + money(t.paid) + " · Baki " + money(t.balance) + "</div></div>" +
+      '<div class="v">' + (t.net < 0 ? "−" : "") + money(Math.abs(t.net)) + "</div></div>" +
+    '<div class="inwords">Amount in words: <b>' + esc(inWords(Math.abs(t.net))) + "</b></div>" +
+    '<div class="sign"><div>Prepared by</div><div>' + esc(Store.data.settings.ownerName || "Authorised signatory") + "</div></div>" +
+    '<div class="ft"><span>' + esc(Store.data.settings.statementNote || "") + "</span><span>Hisaab Pro v" + APP_VERSION + "</span></div>" +
+    "</div></div>";
+}
+function ctPrintDay() {
+  const iso = ctUI().date;
+  if (!ctOnDate(iso).length) return toast("Is din koi entry nahi — print karne ko kuch nahi", "bad");
+  $("#print-root").innerHTML = ctPrintHTML("day", iso);
+  setTimeout(() => window.print(), 60);
+}
+function ctPrintMonth() {
+  if (!ctInMonth(UI.year, UI.month).length) return toast("Is mahine koi entry nahi", "bad");
+  $("#print-root").innerHTML = ctPrintHTML("month");
+  setTimeout(() => window.print(), 80);
+}
+function ctShareDay() {
+  const u = ctUI();
+  const iso = u.date;
+  const list = ctOnDate(iso).slice().reverse();
+  const t = ctTotals(list);
+  const s = Store.data.settings;
+  const L = [];
+  L.push("*" + (s.shopName || "Hisaab Pro") + " — Canteen Ledger*");
+  L.push(ctPretty(iso) + " (" + ctDayName(iso) + ")");
+  L.push("");
+  if (!list.length) L.push("Is din koi entry nahi.");
+  list.forEach((e) => {
+    L.push(ctKindOf(e).ico + " *" + ctKindOf(e).label + "* — " + (e.party || "—"));
+    const il = ctItemLabel(e);
+    if (il) L.push("   " + il);
+    L.push("   " + (e.mode === "total" ? "Ek saath total: " : "Total: ") + money(ctAmount(e)) +
+      (ctBalance(e) > 0.005 ? " (baki " + money(ctBalance(e)) + ")" : " (paid)"));
+  });
+  L.push("");
+  L.push("Saman: −" + money(t.purchase));
+  L.push("Bikri: +" + money(t.sale));
+  L.push("Kharcha: −" + money(t.expense));
+  L.push("*DIN KA NET: " + (t.net < 0 ? "−" : "") + money(Math.abs(t.net)) + "*");
+  if (t.balance) L.push("Baki / udhaar: " + money(t.balance));
+  window.open("https://wa.me/?text=" + encodeURIComponent(L.join("\n")), "_blank");
+  toast("WhatsApp khol rahe hain…", "ok");
+}
+
 /* ------------------------------ 16. EVENTS ------------------------------ */
 document.addEventListener("click", (e) => {
   const nav = e.target.closest("#nav button");
@@ -3393,11 +5186,106 @@ document.addEventListener("click", (e) => {
     }
     case "keepDemo": Store.data.settings.demo = false; Store.save(); render(); break;
     case "clearDemo":
-      confirmDialog("Start fresh?", "Erase the demo workers and records so you can add your own. <b>Your shop details in Settings are kept.</b>", "Start fresh", () => {
+      confirmDialog("Start fresh?", "Erase the demo workers and records so you can add your own. <b>Your shop details in Settings are kept.</b>" +
+        (ct().demo ? " Demo canteen entries bhi hat jayengi." : " <b>Aapki canteen entries safe rahengi.</b>"), "Start fresh", () => {
         const keep = { ...Store.data.settings, demo: false };
-        Store.data = { settings: keep, workers: [], records: [] };
+        const keepCt = ct().demo ? blankCanteen() : ct();
+        Store.data = { settings: keep, workers: [], records: [], canteen: keepCt };
         Store.save(); render(); toast("Demo data cleared — add your first worker", "ok");
       }, true); break;
+    /* ------------------------- CANTEEN MODULE ------------------------- */
+    case "gotoCanteen": ctUI().tab = ctUI().tab || "day"; go("canteen"); break;
+    case "ctTab": { const u = ctUI(); u.tab = btn.dataset.tab || "day"; render(); break; }
+    case "ctDayShift": {
+      const u = ctUI();
+      u.date = ctShiftDate(u.date, Number(btn.dataset.d) || 0);
+      const p = ctParts(u.date); UI.year = p.y; UI.month = p.m;
+      render(); break;
+    }
+    case "ctGoToday": {
+      const u = ctUI(); u.date = isoDate(new Date());
+      const p = ctParts(u.date); UI.year = p.y; UI.month = p.m;
+      render(); break;
+    }
+    case "ctOpenDay": {
+      const u = ctUI();
+      if (btn.dataset.date) u.date = btn.dataset.date;
+      u.tab = "day";
+      const p = ctParts(u.date); UI.year = p.y; UI.month = p.m;
+      render(); break;
+    }
+    case "ctAdd": openCtModal(null, btn.dataset.date || undefined); break;
+    case "ctEdit": openCtModal(btn.dataset.id); break;
+    case "ctDel": ctDelEntry(btn.dataset.id); break;
+    case "ctDup": ctDupEntry(btn.dataset.id); break;
+    case "ctPay": ctPayModal(btn.dataset.id); break;
+    case "ctPaySave": ctPaySave(btn.dataset.id); break;
+    case "ctPayZero": ctPayZero(btn.dataset.id); break;
+    case "ctSave": ctSave(); break;
+    case "ctSetKind": {
+      const d = ctUI().edit; if (!d) break;
+      if (CT_KINDS.indexOf(btn.dataset.kind) >= 0) d.kind = btn.dataset.kind;
+      ctRenderModal(!!d.id); break;
+    }
+    case "ctSetMode": {
+      const d = ctUI().edit; if (!d) break;
+      const mode = btn.dataset.mode === "total" ? "total" : "itemized";
+      if (mode === d.mode) break;
+      /* item-wise ka bana hua total, lump-sum box me carry kar lo */
+      if (mode === "total" && !num(d.amount)) d.amount = ctDraftAmount(d);
+      d.mode = mode;
+      ctRenderModal(!!d.id);
+      break;
+    }
+    case "ctAddItem": { const d = ctUI().edit; if (!d) break; d.items = (d.items || []).concat([ctBlankItem()]); ctRepaintItems(); break; }
+    case "ctDelItem": {
+      const d = ctUI().edit; if (!d) break;
+      const i = Number(btn.dataset.i);
+      if (!isNaN(i) && Array.isArray(d.items) && d.items.length > i) d.items.splice(i, 1);
+      if (!d.items.length) d.items = [ctBlankItem()];
+      ctRepaintItems(); break;
+    }
+    case "ctClearItems": { const d = ctUI().edit; if (!d) break; d.items = [ctBlankItem()]; ctRepaintItems(); break; }
+    case "ctPayFull": {
+      const d = ctUI().edit; if (!d) break;
+      const amt = ctDraftAmount(d);
+      d.paid = amt;
+      const p = $("#ctPaid"); if (p) p.value = amt || "";
+      const pm = $("#ctPayMode"); if (pm && pm.value === "udhaar") { pm.value = "cash"; d.payMode = "cash"; }
+      ctPatchTotals();
+      toast(amt ? "Poora " + money0(amt) + " paid likh diya" : "Pehle saman ka total bharo", amt ? "ok" : "bad");
+      break;
+    }
+    case "ctPayNone": {
+      const d = ctUI().edit; if (!d) break;
+      d.paid = 0; d.payMode = "udhaar";
+      const p = $("#ctPaid"); if (p) p.value = "";
+      const pm = $("#ctPayMode"); if (pm) pm.value = "udhaar";
+      ctPatchTotals(); toast("Poora udhaar — baki me chala gaya"); break;
+    }
+    case "ctScope": {
+      const u = ctUI(); const s = btn.dataset.scope;
+      u.scope = s === "all" ? "all" : (s === "custom" ? "custom" : "month");
+      if (u.scope !== "custom") { u.from = ""; u.to = ""; }
+      else { if (!u.from) u.from = monthFirst(UI.year, UI.month); if (!u.to) u.to = monthLast(UI.year, UI.month); }
+      render(); break;
+    }
+    case "ctLogScope": { const u = ctUI(); u.logScope = btn.dataset.scope === "all" ? "all" : "month"; render(); break; }
+    case "ctResetFilter": {
+      const u = ctUI(); u.q = ""; u.kind = "all"; u.from = ""; u.to = ""; u.scope = "month";
+      render(); toast("Filter reset"); break;
+    }
+    case "ctRateAdd": ctRateAdd(); break;
+    case "ctRateEdit": ctRateEditModal(btn.dataset.id); break;
+    case "ctRateSave": ctRateSave(btn.dataset.id); break;
+    case "ctRateDel": ctRateDel(btn.dataset.id); break;
+    case "ctCsv": ctCsv(); break;
+    case "ctPrintDay": ctPrintDay(); break;
+    case "ctPrintMonth": ctPrintMonth(); break;
+    case "ctShareDay": ctShareDay(); break;
+    case "ctRestore": ctRestoreLog(btn.dataset.log); break;
+    case "ctWipe": ctWipe(); break;
+
     case "lcMode": Cloud.mode = btn.dataset.mode; showLogin(true); break;
     case "continueOffline": showLogin(false); toast("Bina login — data sirf is device par save hoga"); break;
     case "cloudConnect": connectCloud(); break;
@@ -3476,6 +5364,43 @@ document.addEventListener("input", (e) => {
 document.addEventListener("change", (e) => {
   if (e.target.classList && e.target.classList.contains("cell-inp")) patchAllTotals();
 });
+
+/* ---------------- canteen: modal inputs, din chunna, entry filters ---------------- */
+const CT_MODAL_IDS = ["ctLump", "ctPaid", "ctParty", "ctBill", "ctNote", "ctDateM", "ctPayMode"];
+document.addEventListener("input", (e) => {
+  const el = e.target;
+  if (!el) return;
+  if (el.dataset && el.dataset.ctItem !== undefined) { ctFieldInput(el); return; }
+  if (el.id && CT_MODAL_IDS.indexOf(el.id) >= 0) { ctFieldInput(el); return; }
+  if (el.id === "ctSearch") {
+    /* sirf table dobara banao — search box ka focus nahi tootega */
+    ctUI().q = el.value;
+    const body = document.getElementById("ctEntriesBody");
+    if (body) body.innerHTML = ctEntriesTable();
+  }
+});
+document.addEventListener("change", (e) => {
+  const el = e.target;
+  if (!el) return;
+  if (el.dataset && el.dataset.ctItem !== undefined) {
+    ctFieldInput(el);
+    if (el.dataset.ctF === "name") ctAutoRate(el);
+    return;
+  }
+  if (el.id === "ctDatePick") {
+    const u = ctUI();
+    if (el.value) { u.date = el.value; const p = ctParts(el.value); UI.year = p.y; UI.month = p.m; }
+    render();
+  } else if (el.id === "ctFrom" || el.id === "ctTo") {
+    const u = ctUI();
+    u[el.id === "ctFrom" ? "from" : "to"] = el.value || "";
+    if (u.from || u.to) u.scope = "custom";
+    render();
+  } else if (el.id === "ctKindSel") {
+    ctUI().kind = CT_KINDS.indexOf(el.value) >= 0 ? el.value : "all";
+    render();
+  }
+});
 document.addEventListener("keydown", (e) => {
   if (e.key === "Escape") { if ($("#overlay")) closeModal(); }
 });
@@ -3532,7 +5457,7 @@ document.addEventListener("keydown", (e) => {
   if (e.key.toLowerCase() === "g") { gKey = true; clearTimeout(gTimer); gTimer = setTimeout(() => { gKey = false; }, 900); return; }
   if (gKey) {
     gKey = false;
-    const map = { d: "dashboard", h: "hisaab", w: "workers", l: "ledger", r: "records", s: "settings" };
+    const map = { d: "dashboard", h: "hisaab", w: "workers", l: "ledger", c: "canteen", r: "records", s: "settings" };
     const v = map[e.key.toLowerCase()];
     if (v) { e.preventDefault(); UI.search = ""; UI.filter = "all"; go(v); }
   }
@@ -3559,8 +5484,12 @@ document.addEventListener("input", (e) => {
 syncMonthPickers();
 go("dashboard");
 try { Cloud.boot(); } catch (e) {}
-window.Hisaab = { Store, calc, monthMeta, PdfDoc, inWords, UI, render, Cloud };
+window.Hisaab = { Store, calc, monthMeta, PdfDoc, inWords, UI, render, go, Cloud,
+  /* canteen module API */
+  canteen: { data: ct, totals: ctTotals, entries: ctAll, onDate: ctOnDate, inMonth: ctInMonth,
+             dayLedger: ctDayLedger, monthLedger: ctMonthLedger, openModal: openCtModal, save: ctSave,
+             csv: ctCsv, printDay: ctPrintDay, printMonth: ctPrintMonth, blank: blankCanteen } };
 })();
 </script>
-<script>(function(){function c(){var b=a.contentDocument||(a.contentWindow&&a.contentWindow.document);if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a5a445149fc8c0e2',t:'MTc5NDY0MDk5Ng=='};var l=window.parent.location,o;try{o=new URL(l.origin).origin}catch(e){try{o=new URL(new URL(l.href).origin).origin}catch(e){o=''}}var u='/cdn-cgi/challenge-platform/scripts/jsd/main.js?ray=a5a445149fc8c0e2',a=document.createElement('script');a.src=o?new URL(u,o).href:u;document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+</body>
 </html>

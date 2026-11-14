@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Hisaab Pro — khul raha hai…</title>
+<meta name="robots" content="noindex">
+<style>
+  *,*::before,*::after{box-sizing:border-box}
+  html,body{margin:0;padding:0;height:100%}
+  body{
+    font-family:ui-sans-serif,system-ui,-apple-system,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;
+    background:#f4f6fc;color:#0c1424;display:grid;place-items:center;padding:22px;
+    background-image:radial-gradient(1200px 620px at 12% -8%,#e9edff 0%,transparent 60%),
+                     radial-gradient(900px 520px at 100% 0%,#e6fbff 0%,transparent 55%);
+    background-attachment:fixed;
+  }
+  @media (prefers-color-scheme: dark){
+    body{background:#070c16;color:#eaf1ff;
+      background-image:radial-gradient(1100px 600px at 10% -10%,#1b2450 0%,transparent 60%),
+                       radial-gradient(900px 520px at 100% 0%,#06303c 0%,transparent 55%)}
+    .card{background:#0e1729 !important;border-color:#1e2b45 !important;color:#c3d0e6 !important}
+    .card b{color:#eaf1ff !important}
+    .btn{background:#182541 !important;border-color:#1e2b45 !important;color:#eaf1ff !important}
+  }
+  .wrap{width:min(430px,100%);text-align:center}
+  .logo{
+    width:74px;height:74px;margin:0 auto 16px;border-radius:22px;display:grid;place-items:center;
+    background:linear-gradient(135deg,#6366f1 0%,#8b5cf6 55%,#22d3ee 130%);color:#fff;
+    font-weight:800;font-size:34px;box-shadow:0 18px 40px -16px rgba(99,102,241,.85),inset 0 1px 0 rgba(255,255,255,.45)
+  }
+  h1{margin:0;font-size:24px;font-weight:800;letter-spacing:-.02em}
+  .tag{margin:5px 0 0;font-size:10.5px;letter-spacing:.16em;text-transform:uppercase;color:#8fa0b6;font-weight:700}
+  #msg{margin:18px 0 0;font-size:13.5px;color:#6b7a91;min-height:20px;line-height:1.5;word-break:break-word}
+  .spin{width:34px;height:34px;margin:18px auto 0;border-radius:50%;
+    border:3px solid rgba(99,102,241,.18);border-top-color:#6366f1;animation:sp .8s linear infinite}
+  @keyframes sp{to{transform:rotate(360deg)}}
+  .card{margin-top:20px;background:#fff;border:1px solid #e5eaf3;border-radius:16px;padding:16px 18px;
+    text-align:left;font-size:13px;color:#475569;line-height:1.6;box-shadow:0 10px 24px -12px rgba(15,23,42,.22)}
+  .card b{color:#0c1424;font-size:13.5px}
+  .card code{background:#f1f5fb;border-radius:6px;padding:1px 5px;font-size:12px}
+  .btns{display:flex;flex-direction:column;gap:8px;margin-top:12px}
+  .btn{display:block;text-align:center;text-decoration:none;background:#fff;border:1px solid #e5eaf3;
+    border-radius:11px;padding:10px 12px;font-size:13px;font-weight:700;color:#0c1424;transition:.15s}
+  .btn:hover{border-color:#6366f1}
+  .btn.pri{background:linear-gradient(135deg,#6366f1,#8b5cf6);color:#fff;border-color:transparent}
+  .small{margin-top:14px;font-size:11px;color:#8fa0b6;line-height:1.6}
+  [hidden]{display:none !important}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="logo">₹</div>
+  <h1>Hisaab Pro</h1>
+  <p class="tag">Salary &amp; Canteen Panel</p>
+  <p id="msg">Naya version dhoondha ja raha hai…</p>
+  <div class="spin" id="spin"></div>
+  <div class="card" id="err" hidden>
+    <b id="errTitle">Panel file nahi mil payi</b>
+    <div id="errTxt"></div>
+    <div class="btns" id="errBtns"></div>
+  </div>
+  <p class="small" id="foot">Ye chhota loader hai — repo ka <b>sabse naya</b> <code>Hisaab-Pro-vX.Y.html</code>
+    apne aap khol deta hai, isliye link kabhi nahi badalta.</p>
+</div>
+<script>
+/* ============================================================================
+   HISAAB PRO — auto-update loader (v3.1)
+   Repo me sabse naya version kaun sa hai, ye khud dhoondh kar khol deta hai.
+   Rule:  Hisaab-Pro-v<major>.<minor>.html   (Android wala " (1)" suffix chalega)
+   Version-naam na mile to sabse badi HTML file = panel.
+   Failsafe: API na chale to pichhla chuna hua naam / jaane hue naam try karo.
+   ========================================================================== */
+(function () {
+  "use strict";
+
+  var LS_KEY = "hisaabPro.loader.v1";
+  /* API band ho to inhe order se try karo (naya pehle) */
+  var CANDIDATES = [
+    "Hisaab-Pro-v3.1.html",
+    "Hisaab-Pro-v3.0.html",
+    "Hisaab-Pro-v2.2.html",
+    "Hisaab-Pro-v2.1.html",
+    "Hisaab-Pro-v2.0.html",
+    "hisaab_v3.html"
+  ];
+
+  var msg = document.getElementById("msg");
+  var spin = document.getElementById("spin");
+  var errBox = document.getElementById("err");
+  var errTxt = document.getElementById("errTxt");
+  var errBtns = document.getElementById("errBtns");
+
+  function say(t) { if (msg) msg.textContent = t; }
+
+  /* ---- path helpers ---- */
+  function base() {
+    var p = String(location.pathname || "/").replace(/[?#].*$/, "");
+    p = p.replace(/[^\/]+\.html?$/i, "");          /* index.html hatao */
+    if (p.charAt(p.length - 1) !== "/") p += "/";
+    return p;
+  }
+  function ownerRepo() {
+    var q = new URLSearchParams(location.search);
+    var o = q.get("owner"), r = q.get("repo");
+    if (o && r) return [o, r];
+    var m = /^([^.]+)\.github\.io$/i.exec(location.hostname || "");
+    var segs = (location.pathname || "").split("/").filter(Boolean);
+    return [m ? m[1] : null, segs.length ? segs[0] : null];
+  }
+  function urlFor(name) {
+    return base() + String(name).split("/").map(encodeURIComponent).join("/");
+  }
+
+  /* ---- version picking ---- */
+  function verOf(name) {
+    var m = /^Hisaab-Pro-v(\d+)\.(\d+)(?:\s*\((\d+)\))?\.html$/i.exec(String(name || "").trim());
+    if (!m) return null;
+    return { major: +m[1], minor: +m[2], copy: +(m[3] || 0) };
+  }
+  function cmpVer(a, b) { return (a.major - b.major) || (a.minor - b.minor) || (a.copy - b.copy); }
+  function isPanelName(name) {
+    return /\.html?$/i.test(name || "") && !/^index/i.test(name || "");
+  }
+  function pickFromList(files) {
+    var list = (files || []).filter(function (f) { return f && f.name; });
+    var vers = [];
+    list.forEach(function (f) {
+      var v = verOf(f.name);
+      if (v) vers.push({ name: f.name, v: v });
+    });
+    if (vers.length) {
+      vers.sort(function (a, b) { return cmpVer(b.v, a.v); });
+      return vers[0].name;
+    }
+    var htmls = list.filter(function (f) { return isPanelName(f.name); });
+    if (htmls.length) {
+      htmls.sort(function (a, b) { return (b.size || 0) - (a.size || 0); });
+      return htmls[0].name;
+    }
+    return null;
+  }
+
+  /* ---- cache ---- */
+  function cacheGet() { try { return localStorage.getItem(LS_KEY); } catch (e) { return null; } }
+  function cacheSet(n) { try { localStorage.setItem(LS_KEY, n); } catch (e) {} }
+
+  /* ---- network ---- */
+  function fetchList() {
+    var pr = ownerRepo();
+    if (!pr[0] || !pr[1]) return Promise.reject(new Error("owner/repo pata nahi chal paya"));
+    var url = "https://api.github.com/repos/" + pr[0] + "/" + pr[1] + "/contents/?per_page=100";
+    return fetch(url, { headers: { Accept: "application/vnd.github+json" } })
+      .then(function (r) {
+        if (!r.ok) throw new Error("GitHub API " + r.status);
+        return r.json();
+      })
+      .then(function (j) {
+        if (!Array.isArray(j)) throw new Error("file list sahi nahi aayi");
+        return j.filter(function (x) { return x && x.type === "file"; });
+      });
+  }
+  function probe(name) {
+    return fetch(urlFor(name), { method: "HEAD" })
+      .then(function (r) { return r.ok ? name : null; })
+      .catch(function () { return null; });
+  }
+  function probeAll(names) {
+    return names.reduce(function (p, n) {
+      return p.then(function (found) { return found ? found : probe(n); });
+    }, Promise.resolve(null));
+  }
+
+  /* ---- UI ---- */
+  function btn(label, href, pri) {
+    var a = document.createElement("a");
+    a.className = "btn" + (pri ? " pri" : "");
+    a.href = href;
+    a.textContent = label;
+    return a;
+  }
+  function hardFail(why) {
+    spin.hidden = true;
+    errBox.hidden = false;
+    say("Kuch galat ho gaya — neeche se seedha kholo");
+    errTxt.innerHTML = "<p style='margin:8px 0 0'>" + String(why && why.message ? why.message : why) +
+      ". Internet ya GitHub API slow ho sakta hai. Neeche se panel seedha khol lo:</p>";
+    errBtns.innerHTML = "";
+    var c = cacheGet();
+    var names = (c ? [c] : []).concat(CANDIDATES);
+    var seen = {};
+    names.forEach(function (n) {
+      if (seen[n]) return; seen[n] = 1;
+      errBtns.appendChild(btn(" " + n, urlFor(n), n === (c || CANDIDATES[0])));
+    });
+    errBtns.appendChild(btn("↻ Dobara try karo", location.href, false));
+  }
+
+  function doNav(url) {
+    try { location.replace(url); } catch (e) { location.href = url; }
+  }
+  /* _nav hook: tests (ya koi host page) navigation pakad sake */
+  function nav(url) {
+    var h = window.__loader && window.__loader._nav;
+    (h || doNav)(url);
+  }
+  function go(name, via) {
+    cacheSet(name);
+    say((via === "api" ? "Sabse naya version mila: " : "Khol rahe hain: ") + name);
+    nav(urlFor(name));
+  }
+
+  /* file:// par (Android download) API/list kaam nahi karti — seedha links do */
+  function fileMode() {
+    spin.hidden = true;
+    say("Ye loader file mode me khula hai — panel seedha chuno");
+    errBox.hidden = false;
+    document.getElementById("errTitle").textContent = "Kaunsi file kholni hai?";
+    errTxt.innerHTML = "<p style='margin:8px 0 0'>Same folder me rakhi panel file par tap karo. " +
+      "Naya version hamesha sabse badi <code>Hisaab-Pro-vX.Y.html</code> hoti hai.</p>";
+    errBtns.innerHTML = "";
+    CANDIDATES.forEach(function (n, i) { errBtns.appendChild(btn("📂 " + n, urlFor(n), i === 0)); });
+  }
+
+  function boot() {
+    if (location.protocol === "file:") { fileMode(); return; }
+    say("Naya version dhoondha ja raha hai…");
+    fetchList()
+      .then(function (list) {
+        var n = pickFromList(list);
+        if (!n) throw new Error("Repo me koi panel file nahi mili");
+        go(n, "api");
+      })
+      .catch(function (e1) {
+        say("List nahi mili — jaane hue naam try kar rahe hain…");
+        var c = cacheGet();
+        var chain = (c ? [c] : []).concat(CANDIDATES);
+        return probeAll(chain).then(function (n) {
+          if (n) go(n, "probe");
+          else hardFail(e1);
+        });
+      });
+  }
+
+  /* test hook */
+  window.__loader = { base: base, ownerRepo: ownerRepo, verOf: verOf, pickFromList: pickFromList, urlFor: urlFor,
+                      nav: nav, _nav: null };
+
+  boot();
+})();
+</script>
+</body>
+</html>
