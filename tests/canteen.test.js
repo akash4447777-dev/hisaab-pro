@@ -45,6 +45,7 @@ function click(sel) {
   el.dispatchEvent(new window.MouseEvent("click", { bubbles: true, cancelable: true }));
   return el;
 }
+function setName(sel, val) { setInput(sel, val); $(sel).dispatchEvent(new window.Event("change", { bubbles: true })); }
 function setInput(sel, val, evt) {
   const el = typeof sel === "string" ? $(sel) : sel;
   if (!el) throw new Error("setInput: not found -> " + sel);
@@ -65,7 +66,7 @@ const iso = (d) => d.getFullYear() + "-" + String(d.getMonth() + 1).padStart(2, 
   ok(H().Store.data.canteen.entries.length > 0, "sample canteen entries load hui (" + H().Store.data.canteen.entries.length + ")");
   ok(H().Store.data.workers.length === 4, "workers safe (4 demo)");
   const verEl = $("[data-ver]");
-  ok(verEl && verEl.textContent === "3.2", "version badge 3.2", verEl && verEl.textContent);
+  ok(verEl && verEl.textContent === "3.3", "version badge 3.3", verEl && verEl.textContent);
   ok(root().innerHTML.indexOf("Canteen") >= 0, "dashboard par canteen card dikha");
   ok(root().innerHTML.indexOf("Saman aaya") >= 0, "dashboard canteen strip me 'Saman aaya'");
 
@@ -100,13 +101,13 @@ const iso = (d) => d.getFullYear() + "-" + String(d.getMonth() + 1).padStart(2, 
   ok(!!$("#ctKindSeg"), "entry modal khula");
   ok($$("#ctItemsWrap .ct-row").length === 1, "ek item line default");
   setInput("#ctParty", "Test Supplier");
-  setInput('[data-ct-item="0"][data-ct-f="name"]', "Aata");
+  setName('[data-ct-item="0"][data-ct-f="name"]', "Aata");
   setInput('[data-ct-item="0"][data-ct-f="qty"]', "10");
   setInput('[data-ct-item="0"][data-ct-f="rate"]', "45");
   click('[data-act="ctAddItem"]');
   ok($$("#ctItemsWrap .ct-row").length === 2, "dusri item line add hui");
   ok($('[data-ct-item="0"][data-ct-f="name"]').value === "Aata", "pehli line ka data repaint ke baad bhi hai");
-  setInput('[data-ct-item="1"][data-ct-f="name"]', "Cheeni");
+  setName('[data-ct-item="1"][data-ct-f="name"]', "Cheeni");
   setInput('[data-ct-item="1"][data-ct-f="qty"]', "5");
   setInput('[data-ct-item="1"][data-ct-f="rate"]', "48");
   ok($("#ctTotalBig").textContent.replace(/,/g, "").indexOf("690") >= 0, "modal total = 10x45 + 5x48 = 690", $("#ctTotalBig").textContent);
@@ -141,12 +142,20 @@ const iso = (d) => d.getFullYear() + "-" + String(d.getMonth() + 1).padStart(2, 
 
   section("Line-total price mode \u2014 4 kg Maggi = \u20b9360 (poori line ka daam)");
   click('[data-act="ctAdd"]');
+  ok(!!$('[data-ct-item="0"][data-ct-f="priceMode"]'), "har line par price-mode select hai");
+  ok($('[data-ct-item="0"][data-ct-f="priceMode"]').value === "line", "nayi khaali line ka default = \u20b9 poori line");
   setInput('[data-ct-item="0"][data-ct-f="name"]', "Maggi Test Pack");
   setInput('[data-ct-item="0"][data-ct-f="qty"]', "4");
   setInput("#ctParty", "Line Test");
-  ok(!!$('[data-ct-item="0"][data-ct-f="priceMode"]'), "har line par price-mode select hai");
-  ok($('[data-ct-item="0"][data-ct-f="priceMode"]').value === "unit", "default mode = per unit");
-  /* pehle galat behaviour confirm: unit mode me 4 x 360 = 1440 */
+  ok($('[data-ct-item="0"][data-ct-f="priceMode"]').value === "line",
+     "rate list me naye item par line mode hi rahe (auto-flip nahi)");
+  /* per-unit flow select se: */
+  const pm0 = $('[data-ct-item="0"][data-ct-f="priceMode"]');
+  pm0.value = "unit";
+  pm0.dispatchEvent(new window.Event("change", { bubbles: true }));
+  await wait(20);
+  ok(!!$('[data-ct-item="0"][data-ct-f="rate"]'), "unit mode me rate input wapas");
+  /* purana galat behaviour confirm: unit mode me 4 x 360 = 1440 */
   setInput('[data-ct-item="0"][data-ct-f="rate"]', "360");
   ok($("#ctTotalBig").textContent.replace(/,/g, "").indexOf("1440") >= 0,
      "unit mode me 4 x 360 = 1440 (purana hisaab)", $("#ctTotalBig").textContent);
@@ -190,6 +199,48 @@ const iso = (d) => d.getFullYear() + "-" + String(d.getMonth() + 1).padStart(2, 
   H().UI.ct.tab = "day"; H().UI.ct.date = mag.date; H().render();
   ok(root().innerHTML.indexOf("90") >= 0, "din ke item-wise table me 90/kg dikha");
   ok(root().innerHTML.indexOf("\u03a3") >= 0, "line-total wali line par \u03a3 chip");
+
+  section("Gram / chhota unit \u2014 600 gram = \u20b945 (poori line, 27,000 nahi)");
+  click('[data-act="ctAdd"]');
+  ok(!!$('[data-ct-item="0"][data-ct-f="lineTotal"]'), "khaali line par price input = poori line wala");
+  setName('[data-ct-item="0"][data-ct-f="name"]', "Pudina leaves");
+  setInput('[data-ct-item="0"][data-ct-f="qty"]', "600");
+  const u0 = $('[data-ct-item="0"][data-ct-f="unit"]');
+  u0.value = "gram";
+  u0.dispatchEvent(new window.Event("change", { bubbles: true }));
+  await wait(20);
+  ok($('.ct-row .ct-pm option[value="unit"]').textContent.indexOf("gram") >= 0, "mode select ka label \u20b9 / gram hua");
+  setInput('[data-ct-item="0"][data-ct-f="lineTotal"]', "45");
+  const t45 = $("#ctTotalBig").textContent;
+  ok(t45.replace(/,/g, "").indexOf("45") >= 0 && t45.indexOf("27,000") < 0,
+     "total \u20b945 hai (600 x 45 = 27,000 nahi)", t45);
+  const ac = $('.ct-row .amt');
+  ok(ac.textContent.indexOf("45") >= 0 && ac.textContent.indexOf("0.075") >= 0,
+     "amount 45 + neeche = \u20b90.075/gram", ac.textContent);
+  setInput("#ctParty", "Gram Test");
+  click('[data-act="ctSave"]');
+  await wait(40);
+  const ge = H().canteen.entries().find((e) => e.party === "Gram Test");
+  ok(ge && ge.amount === 45, "entry amount 45", ge && ge.amount);
+  const gi = ge && ge.items[0];
+  ok(gi && gi.lineTotal === 45 && gi.rate === 0.075 && gi.priceMode === "line",
+     "item: lineTotal 45, per-unit 0.075/gram (round nahi toda)", gi);
+  ok(H().canteen.data().rates.some((r) => r.name === "Pudina leaves" && r.rate === 0.075),
+     "rate list me Pudina leaves 0.075/gram");
+  /* agni baar naam likhte hi per-unit auto-fill + mode flip */
+  click('[data-act="ctAdd"]');
+  setName('[data-ct-item="0"][data-ct-f="name"]', "Pudina leaves");
+  await wait(20);
+  ok($('[data-ct-item="0"][data-ct-f="priceMode"]').value === "unit",
+     "rate list me mile item par line apne aap \u20b9 / unit par pali");
+  ok(String($('[data-ct-item="0"][data-ct-f="rate"]').value) === "0.075", "rate 0.075 auto-fill",
+     $('[data-ct-item="0"][data-ct-f="rate"]').value);
+  setInput('[data-ct-item="0"][data-ct-f="qty"]', "600");
+  const u1 = $('[data-ct-item="0"][data-ct-f="unit"]');
+  ok(u1.value === "gram", "unit gram auto-fill", u1.value);
+  ok($("#ctTotalBig").textContent.replace(/,/g, "").indexOf("45") >= 0,
+     "600 x 0.075 = 45 total", $("#ctTotalBig").textContent);
+  click('[data-act="closeModal"]');
 
   section("Validation \u2014 khaali entry");
   click('[data-act="ctAdd"]');
