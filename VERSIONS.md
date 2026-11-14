@@ -65,13 +65,14 @@ File ka naam me version hona chahiye: **`Hisaab-Pro-v<number>.<number>.html`**
 
 | Version | Date | Kya badla | File |
 |---|---|---|---|
+| v3.3 | 2026-11-14 | **Gram / poori-line smart default.** Nayi item line ab seedha **`₹ poori line`** par khulti hai — parche wala total (jaise **600 gram = ₹45**) bas likh do, total ₹45 hi judega (**27,000 nahi**), per-unit rate **₹0.075/gram** apne aap niklega. Item ka rate Rate list me maujood ho to naam likhte hi line apne aap **`₹ / unit`** par palat kar rate + unit bhar leti hai. ₹1 se chhote rate ab 4 decimal tak safe (0.075 → 0.08 nahi tootta). Purani entries aur per-unit flow bilkul unchanged. | `Hisaab-Pro-v3.3.html` |
 | v3.2 | 2026-11-14 | **Canteen rate fix — "poori line ka total" mode.** Har item line par ab select hai: **`₹ / unit`** (default, pehle jaisa) ya **`₹ poori line`**. `4 kg Maggi = ₹360` likhne par ab total **₹360** hi judta hai (pehle galat 4 × 360 = ₹1440 ho jata tha) aur per-unit rate **₹90/kg apne aap** nikal kar amount ke neeche dikhta hai. Rate list, auto-fill, din/mahine ke ledger aur CSV — sab jagah **per-unit rate** hi rehta hai. Purani saved entries ka hisaab **bilkul nahi badla**. CSV me naya `Price mode` column. | `Hisaab-Pro-v3.2.html` |
 | v3.1 | 2026-11-14 | **Naya Canteen module** — saman entry (rate-wise **ya** ek-saath pura total), bikri/kharcha, **din ka ledger**, **mahine ka ledger**, rate list, udhaar/baki, poori activity log, CSV + print + WhatsApp. Dashboard par canteen card, Settings me canteen card. **Loader `index.html` wapas add hua** (root URL ka 404 fix). | `Hisaab-Pro-v3.1.html` + `index.html` |
 | v3.0 | — | v3 UI, dark mode, ledger (advances), worker profile drawer, CSV & WhatsApp share, cloud login/sync | `hisaab_v3.html` |
 | v2.0 | 2026-11-11 | Auto-update loader + fixed working hours/overtime removed. Hourly worker = rate × total hours (naya Hours column). Monthly = ÷30 fixed, Sunday auto-exclude. Version badge. | `Hisaab-Pro-v2.0.html` |
 
 > **File ka rule:** `hisaab_v3.html` = working/source file (yahan change hota hai).
-> `Hisaab-Pro-v3.2.html` = usi ka release copy, taaki upar wala loader apne aap sabse naya version utha le.
+> `Hisaab-Pro-v3.3.html` = usi ka release copy, taaki upar wala loader apne aap sabse naya version utha le.
 > Dono ka content abhi **bilkul same** hai. Purane `Hisaab-Pro-v3.1.html` / `v2.0` repo me pade rehne do.
 
 ---
@@ -104,8 +105,13 @@ Item-wise mode me har line ke price box ke saath ek chhota select hai:
 
 | Select | Matlab | Amount | Rate list / ledger me |
 |---|---|---|---|
-| **`₹ / kg`** (default) | price = **1 unit ka daam** | `qty × price` | wahi price |
-| **`₹ poori line`** | price = **poori line ka total** (jaise parche par likha `4 kg Maggi = ₹360`) | **₹360 hi** (qty se multiply nahi hota) | `360 ÷ 4 = ₹90/kg` apne aap nikal jata hai |
+| **`₹ / kg`** | price = **1 unit ka daam** | `qty × price` | wahi price |
+| **`₹ poori line`** (nayi line ka **default**) | price = **poori line ka total** (jaise parche par likha `4 kg Maggi = ₹360`, `600 gram = ₹45`) | **₹360 / ₹45 hi** (qty se multiply nahi hota) | `360 ÷ 4 = ₹90/kg`, `45 ÷ 600 = ₹0.075/gram` apne aap |
+
+> **Smart default (v3.3):** nayi khaali line `₹ poori line` par khulti hai — parche wala total seedha likho.
+> Jis item ka rate Rate list me pahle se hai, uska **naam likhte hi** line apne aap `₹ / unit` par palat
+> jaati hai aur rate + unit bhar jata hai (kyunki tab per-unit hisaab sahi rehta hai).
+> Mode kabhi bhi select se badlo — likha hua number saath chala jata hai.
 
 - Line mode me amount ke neeche chhota **`= ₹90/kg`** dikhta hai, aur item-wise table/summary me
   us line ke naam ke aage **Σ** chip lagta hai.
@@ -145,5 +151,5 @@ red badge = is mahine kitni entries ka paisa baki hai.
 
 ## 5. Developer tests
 
-`tests/` folder me jsdom smoke tests hain (~174 canteen + ~27 loader checks) — app ke liye zaroori nahi, sirf
+`tests/` folder me jsdom smoke tests hain (~187 canteen + ~27 loader checks) — app ke liye zaroori nahi, sirf
 change ke baad verify karne ke liye. Details: `tests/README.md`.
