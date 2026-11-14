@@ -845,7 +845,7 @@ const rRate = (n) => { const x = Math.max(0, num(n)); return x >= 1 ? r2(x) : Ma
 /* rate dikhane ka format: <₹1 ho to 0.075 jaisa khula number, warna moneyS */
 const rateS = (n) => { const x = num(n); if (x > 0 && x < 1) return "₹" + String(Math.round((x + Number.EPSILON) * 10000) / 10000); return moneyS(x); };
 const clamp = (n, lo, hi) => Math.min(hi, Math.max(lo, n));
-const APP_VERSION = "3.5";
+const APP_VERSION = "3.6";
 const esc = (s) => String(s == null ? "" : s).replace(/[&<>"']/g, (m) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[m]));
 
 const MONTHS = ["January","February","March","April","May","June","July","August","September","October","November","December"];
@@ -2106,7 +2106,7 @@ function viewSettings(){
 
     '<div style="text-align:center;font-size:11.5px;color:var(--muted);margin-top:18px;line-height:1.7">'+
       'Panel <b style="color:var(--ink)">v<span data-ver></span></b> · Auto-update enabled<br>'+
-      'v3.5 — <b style="color:var(--ink)">📋 Paste se entries</b>: Word/WhatsApp/parche ka text ek saath paste karo — har item ki <b>alag entry</b> ban jati hai (line format: <b>naam qty unit price</b>, @ ya x se per-unit rate, date wali line se date); preview ke saath, undo bhi hai<br>'+'v3.4 — <b style="color:var(--ink)">Canteen photo + PDF</b>: entry ke saath bill/parche ki <b>📷 photo</b> lagao (ledger me tap karke badi khulti hai); din aur mahine ka ledger <b>📄 PDF</b> download; item ka <b>naam likhte hi unit</b> apne aap (doodh→ltr, kesar/dhaniya→gram, anda→dozen, bread→pcs)<br>'+'v3.3 — <b style="color:var(--ink)">Gram/line-total smart default</b>: nayi item line seedha <b>“₹ poori line”</b> par khulti hai (600 gram = ₹45 → total ₹45, ₹0.075/gram apne aap); rate list me rate milte hi naam likhte hi line <b>“₹ / unit”</b> par palat kar rate bhar leti hai<br>'+'v3.2 — <b style="color:var(--ink)">Canteen price-mode fix</b>: har item line par chunaav — <b>₹ / unit</b> ya <b>₹ poori line</b>. 4 kg Maggi = ₹360 likho to total ₹360 hi rahega, rate apne aap ₹90/kg<br>'+
+      'v3.6 — <b style="color:var(--ink)">Photo OCR + paste accuracy</b>: bill photo se <b>🔍 OCR</b> text nikalta hai (browser me hi) aur seedha entries banta hai; paste parser ab <b>scoring</b> se chalta hai (item-code ignore, qty-rate-total, 90/kg, “42 per kg”, (4), nos, 1,740/-), <b>Total line verify</b> hoti hai (✅/⚠ chip), paid/baki lines info me; preview table <b>editable</b> — galat cell save se pehle sudhar lo<br>'+'v3.5 — <b style="color:var(--ink)">📋 Paste se entries</b>: Word/WhatsApp/parche ka text ek saath paste karo — har item ki <b>alag entry</b> ban jati hai (line format: <b>naam qty unit price</b>, @ ya x se per-unit rate, date wali line se date); preview ke saath, undo bhi hai<br>'+'v3.4 — <b style="color:var(--ink)">Canteen photo + PDF</b>: entry ke saath bill/parche ki <b>📷 photo</b> lagao (ledger me tap karke badi khulti hai); din aur mahine ka ledger <b>📄 PDF</b> download; item ka <b>naam likhte hi unit</b> apne aap (doodh→ltr, kesar/dhaniya→gram, anda→dozen, bread→pcs)<br>'+'v3.3 — <b style="color:var(--ink)">Gram/line-total smart default</b>: nayi item line seedha <b>“₹ poori line”</b> par khulti hai (600 gram = ₹45 → total ₹45, ₹0.075/gram apne aap); rate list me rate milte hi naam likhte hi line <b>“₹ / unit”</b> par palat kar rate bhar leti hai<br>'+'v3.2 — <b style="color:var(--ink)">Canteen price-mode fix</b>: har item line par chunaav — <b>₹ / unit</b> ya <b>₹ poori line</b>. 4 kg Maggi = ₹360 likho to total ₹360 hi rahega, rate apne aap ₹90/kg<br>'+
       'v3.1 — <b style="color:var(--ink)">Canteen module</b>: saman entry (rate-wise ya ek-saath total), din &amp; mahine ka ledger, rate list, udhaar/baki, poori activity log'+
     '</div>'
   );
@@ -4430,8 +4430,9 @@ function ctPhotoBoxHTML(d) {
       '<img class="ct-phThumb" src="' + d.photo + '" alt="Bill photo" data-act="ctPhotoView" title="Badi dekho">' +
       '<div><b>📷 Bill / parche ki photo judi hai</b>' +
       '<div class="ct-note">Entry ke saath save hogi — ledger me 📷 dikhega, tap karke badi khulegi.</div>' +
-      '<div style="display:flex;gap:7px;margin-top:6px">' +
+      '<div style="display:flex;gap:7px;margin-top:6px;flex-wrap:wrap">' +
         '<button class="btn xs" data-act="ctPhotoView">👀 Badi dekho</button>' +
+        '<button class="btn xs primary" data-act="ctPhotoOcr" title="Photo se text padh kar entries banao">🔍 OCR se entries</button>' +
         '<button class="btn xs" data-act="ctPhotoDel" style="color:var(--bad)">🗑 Photo hatao</button>' +
       "</div></div></div>";
   }
@@ -5440,6 +5441,7 @@ const CT_BULK_UNITS = {
   "pcs": "pcs", "pc": "pcs", "piece": "pcs", "pieces": "pcs",
   "pkt": "pkt", "packet": "pkt", "pack": "pkt",
   "dozen": "dozen", "dz": "dozen",
+  "nos": "pcs", "nos.": "pcs", "nag": "pcs", "pair": "pcs",
   "box": "box", "bag": "bag", "plate": "plate", "cup": "cup", "bundle": "bundle", "carton": "carton"
 };
 const CT_BULK_GLUE = /^(\d+(?:\.\d+)?)(kg|kilo|gram|gm|g|ltr|litre|liter|l|ml|pcs|pc|piece|pkt|packet|dozen|dz|box|bag|plate|cup|bundle|carton)$/;
@@ -5453,6 +5455,7 @@ const CT_BULK_GLUE = /^(\d+(?:\.\d+)?)(kg|kilo|gram|gm|g|ltr|litre|liter|l|ml|pc
 function ctParseBulk(text, baseDate) {
   const rows = [], skipped = [];
   let curDate = String(baseDate || isoDate(new Date()));
+  let verify = null, paidHint = null;
   String(text == null ? "" : text).split(/\r?\n/).forEach((raw, idx) => {
     let t = String(raw).trim();
     if (!t) return;
@@ -5464,104 +5467,163 @@ function ctParseBulk(text, baseDate) {
     if (dm) { curDate = dm[0]; return; }
     if (dm2) {
       let dd = Number(dm2[1]), mm = Number(dm2[2]), yy = Number(dm2[3]);
-      if (mm > 12 && dd <= 12) { const s = dd; dd = mm; mm = s; }            /* dd/mm hi maano */
+      if (mm > 12 && dd <= 12) { const sw = dd; dd = mm; mm = sw; }
       if (yy < 100) yy += 2000;
       if (mm >= 1 && mm <= 12 && dd >= 1 && dd <= 31) {
         curDate = yy + "-" + String(mm).padStart(2, "0") + "-" + String(dd).padStart(2, "0");
         return;
       }
     }
+    /* info lines — total (verify), paid, baki */
+    const tv = t.match(/^\W*(grand\s*total|total|kul|jod|sum|yog|net)\b[^\d]*([0-9][0-9,.]*(?:\.\d+)?)/i);
+    if (tv) { verify = num(tv[2]); skipped.push({ line: idx + 1, raw: raw, why: "TOTAL line — preview me verify hoga", info: true }); return; }
+    const pv = t.match(/^\W*(paid|jama|diya|advance|adv|cash|upi)\b[^\d]*([0-9][0-9,.]*(?:\.\d+)?)/i);
+    if (pv) { paidHint = num(pv[2]); skipped.push({ line: idx + 1, raw: raw, why: "PAID line — entry ke ₹ button se laga lena", info: true }); return; }
+    const bv = t.match(/^\W*(balance|baki|udhaar|bacat|due)\b[^\d]*([0-9][0-9,.]*(?:\.\d+)?)/i);
+    if (bv) { skipped.push({ line: idx + 1, raw: raw, why: "BAKI line — info, entry nahi bani", info: true }); return; }
+
     const words = t.split(/\s+/);
-    const nameParts = []; const nums = [];
-    let unit = "", nextRate = false;
+    const nameParts = []; const P = []; const V = [];
+    let unit = "", nextRate = false, perMode = false, seenName = false;
     words.forEach((w0) => {
-      const w = w0.replace(/[,;|]+$/, "").toLowerCase();
-      if (CT_BULK_UNITS[w]) { unit = CT_BULK_UNITS[w]; return; }
+      let w = w0.replace(/[,;|]+$/, "").toLowerCase();
+      w = w.replace(/[-/]+$/, "");                      /* "360/-" → "360" */
+      if (/^(qty|rate|amt|amount|price|no|sr|srno|sno|#|item|code)[:.]?$/.test(w)) return;
+      const wu = w.replace(/\.$/, "");
+      if (CT_BULK_UNITS[wu]) { unit = CT_BULK_UNITS[wu]; perMode = false; return; }
       if (w === "x" || w === "×" || w === "@") { nextRate = true; return; }
-      const xm = w.match(/^(\d+(?:\.\d+)?)[x×@](\d+(?:\.\d+)?)$/);   /* "4x90" / "4@90" */
+      if (w === "per") { if (V.length) V[V.length - 1].rate = true; else if (P.length) P[P.length - 1].rate = true; perMode = true; return; }
+      const sm = w.match(/^(\d+(?:\.\d+)?)\/(kg|gram|gm|g|ltr|l|ml|pcs|pc|pkt|dozen|unit)$/);  /* 90/kg */
+      if (sm) { V.push({ v: Number(sm[1]), rate: true, eq: false }); if (!unit) unit = CT_BULK_UNITS[sm[2]] || "kg"; return; }
+      const bm = w.match(/^\((\d+(?:\.\d+)?)\)$/);   /* (4) */
+      if (bm) { (seenName ? V : P).push({ v: Number(bm[1]), rate: false, eq: false }); return; }
+      const xm = w.match(/^(\d+(?:\.\d+)?)[x×@](\d+(?:\.\d+)?)$/);   /* 4x90 */
       if (xm) {
-        nums.push({ v: Number(xm[1]), rate: false, eq: false });
-        nums.push({ v: Number(xm[2]), rate: true, eq: false });
+        V.push({ v: Number(xm[1]), rate: false, eq: false });
+        V.push({ v: Number(xm[2]), rate: true, eq: false });
+        seenName = seenName || nameParts.length > 0;
         return;
       }
       const gm = w.match(CT_BULK_GLUE);
-      if (gm) { nums.push({ v: Number(gm[1]), rate: false, eq: false }); if (!unit) unit = CT_BULK_UNITS[gm[2]] || ""; return; }
+      if (gm) { (seenName ? V : P).push({ v: Number(gm[1]), rate: false, eq: false }); if (!unit) unit = CT_BULK_UNITS[gm[2]] || ""; return; }
       const nm = w.match(/^=?(\d+(?:\.\d+)?)$/);
-      if (nm) { nums.push({ v: Number(nm[1]), rate: nextRate, eq: w[0] === "=" }); nextRate = false; return; }
-      nextRate = false;
-      nameParts.push(w0);
+      if (nm) { (seenName ? V : P).push({ v: Number(nm[1]), rate: nextRate, eq: w[0] === "=" }); nextRate = false; return; }
+      nextRate = false; perMode = false;
+      nameParts.push(w0); seenName = true;
     });
     const name = nameParts.join(" ").replace(/[-–—:=]+$/, "").trim();
     if (!name) { skipped.push({ line: idx + 1, raw: raw, why: "item ka naam nahi mila" }); return; }
-    if (!nums.length) { skipped.push({ line: idx + 1, raw: raw, why: "koi number (qty/price) nahi mila" }); return; }
-    let qty = 1, unit2 = unit || "", mode = "line", rate = 0, lineTotal = 0;
-    const rateNum = nums.find((n) => n.rate);
-    if (rateNum) {
-      mode = "unit";
-      qty = Math.max(0, (nums.find((n) => !n.rate && !n.eq) || { v: 1 }).v);
-      rate = rRate(rateNum.v);
-    } else if (nums.length >= 3) {
-      mode = "unit"; qty = Math.max(0, nums[0].v); rate = rRate(nums[1].v);
-    } else if (nums.length === 2) {
-      qty = Math.max(0, nums[0].v); lineTotal = r2(nums[1].v);
-    } else {
-      lineTotal = r2(nums[0].v);
+    const cleanV = V.filter((n) => !n.eq);
+    if (!P.length && !cleanV.length && !V.some((n) => n.rate)) { skipped.push({ line: idx + 1, raw: raw, why: "koi number (qty/price) nahi mila" }); return; }
+    /* ---- scoring: kaun sa interpretation sahi hai ---- */
+    const cands = [];
+    const rateFlag = V.find((n) => n.rate);
+    const eqNum = V.find((n) => n.eq);
+    const near = (a, b) => Math.abs(a - b) < 0.51;
+    if (rateFlag) {
+      const q = P.length ? P[0].v : ((cleanV.find((n) => n !== rateFlag) || { v: 1 }).v);
+      cands.push({ qty: q, rate: rateFlag.v, mode: "unit", score: 3 + (eqNum && near(q * rateFlag.v, eqNum.v) ? 1 : 0) });
     }
+    if (cleanV.length === 1 && !rateFlag) {
+      cands.push({ qty: P.length ? P[0].v : 1, lineTotal: cleanV[0].v, mode: "line", score: 2 });
+    }
+    if (cleanV.length >= 2 && !rateFlag) {
+      const rest = P.length ? cleanV : cleanV.slice(1);
+      const qty0 = P.length ? P[0].v : cleanV[0].v;
+      const tt = rest[rest.length - 1].v;
+      if (rest.length >= 2 && near(qty0 * rest[0].v, tt)) cands.push({ qty: qty0, rate: rest[0].v, mode: "unit", score: 3 });
+      if (rest.length >= 3 && near(rest[0].v * rest[1].v, rest[2].v)) cands.push({ qty: rest[0].v, rate: rest[1].v, mode: "unit", score: 3 });
+      if (P.length && cleanV.length === 2) cands.push({ qty: cleanV[0].v, lineTotal: cleanV[1].v, mode: "line", score: 2.5 });
+      if (P.length && cleanV.length === 3 && near(cleanV[0].v * cleanV[1].v, cleanV[2].v))
+        cands.push({ qty: cleanV[0].v, rate: cleanV[1].v, mode: "unit", score: 3 });
+      cands.push({ qty: qty0, lineTotal: tt, mode: "line", score: rest.length === 1 ? 2 : 1 });
+    }
+    if (!cands.length) cands.push({ qty: P.length ? P[0].v : 1, lineTotal: (cleanV[0] || { v: 0 }).v, mode: "line", score: 0 });
+    cands.sort((a, b2) => b2.score - a.score);
+    const c = cands[0];
+    let unit2 = unit || "";
     if (!unit2) {
       const hm = CT_UNIT_HINTS.find((h) => h[0].test(name));
       unit2 = hm ? hm[1] : "kg";
     }
-    const it = normCtItem({ name: name, qty: qty, unit: unit2, rate: rate, lineTotal: lineTotal, priceMode: mode });
+    const it = normCtItem({ name: name, qty: c.qty, unit: unit2, rate: c.mode === "unit" ? c.rate : 0,
+      lineTotal: c.mode === "line" ? c.lineTotal : 0, priceMode: c.mode });
     rows.push({
       name: it.name, qty: it.qty, unit: it.unit, rate: it.rate, lineTotal: it.lineTotal,
       priceMode: it.priceMode, amt: ctItemAmt(it), date: curDate, raw: raw
     });
   });
-  return { rows: rows, skipped: skipped };
+  return { rows: rows, skipped: skipped, verify: verify, paid: paidHint };
 }
 function ctBulkOpen() {
   const u = ctUI();
   u.bulk = { text: "", kind: "purchase", date: u.date || isoDate(new Date()), party: "", split: true };
   ctRenderBulk();
 }
+function ctBulkUnitOpts(cur) {
+  const us = CT_UNITS.slice();
+  if (cur && us.indexOf(cur) < 0) us.push(cur);
+  return us.map((u) => '<option value="' + esc(u) + '"' + (u === cur ? " selected" : "") + ">" + esc(u) + "</option>").join("");
+}
+/* preview = EDITABLE table: OCR/paste ka andaza galat ho to yahin sudhar lo */
 function ctBulkPrevHTML(parsed, b) {
-  if (!parsed.rows.length && !parsed.skipped.length) {
-    return '<div class="ct-note">Upar paste karo — yahan preview dikhega ki kaun si line kya banegi.</div>';
+  const rows = parsed.rows;
+  if (!rows.length && !parsed.skipped.length) {
+    return '<div class="ct-note">Upar paste karo (ya 📷 photo se OCR karo) — yahan preview dikhega ki kaun si line kya banegi. Har cell yahan edit bhi kar sakte ho.</div>';
   }
-  const tot = r2(parsed.rows.reduce((t, r) => t + r.amt, 0));
-  const tbl = parsed.rows.length
-    ? '<div class="twrap"><table class="tbl" style="min-width:640px"><thead><tr>' +
-      "<th>#</th><th>Item</th><th class=\"num\">Qty</th><th>Unit</th><th>Price mode</th>" +
+  const tot = r2(rows.reduce((t, r) => t + r.amt, 0));
+  const tbl = rows.length
+    ? '<div class="twrap"><table class="tbl" style="min-width:760px"><thead><tr>' +
+      "<th>#</th><th>Item</th><th>Qty</th><th>Unit</th><th>Price mode</th><th>Price</th>" +
       '<th class="num">Amount</th><th>Date</th></tr></thead><tbody>' +
-      parsed.rows.map((r, i) =>
-        "<tr><td class=\"muted\">" + (i + 1) + "</td><td style=\"font-weight:750\">" + esc(r.name) + "</td>" +
-        '<td class="num">' + r.qty + "</td><td>" + esc(r.unit) + "</td>" +
-        "<td>" + (r.priceMode === "line" ? '<span class="ct-modeTag tot">₹ poori line</span>' : '<span class="ct-modeTag">₹ / ' + esc(r.unit) + "</span>") + "</td>" +
-        '<td class="num strong">' + moneyS(r.amt) + "</td>" +
+      rows.map((r, i2) =>
+        '<tr data-brow="' + i2 + '"><td class="muted">' + (i2 + 1) + "</td>" +
+        '<td><input class="inp" style="min-width:110px" data-br="' + i2 + '" data-f="name" value="' + esc(r.name) + '"></td>' +
+        '<td><input class="inp" type="number" min="0" step="0.5" style="width:70px" data-br="' + i2 + '" data-f="qty" value="' + (num(r.qty) || "") + '"></td>' +
+        '<td><select class="inp" style="width:76px" data-br="' + i2 + '" data-f="unit">' + ctBulkUnitOpts(r.unit) + "</select></td>" +
+        '<td><select class="inp" style="width:104px" data-br="' + i2 + '" data-f="priceMode">' +
+          '<option value="line"' + (r.priceMode === "line" ? " selected" : "") + ">₹ poori line</option>" +
+          '<option value="unit"' + (r.priceMode === "unit" ? " selected" : "") + ">₹ / " + esc(r.unit) + "</option></select></td>" +
+        '<td><input class="inp" type="number" min="0" step="0.0001" style="width:86px" data-br="' + i2 + '" data-f="price" value="' +
+          (r.priceMode === "line" ? (num(r.lineTotal) || "") : (num(r.rate) || "")) + '"></td>' +
+        '<td class="num strong" data-bamt="' + i2 + '">' + moneyS(r.amt) + "</td>" +
         '<td class="muted" style="white-space:nowrap">' + esc(ctShort(r.date)) + (r.date !== b.date ? " ✱" : "") + "</td></tr>").join("") +
       "</tbody></table></div>"
     : "";
-  const skip = parsed.skipped.length
-    ? '<div class="ct-note" style="margin-top:9px;color:var(--bad)">⚠ ' + parsed.skipped.length + " line skip hui: " +
-      parsed.skipped.slice(0, 4).map((s) => "“" + esc(String(s.raw).slice(0, 40)) + "” (" + esc(s.why) + ")").join(", ") + "</div>"
-    : "";
-  return tbl + skip +
-    '<div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-top:10px">' +
-      '<span class="tag warn">' + parsed.rows.length + " item line" + (parsed.rows.length === 1 ? "" : "s") + "</span>" +
-      '<span class="tag grey">total ' + moneyS(tot) + "</span>" +
-      '<span class="ct-note">' + (b.split
-        ? "💾 Save karne par <b>har item ki alag entry</b> banegi" + (parsed.rows.some((r) => r.date !== b.date) ? " (✱ = paste me likhi date)" : "")
-        : "💾 Save karne par <b>ek entry</b> me saari item lines ayengi") + "</span>" +
+  const info = parsed.skipped.filter((x) => x.info);
+  const bad = parsed.skipped.filter((x) => !x.info);
+  const chips =
+    '<div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-top:10px">' +
+      '<span class="tag warn">' + rows.length + " item line" + (rows.length === 1 ? "" : "s") + "</span>" +
+      '<span class="tag grey" id="ctBulkTot">total ' + moneyS(tot) + "</span>" +
+      (parsed.verify != null
+        ? (Math.abs(parsed.verify - tot) < 0.51
+          ? '<span class="tag ok">✅ paste TOTAL ' + moneyS(parsed.verify) + " = preview total — hisaab mila</span>"
+          : '<span class="tag bad">⚠ paste TOTAL ' + moneyS(parsed.verify) + " ≠ preview " + moneyS(tot) + " — lines check karo</span>")
+        : "") +
+      (parsed.paid != null ? '<span class="tag grey">paid likha hai ' + moneyS(parsed.paid) + " — save ke baad ₹ button se laga lena</span>" : "") +
     "</div>";
+  const skip = bad.length
+    ? '<div class="ct-note" style="margin-top:9px;color:var(--bad)">⚠ ' + bad.length + " line skip: " +
+      bad.slice(0, 4).map((x) => "“" + esc(String(x.raw).slice(0, 40)) + "” (" + esc(x.why) + ")").join(", ") + "</div>"
+    : "";
+  const infoTxt = info.length
+    ? '<div class="ct-note" style="margin-top:6px">ℹ ' + info.map((x) => esc(String(x.raw).slice(0, 46)) + " → " + esc(x.why)).join(" · ") + "</div>"
+    : "";
+  return tbl + chips + skip + infoTxt +
+    '<div class="ct-note" style="margin-top:8px">' + (b.split
+      ? "💾 Save = <b>har item ki alag entry</b>" + (rows.some((r) => r.date !== b.date) ? " (✱ = paste me likhi date)" : "") + " · koi cell galat ho to yahin badal lo"
+      : "💾 Save = <b>ek entry</b> me saari item lines · koi cell galat ho to yahin badal lo") + "</div>";
 }
 function ctRenderBulk() {
   const b = ctUI().bulk;
   if (!b) return;
   const parsed = ctParseBulk(b.text, b.date);
+  b.rows = parsed.rows; b.verify = parsed.verify; b.paid = parsed.paid;
   openModal(
-    '<div class="modal" style="max-width:880px">' +
-      '<div class="modal-h"><div><h3>📋 Paste se entries (bulk)</h3>' +
-        "<p>Word/WhatsApp/parche se text ek saath paste karo — har item ki alag entry ban jayegi</p></div>" +
+    '<div class="modal" style="max-width:920px">' +
+      '<div class="modal-h"><div><h3>📋 Paste / OCR se entries (bulk)</h3>' +
+        "<p>Text paste karo YA bill photo se OCR karo — preview me sab check/edit karke save karo</p></div>" +
         '<button class="x" data-act="closeModal">✕</button></div>' +
       '<div class="modal-b">' +
         '<div class="grid g3">' +
@@ -5575,19 +5637,24 @@ function ctRenderBulk() {
           '<button data-act="ctBulkSplit" data-v="1" class="' + (b.split ? "on" : "") + '" style="flex:1;min-width:0">📚 Har line = alag entry</button>' +
           '<button data-act="ctBulkSplit" data-v="0" class="' + (!b.split ? "on" : "") + '" style="flex:1;min-width:0">🧾 Sab lines = ek entry</button>' +
         "</div>" +
-        '<div style="margin-top:11px">' +
-          '<textarea class="inp" id="ctBulkText" style="min-height:132px;font-family:ui-monospace,Menlo,monospace;font-size:12.2px;line-height:1.7" ' +
-          'placeholder="Ek line = ek item. Jaise:&#10;Maggi 4 kg 360&#10;Hara dhaniya 600 gram 45&#10;Doodh 30 ltr 1740&#10;Aata 20 kg @ 42&#10;14/11/2026&#10;Gas cylinder 1 pcs 1150&#10;&#10;(aakhri number = poori line ka total; @ ya x ke baad number = 1 unit ka rate; date wali line = uske baad ki entries us date par)">' +
+        '<div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-top:11px">' +
+          '<button class="btn sm" data-act="ctOcrPick">📷 Photo se text nikalo (OCR)</button>' +
+          '<input type="file" accept="image/*" capture="environment" data-ct-ocr="1" style="display:none">' +
+          '<span class="ct-note" id="ctOcrStatus">' + (b.photo ? "photo judi hai — entries me lag jayegi" : "saaf photo = sachcha OCR") + "</span>" +
+        "</div>" +
+        '<div style="margin-top:9px">' +
+          '<textarea class="inp" id="ctBulkText" style="min-height:126px;font-family:ui-monospace,Menlo,monospace;font-size:12.2px;line-height:1.7" ' +
+          'placeholder="Ek line = ek item. Jaise:&#10;Maggi 4 kg 360&#10;Hara dhaniya 600 gram 45&#10;Doodh 30 ltr 1,740&#10;Aata 20 kg @ 42&#10;Total 4,245&#10;14/11/2026&#10;Gas cylinder 1 pcs 1150&#10;&#10;(aakhri number = poori line ka total; @ / x / 90/kg = per-unit rate; &#39;Total&#39; line = verify ke liye; date line = us din ki entries)">' +
           esc(b.text) + "</textarea>" +
         "</div>" +
-        '<div class="sec-title">Preview — kya banega</div>' +
+        '<div class="sec-title">Preview — yahan check karo, galat cell seedha sudharo</div>' +
         '<div id="ctBulkPrev">' + ctBulkPrevHTML(parsed, b) + "</div>" +
       "</div>" +
       '<div class="modal-f">' +
         '<div class="left"><span class="ct-note">Purana data safe — ye sirf nayi entries jodta hai</span></div>' +
         '<button class="btn" data-act="closeModal">Cancel</button>' +
         '<button class="btn primary" data-act="ctBulkSave" id="ctBulkSaveBtn">✅ ' +
-          (parsed.rows.length ? parsed.rows.length + " entries save karo" : "Save karo") + "</button>" +
+          (parsed.rows.length ? (b.split ? parsed.rows.length + " entries" : "1 entry") + " save karo" : "Save karo") + "</button>" +
       "</div>" +
     "</div>"
   );
@@ -5596,29 +5663,144 @@ function ctBulkPatch() {
   const b = ctUI().bulk;
   if (!b) return;
   const parsed = ctParseBulk(b.text, b.date);
+  b.rows = parsed.rows; b.verify = parsed.verify; b.paid = parsed.paid;
   const pv = document.getElementById("ctBulkPrev");
   if (pv) pv.innerHTML = ctBulkPrevHTML(parsed, b);
+  ctBulkPatchBtn();
+}
+function ctBulkPatchBtn() {
+  const b = ctUI().bulk;
+  if (!b) return;
+  const n = (b.rows || []).length;
   const btn = document.getElementById("ctBulkSaveBtn");
-  if (btn) btn.textContent = "✅ " + (parsed.rows.length ? (b.split ? parsed.rows.length + " entries" : "1 entry") + " save karo" : "Save karo");
+  if (btn) btn.textContent = "✅ " + (n ? (b.split ? n + " entries" : "1 entry") + " save karo" : "Save karo");
+}
+/* preview ke editable cell se row update — focus nahi tootta */
+function ctBulkRowEdit(el) {
+  const b = ctUI().bulk;
+  if (!b || !b.rows) return;
+  const i = Number(el.dataset.br);
+  const r = b.rows[i];
+  if (!r) return;
+  const f = el.dataset.f;
+  if (f === "name") r.name = el.value;
+  else if (f === "unit") r.unit = el.value;
+  else if (f === "priceMode") {
+    /* mode badlo to likha number carry hota hai (modal toggle jaisa) */
+    const nv = el.value === "unit" ? "unit" : "line";
+    if (nv !== (r.priceMode === "line" ? "line" : "unit")) {
+      if (nv === "line") r.lineTotal = r2(num(r.qty) * num(r.rate));
+      else r.rate = num(r.qty) > 0 ? rRate(num(r.lineTotal) / num(r.qty)) : rRate(num(r.lineTotal));
+      const row2 = el.closest ? el.closest("tr") : null;
+      const pi = row2 ? row2.querySelector('[data-f="price"]') : null;
+      if (pi) pi.value = nv === "line" ? (num(r.lineTotal) || "") : (num(r.rate) || "");
+    }
+    r.priceMode = nv;
+  }
+  else if (f === "qty") r.qty = Math.max(0, num(el.value));
+  else if (f === "price") {
+    if (r.priceMode === "line") r.lineTotal = Math.max(0, num(el.value));
+    else r.rate = Math.max(0, num(el.value));
+  }
+  const it = normCtItem(r);
+  r.qty = it.qty; r.unit = it.unit; r.rate = it.rate; r.lineTotal = it.lineTotal;
+  r.priceMode = it.priceMode; r.amt = ctItemAmt(it);
+  const am = document.querySelector('[data-bamt="' + i + '"]');
+  if (am) am.textContent = moneyS(r.amt);
+  const row = el.closest("tr");
+  if (row && f === "unit") {
+    const o = row.querySelector('[data-f="priceMode"] option[value="unit"]');
+    if (o) o.textContent = "₹ / " + r.unit;
+  }
+  const tot = document.getElementById("ctBulkTot");
+  if (tot) {
+    const t = r2(b.rows.reduce((x, y) => x + y.amt, 0));
+    tot.textContent = "total " + moneyS(t);
+    if (b.verify != null) {
+      tot.textContent += Math.abs(b.verify - t) < 0.51 ? " ✅ TOTAL mila" : " ⚠ TOTAL " + moneyS(b.verify) + " se alag";
+    }
+  }
+  ctBulkPatchBtn();
+}
+/* ---- OCR (v3.6): bill photo → text → rows. Browser me hi, internet se engine aata hai ---- */
+const CT_OCR_CDN = "https://cdn.jsdelivr.net/npm/tesseract.js@5.1.1/dist/tesseract.min.js";
+function ctEnsureTesseract() {
+  if (window.Tesseract) return Promise.resolve(window.Tesseract);
+  return new Promise((res, rej) => {
+    const old = document.getElementById("ctOcrScript");
+    if (old) old.remove();
+    const s = document.createElement("script");
+    s.id = "ctOcrScript";
+    s.src = CT_OCR_CDN;
+    let done = false;
+    s.onload = () => { done = true; window.Tesseract ? res(window.Tesseract) : rej(new Error("engine nahi mila")); };
+    s.onerror = () => { if (!done) rej(new Error("cdn fail")); };
+    document.head.appendChild(s);
+    setTimeout(() => { if (!done) rej(new Error("timeout")); }, 25000);
+  });
+}
+function ctRunOcr(dataUrl, onStatus) {
+  if (onStatus) onStatus("engine load ho raha hai…", 5);
+  return ctEnsureTesseract().then((T) => {
+    if (onStatus) onStatus("photo padha ja raha hai…", 20);
+    return T.recognize(dataUrl, "eng", {
+      logger: (m) => {
+        if (onStatus && m && m.status) onStatus(m.status, Math.round((m.progress || 0) * 100));
+      }
+    });
+  }).then((res) => {
+    const txt = (res && res.data && res.data.text) || "";
+    /* OCR kachra saaf: khaali lines, ajeeb symbols */
+    return txt.split(/\r?\n/).map((l) => l.replace(/[|<>{}~^`]/g, "").replace(/\s+/g, " ").trim())
+      .filter((l) => l.length > 1).join("\n");
+  });
+}
+function ctOcrStatus(txt) {
+  const el = document.getElementById("ctOcrStatus");
+  if (el) el.textContent = txt;
+}
+function ctOcrFromFile(input) {
+  const b = ctUI().bulk;
+  if (!b) return;
+  const f = input.files && input.files[0];
+  ctReadPhoto(f, (url) => {
+    b.photo = url;
+    ctOcrStatus("🔍 OCR chal raha hai… 0%");
+    ctRunOcr(url, (st, pc) => ctOcrStatus("🔍 OCR: " + st + " " + pc + "%"))
+      .then((text) => {
+        if (!text.trim()) { ctOcrStatus("OCR me kuch nahi padha — photo saaf roshni me lo"); return toast("Photo se text nahi padha — roshni me saaf photo lo", "bad"); }
+        b.text = (b.text ? b.text + "\n" : "") + text;
+        const ta = document.getElementById("ctBulkText");
+        if (ta) ta.value = b.text;
+        ctBulkPatch();
+        ctOcrStatus("✅ OCR text aa gaya — preview me check/sudharo");
+        toast("OCR ho gaya — preview me hisaab mila ke save karo", "ok");
+      })
+      .catch(() => {
+        ctOcrStatus("OCR nahi chala (internet/engine) — text khud paste karo");
+        toast("OCR ke liye internet chahiye — text paste karke bhi kar sakte ho", "bad");
+      });
+  });
 }
 function ctBulkSave() {
   const b = ctUI().bulk;
   if (!b) return;
-  const parsed = ctParseBulk(b.text, b.date);
-  if (!parsed.rows.length) return toast("Paste me se koi valid line nahi mili — preview dekhe", "bad");
+  const rows = (b.rows && b.rows.length) ? b.rows : ctParseBulk(b.text, b.date).rows;
+  if (!rows.length) return toast("Paste/OCR me se koi valid line nahi mili — preview dekhe", "bad");
   const CC = ct();
   const made = [];
   const build = (rows, date) => normCtEntry({
     id: uid(), date: date, kind: b.kind, mode: "itemized",
     items: rows.map((r) => ({ name: r.name, qty: r.qty, unit: r.unit, rate: r.rate, lineTotal: r.lineTotal, priceMode: r.priceMode })),
     amount: r2(rows.reduce((t, r) => t + r.amt, 0)),
-    party: b.party, billNo: "", paid: 0, payMode: "cash", note: "📋 paste se aayi entry"
+    party: b.party, billNo: "", paid: 0, payMode: "cash", note: "📋 paste/OCR se aayi entry",
+    photo: String(b.photo || "")
   });
   if (b.split) {
-    parsed.rows.forEach((r) => { const e = build([r], r.date); CC.entries.push(e); made.push(e); });
+    rows.forEach((r) => { const e = build([r], r.date); CC.entries.push(e); made.push(e); });
   } else {
     const groups = [];
-    parsed.rows.forEach((r) => {
+    rows.forEach((r) => {
       const g = groups[groups.length - 1];
       if (g && g.date === r.date) g.rows.push(r); else groups.push({ date: r.date, rows: [r] });
     });
@@ -5643,7 +5825,8 @@ function ctBulkSave() {
     made.forEach((e) => { const j = C2.entries.findIndex((x) => x.id === e.id); if (j >= 0) C2.entries.splice(j, 1); });
     ctLogIt("delete", made[0], made[0], "📋 paste undo — " + made.length + " entries hati");
     Store.save(); render(); toast(made.length + " entries hata di (undo)", "ok");
-  }, "📋 " + made.length + " entries aa gayi · total " + money0(sum));
+  }, "📋 " + made.length + " entries aa gayi · total " + money0(sum) +
+     (b.verify != null ? (Math.abs(b.verify - sum) < 0.51 ? " · TOTAL ✅ mila" : " · ⚠ paste TOTAL " + money0(b.verify) + " se alag") : ""));
 }
 function ctShareDay() {
   const u = ctUI();
@@ -5885,6 +6068,28 @@ document.addEventListener("click", (e) => {
     case "ctCsv": ctCsv(); break;
     case "ctPrintDay": ctPrintDay(); break;
     case "ctBulk": ctBulkOpen(); break;
+    case "ctOcrPick": {
+      const fi = document.querySelector('[data-ct-ocr="1"]');
+      if (fi) fi.click();
+      break;
+    }
+    case "ctPhotoOcr": {
+      const d = ctUI().edit;
+      if (!d || !d.photo) break;
+      toast("🔍 OCR chal raha hai — photo padhi ja rahi hai…");
+      ctRunOcr(d.photo, () => {})
+        .then((text) => {
+          if (!text.trim()) return toast("Photo se text nahi padha — roshni me saaf photo lo", "bad");
+          ctUI().bulk = {
+            text: text, kind: d.kind === "sale" ? "sale" : (d.kind === "expense" ? "expense" : "purchase"),
+            date: d.date, party: d.party, split: true, photo: d.photo, rows: null
+          };
+          ctRenderBulk();
+          toast("OCR text aa gaya — preview me check karke save karo", "ok");
+        })
+        .catch(() => toast("OCR ke liye internet chahiye — photo lagi rahegi, text paste karke bhi chal sakte ho", "bad"));
+      break;
+    }
     case "ctBulkSplit": {
       const b = ctUI().bulk;
       if (b) { b.split = btn.dataset.v === "1"; ctRenderBulk(); }
@@ -6002,6 +6207,7 @@ document.addEventListener("input", (e) => {
     const body = document.getElementById("ctEntriesBody");
     if (body) body.innerHTML = ctEntriesTable();
   }
+  if (el.dataset && el.dataset.br !== undefined) { ctBulkRowEdit(el); return; }
   if (el.id === "ctBulkText") { const b = ctUI().bulk; if (b) { b.text = el.value; ctBulkPatch(); } return; }
   if (el.id === "ctBulkDate") { const b = ctUI().bulk; if (b && el.value) { b.date = el.value; ctBulkPatch(); } return; }
   if (el.id === "ctBulkParty") { const b = ctUI().bulk; if (b) b.party = el.value; return; }
@@ -6009,7 +6215,9 @@ document.addEventListener("input", (e) => {
 document.addEventListener("change", (e) => {
   const el = e.target;
   if (!el) return;
+  if (el.dataset && el.dataset.br !== undefined) { ctBulkRowEdit(el); return; }
   if (el.dataset && el.dataset.ctPhoto !== undefined) { ctPhotoPick(el); return; }
+  if (el.dataset && el.dataset.ctOcr !== undefined) { ctOcrFromFile(el); return; }
   if (el.id === "ctBulkKind") { const b = ctUI().bulk; if (b) b.kind = el.value; return; }
   if (el.dataset && el.dataset.ctItem !== undefined) {
     ctFieldInput(el);
@@ -6119,7 +6327,7 @@ window.Hisaab = { Store, calc, monthMeta, PdfDoc, inWords, UI, render, go, Cloud
              dayLedger: ctDayLedger, monthLedger: ctMonthLedger, openModal: openCtModal, save: ctSave,
              csv: ctCsv, printDay: ctPrintDay, printMonth: ctPrintMonth, blank: blankCanteen,
              pdfDay: ctPdfDay, pdfMonth: ctPdfMonth, renderModal: ctRenderModal, photoBox: ctPhotoBoxHTML,
-             bulkParse: ctParseBulk, bulkOpen: ctBulkOpen, bulkSave: ctBulkSave } };
+             bulkParse: ctParseBulk, bulkOpen: ctBulkOpen, bulkSave: ctBulkSave, ocrRun: ctRunOcr } };
 })();
 </script>
 </body>

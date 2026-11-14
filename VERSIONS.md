@@ -65,6 +65,7 @@ File ka naam me version hona chahiye: **`Hisaab-Pro-v<number>.<number>.html`**
 
 | Version | Date | Kya badla | File |
 |---|---|---|---|
+| v3.6 | 2026-11-14 | **Photo OCR + paste accuracy.** ① Bill photo par **🔍 OCR se entries** — photo ka text browser me hi padha jata hai (tesseract.js CDN se, offline ho to saaf toast), text seedha bulk modal me aakar **entries** banta hai; photo bhi entries ke saath judi rehti hai. ② Paste parser **scoring** wala: item-code (`101 Maggi 4 360`), `qty rate total`, `90/kg`, `42 per kg`, `(4)`, `nos`, `1,740/-`, naam me number (`Maggi 2-minute`) — sab sahi parse. ③ **Total line verify**: paste me `Total 476` likha ho to preview me ✅/⚠ chip batata hai hisaab mila ya nahi; `Paid`/`Baki` lines info me jaati hain, entry nahi banti. ④ **Preview table editable** — OCR/paste ka koi bhi cell (item, qty, unit, mode, price) save se pehle yahin sudhar lo; mode badalne par number carry hota hai. | `Hisaab-Pro-v3.6.html` |
 | v3.5 | 2026-11-14 | **📋 Paste se entries (bulk).** Word / WhatsApp / parche se poora text ek saath paste karo — **har item ki alag-alag entry** ban jati hai (chaaho to toggle se “sab lines = ek entry”). Line format: `naam qty unit price` (aakhri number = poori line ka total), `@ 42` ya `4x90` = per-unit rate, `1,740` jaise comma chalega, date wali line (`14/11/2026`) = uske baad ki entries us date par. Save se pehle **preview table** (kitni lines, kitna total, kaun si line skip hui), save ke baad **undo**. Rate list bhi apne aap update. Purana data untouched. | `Hisaab-Pro-v3.5.html` |
 | v3.4 | 2026-11-14 | **Canteen photo + PDF + unit auto.** ① Entry ke saath **bill/parche ki 📷 photo** lagao (camera ya gallery) — photo compress ho kar entry ke saath save hoti hai, din ke ledger aur entries table me 📷 tag, tap karke badi khulti hai; photo me rate na ho to “Σ Ek saath pura total” me sirf amount likh do. ② **📄 PDF** button — din ka ledger aur mahine ka ledger seedha PDF file (party-wise + item-wise tables ke saath). ③ **Unit auto**: item ka naam likhte hi unit apne aap (doodh→ltr, kesar/dhaniya→gram, anda→dozen, biscuit→pkt, aata/sabzi→kg); rate list me rate ho to wahi priority; khud unit chuno to auto-guess band. **Purana data bilkul safe** — photo field nayi entries me optional hai, purani entries jaisi thi waisi. | `Hisaab-Pro-v3.4.html` |
 | v3.3 | 2026-11-14 | **Gram / poori-line smart default.** Nayi item line ab seedha **`₹ poori line`** par khulti hai — parche wala total (jaise **600 gram = ₹45**) bas likh do, total ₹45 hi judega (**27,000 nahi**), per-unit rate **₹0.075/gram** apne aap niklega. Item ka rate Rate list me maujood ho to naam likhte hi line apne aap **`₹ / unit`** par palat kar rate + unit bhar leti hai. ₹1 se chhote rate ab 4 decimal tak safe (0.075 → 0.08 nahi tootta). Purani entries aur per-unit flow bilkul unchanged. | `Hisaab-Pro-v3.3.html` |
@@ -74,7 +75,7 @@ File ka naam me version hona chahiye: **`Hisaab-Pro-v<number>.<number>.html`**
 | v2.0 | 2026-11-11 | Auto-update loader + fixed working hours/overtime removed. Hourly worker = rate × total hours (naya Hours column). Monthly = ÷30 fixed, Sunday auto-exclude. Version badge. | `Hisaab-Pro-v2.0.html` |
 
 > **File ka rule:** `hisaab_v3.html` = working/source file (yahan change hota hai).
-> `Hisaab-Pro-v3.5.html` = usi ka release copy, taaki upar wala loader apne aap sabse naya version utha le.
+> `Hisaab-Pro-v3.6.html` = usi ka release copy, taaki upar wala loader apne aap sabse naya version utha le.
 > Dono ka content abhi **bilkul same** hai. Purane `Hisaab-Pro-v3.1.html` / `v2.0` repo me pade rehne do.
 
 ---
@@ -136,7 +137,9 @@ Payment section me: kitna diya, kaise diya (Cash / UPI / Bank / Udhaar), aur **b
 | **🏷 Rate list** | har item ka default rate + aakhri kharida rate + ab tak ki qty/amount. Rate-wise entry save karte hi list **apne aap** banti/tazaa hoti hai. |
 | **🕘 Activity** | har add / edit / delete / payment / rate change — time ke saath, din-wise grouped. Delete ki hui entry yahan se **↺ Restore** kar sakte ho. |
 
-## 3. 📋 Paste se entries (v3.5)
+## 3. 📋 Paste / 🔍 OCR se entries (v3.5 + v3.6)
+
+Canteen toolbar me **📋 Paste se entries** dabao:
 
 Canteen ke toolbar me **📋 Paste se entries** dabao:
 
@@ -149,6 +152,20 @@ Canteen ke toolbar me **📋 Paste se entries** dabao:
 2. **Preview** me dekho: item, qty, unit, mode, amount, date — galat lines skip list me.
 3. Default: **har line = alag entry** (jaise tumne kaha); toggle se “sab lines = ek entry” bhi kar sakte ho.
 4. **✅ Save** → entries aa gayi; galti ho to toast wala **undo** sab wapas hata deta hai.
+
+### v3.6 — accuracy features
+
+- **📷 Photo se text (OCR)**: bulk modal me button — bill photo lo, text apne aap box me aa jayega
+  (progress % dikhta hai). Entry modal me photo lagi ho to **🔍 OCR se entries** button bhi hai.
+  OCR ke liye internet chahiye (engine browser me download hota hai); na ho to text paste ka raasta khula hai.
+- **Total verify**: paste me `Total 476` / `Grand Total …` likha ho to preview me chip:
+  **✅ hisaab mila** ya **⚠ alag** — save toast me bhi yahi batata hai.
+- **Paid / Baki lines** entry nahi banti — chip me yaad dilata hai ki ₹ button se laga lena.
+- **Preview editable**: har row me item/qty/unit/mode/price ke box — galat OCR/paste cell yahin sudharo,
+  amount aur total turant update. Mode badalne par likha number carry hota hai (360 line → 90/kg unit).
+- Parser ab ye sab samajhta hai: `101 Maggi 4 360` (code ignore), `Maggi 4 90 360` (qty-rate-total),
+  `90/kg`, `42 per kg`, `Maggi (4) 360`, `Bread 10 nos 180`, `1,740/-`, `Maggi 2-minute 4 pkt 360`,
+  `qty: 4 …` labels, `₹` sign, comma, ulta order.
 
 ## 4. 📷 Bill photo + 📄 PDF (v3.4)
 
@@ -182,5 +199,5 @@ red badge = is mahine kitni entries ka paisa baki hai.
 
 ## 7. Developer tests
 
-`tests/` folder me jsdom smoke tests hain (~244 canteen + ~27 loader checks) — app ke liye zaroori nahi, sirf
+`tests/` folder me jsdom smoke tests hain (~269 canteen + ~27 loader checks) — app ke liye zaroori nahi, sirf
 change ke baad verify karne ke liye. Details: `tests/README.md`.
