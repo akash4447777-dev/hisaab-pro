@@ -66,7 +66,7 @@ const iso = (d) => d.getFullYear() + "-" + String(d.getMonth() + 1).padStart(2, 
   ok(H().Store.data.canteen.entries.length > 0, "sample canteen entries load hui (" + H().Store.data.canteen.entries.length + ")");
   ok(H().Store.data.workers.length === 4, "workers safe (4 demo)");
   const verEl = $("[data-ver]");
-  ok(verEl && verEl.textContent === "3.6", "version badge 3.6", verEl && verEl.textContent);
+  ok(verEl && verEl.textContent === "3.7", "version badge 3.7", verEl && verEl.textContent);
   ok(root().innerHTML.indexOf("Canteen") >= 0, "dashboard par canteen card dikha");
   ok(root().innerHTML.indexOf("Saman aaya") >= 0, "dashboard canteen strip me 'Saman aaya'");
 
@@ -624,7 +624,8 @@ const iso = (d) => d.getFullYear() + "-" + String(d.getMonth() + 1).padStart(2, 
       return Promise.resolve({ data: { text: "Maggi 4 kg 360\nDoodh 2 ltr 116\n" } });
     }
   };
-  const ocrText = await H().canteen.ocrRun("data:image/png;base64,AAAA", () => {});
+  const ocrRes = await H().canteen.ocrRun("data:image/png;base64,AAAA", () => {});
+  const ocrText = ocrRes.text;
   ok(ocrCalls === 1 && ocrText.indexOf("Maggi 4 kg 360") >= 0, "ocrRun engine se text lata hai", ocrText);
   const ocrParsed = H().canteen.bulkParse(ocrText, todayIso);
   ok(ocrParsed.rows.length === 2 && ocrParsed.rows[0].amt === 360, "OCR text parse hokar 2 rows");
@@ -636,7 +637,7 @@ const iso = (d) => d.getFullYear() + "-" + String(d.getMonth() + 1).padStart(2, 
   H().canteen.renderModal(false);
   ok(!!$('[data-act="ctPhotoOcr"]'), "entry modal me photo ke saath OCR button");
   click('[data-act="ctPhotoOcr"]');
-  await wait(60);
+  await wait(2000);   /* enhance-fallback (1.5s) + recognize */
   ok(!!$("#ctBulkText") && $("#ctBulkText").value.indexOf("Maggi 4 kg 360") >= 0,
      "photo OCR \u2192 bulk modal me text aa gaya", $("#ctBulkText") && $("#ctBulkText").value.slice(0, 40));
   ok(H().UI.ct.bulk.photo === "data:image/png;base64,AAAA", "photo bulk draft me judi (entries me lagegi)");
@@ -645,6 +646,80 @@ const iso = (d) => d.getFullYear() + "-" + String(d.getMonth() + 1).padStart(2, 
   const ocrE = H().canteen.entries().filter((e) => e.photo === "data:image/png;base64,AAAA");
   ok(ocrE.length === 2, "OCR wali 2 entries photo ke saath save hui", ocrE.length);
   delete window.Tesseract;
+
+  section("Accuracy v3.7 \u2014 parser ke naye cases");
+  const BP7 = (t) => H().canteen.bulkParse(t, todayIso);
+  let z7 = BP7("\u092e\u0917\u094d\u0917\u0940 \u096a kg \u0969\u0966\u0966").rows[0];
+  ok(z7 && ar.qty === 4 && ar.amt === 360, "Devanagari digits (\u096a kg \u0969\u0966\u0966) \u2192 4 kg 360", z7);
+  ar = BP7("1. Maggi 4 kg 360").rows[0];
+  ok(z7 && ar.name === "Maggi" && ar.amt === 360, "sr-no '1.' hat gaya, naam Maggi", z7);
+  ar = BP7("\u2022 Doodh 30 ltr 1740").rows[0];
+  ok(z7 && ar.amt === 1740, "bullet line parse hui", z7);
+  ar = BP7("14/11/2026 Maggi 4 kg 360").rows[0];
+  ok(z7 && ar.date === "2026-11-14" && ar.amt === 360, "line ke saath judi date", z7);
+  ar = BP7("Maggi 4 kg").skipped[0];
+  ok(z7 && /price/.test(ar.why), "sirf qty, price nahi \u2192 skip (galat entry nahi)", z7);
+  ar = BP7("Maggi 4 kg 360 rupees").rows[0];
+  ok(z7 && ar.amt === 360, "'rupees' word ignore", z7);
+
+  section("Accuracy v3.7 \u2014 OCR clean + photo enhance");
+  const oc = H().canteen.ocrClean("Maggi 4 kg 36O\nDoodh 3O ltr l,740\n|| junk ||");
+  ok(oc.indexOf("Maggi 4 kg 360") >= 0, "OCR confusion O\u21920 (36O \u2192 360)", oc);
+  ok(oc.indexOf("Doodh 30 ltr 1,740") >= 0, "l\u21921, O\u21920 (l,740 \u2192 1,740)", oc);
+  const px = new Uint8ClampedArray([0, 0, 0, 255, 200, 100, 50, 255]);
+  H().canteen.enhancePixels(px);
+  ok(px[0] === 0 && px[4] === 255 && px[5] === 255 && px[6] === 255,
+     "grayscale + contrast stretch (kala kala, bright safed)", Array.from(px));
+  window.Tesseract = { recognize: (img, lang, opt) => Promise.resolve({ data: { text: "Maggi 4 kg 36O\nTotal 360", confidence: 91 } }) };
+  let ocrOut = null;
+  H().canteen.ocrRun("data:image/png;base64,AAAA", () => {}).then((o) => { ocrOut = o; });
+  await wait(1800);   /* enhance-fallback ke baad recognize */
+  ok(ocrOut && ocrOut.text.indexOf("Maggi 4 kg 360") >= 0 && ocrOut.conf === 91,
+     "ocrRun: enhance \u2192 recognize \u2192 clean text + confidence", ocrOut && ocrOut.text);
+
+  section("Accuracy v3.7 \u2014 rate-list cross-check + ek-click fix");
+  click('[data-act="ctBulk"]');
+  let ta7 = $("#ctBulkText");
+  ta7.value = "Doodh 30 ltr 3000";
+  ta7.dispatchEvent(new window.Event("input", { bubbles: true }));
+  await wait(30);
+  ok($("#ctBulkPrev").innerHTML.indexOf("fixRate") >= 0, "parse hua rate list se alag \u2192 \u26a0 button",
+     $("#ctBulkPrev").textContent.slice(0, 80));
+  ok($("#ctBulkPrev").textContent.indexOf("rate-list se alag") >= 0, "warning chip dikha");
+  click('[data-br="0"][data-f="fixRate"]');
+  await wait(20);
+  const fr7 = H().UI.ct.bulk.rows[0];
+  ok(fr7 && fr7.rate === 58 && fr7.amt === 1740, "\u26a0 button se list rate 58 laga, amount 1740", fr7);
+  ta7 = $("#ctBulkText");
+  ta7.value = "Maggi 4 kg 360\nMaggi 2 kg 180";
+  ta7.dispatchEvent(new window.Event("input", { bubbles: true }));
+  await wait(30);
+  ok($("#ctBulkPrev").textContent.indexOf("jaan-bujh") >= 0, "duplicate naam chip (Maggi \u00d72)");
+  click('[data-act="closeModal"]');
+
+  section("Advanced v3.7 \u2014 mahina WhatsApp + rate history + dashboard buttons");
+  let waUrl = null;
+  const roOpen = window.open;
+  window.open = (u) => { waUrl = u; return null; };
+  H().UI.ct.tab = "month"; H().render();
+  ok(!!$('[data-act="ctShareMonth"]'), "mahine tab par WhatsApp button");
+  click('[data-act="ctShareMonth"]');
+  window.open = roOpen;
+  ok(!!waUrl && waUrl.indexOf("https://wa.me/") === 0, "share wa.me par gaya", String(waUrl).slice(0, 40));
+  const waTxt = decodeURIComponent(String(waUrl).split("text=").pop());
+  ok(waTxt.indexOf("Canteen") >= 0 && waTxt.indexOf("NET") >= 0 && waTxt.indexOf("Saman item-wise") >= 0,
+     "share text: din-wise + item-wise + net", waTxt.slice(0, 50));
+  H().UI.ct.tab = "rates"; H().render();
+  ok(!!$('[data-act="ctRateHist"]'), "rate list par 🕘 history button");
+  click('[data-act="ctRateHist"]');
+  await wait(20);
+  ok(!!$(".modal") && $(".modal").textContent.indexOf("kharid history") >= 0, "history modal khula");
+  ok($(".modal").textContent.indexOf("Per-unit rate") >= 0, "history me per-unit rate column");
+  click('[data-act="closeModal"]');
+  H().go("dashboard");
+  ok(!!$('[data-act="ctBulk"]') && !!$('[data-act="ctPdfMonth"]'),
+     "dashboard canteen card par 📋 Paste + 📄 PDF quick buttons");
+  H().go("canteen");
 
   section("CSV export");
   let csvText = "";
