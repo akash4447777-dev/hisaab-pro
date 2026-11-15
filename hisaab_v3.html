@@ -845,7 +845,7 @@ const rRate = (n) => { const x = Math.max(0, num(n)); return x >= 1 ? r2(x) : Ma
 /* rate dikhane ka format: <₹1 ho to 0.075 jaisa khula number, warna moneyS */
 const rateS = (n) => { const x = num(n); if (x > 0 && x < 1) return "₹" + String(Math.round((x + Number.EPSILON) * 10000) / 10000); return moneyS(x); };
 const clamp = (n, lo, hi) => Math.min(hi, Math.max(lo, n));
-const APP_VERSION = "3.6";
+const APP_VERSION = "3.7";
 const esc = (s) => String(s == null ? "" : s).replace(/[&<>"']/g, (m) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[m]));
 
 const MONTHS = ["January","February","March","April","May","June","July","August","September","October","November","December"];
@@ -2106,7 +2106,7 @@ function viewSettings(){
 
     '<div style="text-align:center;font-size:11.5px;color:var(--muted);margin-top:18px;line-height:1.7">'+
       'Panel <b style="color:var(--ink)">v<span data-ver></span></b> · Auto-update enabled<br>'+
-      'v3.6 — <b style="color:var(--ink)">Photo OCR + paste accuracy</b>: bill photo se <b>🔍 OCR</b> text nikalta hai (browser me hi) aur seedha entries banta hai; paste parser ab <b>scoring</b> se chalta hai (item-code ignore, qty-rate-total, 90/kg, “42 per kg”, (4), nos, 1,740/-), <b>Total line verify</b> hoti hai (✅/⚠ chip), paid/baki lines info me; preview table <b>editable</b> — galat cell save se pehle sudhar lo<br>'+'v3.5 — <b style="color:var(--ink)">📋 Paste se entries</b>: Word/WhatsApp/parche ka text ek saath paste karo — har item ki <b>alag entry</b> ban jati hai (line format: <b>naam qty unit price</b>, @ ya x se per-unit rate, date wali line se date); preview ke saath, undo bhi hai<br>'+'v3.4 — <b style="color:var(--ink)">Canteen photo + PDF</b>: entry ke saath bill/parche ki <b>📷 photo</b> lagao (ledger me tap karke badi khulti hai); din aur mahine ka ledger <b>📄 PDF</b> download; item ka <b>naam likhte hi unit</b> apne aap (doodh→ltr, kesar/dhaniya→gram, anda→dozen, bread→pcs)<br>'+'v3.3 — <b style="color:var(--ink)">Gram/line-total smart default</b>: nayi item line seedha <b>“₹ poori line”</b> par khulti hai (600 gram = ₹45 → total ₹45, ₹0.075/gram apne aap); rate list me rate milte hi naam likhte hi line <b>“₹ / unit”</b> par palat kar rate bhar leti hai<br>'+'v3.2 — <b style="color:var(--ink)">Canteen price-mode fix</b>: har item line par chunaav — <b>₹ / unit</b> ya <b>₹ poori line</b>. 4 kg Maggi = ₹360 likho to total ₹360 hi rahega, rate apne aap ₹90/kg<br>'+
+      'v3.7 — <b style="color:var(--ink)">Accuracy pro</b>: OCR se pehle photo <b>auto-enhance</b> (grayscale + contrast + upscale) + <b>confidence %</b> warning; OCR text me O→0 / l→1 fix; paste parser me Devanagari digits, sr-no/bullets, line ke saath date, sirf-qty skip; <b>rate-list cross-check</b> — parse hua rate list se 35%+ alag ho to <b>⚠ ek-click fix</b>; duplicate-lines chip; <b>🕘 item kharid history</b>, <b>✆ WhatsApp mahina</b>, dashboard par 📋/📄 quick buttons<br>'+'v3.6 — <b style="color:var(--ink)">Photo OCR + paste accuracy</b>: bill photo se <b>🔍 OCR</b> text nikalta hai (browser me hi) aur seedha entries banta hai; paste parser ab <b>scoring</b> se chalta hai (item-code ignore, qty-rate-total, 90/kg, “42 per kg”, (4), nos, 1,740/-), <b>Total line verify</b> hoti hai (✅/⚠ chip), paid/baki lines info me; preview table <b>editable</b> — galat cell save se pehle sudhar lo<br>'+'v3.5 — <b style="color:var(--ink)">📋 Paste se entries</b>: Word/WhatsApp/parche ka text ek saath paste karo — har item ki <b>alag entry</b> ban jati hai (line format: <b>naam qty unit price</b>, @ ya x se per-unit rate, date wali line se date); preview ke saath, undo bhi hai<br>'+'v3.4 — <b style="color:var(--ink)">Canteen photo + PDF</b>: entry ke saath bill/parche ki <b>📷 photo</b> lagao (ledger me tap karke badi khulti hai); din aur mahine ka ledger <b>📄 PDF</b> download; item ka <b>naam likhte hi unit</b> apne aap (doodh→ltr, kesar/dhaniya→gram, anda→dozen, bread→pcs)<br>'+'v3.3 — <b style="color:var(--ink)">Gram/line-total smart default</b>: nayi item line seedha <b>“₹ poori line”</b> par khulti hai (600 gram = ₹45 → total ₹45, ₹0.075/gram apne aap); rate list me rate milte hi naam likhte hi line <b>“₹ / unit”</b> par palat kar rate bhar leti hai<br>'+'v3.2 — <b style="color:var(--ink)">Canteen price-mode fix</b>: har item line par chunaav — <b>₹ / unit</b> ya <b>₹ poori line</b>. 4 kg Maggi = ₹360 likho to total ₹360 hi rahega, rate apne aap ₹90/kg<br>'+
       'v3.1 — <b style="color:var(--ink)">Canteen module</b>: saman entry (rate-wise ya ek-saath total), din &amp; mahine ka ledger, rate list, udhaar/baki, poori activity log'+
     '</div>'
   );
@@ -3905,6 +3905,7 @@ function viewCanteen() {
         (u.tab === "day" ? '<button class="btn sm" data-act="ctPdfDay">📄 PDF din</button>' : "") +
         (u.tab === "month" ? '<button class="btn sm" data-act="ctPrintMonth">🖨 Print mahina</button>' : "") +
         (u.tab === "month" ? '<button class="btn sm" data-act="ctPdfMonth">📄 PDF mahina</button>' : "") +
+        (u.tab === "month" ? '<button class="btn sm" data-act="ctShareMonth">✆ WhatsApp mahina</button>' : "") +
         '<button class="btn sm" data-act="ctBulk" title="Word/WhatsApp se text ek saath paste karo — har item ki alag entry">📋 Paste se entries</button>' +
         '<button class="btn sm" data-act="ctCsv">⤓ CSV</button>' +
         '<button class="btn sm primary" data-act="ctAdd">＋ Entry add karo</button>' +
@@ -4311,6 +4312,7 @@ function ctRatesView() {
       '<td class="num muted">' + (agg ? moneyS(agg.amt) : "—") + "</td>" +
       '<td class="num muted">' + (agg ? agg.n : 0) + "</td>" +
       '<td><div class="row-actions">' +
+        '<button class="btn xs" data-act="ctRateHist" data-id="' + r.id + '" title="Kharid history dekhe">🕘</button>' +
         '<button class="btn xs" data-act="ctRateEdit" data-id="' + r.id + '" title="Edit">✎</button>' +
         '<button class="btn xs" data-act="ctRateDel" data-id="' + r.id + '" title="Delete" style="color:var(--bad)">✕</button>' +
       "</div></td></tr>";
@@ -5135,7 +5137,9 @@ function ctDashCard(y, m) {
         (td.count ? " · aaj " + td.count + " entries (" + money0(td.purchase) + " saman)" : "") + "</div></div>" +
       '<div class="toolbar">' + deltaChip(moneyDelta(t.purchase, pt.purchase)) +
         sparkline(hist.map((h) => h.t.purchase), 70, 22, "#f59e0b") +
-        '<button class="btn sm" data-act="ctAdd">＋ Entry</button>' +
+        '<button class="btn sm" data-act="ctAdd" title="Nayi entry">＋ Entry</button>' +
+        '<button class="btn sm" data-act="ctBulk" title="Paste/OCR se ek saath entries">📋 Paste</button>' +
+        '<button class="btn sm" data-act="ctPdfMonth" title="Mahine ka PDF">📄 PDF</button>' +
         '<button class="btn sm primary" data-act="gotoCanteen">Canteen kholo →</button></div></div>' +
     '<div class="strip">' +
       '<div><small>Saman aaya</small><b style="color:var(--warn)">' + ctSgn(-t.purchase) + "</b>" +
@@ -5459,7 +5463,27 @@ function ctParseBulk(text, baseDate) {
   String(text == null ? "" : text).split(/\r?\n/).forEach((raw, idx) => {
     let t = String(raw).trim();
     if (!t) return;
-    t = t.replace(/₹|rs\.?|rp\.?/gi, "");
+    /* Devanagari digits → ASCII (४५ → 45) — Hindi parche/OCR ke liye */
+    t = t.replace(/[०-९]/g, (d) => String("०१२३४५६७८९".indexOf(d)));
+    t = t.replace(/^[•\-*▪›>]+\s*/, "");                       /* bullet lines */
+    t = t.replace(/₹|rs\.?|rp\.?|rupees?/gi, "");
+    /* line ke saath judi date: "14/11/2026 Maggi 4 kg 360" */
+    let lineDate = "";
+    const idm = t.match(/^(\d{1,2}[\/.]\d{1,2}(?:[\/.]\d{2,4})?)[\s,]+(?=\D)/);
+    if (idm) {
+      const pp = idm[1].split(/[\/.]/).map(Number);
+      let dd = pp[0], mm = pp[1], yy = pp[2];
+      if (yy == null) { yy = new Date().getFullYear(); }
+      if (mm > 12 && dd <= 12) { const sw = dd; dd = mm; mm = sw; }
+      if (yy < 100) yy += 2000;
+      if (mm >= 1 && mm <= 12 && dd >= 1 && dd <= 31) {
+        lineDate = yy + "-" + String(mm).padStart(2, "0") + "-" + String(dd).padStart(2, "0");
+        t = t.slice(idm[0].length).trim();
+      }
+    }
+    /* "1." / "2)" sr-no hatan */
+    const ordm = t.match(/^(\d{1,3}[.)])\s+(?=\S)/);
+    if (ordm && t.split(/\s+/).length > 2) t = t.slice(ordm[1].length).trim();
     let prev = "";
     while (prev !== t) { prev = t; t = t.replace(/(\d),(\d)/g, "$1$2"); }   /* 1,740 → 1740 */
     const dm = t.match(/^(\d{4})-(\d{2})-(\d{2})$/);
@@ -5490,7 +5514,13 @@ function ctParseBulk(text, baseDate) {
       w = w.replace(/[-/]+$/, "");                      /* "360/-" → "360" */
       if (/^(qty|rate|amt|amount|price|no|sr|srno|sno|#|item|code)[:.]?$/.test(w)) return;
       const wu = w.replace(/\.$/, "");
-      if (CT_BULK_UNITS[wu]) { unit = CT_BULK_UNITS[wu]; perMode = false; return; }
+      if (CT_BULK_UNITS[wu]) {
+        /* pichhla number qty thi (jaise "4 kg") — price nahi */
+        const arr = V.length ? V : P;
+        const ln = arr[arr.length - 1];
+        if (ln && !ln.rate && !ln.eq) ln.q = true;
+        unit = CT_BULK_UNITS[wu]; perMode = false; return;
+      }
       if (w === "x" || w === "×" || w === "@") { nextRate = true; return; }
       if (w === "per") { if (V.length) V[V.length - 1].rate = true; else if (P.length) P[P.length - 1].rate = true; perMode = true; return; }
       const sm = w.match(/^(\d+(?:\.\d+)?)\/(kg|gram|gm|g|ltr|l|ml|pcs|pc|pkt|dozen|unit)$/);  /* 90/kg */
@@ -5505,7 +5535,7 @@ function ctParseBulk(text, baseDate) {
         return;
       }
       const gm = w.match(CT_BULK_GLUE);
-      if (gm) { (seenName ? V : P).push({ v: Number(gm[1]), rate: false, eq: false }); if (!unit) unit = CT_BULK_UNITS[gm[2]] || ""; return; }
+      if (gm) { (seenName ? V : P).push({ v: Number(gm[1]), rate: false, eq: false, q: true }); if (!unit) unit = CT_BULK_UNITS[gm[2]] || ""; return; }
       const nm = w.match(/^=?(\d+(?:\.\d+)?)$/);
       if (nm) { (seenName ? V : P).push({ v: Number(nm[1]), rate: nextRate, eq: w[0] === "=" }); nextRate = false; return; }
       nextRate = false; perMode = false;
@@ -5515,6 +5545,10 @@ function ctParseBulk(text, baseDate) {
     if (!name) { skipped.push({ line: idx + 1, raw: raw, why: "item ka naam nahi mila" }); return; }
     const cleanV = V.filter((n) => !n.eq);
     if (!P.length && !cleanV.length && !V.some((n) => n.rate)) { skipped.push({ line: idx + 1, raw: raw, why: "koi number (qty/price) nahi mila" }); return; }
+    /* sirf qty likhi hai, price nahi — galat entry banane se behtar skip */
+    if (!P.length && !V.some((n) => n.rate) && cleanV.length && cleanV.every((n) => n.q)) {
+      skipped.push({ line: idx + 1, raw: raw, why: "price nahi mila — sirf qty/unit likhi hai" }); return;
+    }
     /* ---- scoring: kaun sa interpretation sahi hai ---- */
     const cands = [];
     const rateFlag = V.find((n) => n.rate);
@@ -5548,10 +5582,15 @@ function ctParseBulk(text, baseDate) {
     }
     const it = normCtItem({ name: name, qty: c.qty, unit: unit2, rate: c.mode === "unit" ? c.rate : 0,
       lineTotal: c.mode === "line" ? c.lineTotal : 0, priceMode: c.mode });
-    rows.push({
+    const row = {
       name: it.name, qty: it.qty, unit: it.unit, rate: it.rate, lineTotal: it.lineTotal,
-      priceMode: it.priceMode, amt: ctItemAmt(it), date: curDate, raw: raw
-    });
+      priceMode: it.priceMode, amt: ctItemAmt(it), date: lineDate || curDate, raw: raw
+    };
+    /* ACCURACY: rate list se cross-check — parsed per-unit rate list se 35%+ alag ho to flag */
+    const lr = ctRateFor(name);
+    const pu = ctItemUnitRate(it);
+    if (lr && lr.rate > 0 && pu > 0 && Math.abs(pu - lr.rate) / lr.rate > 0.35) row.warnRate = lr.rate;
+    rows.push(row);
   });
   return { rows: rows, skipped: skipped, verify: verify, paid: paidHint };
 }
@@ -5585,17 +5624,25 @@ function ctBulkPrevHTML(parsed, b) {
           '<option value="line"' + (r.priceMode === "line" ? " selected" : "") + ">₹ poori line</option>" +
           '<option value="unit"' + (r.priceMode === "unit" ? " selected" : "") + ">₹ / " + esc(r.unit) + "</option></select></td>" +
         '<td><input class="inp" type="number" min="0" step="0.0001" style="width:86px" data-br="' + i2 + '" data-f="price" value="' +
-          (r.priceMode === "line" ? (num(r.lineTotal) || "") : (num(r.rate) || "")) + '"></td>' +
+          (r.priceMode === "line" ? (num(r.lineTotal) || "") : (num(r.rate) || "")) + '">' +
+          (r.warnRate ? '<button class="btn xs" style="margin-top:4px;color:var(--warn)" data-br="' + i2 + '" data-f="fixRate" ' +
+            'title="Parse hua rate rate-list se 35%+ alag hai — list wala rate (' + rateS(r.warnRate) + "/" + esc(r.unit) + ') laga kar amount theek karo">⚠ list ' + rateS(r.warnRate) + "</button>" : "") + "</td>" +
         '<td class="num strong" data-bamt="' + i2 + '">' + moneyS(r.amt) + "</td>" +
         '<td class="muted" style="white-space:nowrap">' + esc(ctShort(r.date)) + (r.date !== b.date ? " ✱" : "") + "</td></tr>").join("") +
       "</tbody></table></div>"
     : "";
   const info = parsed.skipped.filter((x) => x.info);
   const bad = parsed.skipped.filter((x) => !x.info);
+  const warnN = rows.filter((r) => r.warnRate).length;
+  const dupNames = {};
+  rows.forEach((r) => { const k = String(r.name).toLowerCase(); dupNames[k] = (dupNames[k] || 0) + 1; });
+  const dups = Object.keys(dupNames).filter((k) => dupNames[k] > 1);
   const chips =
     '<div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-top:10px">' +
       '<span class="tag warn">' + rows.length + " item line" + (rows.length === 1 ? "" : "s") + "</span>" +
       '<span class="tag grey" id="ctBulkTot">total ' + moneyS(tot) + "</span>" +
+      (warnN ? '<span class="tag bad">⚠ ' + warnN + " line ka rate rate-list se alag — ⚠ button se ek click me theek karo</span>" : "") +
+      (dups.length ? '<span class="tag grey">ℹ ' + dups.slice(0, 3).map((k) => "“" + esc(k) + "” ×" + dupNames[k]).join(", ") + " — jaan-bujh kar do lines?</span>" : "") +
       (parsed.verify != null
         ? (Math.abs(parsed.verify - tot) < 0.51
           ? '<span class="tag ok">✅ paste TOTAL ' + moneyS(parsed.verify) + " = preview total — hisaab mila</span>"
@@ -5619,7 +5666,7 @@ function ctRenderBulk() {
   const b = ctUI().bulk;
   if (!b) return;
   const parsed = ctParseBulk(b.text, b.date);
-  b.rows = parsed.rows; b.verify = parsed.verify; b.paid = parsed.paid;
+  b.rows = parsed.rows; b.verify = parsed.verify; b.paid = parsed.paid; b.skipped = parsed.skipped;
   openModal(
     '<div class="modal" style="max-width:920px">' +
       '<div class="modal-h"><div><h3>📋 Paste / OCR se entries (bulk)</h3>' +
@@ -5663,7 +5710,7 @@ function ctBulkPatch() {
   const b = ctUI().bulk;
   if (!b) return;
   const parsed = ctParseBulk(b.text, b.date);
-  b.rows = parsed.rows; b.verify = parsed.verify; b.paid = parsed.paid;
+  b.rows = parsed.rows; b.verify = parsed.verify; b.paid = parsed.paid; b.skipped = parsed.skipped;
   const pv = document.getElementById("ctBulkPrev");
   if (pv) pv.innerHTML = ctBulkPrevHTML(parsed, b);
   ctBulkPatchBtn();
@@ -5722,6 +5769,33 @@ function ctBulkRowEdit(el) {
   }
   ctBulkPatchBtn();
 }
+/* preview dobara render (b.rows se — text parse kiye bina, edits preserve) */
+function ctBulkPrevRender() {
+  const b = ctUI().bulk;
+  if (!b) return;
+  const pv = document.getElementById("ctBulkPrev");
+  if (pv) pv.innerHTML = ctBulkPrevHTML({ rows: b.rows || [], skipped: b.skipped || [], verify: b.verify, paid: b.paid }, b);
+  ctBulkPatchBtn();
+}
+/* ⚠ list button: rate-list wala per-unit rate laga kar row theek karo */
+function ctBulkRowFix(el) {
+  const b = ctUI().bulk;
+  if (!b || !b.rows) return;
+  const r = b.rows[Number(el.dataset.br)];
+  if (!r || !r.warnRate) return;
+  r.priceMode = "unit";
+  r.rate = rRate(r.warnRate);
+  r.lineTotal = r2(num(r.qty) * r.rate);
+  const it = normCtItem(r);
+  r.rate = it.rate; r.lineTotal = it.lineTotal; r.priceMode = it.priceMode; r.amt = ctItemAmt(it);
+  delete r.warnRate;
+  ctBulkPrevRender();
+  toast("Rate list wala rate laga diya — amount check karo", "ok");
+}
+document.addEventListener("click", (e) => {
+  const el = e.target && e.target.closest ? e.target.closest('[data-br][data-f="fixRate"]') : null;
+  if (el) { e.preventDefault(); ctBulkRowFix(el); }
+});
 /* ---- OCR (v3.6): bill photo → text → rows. Browser me hi, internet se engine aata hai ---- */
 const CT_OCR_CDN = "https://cdn.jsdelivr.net/npm/tesseract.js@5.1.1/dist/tesseract.min.js";
 function ctEnsureTesseract() {
@@ -5739,20 +5813,83 @@ function ctEnsureTesseract() {
     setTimeout(() => { if (!done) rej(new Error("timeout")); }, 25000);
   });
 }
-function ctRunOcr(dataUrl, onStatus) {
-  if (onStatus) onStatus("engine load ho raha hai…", 5);
-  return ctEnsureTesseract().then((T) => {
-    if (onStatus) onStatus("photo padha ja raha hai…", 20);
-    return T.recognize(dataUrl, "eng", {
-      logger: (m) => {
-        if (onStatus && m && m.status) onStatus(m.status, Math.round((m.progress || 0) * 100));
+/* OCR text ki safai: symbols hatan + number-jaise token me OCR confusions (O→0, l/I→1) */
+function ctOcrClean(txt) {
+  return String(txt == null ? "" : txt).split(/\r?\n/).map((l) => {
+    let s = l.replace(/[|<>{}~^`_]/g, "").replace(/\s+/g, " ").trim();
+    s = s.split(/\s+/).map((w) => {
+      if (/^[0-9OolI.,\/\-x×@()%]+$/.test(w) && (w.match(/\d/g) || []).length >= 1 && /[OolI]/.test(w)) {
+        return w.replace(/O/g, "0").replace(/o/g, "0").replace(/l/g, "1").replace(/I/g, "1");
       }
+      return w;
+    }).join(" ");
+    return s.replace(/[०-९]/g, (d) => String("०१२३४५६७८९".indexOf(d)));
+  }).filter((l) => l.length > 1).join("\n");
+}
+/* photo ko OCR-friendly banana: grayscale + contrast stretch (pure pixel fn — testable) */
+function ctEnhancePixels(px) {
+  const n = px.length;
+  let mn = 255, mx = 0;
+  for (let i = 0; i < n; i += 4) {
+    const g = (px[i] * 0.299 + px[i + 1] * 0.587 + px[i + 2] * 0.114) | 0;
+    px[i] = px[i + 1] = px[i + 2] = g;
+    if (g < mn) mn = g;
+    if (g > mx) mx = g;
+  }
+  const span = Math.max(24, mx - mn);
+  const k = 255 / span;
+  for (let i = 0; i < n; i += 4) {
+    let v = (px[i] - mn) * k;
+    v = v < 0 ? 0 : v > 255 ? 255 : v;
+    /* halka sa S-curve: text ke kinare saaf */
+    v = v < 128 ? v * v / 128 : 255 - (255 - v) * (255 - v) / 128;
+    px[i] = px[i + 1] = px[i + 2] = v | 0;
+  }
+  return px;
+}
+function ctEnhanceForOcr(dataUrl) {
+  return new Promise((res) => {
+    let settled = false;
+    const done = (v) => { if (!settled) { settled = true; res(v); } };
+    setTimeout(() => done(dataUrl), 1500);   /* environment me image load na ho to original photo */
+    const img = new Image();
+    img.onload = () => {
+      if (settled) return;
+      try {
+        const scale = Math.min(2.5, Math.max(1, 1500 / Math.max(1, img.width)));
+        const w = Math.max(1, Math.round(img.width * scale));
+        const h = Math.max(1, Math.round(img.height * scale));
+        const cv = document.createElement("canvas");
+        cv.width = w; cv.height = h;
+        const cx = cv.getContext("2d");
+        cx.drawImage(img, 0, 0, w, h);
+        const id = cx.getImageData(0, 0, w, h);
+        ctEnhancePixels(id.data);
+        cx.putImageData(id, 0, 0);
+        res(cv.toDataURL("image/png"));
+      } catch (e) { res(dataUrl); }
+    };
+    img.onerror = () => res(dataUrl);
+    img.src = dataUrl;
+  });
+}
+function ctRunOcr(dataUrl, onStatus) {
+  if (onStatus) onStatus("photo saaf ho rahi hai…", 8);
+  return ctEnhanceForOcr(dataUrl).then((good) => {
+    if (onStatus) onStatus("engine load ho raha hai…", 12);
+    return ctEnsureTesseract().then((T) => {
+      if (onStatus) onStatus("photo padha ja raha hai…", 25);
+      return T.recognize(good, "eng", {
+        logger: (m) => {
+          if (onStatus && m && m.status) onStatus(m.status, 25 + Math.round((m.progress || 0) * 70));
+        },
+        tessedit_pageseg_mode: 6
+      });
     });
   }).then((res) => {
     const txt = (res && res.data && res.data.text) || "";
-    /* OCR kachra saaf: khaali lines, ajeeb symbols */
-    return txt.split(/\r?\n/).map((l) => l.replace(/[|<>{}~^`]/g, "").replace(/\s+/g, " ").trim())
-      .filter((l) => l.length > 1).join("\n");
+    const conf = res && res.data && res.data.confidence;
+    return { text: ctOcrClean(txt), conf: conf == null ? null : Math.round(conf) };
   });
 }
 function ctOcrStatus(txt) {
@@ -5767,14 +5904,20 @@ function ctOcrFromFile(input) {
     b.photo = url;
     ctOcrStatus("🔍 OCR chal raha hai… 0%");
     ctRunOcr(url, (st, pc) => ctOcrStatus("🔍 OCR: " + st + " " + pc + "%"))
-      .then((text) => {
+      .then((o) => {
+        const text = o.text;
         if (!text.trim()) { ctOcrStatus("OCR me kuch nahi padha — photo saaf roshni me lo"); return toast("Photo se text nahi padha — roshni me saaf photo lo", "bad"); }
         b.text = (b.text ? b.text + "\n" : "") + text;
         const ta = document.getElementById("ctBulkText");
         if (ta) ta.value = b.text;
         ctBulkPatch();
-        ctOcrStatus("✅ OCR text aa gaya — preview me check/sudharo");
-        toast("OCR ho gaya — preview me hisaab mila ke save karo", "ok");
+        if (o.conf != null && o.conf < 55) {
+          ctOcrStatus("⚠ OCR confidence " + o.conf + "% — preview me har line check karo");
+          toast("OCR confidence kam hai (" + o.conf + "%) — preview me cells check/sudhar lo", "bad");
+        } else {
+          ctOcrStatus("✅ OCR text aa gaya" + (o.conf != null ? " (confidence " + o.conf + "%)" : "") + " — preview me check/sudharo");
+          toast("OCR ho gaya — preview me hisaab mila ke save karo", "ok");
+        }
       })
       .catch(() => {
         ctOcrStatus("OCR nahi chala (internet/engine) — text khud paste karo");
@@ -5854,6 +5997,76 @@ function ctShareDay() {
   if (t.balance) L.push("Baki / udhaar: " + money(t.balance));
   window.open("https://wa.me/?text=" + encodeURIComponent(L.join("\n")), "_blank");
   toast("WhatsApp khol rahe hain…", "ok");
+}
+function ctShareMonth() {
+  const y = UI.year, m = UI.month;
+  const list = ctInMonth(y, m);
+  const t = ctTotals(list);
+  const s = Store.data.settings;
+  const L = [];
+  L.push("*" + (s.shopName || "Hisaab Pro") + " — Canteen " + monthLabel(y, m) + "*");
+  const days = ctMonthDays(y, m).filter((d) => d.list.length);
+  L.push(days.length + " din · " + t.count + " entries");
+  L.push("");
+  days.forEach((d) => {
+    L.push("• " + ctShort(d.iso) + " " + ctDayName(d.iso).slice(0, 3) +
+      ": saman −" + money(d.t.purchase) + " · bikri +" + money(d.t.sale) +
+      (d.t.expense ? " · kharcha −" + money(d.t.expense) : "") +
+      " · net " + (d.t.net < 0 ? "−" : "") + money(Math.abs(d.t.net)));
+  });
+  const items = ctItemAgg(list).slice(0, 6);
+  if (items.length) {
+    L.push("");
+    L.push("*Saman item-wise:*");
+    items.forEach((i) => L.push("   " + i.name + " — " + num(i.qty) + " " + i.unit + " · " + money(i.amt) +
+      " (" + rateS(i.avgRate) + "/" + i.unit + ")"));
+  }
+  L.push("");
+  L.push("Saman: −" + money(t.purchase));
+  L.push("Bikri: +" + money(t.sale));
+  L.push("Kharcha: −" + money(t.expense));
+  L.push("*MAHINE KA NET: " + (t.net < 0 ? "−" : "") + money(Math.abs(t.net)) + "*");
+  L.push("Paid: " + money(t.paid) + (t.balance ? " · Baki: " + money(t.balance) : " · koi baki nahi"));
+  window.open("https://wa.me/?text=" + encodeURIComponent(L.join("\n")), "_blank");
+  toast("WhatsApp khol rahe hain…", "ok");
+}
+/* rate list → item ki poori kharid history (v3.7) */
+function ctRateHist(id) {
+  const r = ct().rates.find((x) => x.id === id);
+  if (!r) return;
+  const nm = String(r.name).toLowerCase();
+  const hist = [];
+  ctAll().forEach((e) => (e.items || []).forEach((i) => {
+    if (String(i.name || "").toLowerCase() === nm) hist.push({ e: e, i: i });
+  }));
+  hist.sort((a, b) => (a.e.date === b.e.date ? num(b.e.createdAt) - num(a.e.createdAt) : (a.e.date < b.e.date ? 1 : -1)));
+  const agg = ctItemAgg(ctAll()).find((x) => x.name.toLowerCase() === nm);
+  const rows = hist.slice(0, 12).map((h) =>
+    "<tr><td class=\"muted\" style=\"white-space:nowrap\">" + esc(ctShort(h.e.date)) + "</td>" +
+    "<td>" + esc(h.e.party || "—") + "</td>" +
+    '<td class="num">' + num(h.i.qty) + " " + esc(h.i.unit || "kg") + "</td>" +
+    "<td>" + (h.i.priceMode === "line" ? '<span class="ct-modeTag tot">poori line</span>' : '<span class="ct-modeTag">per unit</span>') + "</td>" +
+    '<td class="num strong">' + rateS(ctItemUnitRate(h.i)) + "</td>" +
+    '<td class="num">' + moneyS(ctItemAmt(h.i)) + "</td></tr>").join("");
+  openModal(
+    '<div class="modal" style="max-width:760px">' +
+      '<div class="modal-h"><div><h3>🕘 ' + esc(r.name) + " — kharid history</h3>" +
+        "<p>" + esc(r.unit) + " · default rate " + (r.rate ? rateS(r.rate) : "—") +
+        (agg ? " · ab tak " + num(agg.qty) + " " + esc(agg.unit) + " · " + moneyS(agg.amt) + " · " + agg.n + " lines" : "") + "</p></div>" +
+        '<button class="x" data-act="closeModal">✕</button></div>' +
+      '<div class="modal-b">' +
+        (hist.length
+          ? '<div class="twrap"><table class="tbl"><thead><tr><th>Date</th><th>Party</th><th class="num">Qty</th><th>Mode</th><th class="num">Per-unit rate</th><th class="num">Amount</th></tr></thead><tbody>' +
+            rows + "</tbody></table></div>" +
+            (agg ? '<div class="ct-note" style="margin-top:10px">Avg rate ab tak: <b>' + rateS(agg.avgRate) + "/" + esc(agg.unit) +
+              "</b> · aakhri: <b>" + rateS(agg.lastRate) + "</b> (" + esc(ctShort(agg.lastDate)) + ") — isi se OCR/paste ka ⚠ cross-check hota hai</div>" : "")
+          : '<div class="empty"><div class="big">🕘</div><h4>Abhi koi kharid nahi</h4><p>Is item ki entry save karoge to history yahan dikhegi.</p></div>') +
+      "</div>" +
+      '<div class="modal-f"><div class="left">' +
+        '<button class="btn" data-act="ctRateEdit" data-id="' + r.id + '">✎ Rate badlo</button></div>' +
+        '<button class="btn primary" data-act="closeModal">Band karo</button></div>' +
+    "</div>"
+  );
 }
 
 /* ------------------------------ 16. EVENTS ------------------------------ */
@@ -6063,6 +6276,7 @@ document.addEventListener("click", (e) => {
     }
     case "ctRateAdd": ctRateAdd(); break;
     case "ctRateEdit": ctRateEditModal(btn.dataset.id); break;
+    case "ctRateHist": ctRateHist(btn.dataset.id); break;
     case "ctRateSave": ctRateSave(btn.dataset.id); break;
     case "ctRateDel": ctRateDel(btn.dataset.id); break;
     case "ctCsv": ctCsv(); break;
@@ -6078,14 +6292,18 @@ document.addEventListener("click", (e) => {
       if (!d || !d.photo) break;
       toast("🔍 OCR chal raha hai — photo padhi ja rahi hai…");
       ctRunOcr(d.photo, () => {})
-        .then((text) => {
+        .then((o) => {
+          const text = o.text;
           if (!text.trim()) return toast("Photo se text nahi padha — roshni me saaf photo lo", "bad");
           ctUI().bulk = {
             text: text, kind: d.kind === "sale" ? "sale" : (d.kind === "expense" ? "expense" : "purchase"),
             date: d.date, party: d.party, split: true, photo: d.photo, rows: null
           };
           ctRenderBulk();
-          toast("OCR text aa gaya — preview me check karke save karo", "ok");
+          toast(o.conf != null && o.conf < 55
+            ? "OCR confidence kam (" + o.conf + "%) — preview me har cell check karo"
+            : "OCR text aa gaya" + (o.conf != null ? " (confidence " + o.conf + "%)" : "") + " — preview me check karke save karo", 
+            o.conf != null && o.conf < 55 ? "bad" : "ok");
         })
         .catch(() => toast("OCR ke liye internet chahiye — photo lagi rahegi, text paste karke bhi chal sakte ho", "bad"));
       break;
@@ -6112,6 +6330,7 @@ document.addEventListener("click", (e) => {
     }
     case "ctPrintMonth": ctPrintMonth(); break;
     case "ctShareDay": ctShareDay(); break;
+    case "ctShareMonth": ctShareMonth(); break;
     case "ctRestore": ctRestoreLog(btn.dataset.log); break;
     case "ctWipe": ctWipe(); break;
 
@@ -6327,7 +6546,8 @@ window.Hisaab = { Store, calc, monthMeta, PdfDoc, inWords, UI, render, go, Cloud
              dayLedger: ctDayLedger, monthLedger: ctMonthLedger, openModal: openCtModal, save: ctSave,
              csv: ctCsv, printDay: ctPrintDay, printMonth: ctPrintMonth, blank: blankCanteen,
              pdfDay: ctPdfDay, pdfMonth: ctPdfMonth, renderModal: ctRenderModal, photoBox: ctPhotoBoxHTML,
-             bulkParse: ctParseBulk, bulkOpen: ctBulkOpen, bulkSave: ctBulkSave, ocrRun: ctRunOcr } };
+             bulkParse: ctParseBulk, bulkOpen: ctBulkOpen, bulkSave: ctBulkSave, ocrRun: ctRunOcr,
+             ocrClean: ctOcrClean, enhancePixels: ctEnhancePixels, shareMonth: ctShareMonth } };
 })();
 </script>
 </body>
