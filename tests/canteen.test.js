@@ -66,7 +66,7 @@ const iso = (d) => d.getFullYear() + "-" + String(d.getMonth() + 1).padStart(2, 
   ok(H().Store.data.canteen.entries.length > 0, "sample canteen entries load hui (" + H().Store.data.canteen.entries.length + ")");
   ok(H().Store.data.workers.length === 4, "workers safe (4 demo)");
   const verEl = $("[data-ver]");
-  ok(verEl && verEl.textContent === "3.9", "version badge 3.9", verEl && verEl.textContent);
+  ok(verEl && verEl.textContent === "3.10", "version badge 3.10", verEl && verEl.textContent);
   ok(root().innerHTML.indexOf("Canteen") >= 0, "dashboard par canteen card dikha");
   ok(root().innerHTML.indexOf("Saman aaya") >= 0, "dashboard canteen strip me 'Saman aaya'");
 
@@ -834,6 +834,35 @@ const iso = (d) => d.getFullYear() + "-" + String(d.getMonth() + 1).padStart(2, 
   H().UI.ct.tab = "month"; H().render();
   ok(!!$('[data-act="ctTplPick"]'), "mahina tab par bhi 🎨 button");
   H().canteen.setTpl("neela");           /* default restore — aage wale tests safe */
+
+  section("v3.10 — clean PDF (koi ? / Σ nahi) + naam sirf HISAAB");
+  /* Σ line-total wala case: line-price entry push karke PDF check */
+  const cd10 = H().Store.data.canteen;
+  const ent10 = { id: "t10sigma", date: todayIso, kind: "purchase", mode: "itemized", paid: 250, createdAt: Date.now(),
+    items: [{ name: "TEST AATA", qty: 5, unit: "kg", priceMode: "line", rate: 0, amount: 250 }] };
+  cd10.entries.push(ent10);
+  const d10 = H().canteen.pdfDayStr(todayIso).str;
+  ok(d10.indexOf("\u03a3") < 0, "PDF me Σ symbol kahin nahi");
+  ok(d10.indexOf("(?") < 0 && d10.indexOf("? line-total") < 0, "PDF me '?' garbage nahi (Σ line-total fix)");
+  ok(d10.indexOf("TEST AATA") >= 0 && d10.indexOf("TEST AATA (") < 0, "item naam saaf — koi marker nahi");
+  cd10.entries.splice(cd10.entries.indexOf(ent10), 1);
+  ok(H().canteen.pdfDayStr(todayIso).str.indexOf("TEST AATA") < 0, "test entry wapas hat gayi");
+
+  /* panel ka naam sirf HISAAB */
+  ok(String(window.document.title).indexOf("Hisaab Pro") < 0, "title me 'Hisaab Pro' nahi", window.document.title);
+  const h110 = window.document.querySelector("h1");
+  ok(h110 && h110.textContent.trim() === "Hisaab", "sidebar brand sirf 'Hisaab'", h110 && h110.textContent);
+  ok(d10.indexOf("HISAAB PRO") < 0 && d10.indexOf("CANTEEN LEDGER") >= 0, "PDF tag ab 'HISAAB · CANTEEN LEDGER'");
+  ok(d10.indexOf("NET") >= 0, "totals me NET highlight band");
+
+  /* picker cards me mini visual preview */
+  H().UI.ct.tab = "day"; H().render();
+  click('[data-act="ctTplPick"]');
+  await wait(20);
+  ok($$(".ct-tplPrev").length === 6, "har template card me mini design preview", $$(".ct-tplPrev").length);
+  ok($$(".ct-tplCard").length === 6, "picker cards abhi bhi 6");
+  click('.modal-f [data-act="closeModal"]');
+  await wait(10);
 
   section("CSV export");
   let csvText = "";

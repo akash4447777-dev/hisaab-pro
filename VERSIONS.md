@@ -65,6 +65,7 @@ File ka naam me version hona chahiye: **`Hisaab-Pro-v<number>.<number>.html`**
 
 | Version | Date | Kya badla | File |
 |---|---|---|---|
+| v3.10 | 2026-11-16 | **Clean PDF + naam HISAAB.** PDF design naya: hairline tables (box/zebra clutter khatam), totals invoice-summary style right side me + NET highlight band, header accent bar. **Σ/? jaisa koi unwanted symbol PDF me nahi** — "(Σ line-total)" marker hata aur WinAnsi-me-na-hone-wale characters drop. Picker cards me har template ka **mini visual preview**. Panel ka naam ab sirf **HISAAB**. | `Hisaab-Pro-v3.10.html` |
 | v3.9 | 2026-11-15 | **🎨 PDF templates (6 design).** Canteen PDF ab apni pasand ke design me: **Neela Classic**, **Hara Bahi-Khata**, **Dark Premium** (kaala band + golden tag), **Kesariya Dukaan**, **Laal Bill** (invoice style — boxed tables, beech ka header, right-side totals) aur **Simple S&W** (bina rang — syahi bachao). Toolbar me **🎨 PDF style** button — picker me card chuno, ✓ lag jata hai, pasand save rehti hai; 📄 PDF aur 📤 WhatsApp PDF dono usi template me banti hain. | `Hisaab-Pro-v3.9.html` |
 | v3.8 | 2026-11-15 | **PDF pro theme + WhatsApp PDF.** Canteen PDF ab branded design me: upar shop-name ka colour band, title + generated time, tables me **zebra stripes + colour header**, totals **colour cards** (saman/bikri/kharcha/net/paid/baki), har page ke neeche **footer + Page x of y**, page break par header repeat. Aur naya **📤 WhatsApp PDF** button (din + mahina): mobile par **Web Share API se PDF seedha WhatsApp par** chali jaati hai (file attach); desktop par PDF download + WhatsApp khul jaata hai (📎 se attach). | `Hisaab-Pro-v3.8.html` |
 | v3.7 | 2026-11-14 | **Accuracy Pro.** ① OCR se pehle photo **auto-enhance** (grayscale + contrast stretch + upscale) aur baad me **confidence %** — kam ho to saaf warning “preview check karo”; OCR text me `O→0`, `l→1` jaise confusion apne aap thik. ② Paste parser: **Devanagari digits** (४→4), sr-no `1.` / bullets, line ke saath judi date (`14/11/2026 Maggi 4 kg 360`), **sirf-qty lines skip** (galat entry nahi banti), `rupees` ignore. ③ **Rate-list cross-check**: parse hua per-unit rate list se 35%+ alag ho to row par **⚠ list ₹X** button — ek click me sahi rate + amount. Duplicate item lines par info-chip. ④ Naye: **🕘 item kharid history** (rate list se), **✆ WhatsApp mahina** (din-wise + item-wise summary), dashboard canteen card par **📋 Paste / 📄 PDF** quick buttons. Purana data safe. | `Hisaab-Pro-v3.7.html` |
@@ -78,7 +79,7 @@ File ka naam me version hona chahiye: **`Hisaab-Pro-v<number>.<number>.html`**
 | v2.0 | 2026-11-11 | Auto-update loader + fixed working hours/overtime removed. Hourly worker = rate × total hours (naya Hours column). Monthly = ÷30 fixed, Sunday auto-exclude. Version badge. | `Hisaab-Pro-v2.0.html` |
 
 > **File ka rule:** `hisaab_v3.html` = working/source file (yahan change hota hai).
-> `Hisaab-Pro-v3.9.html` = usi ka release copy, taaki upar wala loader apne aap sabse naya version utha le.
+> `Hisaab-Pro-v3.10.html` = usi ka release copy, taaki upar wala loader apne aap sabse naya version utha le.
 > Dono ka content abhi **bilkul same** hai. Purane `Hisaab-Pro-v3.1.html` / `v2.0` repo me pade rehne do.
 
 ---
