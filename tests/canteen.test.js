@@ -66,7 +66,7 @@ const iso = (d) => d.getFullYear() + "-" + String(d.getMonth() + 1).padStart(2, 
   ok(H().Store.data.canteen.entries.length > 0, "sample canteen entries load hui (" + H().Store.data.canteen.entries.length + ")");
   ok(H().Store.data.workers.length === 4, "workers safe (4 demo)");
   const verEl = $("[data-ver]");
-  ok(verEl && verEl.textContent === "3.12", "version badge 3.12", verEl && verEl.textContent);
+  ok(verEl && verEl.textContent === "3.13", "version badge 3.13", verEl && verEl.textContent);
   ok(root().innerHTML.indexOf("Canteen") >= 0, "dashboard par canteen card dikha");
   ok(root().innerHTML.indexOf("Saman aaya") >= 0, "dashboard canteen strip me 'Saman aaya'");
 
@@ -486,7 +486,7 @@ const iso = (d) => d.getFullYear() + "-" + String(d.getMonth() + 1).padStart(2, 
   let pdfText = pdfBytes ? Buffer.from(pdfBytes).toString("latin1") : "";
   ok(pdfText.indexOf("%PDF-") === 0, "din ki PDF file bani", pdfText.slice(0, 8));
   ok(pdfText.indexOf("CANTEEN DAY LEDGER") >= 0, "PDF me title 'CANTEEN DAY LEDGER'");
-  ok(pdfText.indexOf("ITEM-WISE SUMMARY") >= 0, "PDF me item-wise table");
+  ok(pdfText.indexOf("SAMAN ITEM-WISE") >= 0, "PDF me item-wise table");
   ok(pdfText.indexOf("Photo Test") >= 0 || pdfText.indexOf("Test Supplier") >= 0, "PDF me entry party");
   H().UI.ct.tab = "month"; H().render();
   ok(!!$('[data-act="ctPdfMonth"]'), "mahine tab par PDF button");
@@ -496,7 +496,7 @@ const iso = (d) => d.getFullYear() + "-" + String(d.getMonth() + 1).padStart(2, 
   const mText = pdfBytes ? Buffer.from(pdfBytes).toString("latin1") : "";
   ok(mText.indexOf("%PDF-") === 0, "mahine ki PDF bani");
   ok(mText.indexOf("CANTEEN MONTHLY LEDGER") >= 0, "PDF me mahine ka title");
-  ok(mText.indexOf("PARTY-WISE") >= 0, "PDF me party-wise table");
+  ok(mText.indexOf("SUPPLIER-WISE") >= 0, "PDF me party-wise table");
   window.Blob = RB;
 
   section("\ud83d\udccb Bulk paste (v3.5) \u2014 parser");
@@ -734,8 +734,8 @@ const iso = (d) => d.getFullYear() + "-" + String(d.getMonth() + 1).padStart(2, 
   ok(d8.indexOf("CANTEEN DAY LEDGER") >= 0 && d8.indexOf("- CANTEEN") >= 0,
      "photo-style header (SHOP — CANTEEN + doc title)");
   ok(d8.indexOf("Page 1 of") >= 0, "har page par page-number footer", d8.match(/Page \d+ of \d+/) && d8.match(/Page \d+ of \d+/)[0]);
-  ok(d8.indexOf("Din ka total") >= 0, "bold total row table ke andar");
-  ok(d8.indexOf("ITEM-WISE SUMMARY") >= 0, "item-wise section");
+  ok(d8.indexOf("Item-wise total") >= 0, "bold total row table ke andar");
+  ok(d8.indexOf("SAMAN ITEM-WISE") >= 0, "item-wise section");
   ok(d8.indexOf("Generated") >= 0, "generated timestamp");
   H().UI.ct.tab = "month"; H().render();
   ok(!!$('[data-act="ctSharePdfMonth"]'), "mahine tab par 📤 WhatsApp PDF button");
@@ -743,7 +743,7 @@ const iso = (d) => d.getFullYear() + "-" + String(d.getMonth() + 1).padStart(2, 
   click('[data-act="ctPdfMonth"]');
   await wait(30);
   const m8 = pb8 ? Buffer.from(pb8).toString("latin1") : "";
-  ok(m8.indexOf("Mahine ka total") >= 0 && m8.indexOf("PARTY-WISE SUMMARY") >= 0 && m8.indexOf("DIN-WISE LEDGER") >= 0,
+  ok(m8.indexOf("Mahine ka total") >= 0 && m8.indexOf("SUPPLIER-WISE") >= 0 && m8.indexOf("DIN-WISE LEDGER") >= 0,
      "mahine PDF me total row + din-wise + party-wise");
   ok(m8.indexOf("Page 1 of") >= 0, "mahine PDF me footer");
   window.Blob = RB8;
@@ -802,7 +802,7 @@ const iso = (d) => d.getFullYear() + "-" + String(d.getMonth() + 1).padStart(2, 
   ok(st9.dark.indexOf("0.1 0.11 0.15") >= 0, "dark template me charcoal accent rule");
   ok(st9.kesari.indexOf("0.9 0.42 0.05") >= 0, "kesari template me saffron colour");
   ok(st9.simple.indexOf("0.31 0.27 0.9") < 0 && st9.simple.indexOf("0 0 0 RG") >= 0, "Simple S&W me koi rang nahi — sirf black");
-  ok(st9.lal.indexOf("CANTEEN DAY LEDGER") >= 0 && st9.lal.indexOf("purchase") >= 0 && st9.lal !== st9.neela,
+  ok(st9.lal.indexOf("CANTEEN DAY LEDGER") >= 0 && st9.lal.indexOf("Saman aaya") >= 0 && st9.lal !== st9.neela,
      "Laal Bill (invoice) me content same, design alag");
   ["neela", "hara", "dark", "kesari", "lal", "simple"].forEach((id) => {
     ok(st9[id].indexOf("Page 1 of") >= 0 && st9[id].indexOf("Generated") >= 0, id + ": footer + timestamp sab templates me");
@@ -874,9 +874,9 @@ const iso = (d) => d.getFullYear() + "-" + String(d.getMonth() + 1).padStart(2, 
   });
   const al11d = H().canteen.pdfDayStr(todayIso).str;
   const al11m = H().canteen.pdfMonthStr(H().UI.year, H().UI.month).str;
-  ok(al11d.indexOf("%PDF-") === 0 && al11d.indexOf("Din ka total") >= 0 && al11d.indexOf("Page 1 of") >= 0,
+  ok(al11d.indexOf("%PDF-") === 0 && al11d.indexOf("DIN KA NET") >= 0 && al11d.indexOf("Page 1 of") >= 0,
      "din PDF alignment fix ke baad bhi sahi");
-  ok(al11m.indexOf("%PDF-") === 0 && al11m.indexOf("Mahine ka total") >= 0 && al11m.indexOf("PARTY-WISE SUMMARY") >= 0,
+  ok(al11m.indexOf("%PDF-") === 0 && al11m.indexOf("Mahine ka total") >= 0 && al11m.indexOf("SUPPLIER-WISE") >= 0,
      "mahine ki 8-column table ab poori chaurai (20pt gap khatam)");
   let alOk11 = true;
   H().canteen.tpls.forEach((t) => {
@@ -897,7 +897,7 @@ const iso = (d) => d.getFullYear() + "-" + String(d.getMonth() + 1).padStart(2, 
   });
   ok(m12.indexOf("DIN-WISE LEDGER") >= 0 && m12.indexOf("Mahine ka total") >= 0, "din-wise table + bold total row andar");
   ok(m12.indexOf("ITEM-WISE SUMMARY") >= 0 && m12.indexOf("RATE WALI ENTRIES") >= 0, "item-wise summary section");
-  ok(d12.indexOf("CANTEEN DAY LEDGER") >= 0 && d12.indexOf("ENTRY-WISE LEDGER") >= 0 && d12.indexOf("Din ka total") >= 0,
+  ok(d12.indexOf("CANTEEN DAY LEDGER") >= 0 && d12.indexOf("ENTRIES") >= 0 && d12.indexOf("DIN KA NET") >= 0,
      "din PDF bhi usi print-format me");
   const acc12 = { neela: "0.31 0.27 0.9", hara: "0.09 0.44 0.24", dark: "0.1 0.11 0.15", kesari: "0.9 0.42 0.05", lal: "0.74 0.11 0.11" };
   Object.keys(acc12).forEach((id) => {
@@ -907,7 +907,7 @@ const iso = (d) => d.getFullYear() + "-" + String(d.getMonth() + 1).padStart(2, 
   });
   H().canteen.setTpl("simple");
   const s12 = H().canteen.pdfMonthStr(H().UI.year, H().UI.month).str;
-  ok(s12.indexOf("0.31 0.27 0.9") < 0 && s12.indexOf(" re f") < 0, "Simple S&W: koi tint/fill nahi (syahi bachao)");
+  ok(s12.indexOf("0.31 0.27 0.9") < 0 && s12.indexOf("0.09 0.44 0.24") < 0, "Simple S&W: koi colour accent nahi (syahi bachao)");
   H().canteen.setTpl("neela");
   /* WhatsApp par bhi yahi format */
   let sh12 = null;
@@ -918,6 +918,35 @@ const iso = (d) => d.getFullYear() + "-" + String(d.getMonth() + 1).padStart(2, 
   await wait(40);
   ok(!!sh12 && sh12.files && sh12.files.length === 1, "WhatsApp share me PDF file attach");
   ok(!!sh12 && String(sh12.files[0].name).indexOf("Canteen_Din_") === 0, "WhatsApp PDF wahi naya format");
+
+  section("v3.13 — PDF = print ledger same-to-same (din + mahina)");
+  const d13 = H().canteen.pdfDayStr(todayIso).str;
+  const m13 = H().canteen.pdfMonthStr(H().UI.year, H().UI.month).str;
+  /* din: print-day jaisa */
+  ["Date", "Din", "Entries", "Saman aaya", "Bikri", "Kharcha"].forEach((lb) => {
+    ok(d13.indexOf(lb) >= 0, "din meta me '" + lb + "'");
+  });
+  ok(d13.indexOf("ENTRIES") >= 0 && d13.indexOf("MODE") >= 0 && d13.indexOf("BILL") >= 0, "din entries table print jaisi (Type/Party/Bill/Mode/Saman)");
+  ok(d13.indexOf("Item-wise") >= 0 && d13.indexOf("Lump-sum") >= 0 || d13.indexOf("Item-wise") >= 0, "mode column values");
+  ok(d13.indexOf("SAMAN ITEM-WISE") >= 0 && d13.indexOf("RATE KE SAATH") >= 0, "din item-wise section print jaisa");
+  ok(d13.indexOf("Item-wise total") >= 0, "item-wise total row");
+  ok(d13.indexOf("DIN KA NET") >= 0 && d13.indexOf("Prepared by") >= 0, "din net band + signature block");
+  /* mahina: print-month jaisa */
+  ok(m13.indexOf("SUPPLIER-WISE") >= 0, "party section print jaisa (PARTY / SUPPLIER-WISE)");
+  ok(m13.indexOf("TOTAL") >= 0 && m13.indexOf("PAID") >= 0, "party table me Total + Paid columns");
+  ok(m13.indexOf("MAHINE KA NET") >= 0, "mahine net band");
+  ok(m13.indexOf("Amount in words") >= 0, "amount in words line");
+  ok(m13.indexOf("Prepared by") >= 0, "signature block");
+  ok(m13.indexOf("DIN-WISE LEDGER") >= 0 && m13.indexOf("Mahine ka total") >= 0, "din-wise table + total row barkarar");
+  /* dono templates me valid */
+  let ok13 = true;
+  H().canteen.tpls.forEach((t) => {
+    H().canteen.setTpl(t.id);
+    if (H().canteen.pdfDayStr(todayIso).str.indexOf("%PDF-") !== 0) ok13 = false;
+    if (H().canteen.pdfMonthStr(H().UI.year, H().UI.month).str.indexOf("%PDF-") !== 0) ok13 = false;
+  });
+  ok(ok13, "sab 6 templates me din + mahina PDF valid");
+  H().canteen.setTpl("neela");
 
   section("CSV export");
   let csvText = "";

@@ -859,7 +859,7 @@ const rRate = (n) => { const x = Math.max(0, num(n)); return x >= 1 ? r2(x) : Ma
 /* rate dikhane ka format: <₹1 ho to 0.075 jaisa khula number, warna moneyS */
 const rateS = (n) => { const x = num(n); if (x > 0 && x < 1) return "₹" + String(Math.round((x + Number.EPSILON) * 10000) / 10000); return moneyS(x); };
 const clamp = (n, lo, hi) => Math.min(hi, Math.max(lo, n));
-const APP_VERSION = "3.12";
+const APP_VERSION = "3.13";
 const esc = (s) => String(s == null ? "" : s).replace(/[&<>"']/g, (m) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[m]));
 
 const MONTHS = ["January","February","March","April","May","June","July","August","September","October","November","December"];
@@ -2120,6 +2120,7 @@ function viewSettings(){
 
     '<div style="text-align:center;font-size:11.5px;color:var(--muted);margin-top:18px;line-height:1.7">'+
       'Panel <b style="color:var(--ink)">v<span data-ver></span></b> · Auto-update enabled<br>'+
+      'v3.13 — <b style="color:var(--ink)">PDF = print same-to-same</b>: 📄 PDF ab bilkul print-ledger jaisi banti hai — din wali bhi! Din: Date/Din/Entries + Saman/Bikri/Kharcha meta, <b>ENTRIES</b> table (Type/Party/Bill/Mode/Saman/Amount/Paid/Baki), <b>SAMAN ITEM-WISE (RATE KE SAATH)</b> + Item-wise total row, lump-sum note, <b>DIN KA NET</b> dark band, Prepared by. Mahina: din-wise + <b>PARTY / SUPPLIER-WISE</b> (Total/Paid/Baki columns), <b>MAHINE KA NET</b> band, <b>Amount in words</b>, signature.  templates + 📤 WhatsApp same<br>'+
       'v3.12 — <b style="color:var(--ink)">Print-ledger PDF format</b>: PDF ab bilkul print wale ledger jaisi — upar shop name + address, right me <b>CANTEEN MONTHLY/DAY LEDGER</b> + mahina + generated time; neeche <b>2-column summary</b> (saman/bikri/kharcha | entries/paid/baki); <b>DIN-WISE LEDGER</b> table ke andar bold <b>Mahine ka total</b> row; <b>ITEM-WISE SUMMARY (rate wali entries)</b> aur PARTY-WISE SUMMARY. 🎨 6 templates abhi bhi hain (accent colours / boxed / plain) aur <b>📤 WhatsApp par bhi yahi format</b> jaata hai<br>'+
       'v3.11 — <b style="color:var(--ink)">PDF alignment pro</b>: sab tables ab <b>poori page-chaurai</b> par exact align (mahine ki 8-column table ka 20pt gap khatam); rows ka rhythm barabar (text ke upar-neeche barabari spacing, hairlines exact row-boundary par); invoice-box ka neeche wala kinara aakhri line par exact; har column ka padding ek jaisa (6pt); totals ki hairlines beech-o-beech; section titles table-text ke saath aligned<br>'+
       'v3.10 — <b style="color:var(--ink)">Clean PDF + naam HISAAB</b>: PDF ka design ab bilkul saaf-suuthra — patli hairline tables (box/zebra clutter nahi), totals <b>invoice-summary</b> style right side me + <b>NET highlight band</b>, header me accent bar; <b>Σ / ? jaisa koi unwanted symbol PDF me nahi</b> ("(Σ line-total)" marker hata, anjaan characters drop); picker cards me ab <b>chhota visual preview</b> har template ka; aur panel ka naam ab sirf <b>HISAAB</b><br>'+
@@ -5422,55 +5423,63 @@ function ctTplPick() {
 /* v3.11 alignment pro: har table poori content-width (CW) par, ek jaise padding */
 const CT_PDF_PL = 6, CT_PDF_PR = 6;
 const CT_COLS_DAY = [
-  { l: "Type", w: 62 }, { l: "Party / bill", w: 116 }, { l: "Saman / note", w: 192.28 },
-  { l: "Amount", w: 55, r: 1 }, { l: "Paid", w: 45, r: 1 }, { l: "Baki", w: 45, r: 1 }];
+  { l: "Type", w: 60 }, { l: "Party", w: 88 }, { l: "Bill", w: 58 }, { l: "Mode", w: 62 },
+  { l: "Saman", w: 112.28 }, { l: "Amount (Rs.)", w: 50, r: 1 }, { l: "Paid", w: 45, r: 1 }, { l: "Baki", w: 40, r: 1 }];
+const CT_COLS_DAY_I = [
+  { l: "Item", w: 220 }, { l: "Qty", w: 60, r: 1 }, { l: "Unit", w: 55 },
+  { l: "Avg rate", w: 90, r: 1 }, { l: "Amount (Rs.)", w: 90.28, r: 1 }];
 const CT_COLS_ITEMS = [
   { l: "Item", w: 185 }, { l: "Qty", w: 60, r: 1 }, { l: "Unit", w: 55 },
   { l: "Avg rate", w: 85, r: 1 }, { l: "Amount", w: 85, r: 1 }, { l: "Entries", w: 45.28, r: 1 }];
 const CT_COLS_MONTH = [
   { l: "Date", w: 70 }, { l: "Din", w: 36 }, { l: "Entries", w: 46, r: 1 },
   { l: "Saman", w: 60, r: 1 }, { l: "Bikri", w: 60, r: 1 }, { l: "Kharcha", w: 60, r: 1 },
-  { l: "Net", w: 64, r: 1 }, { l: "Paid", w: 64, r: 1 }, { l: "Baki", w: 55.28, r: 1 }];
+  { l: "Net", w: 64, r: 1, b: 1 }, { l: "Paid", w: 64, r: 1 }, { l: "Baki", w: 55.28, r: 1 }];
 const CT_COLS_PARTY = [
-  { l: "Party", w: 235 }, { l: "Entries", w: 80, r: 1 }, { l: "Amount", w: 100, r: 1 }, { l: "Baki", w: 100.28, r: 1 }];
-/* ---- header: photo wala format — shop+address left, doc title+month+generated right ---- */
-function ctPdfHead(p, docTitle, meta) {
+  { l: "Party", w: 190 }, { l: "Entries", w: 70, r: 1 }, { l: "Total", w: 85, r: 1 },
+  { l: "Paid", w: 85, r: 1 }, { l: "Baki", w: 85.28, r: 1 }];
+const CT_PDF_NETBG = [0.06, 0.09, 0.16];                       /* print wala dark net band */
+/* ---- header: print-ledger jaisa — shop+address left, title+sub+generated right, dark rule ---- */
+function ctPdfHead(p, docTitle, sub) {
   const T = ctTpl(), st = Store.data.settings || {};
   const shop = st.shopName || "Hisaab";
-  p.text(M, 814, 13, String(shop + " \u2014 CANTEEN").toUpperCase(), { bold: true, color: T.ink });
-  const addr = [st.address, st.ownerName, st.phone ? "Ph: " + st.phone : ""].filter(Boolean).join(" \u00b7 ");
+  p.text(M, 814, 13.5, shop + " \u2014 CANTEEN", { bold: true, color: T.ink });
+  const addr = [st.address, st.phone ? "Ph: " + st.phone : "", st.ownerName].filter(Boolean).join(" \u00b7 ");
   if (addr) p.text(M, 802, 7.5, addr, { color: T.mut });
-  p.text(RIGHT, 814, 9.5, docTitle.toUpperCase(), { bold: true, align: "right", color: T.ink });
-  p.text(RIGHT, 802, 8, meta, { align: "right", color: T.mut });
-  const now = new Date();
-  p.text(RIGHT, 791, 7, "Generated " + now.toLocaleDateString("en-IN") + " " +
-    now.toLocaleTimeString("en-IN", { hour: "2-digit", minute: "2-digit", second: "2-digit" }),
-    { align: "right", color: T.mut });
-  p.line(M, 783, RIGHT, 783, T.style === "minimal" ? T.ink : T.brand, T.style === "minimal" ? 1.2 : 1.5);
+  p.text(RIGHT, 814, 11, docTitle.toUpperCase(), { bold: true, align: "right", color: T.ink });
+  p.text(RIGHT, 802, 8.5, sub, { align: "right", color: T.mut });
+  p.text(RIGHT, 791, 7.5, "Generated " + new Date().toLocaleString("en-IN"), { align: "right", color: T.mut });
+  p.line(M, 783, RIGHT, 783, T.style === "minimal" ? T.ink : CT_PDF_NETBG, 1.6);
   return 770;
 }
-/* ---- 2-column KV summary (photo jaisa): saman/bikri/kharcha | entries/paid/baki ---- */
-function ctPdfSummary(p, y, t, entriesLabel) {
+/* ---- 2-column KV summary (print jaisa): label left, bold value right ---- */
+function ctPdfSummary(p, y, L, R) {
   const T = ctTpl();
   const colW = (CW - 30) / 2;
-  const L = [
-    ["Saman aaya (purchase)", moneyS(t.purchase), T.ink],
-    ["Bikri / income", moneyS(t.sale), T.ink],
-    ["Kharcha", moneyS(t.expense), T.ink]
-  ];
-  const R = [
-    ["Entries", entriesLabel, T.ink],
-    ["Paisa diya (paid)", moneyS(t.paid), T.ink],
-    ["Baki / udhaar", moneyS(t.balance), t.balance > 0.005 ? T.bad : T.ink]
-  ];
   const draw = (x0, rows) => rows.forEach((r, i) => {
     const yy = y - i * 13;
     p.text(x0, yy, 8, r[0], { color: T.mut });
-    p.text(x0 + colW, yy, 9, r[1], { bold: true, align: "right", color: r[2] });
+    p.text(x0 + colW, yy, 9, r[1], { bold: true, align: "right", color: r[2] || T.ink });
   });
   draw(M, L);
   draw(M + colW + 30, R);
   return y - 3 * 13 - 4;
+}
+/* ---- dark NET band (print wala .net box) ---- */
+function ctPdfNetBand(p, y, label, sub, net) {
+  const T = ctTpl();
+  p.rect(M, y - 26, CW, 26, T.style === "minimal" ? T.ink : CT_PDF_NETBG);
+  p.text(M + 8, y - 10, 8, label.toUpperCase(), { bold: true, color: [0.82, 0.85, 0.9] });
+  p.text(M + 8, y - 19, 7, sub, { color: [0.82, 0.85, 0.9] });
+  p.text(RIGHT - 8, y - 13, 14, (net < 0 ? "-" : "") + money(Math.abs(net)), { bold: true, align: "right", color: [1, 1, 1] });
+  return y - 26 - 12;
+}
+/* ---- Prepared by / signature block ---- */
+function ctPdfSign(p, y) {
+  const T = ctTpl(), st = Store.data.settings || {};
+  p.text(M, y, 8, "Prepared by", { color: T.mut });
+  p.text(RIGHT, y, 8, st.ownerName || "Authorised signatory", { align: "right", color: T.mut });
+  return y - 14;
 }
 /* har page ke neeche footer + page number (build ke baad, count pata hota hai) */
 function ctPdfFoot(p, label) {
@@ -5548,54 +5557,70 @@ function ctPdfDayStr(iso) {
   const T = ctTpl();
   const t = ctTotals(list);
   const p = new PdfDoc();
-  let y = ctPdfHead(p, "CANTEEN DAY LEDGER", ctPretty(iso) + " \u00b7 " + ctDayName(iso));
-  y = ctPdfSummary(p, y, t, t.count + " (1 din)");
-  y = ctPdfSecTitle(p, y, "ENTRY-WISE LEDGER");
-  y = ctPdfTable(p, y, CT_COLS_DAY, list.map((e) => {
-    const k = ctKindOf(e);
-    const il = ctItemLabel(e);
-    return [k.label + (e.photo ? " [photo]" : ""), (e.party || "\u2014") + (e.billNo ? " \u00b7 " + e.billNo : ""),
-      (il || (e.mode === "total" ? "Ek-saath total" : "")) + (e.note ? " \u00b7 \u201c" + e.note + "\u201d" : ""),
-      moneyS(ctAmount(e)), moneyS(Math.min(ctPaid(e), ctAmount(e))),
-      ctBalance(e) > 0.005 ? moneyS(ctBalance(e)) : "-"];
-  }), ["Din ka total", "", "", moneyS(r2(t.purchase + t.sale + t.expense)), moneyS(t.paid),
-       t.balance > 0.005 ? moneyS(t.balance) : "-"]);
+  let y = ctPdfHead(p, "CANTEEN DAY LEDGER", ctPretty(iso) + " (" + ctDayName(iso) + ")");
+  y = ctPdfSummary(p, y,
+    [["Date", ctPretty(iso)], ["Din", ctDayName(iso)], ["Entries", String(t.count)]],
+    [["Saman aaya", money(t.purchase)], ["Bikri", money(t.sale)], ["Kharcha", money(t.expense)]]);
+  y = ctPdfSecTitle(p, y, "ENTRIES");
+  y = ctPdfTable(p, y, CT_COLS_DAY, list.slice().reverse().map((e) => [
+    ctKindOf(e).en, e.party || "\u2014", e.billNo || "\u2014",
+    e.mode === "total" ? "Lump-sum" : "Item-wise", ctItemLabel(e) || "\u2014",
+    money(ctAmount(e)), money(Math.min(ctPaid(e), ctAmount(e))), money(ctBalance(e))]));
   const items = ctItemAgg(list);
   if (items.length) {
-    y = ctPdfSecTitle(p, y, "ITEM-WISE SUMMARY (RATE WALI ENTRIES)");
-    y = ctPdfTable(p, y, CT_COLS_ITEMS, items.map((i) => [i.name, String(i.qty), i.unit,
-      rateS(i.avgRate), moneyS(i.amt), String(i.n)]));
+    y = ctPdfSecTitle(p, y, "SAMAN ITEM-WISE (RATE KE SAATH)");
+    y = ctPdfTable(p, y, CT_COLS_DAY_I, items.map((i) => [i.name, String(num(i.qty)), i.unit,
+      i.avgRate < 1 ? rateS(i.avgRate) : money(i.avgRate), money(i.amt)]),
+      ["Item-wise total", "", "", "", money(t.itemizedAmt)]);
   }
+  if (t.totalModeCount) {
+    const note = t.totalModeCount + " entry me sirf ek-saath total likha hai (item ka alag rate nahi) \u2014 " + money(t.totalModeAmt) + ".";
+    p.wrap(note, 8, CW).forEach((ln) => { p.text(M, y, 8, ln, { color: T.mut }); y -= 10; });
+    y -= 4;
+  }
+  y = ctPdfNetBand(p, y, "Din ka net (bikri \u2212 saman \u2212 kharcha)",
+    "Paid " + money(t.paid) + " \u00b7 Baki " + money(t.balance), t.net);
+  y = ctPdfSign(p, y);
   ctPdfFoot(p, "Hisaab \u00b7 Canteen \u00b7 din ka ledger \u00b7 " + ctPretty(iso));
   return { str: p.build(), name: "Canteen_Din_" + iso + ".pdf" };
 }
 function ctPdfMonthStr(y, m) {
   const list = ctInMonth(y, m);
   if (!list.length) return null;
+  const T = ctTpl();
   const t = ctTotals(list);
   const p = new PdfDoc();
   const days = ctMonthDays(y, m).filter((d) => d.list.length);
   let yy = ctPdfHead(p, "CANTEEN MONTHLY LEDGER", monthLabel(y, m));
-  yy = ctPdfSummary(p, yy, t, t.count + " (" + days.length + " din)");
+  yy = ctPdfSummary(p, yy,
+    [["Saman aaya (purchase)", money(t.purchase)], ["Bikri / income", money(t.sale)], ["Kharcha", money(t.expense)]],
+    [["Entries", t.count + " (" + days.length + " din)"], ["Paisa diya (paid)", money(t.paid)],
+     ["Baki / udhaar", money(t.balance), t.balance > 0.005 ? T.bad : T.ink]]);
   yy = ctPdfSecTitle(p, yy, "DIN-WISE LEDGER");
   yy = ctPdfTable(p, yy, CT_COLS_MONTH, days.map((d) => [ctPretty(d.iso), d.day.slice(0, 3), String(d.list.length),
-    moneyS(d.t.purchase), moneyS(d.t.sale), moneyS(d.t.expense),
-    (d.t.net < 0 ? "-" : "") + moneyS(Math.abs(d.t.net)), moneyS(d.t.paid),
-    d.t.balance > 0.005 ? moneyS(d.t.balance) : "-"]),
-    ["Mahine ka total", "", String(t.count), moneyS(t.purchase), moneyS(t.sale), moneyS(t.expense),
-     (t.net < 0 ? "-" : "") + moneyS(Math.abs(t.net)), moneyS(t.paid), t.balance > 0.005 ? moneyS(t.balance) : "-"]);
+    money0(d.t.purchase), money0(d.t.sale), money0(d.t.expense),
+    (d.t.net < 0 ? "-" : "") + money0(Math.abs(d.t.net)), money0(d.t.paid),
+    d.t.balance > 0.005 ? money0(d.t.balance) : "-"]),
+    ["Mahine ka total", "", String(t.count), money0(t.purchase), money0(t.sale), money0(t.expense),
+     (t.net < 0 ? "-" : "") + money0(Math.abs(t.net)), money0(t.paid), t.balance > 0.005 ? money0(t.balance) : "-"]);
   const items = ctItemAgg(list);
   if (items.length) {
     yy = ctPdfSecTitle(p, yy, "ITEM-WISE SUMMARY (RATE WALI ENTRIES)");
-    yy = ctPdfTable(p, yy, CT_COLS_ITEMS, items.slice(0, 60).map((i) => [i.name, String(i.qty), i.unit,
-      rateS(i.avgRate), moneyS(i.amt), String(i.n)]));
+    yy = ctPdfTable(p, yy, CT_COLS_ITEMS, items.slice(0, 60).map((i) => [i.name, String(num(i.qty)), i.unit,
+      i.avgRate < 1 ? rateS(i.avgRate) : money(i.avgRate), money(i.amt), String(i.n)]));
   }
   const parties = ctPartyAgg(list);
   if (parties.length && yy > 120) {
-    yy = ctPdfSecTitle(p, yy, "PARTY-WISE SUMMARY");
+    yy = ctPdfSecTitle(p, yy, "PARTY / SUPPLIER-WISE");
     yy = ctPdfTable(p, yy, CT_COLS_PARTY, parties.slice(0, 30).map((x) => [x.name || "\u2014", String(x.n),
-      moneyS(x.amt), x.bal > 0.005 ? moneyS(x.bal) : "-"]));
+      money(x.amt), money(x.paid), x.bal > 0.005 ? money(x.bal) : "-"]));
   }
+  yy = ctPdfNetBand(p, yy, "Mahine ka net (bikri \u2212 saman \u2212 kharcha)",
+    monthLabel(y, m) + " \u00b7 Paid " + money(t.paid) + " \u00b7 Baki " + money(t.balance), t.net);
+  p.text(M, yy, 8, "Amount in words:", { color: T.mut });
+  p.text(M + pdfWidth("Amount in words: ", 8), yy, 8, inWords(Math.abs(t.net)), { bold: true, color: T.ink });
+  yy -= 16;
+  yy = ctPdfSign(p, yy);
   ctPdfFoot(p, "Hisaab \u00b7 Canteen \u00b7 mahine ka ledger \u00b7 " + monthLabel(y, m));
   return { str: p.build(), name: "Canteen_" + MONTHS_S[m] + "-" + y + ".pdf" };
 }
