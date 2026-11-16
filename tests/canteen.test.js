@@ -66,7 +66,7 @@ const iso = (d) => d.getFullYear() + "-" + String(d.getMonth() + 1).padStart(2, 
   ok(H().Store.data.canteen.entries.length > 0, "sample canteen entries load hui (" + H().Store.data.canteen.entries.length + ")");
   ok(H().Store.data.workers.length === 4, "workers safe (4 demo)");
   const verEl = $("[data-ver]");
-  ok(verEl && verEl.textContent === "3.10", "version badge 3.10", verEl && verEl.textContent);
+  ok(verEl && verEl.textContent === "3.11", "version badge 3.11", verEl && verEl.textContent);
   ok(root().innerHTML.indexOf("Canteen") >= 0, "dashboard par canteen card dikha");
   ok(root().innerHTML.indexOf("Saman aaya") >= 0, "dashboard canteen strip me 'Saman aaya'");
 
@@ -863,6 +863,27 @@ const iso = (d) => d.getFullYear() + "-" + String(d.getMonth() + 1).padStart(2, 
   ok($$(".ct-tplCard").length === 6, "picker cards abhi bhi 6");
   click('.modal-f [data-act="closeModal"]');
   await wait(10);
+
+  section("v3.11 — PDF alignment pro");
+  const PC11 = H().canteen.pdfCols;
+  const CW11 = 595.28 - 80;
+  Object.keys(PC11).forEach((k) => {
+    const sum = PC11[k].reduce((a, c) => a + c.w, 0);
+    ok(Math.abs(sum - CW11) < 0.01, k + " table poori content-width par aligned", sum);
+  });
+  const al11d = H().canteen.pdfDayStr(todayIso).str;
+  const al11m = H().canteen.pdfMonthStr(H().UI.year, H().UI.month).str;
+  ok(al11d.indexOf("%PDF-") === 0 && al11d.indexOf("DIN KA TOTAL") >= 0 && al11d.indexOf("NET") >= 0 && al11d.indexOf("Page 1 of") >= 0,
+     "din PDF alignment fix ke baad bhi sahi");
+  ok(al11m.indexOf("%PDF-") === 0 && al11m.indexOf("MAHINE KA TOTAL") >= 0 && al11m.indexOf("PARTY-WISE") >= 0,
+     "mahine ki 8-column table ab poori chaurai (20pt gap khatam)");
+  let alOk11 = true;
+  H().canteen.tpls.forEach((t) => {
+    H().canteen.setTpl(t.id);
+    if (H().canteen.pdfMonthStr(H().UI.year, H().UI.month).str.indexOf("%PDF-") !== 0) alOk11 = false;
+  });
+  ok(alOk11, "sab 6 templates me mahina PDF valid");
+  H().canteen.setTpl("neela");
 
   section("CSV export");
   let csvText = "";
