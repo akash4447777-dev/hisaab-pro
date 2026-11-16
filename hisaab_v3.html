@@ -859,7 +859,7 @@ const rRate = (n) => { const x = Math.max(0, num(n)); return x >= 1 ? r2(x) : Ma
 /* rate dikhane ka format: <₹1 ho to 0.075 jaisa khula number, warna moneyS */
 const rateS = (n) => { const x = num(n); if (x > 0 && x < 1) return "₹" + String(Math.round((x + Number.EPSILON) * 10000) / 10000); return moneyS(x); };
 const clamp = (n, lo, hi) => Math.min(hi, Math.max(lo, n));
-const APP_VERSION = "3.14";
+const APP_VERSION = "3.15";
 const esc = (s) => String(s == null ? "" : s).replace(/[&<>"']/g, (m) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[m]));
 
 const MONTHS = ["January","February","March","April","May","June","July","August","September","October","November","December"];
@@ -2120,6 +2120,7 @@ function viewSettings(){
 
     '<div style="text-align:center;font-size:11.5px;color:var(--muted);margin-top:18px;line-height:1.7">'+
       'Panel <b style="color:var(--ink)">v<span data-ver></span></b> · Auto-update enabled<br>'+
+      'v3.15 — <b style="color:var(--ink)">Entries clean + alignment fix</b>: din ki entries table me ab <b>products list nahi</b> (products sirf SAMAN ITEM-WISE summary me) — rows chhoti aur saaf; Amount/Paid/Baki columns <b>chauri</b> (Rs.2,800.00 jaise amounts overlap nahi karte); <b>page-2 fix</b> — net band / in-words / signature kabhi footer par nahi chadhte (auto page-break); header me print jaisa em-dash (—)<br>'+
       'v3.14 — <b style="color:var(--ink)">PDF = print CSS exact mirror</b>: tables ab <b>full grid</b> (har cell border, grey header fill #f3f4f6) jaisa print me; meta rows ke neeche <b>dashed underlines</b>; section titles ke neeche solid underline; <b>Amount in words dashed box</b>; signature <b>do boxes with top border</b> (Prepared by / owner); footer me version + page number; fontsizes print ke px→pt exact. Default template = print exact; baaki 5 templates colour tint dete hain<br>'+
       'v3.13 — <b style="color:var(--ink)">PDF = print same-to-same</b>: 📄 PDF ab bilkul print-ledger jaisi banti hai — din wali bhi! Din: Date/Din/Entries + Saman/Bikri/Kharcha meta, <b>ENTRIES</b> table (Type/Party/Bill/Mode/Saman/Amount/Paid/Baki), <b>SAMAN ITEM-WISE (RATE KE SAATH)</b> + Item-wise total row, lump-sum note, <b>DIN KA NET</b> dark band, Prepared by. Mahina: din-wise + <b>PARTY / SUPPLIER-WISE</b> (Total/Paid/Baki columns), <b>MAHINE KA NET</b> band, <b>Amount in words</b>, signature.  templates + 📤 WhatsApp same<br>'+
       'v3.12 — <b style="color:var(--ink)">Print-ledger PDF format</b>: PDF ab bilkul print wale ledger jaisi — upar shop name + address, right me <b>CANTEEN MONTHLY/DAY LEDGER</b> + mahina + generated time; neeche <b>2-column summary</b> (saman/bikri/kharcha | entries/paid/baki); <b>DIN-WISE LEDGER</b> table ke andar bold <b>Mahine ka total</b> row; <b>ITEM-WISE SUMMARY (rate wali entries)</b> aur PARTY-WISE SUMMARY. 🎨 6 templates abhi bhi hain (accent colours / boxed / plain) aur <b>📤 WhatsApp par bhi yahi format</b> jaata hai<br>'+
@@ -2709,7 +2710,7 @@ function printAll() {
 const HELV_W = [278,278,355,556,556,889,667,191,333,333,389,584,278,333,278,278,556,556,556,556,556,556,556,556,556,556,278,278,584,584,584,556,1015,667,667,722,722,667,611,778,722,278,500,667,556,833,722,778,667,778,722,667,611,722,667,944,667,667,611,278,278,278,469,556,333,556,556,500,556,556,278,556,556,222,222,500,222,833,556,556,556,556,333,500,278,556,500,722,500,500,500,334,260,334,584];
 
 function toAscii(str) {
-  const map = { "₹": "Rs.", "–": "-", "—": "-", "’": "'", "‘": "'", "“": '"', "”": '"', "•": "-", "…": "...", "≤": "<=", "≥": ">=", "✔": "v", "✕": "x", "✖": "x", "→": "->", "×": "x", "÷": "/", "−": "-", "⚡": "*", "⧉": "|", "°": " deg", "\n": " " };
+  const map = { "₹": "Rs.", "–": "", "—": "", "’": "'", "‘": "'", "“": '"', "”": '"', "•": "-", "…": "...", "≤": "<=", "≥": ">=", "✔": "v", "✕": "x", "✖": "x", "→": "->", "×": "x", "÷": "/", "−": "-", "⚡": "*", "⧉": "|", "°": " deg", "\n": " " };
   let out = "";
   for (const ch of String(str == null ? "" : str)) {
     if (map[ch] !== undefined) out += map[ch];
@@ -5424,9 +5425,10 @@ function ctTplPick() {
     "</div>");
 }
 const CT_PDF_PL = 7, CT_PDF_PR = 7;
+/* v3.15: entries table me products NAHI (sirf item-wise summary me); chauri amount columns → koi overlap nahi */
 const CT_COLS_DAY = [
-  { l: "Type", w: 60 }, { l: "Party", w: 88 }, { l: "Bill", w: 58 }, { l: "Mode", w: 62 },
-  { l: "Saman", w: 112.28 }, { l: "Amount (Rs.)", w: 50, r: 1 }, { l: "Paid", w: 45, r: 1 }, { l: "Baki", w: 40, r: 1 }];
+  { l: "Type", w: 62 }, { l: "Party", w: 95 }, { l: "Bill", w: 55 }, { l: "Mode", w: 62 },
+  { l: "Amount (Rs.)", w: 82, r: 1 }, { l: "Paid", w: 80, r: 1 }, { l: "Baki", w: 79.28, r: 1 }];
 const CT_COLS_DAY_I = [
   { l: "Item", w: 220 }, { l: "Qty", w: 60, r: 1 }, { l: "Unit", w: 55 },
   { l: "Avg rate", w: 90, r: 1 }, { l: "Amount (Rs.)", w: 90.28, r: 1 }];
@@ -5583,6 +5585,11 @@ function ctPdfFoot(p, label) {
     p.cur = old;
   });
 }
+/* page break guard: block ke liye jagah nahi to naya page (footer overlap khatam) */
+function ctEnsure(p, y, need) {
+  if (y - need < 64) { p.newPage(); return 780; }
+  return y;
+}
 function ctPdfDayStr(iso) {
   const list = ctOnDate(iso);
   if (!list.length) return null;
@@ -5595,7 +5602,7 @@ function ctPdfDayStr(iso) {
   y = ctPdfSecTitle(p, y, "ENTRIES");
   y = ctPdfTable(p, y, CT_COLS_DAY, list.slice().reverse().map((e) => [
     ctKindOf(e).en, e.party || "\u2014", e.billNo || "\u2014",
-    e.mode === "total" ? "Lump-sum" : "Item-wise", ctItemLabel(e) || "\u2014",
+    e.mode === "total" ? "Lump-sum" : "Item-wise",
     money(ctAmount(e)), money(Math.min(ctPaid(e), ctAmount(e))), money(ctBalance(e))]));
   const items = ctItemAgg(list);
   if (items.length) {
@@ -5605,11 +5612,14 @@ function ctPdfDayStr(iso) {
       ["Item-wise total", "", "", "", money(t.itemizedAmt)]);
   }
   if (t.totalModeCount) {
+    y = ctEnsure(p, y, 40);
     y = ctPdfInwordsBox(p, y, [[t.totalModeCount + " entry me sirf ek-saath total likha hai (item ka alag rate nahi) \u2014 ", 0],
       [money(t.totalModeAmt) + ".", 1]]);
   }
+  y = ctEnsure(p, y, 110);
   y = ctPdfNetBand(p, y, "Din ka net (bikri \u2212 saman \u2212 kharcha)",
     "Paid " + money(t.paid) + " \u00b7 Baki " + money(t.balance), t.net);
+  y = ctEnsure(p, y, 60);
   y = ctPdfSign(p, y);
   ctPdfFoot(p, "Hisaab \u00b7 Canteen \u00b7 din ka ledger \u00b7 " + ctPretty(iso));
   return { str: p.build(), name: "Canteen_Din_" + iso + ".pdf" };
@@ -5644,9 +5654,12 @@ function ctPdfMonthStr(y, m) {
     yy = ctPdfTable(p, yy, CT_COLS_PARTY, parties.slice(0, 30).map((x) => [x.name || "\u2014", String(x.n),
       money(x.amt), money(x.paid), x.bal > 0.005 ? money(x.bal) : "-"]));
   }
+  yy = ctEnsure(p, yy, 110);
   yy = ctPdfNetBand(p, yy, "Mahine ka net (bikri \u2212 saman \u2212 kharcha)",
     monthLabel(y, m) + " \u00b7 Paid " + money(t.paid) + " \u00b7 Baki " + money(t.balance), t.net);
+  yy = ctEnsure(p, yy, 40);
   yy = ctPdfInwordsBox(p, yy, [["Amount in words: ", 0], [inWords(Math.abs(t.net)), 1]]);
+  yy = ctEnsure(p, yy, 60);
   yy = ctPdfSign(p, yy);
   ctPdfFoot(p, "Hisaab \u00b7 Canteen \u00b7 mahine ka ledger \u00b7 " + monthLabel(y, m));
   return { str: p.build(), name: "Canteen_" + MONTHS_S[m] + "-" + y + ".pdf" };
