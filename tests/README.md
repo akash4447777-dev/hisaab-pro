@@ -1,6 +1,6 @@
 # Hisaab Pro — tests (developer only)
 
-Ye folder **app ke liye zaroori nahi**. `hisaab_v3.html` / `Hisaab-Pro-v3.3.html` akeli file me chalti hai —
+Ye folder **app ke liye zaroori nahi**. `hisaab_v3.html` / `Hisaab-Pro-v3.16.html` akeli file me chalti hai —
 kisi install ki zaroorat nahi. Ye tests sirf tab chalao jab code me change kiya ho aur check karna ho
 ki **Canteen module** (aur purane salary features) toot to nahi gaye.
 
@@ -9,9 +9,11 @@ ki **Canteen module** (aur purane salary features) toot to nahi gaye.
 ```bash
 cd tests
 npm install          # ek hi baar (jsdom install hota hai)
-npm test             # canteen module (~269 checks) + loader (~27 checks)
-node canteen.test.js ../Hisaab-Pro-v3.3.html   # kisi aur file par chalana ho
+npm test             # canteen (406) + loader (25) + reference PDF (22)
+node canteen.test.js ../Hisaab-Pro-v3.16.html   # kisi aur file par chalana ho
 node loader.test.js  # sirf index.html loader ke tests
+node pdf.test.js     # fonts + bottom geometry + multi-page
+node pdf.test.js --artifacts ../.cache/pdf-qa # optional local sample PDFs
 ```
 
 Sab theek ho to aakhri line aati hai: `✅ SAB CHECKS PASS` / `✅ LOADER SAB TESTS PASS`
@@ -26,6 +28,7 @@ Sab theek ho to aakhri line aati hai: `✅ SAB CHECKS PASS` / `✅ LOADER SAB TE
 | Ek-saath total | lump-sum amount, rate column disabled, rate list untouched |
 | Line-total price mode (v3.2) | `₹ poori line` select: 4 × ₹360 → total ₹360, per-unit ₹90 derive, amount ke neeche `= ₹90/kg`, rate list me 90/kg, edit me mode/lineTotal wapas, line↔unit toggle par number carry, ledger me Σ chip |
 | Bulk accuracy + OCR (v3.6) | scoring parser (code/qty-rate-total/90kg/per kg/(4)/nos/1,740/-/naam-me-number), total-verify chip, paid/baki info, editable preview + carry, OCR stub se photo→text→entries+photo |
+| Reference fonts + bottom (v3.16) | Segoe UI Regular/Bold/Black embedded, real ₹/minus, widths + ToUnicode, measured light net / rounded dashed box / 52px writing gap / flowing note/version, atomic closing, 91-item/party continuation, tall rows, wrapped notes, large amounts, actual WhatsApp file, data non-mutation |
 | Entries clean + alignment (v3.15) | no products in entries table, wide amount cols, page-break guards, em-dash |
 | Print CSS exact mirror (v3.14) | full grid tables, dashed meta/box lines, sign boxes, footer version, px→pt sizes |
 | PDF = print same-to-same (v3.13) | din+mahina PDF print-view mirror: meta KV, entries/items/party tables, net band, in-words, signature |
@@ -50,3 +53,6 @@ Sab theek ho to aakhri line aati hai: `✅ SAB CHECKS PASS` / `✅ LOADER SAB TE
 | Purana backup | bina `canteen` key wala JSON restore → key auto-create |
 | Canteen-only wipe | sirf canteen erase, workers safe, undo |
 | Regression | hisaab / ledger / workers / records / dashboard pehle jaise |
+
+Font analysis, embedding notices aur locally licensed input se rebuild: [`PDF-FONTS.md`](../PDF-FONTS.md).
+PDF fixtures optionally `.cache/` me bante hain; Git me nahi jaate.
