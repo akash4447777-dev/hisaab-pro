@@ -746,6 +746,13 @@ select.ct-pm option{font-size:11.5px;font-weight:700}
 .ct-modeTag{font-size:9.6px;font-weight:800;letter-spacing:.05em;text-transform:uppercase;padding:2px 7px;border-radius:99px;
   background:var(--surface-3);color:var(--muted);border:1px solid var(--line);white-space:nowrap}
 .ct-modeTag.tot{background:var(--cyan-soft);color:var(--cyan);border-color:color-mix(in srgb,var(--cyan) 26%,var(--line))}
+.ct-tplGrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(185px,1fr));gap:10px}
+.ct-tplCard{display:flex;flex-direction:column;gap:3px;text-align:left;padding:10px 12px;border:2px solid var(--line);
+  border-radius:12px;background:var(--surface-2,#fff);cursor:pointer;font:inherit;color:inherit;transition:border-color .12s,box-shadow .12s}
+.ct-tplCard:hover{border-color:var(--primary)}
+.ct-tplCard.on{border-color:var(--primary);box-shadow:0 0 0 3px var(--primary-soft)}
+.ct-tplCard b{font-size:13px}
+.ct-tplBand{display:block;height:12px;border-radius:6px;margin-bottom:5px}
 .ct-emptyline{padding:26px 16px;text-align:center;color:var(--muted);font-size:12.6px}
 .ct-hbar{height:6px;border-radius:99px;background:var(--surface-3);overflow:hidden;min-width:44px}
 .ct-hbar i{display:block;height:100%;border-radius:99px;background:var(--grad)}
@@ -845,7 +852,7 @@ const rRate = (n) => { const x = Math.max(0, num(n)); return x >= 1 ? r2(x) : Ma
 /* rate dikhane ka format: <₹1 ho to 0.075 jaisa khula number, warna moneyS */
 const rateS = (n) => { const x = num(n); if (x > 0 && x < 1) return "₹" + String(Math.round((x + Number.EPSILON) * 10000) / 10000); return moneyS(x); };
 const clamp = (n, lo, hi) => Math.min(hi, Math.max(lo, n));
-const APP_VERSION = "3.8";
+const APP_VERSION = "3.9";
 const esc = (s) => String(s == null ? "" : s).replace(/[&<>"']/g, (m) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[m]));
 
 const MONTHS = ["January","February","March","April","May","June","July","August","September","October","November","December"];
@@ -2106,6 +2113,7 @@ function viewSettings(){
 
     '<div style="text-align:center;font-size:11.5px;color:var(--muted);margin-top:18px;line-height:1.7">'+
       'Panel <b style="color:var(--ink)">v<span data-ver></span></b> · Auto-update enabled<br>'+
+      'v3.9 — <b style="color:var(--ink)">🎨 PDF templates</b>: canteen PDF ke liye <b>6 design templates</b> — Neela Classic, Hara Bahi-Khata, Dark Premium (kaala + golden), Kesariya Dukaan, <b>Laal Bill</b> (invoice style — boxed tables, centred header) aur <b>Simple S&W</b> (bina rang, syahi bachao). Toolbar me naya <b>🎨 PDF style</b> button — card chuno, ✓ lag jata hai aur 📄 + 📤 WhatsApp PDF dono usi design me banti hain. Pasand save rehti hai<br>'+
       'v3.8 — <b style="color:var(--ink)">PDF pro theme + WhatsApp PDF</b>: canteen PDF ab branded hai (shop-name band, zebra tables, colour totals cards, har page par footer + page number, generated time); aur <b>📤 WhatsApp PDF</b> button — PDF <b>seedha WhatsApp par share</b> (mobile par Web Share API se file attach; desktop par PDF download + WhatsApp khul jata hai)<br>'+'v3.7 — <b style="color:var(--ink)">Accuracy pro</b>: OCR se pehle photo <b>auto-enhance</b> (grayscale + contrast + upscale) + <b>confidence %</b> warning; OCR text me O→0 / l→1 fix; paste parser me Devanagari digits, sr-no/bullets, line ke saath date, sirf-qty skip; <b>rate-list cross-check</b> — parse hua rate list se 35%+ alag ho to <b>⚠ ek-click fix</b>; duplicate-lines chip; <b>🕘 item kharid history</b>, <b>✆ WhatsApp mahina</b>, dashboard par 📋/📄 quick buttons<br>'+'v3.6 — <b style="color:var(--ink)">Photo OCR + paste accuracy</b>: bill photo se <b>🔍 OCR</b> text nikalta hai (browser me hi) aur seedha entries banta hai; paste parser ab <b>scoring</b> se chalta hai (item-code ignore, qty-rate-total, 90/kg, “42 per kg”, (4), nos, 1,740/-), <b>Total line verify</b> hoti hai (✅/⚠ chip), paid/baki lines info me; preview table <b>editable</b> — galat cell save se pehle sudhar lo<br>'+'v3.5 — <b style="color:var(--ink)">📋 Paste se entries</b>: Word/WhatsApp/parche ka text ek saath paste karo — har item ki <b>alag entry</b> ban jati hai (line format: <b>naam qty unit price</b>, @ ya x se per-unit rate, date wali line se date); preview ke saath, undo bhi hai<br>'+'v3.4 — <b style="color:var(--ink)">Canteen photo + PDF</b>: entry ke saath bill/parche ki <b>📷 photo</b> lagao (ledger me tap karke badi khulti hai); din aur mahine ka ledger <b>📄 PDF</b> download; item ka <b>naam likhte hi unit</b> apne aap (doodh→ltr, kesar/dhaniya→gram, anda→dozen, bread→pcs)<br>'+'v3.3 — <b style="color:var(--ink)">Gram/line-total smart default</b>: nayi item line seedha <b>“₹ poori line”</b> par khulti hai (600 gram = ₹45 → total ₹45, ₹0.075/gram apne aap); rate list me rate milte hi naam likhte hi line <b>“₹ / unit”</b> par palat kar rate bhar leti hai<br>'+'v3.2 — <b style="color:var(--ink)">Canteen price-mode fix</b>: har item line par chunaav — <b>₹ / unit</b> ya <b>₹ poori line</b>. 4 kg Maggi = ₹360 likho to total ₹360 hi rahega, rate apne aap ₹90/kg<br>'+
       'v3.1 — <b style="color:var(--ink)">Canteen module</b>: saman entry (rate-wise ya ek-saath total), din &amp; mahine ka ledger, rate list, udhaar/baki, poori activity log'+
     '</div>'
@@ -3905,6 +3913,7 @@ function viewCanteen() {
       "</div>" +
       '<div class="toolbar" style="margin-left:auto">' +
         (u.tab === "day" ? '<button class="btn sm" data-act="ctPrintDay">🖨 Print din</button>' : "") +
+        (u.tab === "day" || u.tab === "month" ? '<button class="btn sm" data-act="ctTplPick" title="PDF ka design chuno — 6 templates">🎨 PDF style</button>' : "") +
         (u.tab === "day" ? '<button class="btn sm" data-act="ctPdfDay">📄 PDF din</button>' : "") +
         (u.tab === "month" ? '<button class="btn sm" data-act="ctPrintMonth">🖨 Print mahina</button>' : "") +
         (u.tab === "month" ? '<button class="btn sm" data-act="ctPdfMonth">📄 PDF mahina</button>' : "") +
@@ -5318,47 +5327,157 @@ function ctPrintMonth() {
   setTimeout(() => window.print(), 80);
 }
 
-/* ---------- CANTEEN PDF (v3.8 theme) — branded header, zebra tables, page footers ---------- */
-const CT_PDF = {
-  brand: [0.31, 0.27, 0.9], brandTxt: [0.86, 0.85, 0.99],
-  ink: [0.12, 0.14, 0.21], mut: [0.46, 0.49, 0.56],
-  line: [0.88, 0.9, 0.94], zebra: [0.975, 0.98, 0.995], hdr: [0.93, 0.93, 0.985],
-  ok: [0.02, 0.55, 0.36], bad: [0.8, 0.12, 0.12], cyan: [0.05, 0.45, 0.6], warn: [0.85, 0.55, 0.05]
-};
+/* ---------- CANTEEN PDF (v3.9) — 🎨 6 templates (band / bill / minimal styles), picker + persist ---------- */
+const CT_TPLS = [
+  { id: "neela", name: "Neela Classic", style: "band",
+    desc: "Branded neela band, zebra lines, colour total-cards",
+    brand: [0.31, 0.27, 0.9], brandTxt: [0.86, 0.85, 0.99],
+    ink: [0.12, 0.14, 0.21], mut: [0.46, 0.49, 0.56],
+    line: [0.88, 0.9, 0.94], zebra: [0.975, 0.98, 0.995], hdr: [0.93, 0.93, 0.985],
+    ok: [0.02, 0.55, 0.36], bad: [0.8, 0.12, 0.12], cyan: [0.05, 0.45, 0.6], warn: [0.85, 0.55, 0.05] },
+  { id: "hara", name: "Hara Bahi-Khata", style: "band",
+    desc: "Green ledger look — bahi-khata jaisa shaant design",
+    brand: [0.09, 0.44, 0.24], brandTxt: [0.85, 0.95, 0.88],
+    ink: [0.1, 0.16, 0.12], mut: [0.4, 0.48, 0.42],
+    line: [0.87, 0.92, 0.88], zebra: [0.962, 0.984, 0.968], hdr: [0.9, 0.955, 0.915],
+    ok: [0.02, 0.55, 0.36], bad: [0.8, 0.12, 0.12], cyan: [0.05, 0.45, 0.6], warn: [0.78, 0.52, 0.05] },
+  { id: "dark", name: "Dark Premium", style: "band",
+    desc: "Kaala band + golden tag — premium report feel",
+    brand: [0.1, 0.11, 0.15], brandTxt: [0.87, 0.72, 0.36],
+    ink: [0.1, 0.11, 0.15], mut: [0.45, 0.47, 0.52],
+    line: [0.86, 0.87, 0.9], zebra: [0.966, 0.966, 0.974], hdr: [0.9, 0.9, 0.935],
+    ok: [0.02, 0.55, 0.36], bad: [0.8, 0.12, 0.12], cyan: [0.05, 0.45, 0.6], warn: [0.85, 0.55, 0.05] },
+  { id: "kesari", name: "Kesariya Dukaan", style: "band",
+    desc: "Garam kesariya band — dukaan ki mithi feel",
+    brand: [0.9, 0.42, 0.05], brandTxt: [1, 0.93, 0.82],
+    ink: [0.21, 0.13, 0.06], mut: [0.5, 0.44, 0.38],
+    line: [0.95, 0.9, 0.85], zebra: [0.995, 0.975, 0.952], hdr: [0.99, 0.94, 0.88],
+    ok: [0.02, 0.55, 0.36], bad: [0.8, 0.12, 0.12], cyan: [0.05, 0.45, 0.6], warn: [0.85, 0.55, 0.05] },
+  { id: "lal", name: "Laal Bill (Invoice)", style: "bill",
+    desc: "Dukaan ke bill jaisa — boxed tables, beech ka header, right-side totals",
+    brand: [0.74, 0.11, 0.11], brandTxt: [0.97, 0.88, 0.88],
+    ink: [0.16, 0.1, 0.1], mut: [0.48, 0.42, 0.42],
+    line: [0.88, 0.84, 0.84], zebra: [0.99, 0.97, 0.97], hdr: [0.97, 0.925, 0.925],
+    ok: [0.02, 0.55, 0.36], bad: [0.74, 0.11, 0.11], cyan: [0.05, 0.45, 0.6], warn: [0.85, 0.55, 0.05] },
+  { id: "simple", name: "Simple S&W", style: "minimal",
+    desc: "Bina rang, sirf lines — print me syahi bachao, photocopy friendly",
+    brand: [0, 0, 0], brandTxt: [0.35, 0.35, 0.35],
+    ink: [0, 0, 0], mut: [0.4, 0.4, 0.4],
+    line: [0.72, 0.72, 0.72], zebra: [1, 1, 1], hdr: [1, 1, 1],
+    ok: [0, 0, 0], bad: [0, 0, 0], cyan: [0, 0, 0], warn: [0, 0, 0] }
+];
+function ctTpl() {
+  const id = (Store.data.settings || {}).pdfTpl;
+  return CT_TPLS.find((t) => t.id === id) || CT_TPLS[0];
+}
+function ctSetTpl(id) {
+  const t = CT_TPLS.find((x) => x.id === id);
+  if (!t) { toast("Aisa PDF template nahi mila", "bad"); return false; }
+  if (!Store.data.settings) Store.data.settings = {};
+  Store.data.settings.pdfTpl = id;                 /* additive field — purana data untouched */
+  Store.save(true);
+  toast("PDF template: " + t.name + " \u2714 \u2014 ab PDF isi design me banegi", "ok");
+  return true;
+}
+function ctTplRgb(c) { return "rgb(" + c.map((v) => Math.round(v * 255)).join(",") + ")"; }
+/* 🎨 template picker modal — card click karo, selection turant save */
+function ctTplPick() {
+  const cur = ctTpl();
+  const chip = (c, flex) => '<i style="display:block;flex:' + flex + ';height:8px;border-radius:3px;background:' + ctTplRgb(c) + ';border:1px solid var(--line)"></i>';
+  const cards = CT_TPLS.map((t) => {
+    const on = t.id === cur.id;
+    return '<button class="ct-tplCard' + (on ? " on" : "") + '" data-act="ctTplSet" data-id="' + t.id + '">' +
+      '<i class="ct-tplBand" style="background:' + ctTplRgb(t.brand) + '"></i>' +
+      "<b>" + esc(t.name) + (on ? ' <span style="color:var(--ok);font-size:11px">\u2713 CHUNA HUA</span>' : "") + "</b>" +
+      '<span style="font-size:11.5px;color:var(--muted);line-height:1.35">' + esc(t.desc) + "</span>" +
+      '<span style="display:flex;gap:5px;margin-top:7px">' + chip(t.hdr, 2) + chip(t.zebra, 1) + chip(t.ok, 1) + chip(t.bad, 1) + "</span>" +
+      "</button>";
+  }).join("");
+  openModal(
+    '<div class="modal" style="max-width:660px">' +
+      '<div class="modal-h"><div><h3>\ud83c\udfa8 PDF template chuno</h3>' +
+        "<p>\ud83d\udcc4 PDF aur \ud83d\udce4 WhatsApp PDF dono isi design me banengi \u2014 pasand kabhi bhi badlo, data par koi asar nahi</p></div>" +
+        '<button class="x" data-act="closeModal">\u2715</button></div>' +
+      '<div class="modal-b"><div class="ct-tplGrid">' + cards + "</div></div>" +
+      '<div class="modal-f"><button class="btn primary" data-act="closeModal">Ho gaya</button></div>' +
+    "</div>");
+}
 function ctPdfHead(p, title, sub) {
-  const st = Store.data.settings || {};
-  p.rect(0, 812, PW, 30, CT_PDF.brand);                       /* brand band */
-  p.text(M, 821, 13, st.shopName || "My Shop", { bold: true, color: [1, 1, 1] });
-  p.text(RIGHT, 822, 8.5, "HISAAB PRO · CANTEEN LEDGER", { bold: true, align: "right", color: CT_PDF.brandTxt });
-  p.text(M, 795, 15, title, { bold: true, color: CT_PDF.ink });
-  p.text(M, 782, 8.5, sub, { color: CT_PDF.mut });
+  const T = ctTpl(), st = Store.data.settings || {};
+  const shop = st.shopName || "My Shop";
   const now = new Date();
-  p.text(RIGHT, 795, 8, "Generated " + now.toLocaleDateString("en-IN") + " · " +
-    now.toLocaleTimeString("en-IN", { hour: "2-digit", minute: "2-digit" }), { align: "right", color: CT_PDF.mut });
-  p.line(M, 772, RIGHT, 772, CT_PDF.brand, 1.6);
+  const stamp = "Generated " + now.toLocaleDateString("en-IN") + " \u00b7 " +
+    now.toLocaleTimeString("en-IN", { hour: "2-digit", minute: "2-digit" });
+  if (T.style === "bill") {                                   /* invoice: centred header, double rule */
+    p.rect(0, 836, PW, 6, T.brand);
+    p.text(PW / 2, 818, 16, shop, { bold: true, align: "center", color: T.brand });
+    p.text(PW / 2, 806, 8, "HISAAB PRO \u00b7 CANTEEN LEDGER", { bold: true, align: "center", color: T.mut });
+    p.text(PW / 2, 788, 13, title, { bold: true, align: "center", color: T.ink });
+    p.text(PW / 2, 776, 8.5, sub, { align: "center", color: T.mut });
+    p.text(RIGHT, 764, 7.5, stamp, { align: "right", color: T.mut });
+    p.line(M, 758, RIGHT, 758, T.brand, 1.4);
+    p.line(M, 755.5, RIGHT, 755.5, T.brand, 0.5);
+    return 742;
+  }
+  if (T.style === "minimal") {                                /* plain: no fill, double rule */
+    p.text(M, 814, 13, shop, { bold: true, color: T.ink });
+    p.text(RIGHT, 815, 8.5, "HISAAB PRO \u00b7 CANTEEN LEDGER", { bold: true, align: "right", color: T.mut });
+    p.text(M, 795, 14.5, title, { bold: true, color: T.ink });
+    p.text(M, 782, 8.5, sub, { color: T.mut });
+    p.text(RIGHT, 795, 8, stamp, { align: "right", color: T.mut });
+    p.line(M, 772, RIGHT, 772, T.ink, 1.4);
+    p.line(M, 769.5, RIGHT, 769.5, T.ink, 0.5);
+    return 756;
+  }
+  p.rect(0, 812, PW, 30, T.brand);                            /* brand band */
+  p.text(M, 821, 13, shop, { bold: true, color: [1, 1, 1] });
+  p.text(RIGHT, 822, 8.5, "HISAAB PRO \u00b7 CANTEEN LEDGER", { bold: true, align: "right", color: T.brandTxt });
+  p.text(M, 795, 15, title, { bold: true, color: T.ink });
+  p.text(M, 782, 8.5, sub, { color: T.mut });
+  p.text(RIGHT, 795, 8, stamp, { align: "right", color: T.mut });
+  p.line(M, 772, RIGHT, 772, T.brand, 1.6);
   return 758;
 }
 /* har page ke neeche footer + page number (build ke baad, count pata hota hai) */
 function ctPdfFoot(p, label) {
-  const n = p.pages.length;
+  const T = ctTpl(), n = p.pages.length;
   p.pages.forEach((ops, i) => {
     const old = p.cur; p.cur = ops;
-    p.line(M, 34, RIGHT, 34, CT_PDF.line, 0.7);
-    p.text(M, 26, 7.5, label, { color: CT_PDF.mut });
-    p.text(RIGHT, 26, 7.5, "Page " + (i + 1) + " of " + n, { align: "right", color: CT_PDF.mut });
+    p.line(M, 34, RIGHT, 34, T.line, 0.7);
+    p.text(M, 26, 7.5, label, { color: T.mut });
+    p.text(RIGHT, 26, 7.5, "Page " + (i + 1) + " of " + n, { align: "right", color: T.mut });
     p.cur = old;
   });
 }
 function ctPdfTable(p, y, cols, rows) {
+  const T = ctTpl();
+  const xs = []; let xa = M; cols.forEach((c) => { xs.push(xa); xa += c.w; });
+  let segTop = null;
+  const frame = (yBot) => {                                   /* bill style: outer box + column lines */
+    if (T.style !== "bill" || segTop == null) return;
+    p.box(M, yBot - 5, CW, segTop - (yBot - 5), T.line);
+    xs.slice(1).forEach((x) => p.line(x, yBot - 5, x, segTop, T.line, 0.5));
+    segTop = null;
+  };
   const head = () => {
-    p.rect(M, y - 5, CW, 17, CT_PDF.hdr);
-    p.line(M, y - 5, M + CW, y - 5, CT_PDF.brand, 0.9);
     let x = M;
-    cols.forEach((c) => {
-      p.text(c.r ? x + c.w - 5 : x + 5, y + 2, 7.8, String(c.l).toUpperCase(),
-        { bold: true, color: CT_PDF.mut, align: c.r ? "right" : undefined });
-      x += c.w;
-    });
+    if (T.style === "minimal") {
+      cols.forEach((c) => {
+        p.text(c.r ? x + c.w - 5 : x + 5, y + 2, 7.8, String(c.l).toUpperCase(),
+          { bold: true, color: T.ink, align: c.r ? "right" : undefined });
+        x += c.w;
+      });
+      p.line(M, y - 5, M + CW, y - 5, T.ink, 1);
+    } else {
+      p.rect(M, y - 5, CW, 17, T.hdr);
+      p.line(M, y - 5, M + CW, y - 5, T.brand, 0.9);
+      cols.forEach((c) => {
+        p.text(c.r ? x + c.w - 5 : x + 5, y + 2, 7.8, String(c.l).toUpperCase(),
+          { bold: true, color: T.mut, align: c.r ? "right" : undefined });
+        x += c.w;
+      });
+      if (T.style === "bill") segTop = y + 12;
+    }
     return y - 20;
   };
   y = head();
@@ -5367,75 +5486,104 @@ function ctPdfTable(p, y, cols, rows) {
     const cells = r.map((v, i) => p.wrap(String(v == null ? "" : v), 8.5, cols[i].w - 10, !!cols[i].b));
     const lines = Math.max.apply(null, cells.map((c) => c.length).concat([1]));
     const h = lines * 11 + 8;
-    if (y - h < 64) { p.newPage(); y = head(); z = 0; }      /* page break → header repeat */
-    if (z % 2 === 1) p.rect(M, y - h + 5, CW, h, CT_PDF.zebra);
+    if (y - h < 64) { frame(y + 5); p.newPage(); y = head(); z = 0; }      /* page break → header repeat */
+    if (T.style === "band" && z % 2 === 1) p.rect(M, y - h + 5, CW, h, T.zebra);
     let x = M;
     cells.forEach((cs, i) => {
       cs.forEach((ln, li) => {
         p.text(cols[i].r ? x + cols[i].w - 5 : x + 5, y - 4 - li * 11, 8.5, ln,
-          { align: cols[i].r ? "right" : undefined, bold: !!cols[i].b, color: cols[i].color || CT_PDF.ink });
+          { align: cols[i].r ? "right" : undefined, bold: !!cols[i].b, color: cols[i].color || T.ink });
       });
       x += cols[i].w;
     });
     y -= h; z++;
-    p.line(M, y + 5, M + CW, y + 5, CT_PDF.line, 0.5);
+    p.line(M, y + 5, M + CW, y + 5, T.line, 0.5);
   });
+  frame(y + 5);
   return y - 14;
 }
 function ctPdfTotalsBlock(p, y, t, label) {
-  p.text(M, y, 10.5, label, { bold: true, color: CT_PDF.ink });
-  p.line(M, y - 4, M + pdfWidth(label, 10.5, true) + 6, y - 4, CT_PDF.brand, 1.2);
+  const T = ctTpl();
+  p.text(M, y, 10.5, label, { bold: true, color: T.ink });
+  p.line(M, y - 4, M + pdfWidth(label, 10.5, true) + 6, y - 4, T.brand, 1.2);
   y -= 18;
   const cells = [
-    ["SAMAN (PURCHASE)", t.purchase, CT_PDF.bad], ["BIKRI (SALE)", t.sale, CT_PDF.ok],
-    ["KHARCHA", t.expense, CT_PDF.warn], ["NET", t.net, t.net >= 0 ? CT_PDF.ok : CT_PDF.bad],
-    ["PAID", t.paid, CT_PDF.cyan], ["BAKI / UDHAAR", t.balance, t.balance > 0 ? CT_PDF.bad : CT_PDF.mut]
+    ["SAMAN (PURCHASE)", t.purchase, T.bad], ["BIKRI (SALE)", t.sale, T.ok],
+    ["KHARCHA", t.expense, T.warn], ["NET", t.net, t.net >= 0 ? T.ok : T.bad],
+    ["PAID", t.paid, T.cyan], ["BAKI / UDHAAR", t.balance, t.balance > 0 ? T.bad : T.mut]
   ];
+  if (T.style === "bill") {                                   /* invoice summary — right column */
+    const x0 = RIGHT - 240;
+    cells.forEach((c, i) => {
+      const yy = y - i * 15;
+      p.text(x0 + 6, yy, 8, c[0], { bold: true, color: T.mut });
+      p.text(RIGHT - 6, yy, 9.5, moneyS(c[1]), { bold: true, align: "right", color: c[2] });
+      if (i < 5) p.line(x0, yy - 5, RIGHT, yy - 5, T.line, 0.5);
+    });
+    p.box(x0 - 5, y - 5 * 15 - 10, RIGHT - x0 + 10, 6 * 15 + 6, T.line);
+    return y - 5 * 15 - 26;
+  }
   const w = CW / 3;
   cells.forEach((c, i) => {
     const x = M + (i % 3) * w, yy = y - Math.floor(i / 3) * 26;
-    p.box(x + 2, yy - 13, w - 8, 21, CT_PDF.line, [1, 1, 1]);
-    p.rect(x + 2, yy + 5.5, w - 8, 2.5, c[2]);               /* colour accent */
-    p.text(x + 7, yy - 1, 7.4, c[0], { bold: true, color: CT_PDF.mut });
+    if (T.style === "minimal") {                              /* plain boxes — no colour, ink bachao */
+      p.box(x + 2, yy - 13, w - 8, 21, T.line);
+      p.text(x + 7, yy - 1, 7.4, c[0], { bold: true, color: T.mut });
+      p.text(x + w - 13, yy - 1, 10, moneyS(c[1]), { bold: true, align: "right", color: T.ink });
+      return;
+    }
+    p.box(x + 2, yy - 13, w - 8, 21, T.line, [1, 1, 1]);
+    p.rect(x + 2, yy + 5.5, w - 8, 2.5, c[2]);                /* colour accent */
+    p.text(x + 7, yy - 1, 7.4, c[0], { bold: true, color: T.mut });
     p.text(x + w - 13, yy - 1, 10, moneyS(c[1]), { bold: true, align: "right", color: c[2] });
   });
   return y - 2 * 26 - 8;
 }
+function ctPdfSecTitle(p, y, text) {
+  const T = ctTpl();
+  if (T.style === "bill") p.text(PW / 2, y, 10.5, text, { bold: true, align: "center", color: T.brand });
+  else {
+    p.rect(M, y - 2.5, 3.5, 11, T.brand);                     /* colour bullet */
+    p.text(M + 9, y, 10.5, text, { bold: true, color: T.ink });
+  }
+  return y - 14;
+}
 function ctPdfDayStr(iso) {
   const list = ctOnDate(iso);
   if (!list.length) return null;
+  const T = ctTpl();
   const t = ctTotals(list);
   const p = new PdfDoc();
   const ph = list.filter((e) => e.photo).length;
   let y = ctPdfHead(p, "DIN KA LEDGER",
-    ctPretty(iso) + " · " + ctDayName(iso) + " · " + t.count + " entries" + (ph ? " · " + ph + " photo-wali" : ""));
+    ctPretty(iso) + " \u00b7 " + ctDayName(iso) + " \u00b7 " + t.count + " entries" + (ph ? " \u00b7 " + ph + " photo-wali" : ""));
   y = ctPdfTable(p, y, [
     { l: "Type", w: 62 }, { l: "Party / bill", w: 116 }, { l: "Saman / note", w: 192 },
     { l: "Amount", w: 55, r: 1 }, { l: "Paid", w: 45, r: 1 }, { l: "Baki", w: 45, r: 1 }
   ], list.map((e) => {
     const k = ctKindOf(e);
     const il = ctItemLabel(e);
-    return [k.label + (e.photo ? " [photo]" : ""), (e.party || "—") + (e.billNo ? " · " + e.billNo : ""),
-      (il || (e.mode === "total" ? "Ek-saath total" : "")) + (e.note ? " · “" + e.note + "”" : ""),
+    return [k.label + (e.photo ? " [photo]" : ""), (e.party || "\u2014") + (e.billNo ? " \u00b7 " + e.billNo : ""),
+      (il || (e.mode === "total" ? "Ek-saath total" : "")) + (e.note ? " \u00b7 \u201c" + e.note + "\u201d" : ""),
       moneyS(ctAmount(e)), moneyS(Math.min(ctPaid(e), ctAmount(e))),
       ctBalance(e) > 0.005 ? moneyS(ctBalance(e)) : "-"];
   }));
-  y = ctPdfTotalsBlock(p, y - 2, t, "DIN KA TOTAL — " + ctPretty(iso));
+  y = ctPdfTotalsBlock(p, y - 2, t, "DIN KA TOTAL \u2014 " + ctPretty(iso));
   const items = ctItemAgg(list);
   if (items.length) {
-    p.text(M, y, 10.5, "SAMAN ITEM-WISE", { bold: true, color: CT_PDF.ink });
-    y = ctPdfTable(p, y - 14, [
+    y = ctPdfSecTitle(p, y, "SAMAN ITEM-WISE");
+    y = ctPdfTable(p, y, [
       { l: "Item", w: 185 }, { l: "Qty", w: 60, r: 1 }, { l: "Unit", w: 50 },
       { l: "Rate (per unit)", w: 80, r: 1 }, { l: "Amount", w: 70, r: 1 }, { l: "Lines", w: 70, r: 1 }
-    ], items.map((i) => [i.name + (i.lineItems ? " (Σ line-total)" : ""), String(i.qty), i.unit,
+    ], items.map((i) => [i.name + (i.lineItems ? " (\u03a3 line-total)" : ""), String(i.qty), i.unit,
       rateS(i.avgRate), moneyS(i.amt), String(i.n)]));
   }
   const baki = ctBakiList(list);
   if (baki.length && y > 90) {
     p.text(M, y, 9.5, "BAKI / UDHAAR IS DIN: " + moneyS(r2(baki.reduce((s2, e) => s2 + ctBalance(e), 0))) +
-      " (" + baki.length + " entries)", { bold: true, color: CT_PDF.bad });
+      " (" + baki.length + " entries)", { bold: true, color: T.bad });
   }
-  ctPdfFoot(p, "Hisaab Pro · Canteen · din ka ledger · " + ctPretty(iso));
+  ctPdfFoot(p, "Hisaab Pro \u00b7 Canteen \u00b7 din ka ledger \u00b7 " + ctPretty(iso));
   return { str: p.build(), name: "Canteen_Din_" + iso + ".pdf" };
 }
 function ctPdfMonthStr(y, m) {
@@ -5444,7 +5592,7 @@ function ctPdfMonthStr(y, m) {
   const t = ctTotals(list);
   const p = new PdfDoc();
   const days = ctMonthDays(y, m).filter((d) => d.list.length);
-  let yy = ctPdfHead(p, "MAHINE KA LEDGER", monthLabel(y, m) + " · " + days.length + " din · " + t.count + " entries");
+  let yy = ctPdfHead(p, "MAHINE KA LEDGER", monthLabel(y, m) + " \u00b7 " + days.length + " din \u00b7 " + t.count + " entries");
   yy = ctPdfTable(p, yy, [
     { l: "Date", w: 76 }, { l: "Din", w: 58 }, { l: "Ent.", w: 40, r: 1 },
     { l: "Saman", w: 66, r: 1 }, { l: "Bikri", w: 66, r: 1 }, { l: "Kharcha", w: 62, r: 1 },
@@ -5453,34 +5601,34 @@ function ctPdfMonthStr(y, m) {
     moneyS(d.t.purchase), moneyS(d.t.sale), moneyS(d.t.expense),
     (d.t.net < 0 ? "-" : "") + moneyS(Math.abs(d.t.net)),
     d.t.balance > 0.005 ? moneyS(d.t.balance) : "-"]));
-  yy = ctPdfTotalsBlock(p, yy - 2, t, "MAHINE KA TOTAL — " + monthLabel(y, m).toUpperCase());
+  yy = ctPdfTotalsBlock(p, yy - 2, t, "MAHINE KA TOTAL \u2014 " + monthLabel(y, m).toUpperCase());
   const items = ctItemAgg(list);
   if (items.length) {
-    p.text(M, yy, 10.5, "SAMAN ITEM-WISE", { bold: true, color: CT_PDF.ink });
-    yy = ctPdfTable(p, yy - 14, [
+    yy = ctPdfSecTitle(p, yy, "SAMAN ITEM-WISE");
+    yy = ctPdfTable(p, yy, [
       { l: "Item", w: 172 }, { l: "Qty", w: 58, r: 1 }, { l: "Unit", w: 46 },
       { l: "Avg rate", w: 74, r: 1 }, { l: "Amount", w: 72, r: 1 }, { l: "Lines", w: 93, r: 1 }
-    ], items.slice(0, 60).map((i) => [i.name + (i.lineItems ? " (Σ)" : ""), String(i.qty), i.unit,
+    ], items.slice(0, 60).map((i) => [i.name + (i.lineItems ? " (\u03a3)" : ""), String(i.qty), i.unit,
       rateS(i.avgRate), moneyS(i.amt), String(i.n)]));
   }
   const parties = ctPartyAgg(list);
   if (parties.length && yy > 120) {
-    p.text(M, yy, 10.5, "PARTY-WISE", { bold: true, color: CT_PDF.ink });
-    yy = ctPdfTable(p, yy - 14, [
+    yy = ctPdfSecTitle(p, yy, "PARTY-WISE");
+    yy = ctPdfTable(p, yy, [
       { l: "Party", w: 215 }, { l: "Entries", w: 70, r: 1 }, { l: "Amount", w: 110, r: 1 }, { l: "Baki", w: 120, r: 1 }
-    ], parties.slice(0, 30).map((x) => [x.name || "—", String(x.n), moneyS(x.amt), x.bal > 0.005 ? moneyS(x.bal) : "-"]));
+    ], parties.slice(0, 30).map((x) => [x.name || "\u2014", String(x.n), moneyS(x.amt), x.bal > 0.005 ? moneyS(x.bal) : "-"]));
   }
-  ctPdfFoot(p, "Hisaab Pro · Canteen · mahine ka ledger · " + monthLabel(y, m));
+  ctPdfFoot(p, "Hisaab Pro \u00b7 Canteen \u00b7 mahine ka ledger \u00b7 " + monthLabel(y, m));
   return { str: p.build(), name: "Canteen_" + MONTHS_S[m] + "-" + y + ".pdf" };
 }
 function ctPdfDay(iso) {
   const r = ctPdfDayStr(iso);
-  if (!r) return toast("Is din koi entry nahi — PDF me kya jayega?", "bad");
+  if (!r) return toast("Is din koi entry nahi \u2014 PDF me kya jayega?", "bad");
   savePdf(r.name, r.str);
 }
 function ctPdfMonth(y, m) {
   const r = ctPdfMonthStr(y, m);
-  if (!r) return toast("Is mahine koi entry nahi — PDF me kya jayega?", "bad");
+  if (!r) return toast("Is mahine koi entry nahi \u2014 PDF me kya jayega?", "bad");
   savePdf(r.name, r.str);
 }
 /* ---- 📤 PDF seedha WhatsApp par (Web Share API → file attach; warna download + wa.me) ---- */
@@ -5488,13 +5636,13 @@ function ctSharePdf(which, iso, y, m) {
   const r = which === "day" ? ctPdfDayStr(iso) : ctPdfMonthStr(y, m);
   if (!r) return toast("PDF banane ke liye entries chahiye", "bad");
   const blob = pdfBlob(r.str);
-  const note = (Store.data.settings.shopName || "Hisaab Pro") + " — " +
+  const note = (Store.data.settings.shopName || "Hisaab Pro") + " \u2014 " +
     (which === "day" ? ctPretty(iso) : monthLabel(y, m)) + " ka canteen ledger";
   try {
     const F = window.File ? new File([blob], r.name, { type: "application/pdf" }) : null;
     if (F && navigator.share && navigator.canShare && navigator.canShare({ files: [F] })) {
       navigator.share({ files: [F], title: note, text: note + " (PDF)" })
-        .then(() => toast("PDF share ho gayi ✔ — WhatsApp me khul gayi hogi", "ok"))
+        .then(() => toast("PDF share ho gayi \u2714 \u2014 WhatsApp me khul gayi hogi", "ok"))
         .catch(() => {});
       return;
     }
@@ -5506,8 +5654,8 @@ function ctSharePdf(which, iso, y, m) {
   document.body.appendChild(a); a.click();
   setTimeout(() => { URL.revokeObjectURL(url); a.remove(); }, 2500);
   window.open("https://wa.me/?text=" + encodeURIComponent(note +
-    "\n\nPDF download ho gayi hai — WhatsApp chat me 📎 (attach) se bhej do."), "_blank");
-  toast("PDF download ho gayi — WhatsApp me 📎 se attach kar do", "ok");
+    "\n\nPDF download ho gayi hai \u2014 WhatsApp chat me \ud83d\udcce (attach) se bhej do."), "_blank");
+  toast("PDF download ho gayi \u2014 WhatsApp me \ud83d\udcce se attach kar do", "ok");
 }
 
 /* ---------- 📋 BULK PASTE (v3.5): ek saath text paste → alag-alag entries ---------- */
@@ -6404,6 +6552,8 @@ document.addEventListener("click", (e) => {
     case "ctPrintMonth": ctPrintMonth(); break;
     case "ctShareDay": ctShareDay(); break;
     case "ctShareMonth": ctShareMonth(); break;
+    case "ctTplPick": ctTplPick(); break;
+    case "ctTplSet": if (ctSetTpl(btn.dataset.id)) ctTplPick(); break;
     case "ctSharePdfDay": ctSharePdf("day", ctUI().date); break;
     case "ctSharePdfMonth": ctSharePdf("month", null, UI.year, UI.month); break;
     case "ctRestore": ctRestoreLog(btn.dataset.log); break;
@@ -6623,7 +6773,8 @@ window.Hisaab = { Store, calc, monthMeta, PdfDoc, inWords, UI, render, go, Cloud
              pdfDay: ctPdfDay, pdfMonth: ctPdfMonth, renderModal: ctRenderModal, photoBox: ctPhotoBoxHTML,
              bulkParse: ctParseBulk, bulkOpen: ctBulkOpen, bulkSave: ctBulkSave, ocrRun: ctRunOcr,
              ocrClean: ctOcrClean, enhancePixels: ctEnhancePixels, shareMonth: ctShareMonth,
-             pdfDayStr: ctPdfDayStr, pdfMonthStr: ctPdfMonthStr, sharePdf: ctSharePdf } };
+             pdfDayStr: ctPdfDayStr, pdfMonthStr: ctPdfMonthStr, sharePdf: ctSharePdf,
+             tpls: CT_TPLS, tpl: ctTpl, setTpl: ctSetTpl, tplPick: ctTplPick } };
 })();
 </script>
 </body>

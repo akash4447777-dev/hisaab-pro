@@ -66,7 +66,7 @@ const iso = (d) => d.getFullYear() + "-" + String(d.getMonth() + 1).padStart(2, 
   ok(H().Store.data.canteen.entries.length > 0, "sample canteen entries load hui (" + H().Store.data.canteen.entries.length + ")");
   ok(H().Store.data.workers.length === 4, "workers safe (4 demo)");
   const verEl = $("[data-ver]");
-  ok(verEl && verEl.textContent === "3.8", "version badge 3.8", verEl && verEl.textContent);
+  ok(verEl && verEl.textContent === "3.9", "version badge 3.9", verEl && verEl.textContent);
   ok(root().innerHTML.indexOf("Canteen") >= 0, "dashboard par canteen card dikha");
   ok(root().innerHTML.indexOf("Saman aaya") >= 0, "dashboard canteen strip me 'Saman aaya'");
 
@@ -774,6 +774,66 @@ const iso = (d) => d.getFullYear() + "-" + String(d.getMonth() + 1).padStart(2, 
   ok(!!wa8 && String(wa8).indexOf("https://wa.me/") === 0, "fallback me wa.me khula", String(wa8).slice(0, 40));
   ok(decodeURIComponent(String(wa8)).indexOf("attach") >= 0, "wa text me attach hint");
   ok(!!fb8, "fallback me PDF download ke liye blob bana");
+
+  section("🎨 PDF templates (v3.9) — 6 designs, picker, persist");
+  const TP9 = H().canteen.tpls;
+  ok(Array.isArray(TP9) && TP9.length === 6, "6 PDF templates defined", TP9 && TP9.length);
+  ok(new Set(TP9.map((t) => t.id)).size === 6, "sab template ids unique");
+  ok(TP9[0].id === "neela", "default pehla template Neela Classic");
+  ok(TP9.some((t) => t.style === "band") && TP9.some((t) => t.style === "bill") && TP9.some((t) => t.style === "minimal"),
+     "3 alag render styles (band / bill / minimal)");
+  ok(H().canteen.tpl().id === "neela", "bina setting ke default = neela (purana look safe)");
+
+  /* har template me din + mahina PDF valid banti hai */
+  H().UI.ct.tab = "day"; H().UI.ct.date = todayIso; H().render();
+  let allPdf9 = true;
+  const st9 = {};
+  TP9.forEach((t) => {
+    H().canteen.setTpl(t.id);
+    const rd = H().canteen.pdfDayStr(todayIso);
+    const rm = H().canteen.pdfMonthStr(H().UI.year, H().UI.month);
+    if (!rd || rd.str.indexOf("%PDF-") !== 0 || !rm || rm.str.indexOf("%PDF-") !== 0) allPdf9 = false;
+    st9[t.id] = rd ? rd.str : "";
+  });
+  ok(allPdf9, "har template me din + mahina PDF bani (%PDF header)");
+  ok(st9.neela.indexOf("0.31 0.27 0.9") >= 0, "neela template me brand blue colour operator");
+  ok(st9.hara.indexOf("0.09 0.44 0.24") >= 0, "hara template me green colour operator");
+  ok(st9.dark.indexOf("0.87 0.72 0.36") >= 0, "dark template me golden accent");
+  ok(st9.kesari.indexOf("0.9 0.42 0.05") >= 0, "kesari template me saffron colour");
+  ok(st9.simple.indexOf("0.31 0.27 0.9") < 0 && st9.simple.indexOf("0 0 0 rg") >= 0, "Simple S&W me koi rang nahi — sirf black");
+  ok(st9.lal.indexOf("DIN KA LEDGER") >= 0 && st9.lal.indexOf("PURCHASE") >= 0 && st9.lal !== st9.neela,
+     "Laal Bill (invoice) me content same, design alag");
+  ["neela", "hara", "dark", "kesari", "lal", "simple"].forEach((id) => {
+    ok(st9[id].indexOf("Page 1 of") >= 0 && st9[id].indexOf("Generated") >= 0, id + ": footer + timestamp sab templates me");
+  });
+
+  /* setTpl validation + persist */
+  ok(H().canteen.setTpl("nope") === false, "galat template id reject");
+  ok(H().canteen.tpl().id === "simple", "reject ke baad purani selection barkarar");
+  H().canteen.setTpl("dark");
+  ok(H().Store.data.settings.pdfTpl === "dark", "selection Store.data.settings.pdfTpl me save");
+  const raw9 = window.localStorage.getItem("hisaabPro.v1");
+  ok(raw9 && JSON.parse(raw9).settings && JSON.parse(raw9).settings.pdfTpl === "dark", "selection localStorage me persist");
+
+  /* 🎨 picker UI */
+  H().canteen.setTpl("neela");
+  H().UI.ct.tab = "day"; H().render();
+  ok(!!$('[data-act="ctTplPick"]'), "toolbar me 🎨 PDF style button (din)");
+  click('[data-act="ctTplPick"]');
+  await wait(20);
+  const cards9 = $$(".ct-tplCard");
+  ok(cards9.length === 6, "picker modal me 6 template cards", cards9.length);
+  ok(!!$('.ct-tplCard.on') && $('.ct-tplCard.on').dataset.id === "neela", "chuna hua card ✓ marked");
+  click('[data-act="ctTplSet"][data-id="lal"]');
+  await wait(20);
+  ok(H().canteen.tpl().id === "lal", "card click → template set");
+  ok($$(".ct-tplCard").length === 6 && $('.ct-tplCard.on').dataset.id === "lal", "picker refresh — naya card ✓ marked");
+  click('.modal-f [data-act="closeModal"]');
+  await wait(10);
+  ok(!$("#overlay"), "picker band hua");
+  H().UI.ct.tab = "month"; H().render();
+  ok(!!$('[data-act="ctTplPick"]'), "mahina tab par bhi 🎨 button");
+  H().canteen.setTpl("neela");           /* default restore — aage wale tests safe */
 
   section("CSV export");
   let csvText = "";
