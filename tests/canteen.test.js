@@ -66,7 +66,7 @@ const iso = (d) => d.getFullYear() + "-" + String(d.getMonth() + 1).padStart(2, 
   ok(H().Store.data.canteen.entries.length > 0, "sample canteen entries load hui (" + H().Store.data.canteen.entries.length + ")");
   ok(H().Store.data.workers.length === 4, "workers safe (4 demo)");
   const verEl = $("[data-ver]");
-  ok(verEl && verEl.textContent === "3.13", "version badge 3.13", verEl && verEl.textContent);
+  ok(verEl && verEl.textContent === "3.14", "version badge 3.14", verEl && verEl.textContent);
   ok(root().innerHTML.indexOf("Canteen") >= 0, "dashboard par canteen card dikha");
   ok(root().innerHTML.indexOf("Saman aaya") >= 0, "dashboard canteen strip me 'Saman aaya'");
 
@@ -797,10 +797,10 @@ const iso = (d) => d.getFullYear() + "-" + String(d.getMonth() + 1).padStart(2, 
     st9[t.id] = rd ? rd.str : "";
   });
   ok(allPdf9, "har template me din + mahina PDF bani (%PDF header)");
-  ok(st9.neela.indexOf("0.31 0.27 0.9") >= 0, "neela template me brand blue colour operator");
-  ok(st9.hara.indexOf("0.09 0.44 0.24") >= 0, "hara template me green colour operator");
-  ok(st9.dark.indexOf("0.1 0.11 0.15") >= 0, "dark template me charcoal accent rule");
-  ok(st9.kesari.indexOf("0.9 0.42 0.05") >= 0, "kesari template me saffron colour");
+  ok(st9.neela.indexOf("0.953 0.957 0.965 rg") >= 0, "neela = print exact grey header fill");
+  ok(st9.hara.indexOf("0.92 0.965 0.93 rg") >= 0, "hara template me green header tint");
+  ok(st9.dark.indexOf("0.9 0.9 0.93 rg") >= 0, "dark template me charcoal header tint");
+  ok(st9.kesari.indexOf("0.993 0.955 0.91 rg") >= 0, "kesari template me saffron header tint");
   ok(st9.simple.indexOf("0.31 0.27 0.9") < 0 && st9.simple.indexOf("0 0 0 RG") >= 0, "Simple S&W me koi rang nahi — sirf black");
   ok(st9.lal.indexOf("CANTEEN DAY LEDGER") >= 0 && st9.lal.indexOf("Saman aaya") >= 0 && st9.lal !== st9.neela,
      "Laal Bill (invoice) me content same, design alag");
@@ -899,11 +899,11 @@ const iso = (d) => d.getFullYear() + "-" + String(d.getMonth() + 1).padStart(2, 
   ok(m12.indexOf("ITEM-WISE SUMMARY") >= 0 && m12.indexOf("RATE WALI ENTRIES") >= 0, "item-wise summary section");
   ok(d12.indexOf("CANTEEN DAY LEDGER") >= 0 && d12.indexOf("ENTRIES") >= 0 && d12.indexOf("DIN KA NET") >= 0,
      "din PDF bhi usi print-format me");
-  const acc12 = { neela: "0.31 0.27 0.9", hara: "0.09 0.44 0.24", dark: "0.1 0.11 0.15", kesari: "0.9 0.42 0.05", lal: "0.74 0.11 0.11" };
+  const acc12 = { neela: "0.953 0.957 0.965 rg", hara: "0.92 0.965 0.93 rg", dark: "0.9 0.9 0.93 rg", kesari: "0.993 0.955 0.91 rg", lal: "0.74 0.11 0.11 RG" };
   Object.keys(acc12).forEach((id) => {
     H().canteen.setTpl(id);
     const st = H().canteen.pdfMonthStr(H().UI.year, H().UI.month).str;
-    ok(st.indexOf(acc12[id] + " RG") >= 0, id + ": template accent rule PDF me");
+    ok(st.indexOf(acc12[id]) >= 0, id + ": template accent PDF me");
   });
   H().canteen.setTpl("simple");
   const s12 = H().canteen.pdfMonthStr(H().UI.year, H().UI.month).str;
@@ -946,6 +946,25 @@ const iso = (d) => d.getFullYear() + "-" + String(d.getMonth() + 1).padStart(2, 
     if (H().canteen.pdfMonthStr(H().UI.year, H().UI.month).str.indexOf("%PDF-") !== 0) ok13 = false;
   });
   ok(ok13, "sab 6 templates me din + mahina PDF valid");
+  H().canteen.setTpl("neela");
+
+  section("v3.14 — print CSS exact mirror (grid, dashed, sign boxes)");
+  const d14 = H().canteen.pdfDayStr(todayIso).str;
+  const m14 = H().canteen.pdfMonthStr(H().UI.year, H().UI.month).str;
+  ok(/110\.00 [\d.]+ m 110\.00 [\d.]+ l S/.test(m14), "mahine table me FULL GRID vertical borders");
+  ok(/100\.00 [\d.]+ m 100\.00 [\d.]+ l S/.test(d14), "din table me FULL GRID vertical borders");
+  ok(m14.indexOf("0.953 0.957 0.965 rg") >= 0, "header row grey fill (print #f3f4f6)");
+  ok(m14.indexOf("0.898 0.906 0.922 RG") >= 0, "grid + dashed lines print grey (#e5e7eb)");
+  ok(m14.indexOf("Proprietor") >= 0 && m14.indexOf("Prepared by") >= 0, "signature boxes (Prepared by / owner)");
+  ok(m14.indexOf("Hisaab v") >= 0 && m14.indexOf("Page 1 of") >= 0, "footer me version + page number");
+  ok(m14.indexOf("Amount in words") >= 0, "in-words dashed box");
+  ok(d14.indexOf("DIN KA NET") >= 0 && m14.indexOf("MAHINE KA NET") >= 0, "dark net bands dono me");
+  let g14 = true;
+  H().canteen.tpls.forEach((t) => {
+    H().canteen.setTpl(t.id);
+    if (!/110\.00 [\d.]+ m 110\.00/.test(H().canteen.pdfMonthStr(H().UI.year, H().UI.month).str)) g14 = false;
+  });
+  ok(g14, "sab 6 templates me grid layout same");
   H().canteen.setTpl("neela");
 
   section("CSV export");

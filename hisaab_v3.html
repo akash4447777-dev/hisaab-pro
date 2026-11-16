@@ -859,7 +859,7 @@ const rRate = (n) => { const x = Math.max(0, num(n)); return x >= 1 ? r2(x) : Ma
 /* rate dikhane ka format: <₹1 ho to 0.075 jaisa khula number, warna moneyS */
 const rateS = (n) => { const x = num(n); if (x > 0 && x < 1) return "₹" + String(Math.round((x + Number.EPSILON) * 10000) / 10000); return moneyS(x); };
 const clamp = (n, lo, hi) => Math.min(hi, Math.max(lo, n));
-const APP_VERSION = "3.13";
+const APP_VERSION = "3.14";
 const esc = (s) => String(s == null ? "" : s).replace(/[&<>"']/g, (m) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[m]));
 
 const MONTHS = ["January","February","March","April","May","June","July","August","September","October","November","December"];
@@ -2120,6 +2120,7 @@ function viewSettings(){
 
     '<div style="text-align:center;font-size:11.5px;color:var(--muted);margin-top:18px;line-height:1.7">'+
       'Panel <b style="color:var(--ink)">v<span data-ver></span></b> · Auto-update enabled<br>'+
+      'v3.14 — <b style="color:var(--ink)">PDF = print CSS exact mirror</b>: tables ab <b>full grid</b> (har cell border, grey header fill #f3f4f6) jaisa print me; meta rows ke neeche <b>dashed underlines</b>; section titles ke neeche solid underline; <b>Amount in words dashed box</b>; signature <b>do boxes with top border</b> (Prepared by / owner); footer me version + page number; fontsizes print ke px→pt exact. Default template = print exact; baaki 5 templates colour tint dete hain<br>'+
       'v3.13 — <b style="color:var(--ink)">PDF = print same-to-same</b>: 📄 PDF ab bilkul print-ledger jaisi banti hai — din wali bhi! Din: Date/Din/Entries + Saman/Bikri/Kharcha meta, <b>ENTRIES</b> table (Type/Party/Bill/Mode/Saman/Amount/Paid/Baki), <b>SAMAN ITEM-WISE (RATE KE SAATH)</b> + Item-wise total row, lump-sum note, <b>DIN KA NET</b> dark band, Prepared by. Mahina: din-wise + <b>PARTY / SUPPLIER-WISE</b> (Total/Paid/Baki columns), <b>MAHINE KA NET</b> band, <b>Amount in words</b>, signature.  templates + 📤 WhatsApp same<br>'+
       'v3.12 — <b style="color:var(--ink)">Print-ledger PDF format</b>: PDF ab bilkul print wale ledger jaisi — upar shop name + address, right me <b>CANTEEN MONTHLY/DAY LEDGER</b> + mahina + generated time; neeche <b>2-column summary</b> (saman/bikri/kharcha | entries/paid/baki); <b>DIN-WISE LEDGER</b> table ke andar bold <b>Mahine ka total</b> row; <b>ITEM-WISE SUMMARY (rate wali entries)</b> aur PARTY-WISE SUMMARY. 🎨 6 templates abhi bhi hain (accent colours / boxed / plain) aur <b>📤 WhatsApp par bhi yahi format</b> jaata hai<br>'+
       'v3.11 — <b style="color:var(--ink)">PDF alignment pro</b>: sab tables ab <b>poori page-chaurai</b> par exact align (mahine ki 8-column table ka 20pt gap khatam); rows ka rhythm barabar (text ke upar-neeche barabari spacing, hairlines exact row-boundary par); invoice-box ka neeche wala kinara aakhri line par exact; har column ka padding ek jaisa (6pt); totals ki hairlines beech-o-beech; section titles table-text ke saath aligned<br>'+
@@ -5339,43 +5340,43 @@ function ctPrintMonth() {
   setTimeout(() => window.print(), 80);
 }
 
-/* ---------- CANTEEN PDF (v3.12) — print-ledger format (photo jaisa) + 🎨 6 templates ---------- */
+/* ---------- CANTEEN PDF (v3.14) — print-ledger CSS ka exact mirror + 🎨 templates ---------- */
 const CT_TPLS = [
   { id: "neela", name: "Neela Classic", style: "accent",
-    desc: "Neela accents — header rule, table header tint, totals",
+    desc: "Print jaisa exact — halka neela header tint",
     brand: [0.31, 0.27, 0.9], brandTxt: [0.86, 0.85, 0.99],
     ink: [0.12, 0.14, 0.21], mut: [0.46, 0.49, 0.56],
-    line: [0.88, 0.9, 0.94], zebra: [0.975, 0.98, 0.995], hdr: [0.94, 0.94, 0.99],
+    line: [0.88, 0.9, 0.94], zebra: [0.975, 0.98, 0.995], hdr: [0.953, 0.957, 0.965],
     ok: [0.02, 0.55, 0.36], bad: [0.8, 0.12, 0.12], cyan: [0.05, 0.45, 0.6], warn: [0.85, 0.55, 0.05] },
   { id: "hara", name: "Hara Bahi-Khata", style: "accent",
-    desc: "Hara accents — shaant green ledger look",
+    desc: "Hara header tint — shaant green ledger",
     brand: [0.09, 0.44, 0.24], brandTxt: [0.85, 0.95, 0.88],
     ink: [0.1, 0.16, 0.12], mut: [0.4, 0.48, 0.42],
     line: [0.87, 0.92, 0.88], zebra: [0.962, 0.984, 0.968], hdr: [0.92, 0.965, 0.93],
     ok: [0.02, 0.55, 0.36], bad: [0.8, 0.12, 0.12], cyan: [0.05, 0.45, 0.6], warn: [0.78, 0.52, 0.05] },
   { id: "dark", name: "Dark Premium", style: "accent",
-    desc: "Charcoal accents — sober premium report",
+    desc: "Charcoal header tint — sober premium",
     brand: [0.1, 0.11, 0.15], brandTxt: [0.87, 0.72, 0.36],
     ink: [0.1, 0.11, 0.15], mut: [0.45, 0.47, 0.52],
-    line: [0.86, 0.87, 0.9], zebra: [0.966, 0.966, 0.974], hdr: [0.92, 0.92, 0.945],
+    line: [0.86, 0.87, 0.9], zebra: [0.966, 0.966, 0.974], hdr: [0.9, 0.9, 0.93],
     ok: [0.02, 0.55, 0.36], bad: [0.8, 0.12, 0.12], cyan: [0.05, 0.45, 0.6], warn: [0.85, 0.55, 0.05] },
   { id: "kesari", name: "Kesariya Dukaan", style: "accent",
-    desc: "Kesariya accents — garam orange dukaan feel",
+    desc: "Kesariya header tint — garam dukaan feel",
     brand: [0.9, 0.42, 0.05], brandTxt: [1, 0.93, 0.82],
     ink: [0.21, 0.13, 0.06], mut: [0.5, 0.44, 0.38],
     line: [0.95, 0.9, 0.85], zebra: [0.995, 0.975, 0.952], hdr: [0.993, 0.955, 0.91],
     ok: [0.02, 0.55, 0.36], bad: [0.8, 0.12, 0.12], cyan: [0.05, 0.45, 0.6], warn: [0.85, 0.55, 0.05] },
   { id: "lal", name: "Laal Bill (Invoice)", style: "bill",
-    desc: "Laal accents + boxed tables — invoice jaisa",
+    desc: "Laal border wala grid — invoice look",
     brand: [0.74, 0.11, 0.11], brandTxt: [0.97, 0.88, 0.88],
     ink: [0.16, 0.1, 0.1], mut: [0.48, 0.42, 0.42],
     line: [0.88, 0.84, 0.84], zebra: [0.99, 0.97, 0.97], hdr: [0.975, 0.935, 0.935],
     ok: [0.02, 0.55, 0.36], bad: [0.74, 0.11, 0.11], cyan: [0.05, 0.45, 0.6], warn: [0.85, 0.55, 0.05] },
   { id: "simple", name: "Simple S&W", style: "minimal",
-    desc: "Plain black & white — koi tint nahi, syahi bachao",
+    desc: "Plain black grid, white header — syahi bachao",
     brand: [0, 0, 0], brandTxt: [0.35, 0.35, 0.35],
     ink: [0, 0, 0], mut: [0.4, 0.4, 0.4],
-    line: [0.72, 0.72, 0.72], zebra: [1, 1, 1], hdr: [1, 1, 1],
+    line: [0.55, 0.55, 0.55], zebra: [1, 1, 1], hdr: [1, 1, 1],
     ok: [0, 0, 0], bad: [0, 0, 0], cyan: [0, 0, 0], warn: [0, 0, 0] }
 ];
 function ctTpl() {
@@ -5386,22 +5387,24 @@ function ctSetTpl(id) {
   const t = CT_TPLS.find((x) => x.id === id);
   if (!t) { toast("Aisa PDF template nahi mila", "bad"); return false; }
   if (!Store.data.settings) Store.data.settings = {};
-  Store.data.settings.pdfTpl = id;                 /* additive field — purana data untouched */
+  Store.data.settings.pdfTpl = id;
   Store.save(true);
   toast("PDF template: " + t.name + " \u2714 \u2014 ab PDF isi design me banegi", "ok");
   return true;
 }
 function ctTplRgb(c) { return "rgb(" + c.map((v) => Math.round(v * 255)).join(",") + ")"; }
-/* 🎨 template picker modal — mini preview + card click */
 function ctTplPick() {
   const cur = ctTpl();
   const prev = (t) => {
-    const bd = ctTplRgb(t.brand), ln = ctTplRgb(t.line), ik = ctTplRgb(t.ink);
-    const rule = '<i style="height:3px;background:' + (t.style === "minimal" ? ik : bd) + '"></i>';
-    const rows = '<span class="pv-rows"' + (t.style === "bill" ? ' style="border:1px solid ' + ln + ';padding:2px 3px"' : "") + ">" +
-      '<i style="width:100%;background:' + ln + '"></i><i style="width:86%;background:' + ln + '"></i><i style="width:94%;background:' + ln + '"></i></span>';
-    const tot = '<span class="pv-tot"><i style="background:' + ln + '"></i><i style="background:' + ln + '"></i><b style="background:' + ik + '"></b></span>';
-    return '<span class="ct-tplPrev">' + '<span class="pv-head">' + rule + "</span>" + rows + tot + "</span>";
+    const bd = ctTplRgb(t.brand), ln = ctTplRgb(t.line), ik = ctTplRgb(t.ink), hd = ctTplRgb(t.hdr);
+    const rows = '<span class="pv-rows"' + (t.style === "bill" ? ' style="border:1px solid ' + bd + ';padding:2px 3px"' : "") + ">" +
+      '<i style="width:100%;background:' + hd + ';height:4px;border:1px solid ' + ln + '"></i>' +
+      '<i style="width:100%;background:' + ln + '"></i><i style="width:100%;background:' + ln + '"></i></span>';
+    return '<span class="ct-tplPrev">' +
+      '<span class="pv-head"><i style="height:3px;background:' + (t.style === "minimal" ? ik : "rgb(15,23,42)") + '"></i></span>' +
+      rows +
+      '<span class="pv-tot"><i style="background:' + ln + '"></i><b style="background:rgb(15,23,42)"></b></span>' +
+      "</span>";
   };
   const cards = CT_TPLS.map((t) => {
     const on = t.id === cur.id;
@@ -5420,8 +5423,7 @@ function ctTplPick() {
       '<div class="modal-f"><button class="btn primary" data-act="closeModal">Ho gaya</button></div>' +
     "</div>");
 }
-/* v3.11 alignment pro: har table poori content-width (CW) par, ek jaise padding */
-const CT_PDF_PL = 6, CT_PDF_PR = 6;
+const CT_PDF_PL = 7, CT_PDF_PR = 7;
 const CT_COLS_DAY = [
   { l: "Type", w: 60 }, { l: "Party", w: 88 }, { l: "Bill", w: 58 }, { l: "Mode", w: 62 },
   { l: "Saman", w: 112.28 }, { l: "Amount (Rs.)", w: 50, r: 1 }, { l: "Paid", w: 45, r: 1 }, { l: "Baki", w: 40, r: 1 }];
@@ -5438,123 +5440,152 @@ const CT_COLS_MONTH = [
 const CT_COLS_PARTY = [
   { l: "Party", w: 190 }, { l: "Entries", w: 70, r: 1 }, { l: "Total", w: 85, r: 1 },
   { l: "Paid", w: 85, r: 1 }, { l: "Baki", w: 85.28, r: 1 }];
-const CT_PDF_NETBG = [0.06, 0.09, 0.16];                       /* print wala dark net band */
-/* ---- header: print-ledger jaisa — shop+address left, title+sub+generated right, dark rule ---- */
+const CT_PDF_NETBG = [0.06, 0.09, 0.16];
+const CT_PDF_GRID = [0.898, 0.906, 0.922];        /* print #e5e7eb */
+const CT_PDF_SECC = [0.216, 0.255, 0.318];        /* print #374151 */
+function ctDash(p, x1, y, x2, color, w) {         /* print jaisi dashed line */
+  for (let x = x1; x < x2; x += 5) p.line(x, y, Math.min(x + 2.6, x2), y, color, w || 0.6);
+}
+function ctDashV(p, x, y1, y2, color, w) {
+  for (let yy = y1; yy > y2; yy -= 5) p.line(x, yy, x, Math.max(yy - 2.6, y2), color, w || 0.6);
+}
+/* ---- header: print ctStmtHead exact — 19px shop, 11px addr, 14px title, 2.5px dark rule ---- */
 function ctPdfHead(p, docTitle, sub) {
   const T = ctTpl(), st = Store.data.settings || {};
   const shop = st.shopName || "Hisaab";
-  p.text(M, 814, 13.5, shop + " \u2014 CANTEEN", { bold: true, color: T.ink });
+  p.text(M, 814, 14.2, shop + " \u2014 CANTEEN", { bold: true, color: T.ink });
   const addr = [st.address, st.phone ? "Ph: " + st.phone : "", st.ownerName].filter(Boolean).join(" \u00b7 ");
-  if (addr) p.text(M, 802, 7.5, addr, { color: T.mut });
-  p.text(RIGHT, 814, 11, docTitle.toUpperCase(), { bold: true, align: "right", color: T.ink });
-  p.text(RIGHT, 802, 8.5, sub, { align: "right", color: T.mut });
-  p.text(RIGHT, 791, 7.5, "Generated " + new Date().toLocaleString("en-IN"), { align: "right", color: T.mut });
-  p.line(M, 783, RIGHT, 783, T.style === "minimal" ? T.ink : CT_PDF_NETBG, 1.6);
-  return 770;
+  if (addr) p.text(M, 802, 8.2, addr, { color: T.mut });
+  p.text(RIGHT, 814, 10.5, docTitle.toUpperCase(), { bold: true, align: "right", color: T.ink });
+  p.text(RIGHT, 803, 8.2, sub, { align: "right", color: T.mut });
+  p.text(RIGHT, 792, 7.9, "Generated " + new Date().toLocaleString("en-IN"), { align: "right", color: T.mut });
+  p.line(M, 784, RIGHT, 784, T.style === "minimal" ? T.ink : CT_PDF_NETBG, 1.9);
+  return 768;
 }
-/* ---- 2-column KV summary (print jaisa): label left, bold value right ---- */
+/* ---- meta KV: print .meta .r — dashed underline har row ---- */
 function ctPdfSummary(p, y, L, R) {
   const T = ctTpl();
   const colW = (CW - 30) / 2;
   const draw = (x0, rows) => rows.forEach((r, i) => {
-    const yy = y - i * 13;
-    p.text(x0, yy, 8, r[0], { color: T.mut });
-    p.text(x0 + colW, yy, 9, r[1], { bold: true, align: "right", color: r[2] || T.ink });
+    const yy = y - i * 14;
+    p.text(x0, yy, 8.6, r[0], { color: T.mut });
+    p.text(x0 + colW, yy, 8.6, r[1], { bold: true, align: "right", color: r[2] || T.ink });
+    ctDash(p, x0, yy - 4.5, x0 + colW, CT_PDF_GRID);
   });
   draw(M, L);
   draw(M + colW + 30, R);
-  return y - 3 * 13 - 4;
+  return y - 3 * 14 - 6;
 }
-/* ---- dark NET band (print wala .net box) ---- */
-function ctPdfNetBand(p, y, label, sub, net) {
-  const T = ctTpl();
-  p.rect(M, y - 26, CW, 26, T.style === "minimal" ? T.ink : CT_PDF_NETBG);
-  p.text(M + 8, y - 10, 8, label.toUpperCase(), { bold: true, color: [0.82, 0.85, 0.9] });
-  p.text(M + 8, y - 19, 7, sub, { color: [0.82, 0.85, 0.9] });
-  p.text(RIGHT - 8, y - 13, 14, (net < 0 ? "-" : "") + money(Math.abs(net)), { bold: true, align: "right", color: [1, 1, 1] });
-  return y - 26 - 12;
-}
-/* ---- Prepared by / signature block ---- */
-function ctPdfSign(p, y) {
-  const T = ctTpl(), st = Store.data.settings || {};
-  p.text(M, y, 8, "Prepared by", { color: T.mut });
-  p.text(RIGHT, y, 8, st.ownerName || "Authorised signatory", { align: "right", color: T.mut });
-  return y - 14;
-}
-/* har page ke neeche footer + page number (build ke baad, count pata hota hai) */
-function ctPdfFoot(p, label) {
-  const T = ctTpl(), n = p.pages.length;
-  p.pages.forEach((ops, i) => {
-    const old = p.cur; p.cur = ops;
-    p.line(M, 34, RIGHT, 34, T.line, 0.7);
-    p.text(M, 26, 7.5, label, { color: T.mut });
-    p.text(RIGHT, 26, 7.5, "Page " + (i + 1) + " of " + n, { align: "right", color: T.mut });
-    p.cur = old;
-  });
-}
+/* ---- section title: print h4.sec — uppercase + solid underline ---- */
 function ctPdfSecTitle(p, y, text) {
   const T = ctTpl();
-  p.text(M, y, 9.5, text, { bold: true, color: T.ink });
-  return y - 14;
+  p.text(M, y, 7.9, text, { bold: true, color: T.style === "minimal" ? T.ink : CT_PDF_SECC });
+  p.line(M, y - 4, M + CW, y - 4, CT_PDF_GRID, 0.6);
+  return y - 15;
 }
+/* ---- table: print .stmt table — FULL GRID (har cell border) + grey header fill ---- */
 function ctPdfTable(p, y, cols, rows, totalRow) {
   const T = ctTpl();
+  const G = T.style === "minimal" ? T.line : CT_PDF_GRID;
+  const HF = T.hdr;
   const xs = []; let xa = M; cols.forEach((c) => { xs.push(xa); xa += c.w; });
   let segTop = null;
-  const frame = (yBot) => {                                   /* bill style: outer box + column lines */
-    if (T.style !== "bill" || segTop == null) return;
-    p.box(M, yBot, CW, segTop - yBot, T.line);
-    xs.slice(1).forEach((x) => p.line(x, yBot, x, segTop, T.line, 0.4));
+  const closeSeg = (yBot) => {
+    if (segTop == null) return;
+    p.line(M, segTop, M + CW, segTop, G, 0.6);
+    p.line(M, yBot, M + CW, yBot, G, 0.6);
+    p.line(M, segTop, M, yBot, G, 0.6);
+    p.line(M + CW, segTop, M + CW, yBot, G, 0.6);
+    xs.slice(1).forEach((x) => p.line(x, segTop, x, yBot, G, 0.6));
+    if (T.style === "bill") {
+      p.line(M, segTop, M + CW, segTop, T.brand, 0.9);
+      p.line(M, yBot, M + CW, yBot, T.brand, 0.9);
+      p.line(M, segTop, M, yBot, T.brand, 0.9);
+      p.line(M + CW, segTop, M + CW, yBot, T.brand, 0.9);
+    }
     segTop = null;
   };
   const head = () => {
-    if (T.style !== "minimal") p.rect(M, y - 5, CW, 15, T.hdr);
+    p.rect(M, y - 6, CW, 16, HF);
     let x = M;
     cols.forEach((c) => {
-      p.text(c.r ? x + c.w - CT_PDF_PR : x + CT_PDF_PL, y, 7, String(c.l).toUpperCase(),
-        { bold: true, color: T.mut, align: c.r ? "right" : undefined });
+      p.text(c.r ? x + c.w - CT_PDF_PR : x + CT_PDF_PL, y, 7.9, String(c.l).toUpperCase(),
+        { bold: true, color: T.style === "minimal" ? T.ink : CT_PDF_SECC, align: c.r ? "right" : undefined });
       x += c.w;
     });
-    if (T.style === "bill") { p.line(M, y - 5, M + CW, y - 5, T.brand, 0.8); segTop = y + 10; }
-    else p.line(M, y - 5, M + CW, y - 5, T.style === "minimal" ? T.ink : T.brand, T.style === "minimal" ? 0.9 : 1);
-    return y - 5;
+    segTop = y + 10;
+    p.line(M, y - 6, M + CW, y - 6, G, 0.6);
+    return y - 6;
   };
   y = head();
-  rows.forEach((r) => {
-    const cells = r.map((v, i) => p.wrap(String(v == null ? "" : v), 8.5, cols[i].w - CT_PDF_PL - CT_PDF_PR, !!cols[i].b));
+  const drawRow = (cells, bold) => {
     const lines = Math.max.apply(null, cells.map((c) => c.length).concat([1]));
-    const h = lines * 11 + 7;
-    if (y - h < 64) { frame(y); p.newPage(); y = head(); }   /* page break → header repeat */
+    const h = lines * 12 + 8;
+    if (y - h < 64) { closeSeg(y); p.newPage(); y = head(); }
     let x = M;
     cells.forEach((cs, i) => {
       cs.forEach((ln, li) => {
-        p.text(cols[i].r ? x + cols[i].w - CT_PDF_PR : x + CT_PDF_PL, y - 9 - li * 11, 8.5, ln,
-          { align: cols[i].r ? "right" : undefined, bold: !!cols[i].b, color: cols[i].color || T.ink });
+        p.text(cols[i].r ? x + cols[i].w - CT_PDF_PR : x + CT_PDF_PL, y - 11 - li * 12, 9, ln,
+          { align: cols[i].r ? "right" : undefined, bold: bold || !!cols[i].b, color: T.ink });
       });
       x += cols[i].w;
     });
     y -= h;
-    p.line(M, y, M + CW, y, T.line, 0.35);
+    p.line(M, y, M + CW, y, G, 0.6);
+  };
+  rows.forEach((r) => drawRow(r.map((v, i) => p.wrap(String(v == null ? "" : v), 9, cols[i].w - 14, !!cols[i].b)), false));
+  if (totalRow) drawRow(totalRow.map((v) => p.wrap(String(v == null ? "" : v), 9, 200, true)), true);
+  closeSeg(y);
+  return y - 15;
+}
+/* ---- dark NET band: print .net ---- */
+function ctPdfNetBand(p, y, label, sub, net) {
+  const T = ctTpl();
+  p.rect(M, y - 28, CW, 28, T.style === "minimal" ? T.ink : CT_PDF_NETBG);
+  p.text(M + 10, y - 11, 8.2, label.toUpperCase(), { bold: true, color: [0.82, 0.85, 0.9] });
+  p.text(M + 10, y - 21, 7.5, sub, { color: [0.82, 0.85, 0.9] });
+  p.text(RIGHT - 10, y - 14, 16.5, (net < 0 ? "-" : "") + money(Math.abs(net)), { bold: true, align: "right", color: [1, 1, 1] });
+  return y - 28 - 10;
+}
+/* ---- dashed box: print .inwords ---- */
+function ctPdfInwordsBox(p, y, parts) {
+  const T = ctTpl();
+  const h = 20;
+  if (T.style !== "minimal") p.rect(M, y - h, CW, h, [0.976, 0.98, 0.984]);
+  const D = [0.82, 0.835, 0.855];
+  ctDash(p, M, y, M + CW, D); ctDash(p, M, y - h, M + CW, D);
+  ctDashV(p, M, y, y - h, D); ctDashV(p, M + CW, y, y - h, D);
+  let x = M + 9;
+  parts.forEach((pt) => {
+    p.text(x, y - 13, 8.6, pt[0], { bold: !!pt[1], color: pt[1] ? T.ink : CT_PDF_SECC });
+    x += pdfWidth(pt[0], 8.6, !!pt[1]);
   });
-  if (totalRow) {                                            /* bold total row table ke andar */
-    y -= 3;
-    p.line(M, y, M + CW, y, T.ink, 0.9);
-    y -= 2;
-    let x = M;
-    totalRow.forEach((v, i) => {
-      p.text(cols[i].r ? x + cols[i].w - CT_PDF_PR : x + CT_PDF_PL, y - 9, 8.5, String(v == null ? "" : v),
-        { align: cols[i].r ? "right" : undefined, bold: true, color: T.ink });
-      x += cols[i].w;
-    });
-    y -= 16;
-  }
-  frame(y);
-  return y - 14;
+  return y - h - 10;
+}
+/* ---- signature: print .sign — do 180px boxes with top border ---- */
+function ctPdfSign(p, y) {
+  const T = ctTpl(), st = Store.data.settings || {};
+  y -= 22;
+  const w = 135;
+  p.line(M, y, M + w, y, [0.61, 0.63, 0.68], 0.7);
+  p.text(M + w / 2, y - 9, 8.2, "Prepared by", { align: "center", color: T.mut });
+  p.line(RIGHT - w, y, RIGHT, y, [0.61, 0.63, 0.68], 0.7);
+  p.text(RIGHT - w / 2, y - 9, 8.2, st.ownerName || "Authorised signatory", { align: "center", color: T.mut });
+  return y - 16;
+}
+function ctPdfFoot(p, label) {
+  const T = ctTpl(), n = p.pages.length;
+  p.pages.forEach((ops, i) => {
+    const old = p.cur; p.cur = ops;
+    p.line(M, 34, RIGHT, 34, CT_PDF_GRID, 0.6);
+    p.text(M, 26, 7.5, label, { color: T.mut });
+    p.text(RIGHT, 26, 7.5, "Hisaab v" + APP_VERSION + " \u00b7 Page " + (i + 1) + " of " + n, { align: "right", color: T.mut });
+    p.cur = old;
+  });
 }
 function ctPdfDayStr(iso) {
   const list = ctOnDate(iso);
   if (!list.length) return null;
-  const T = ctTpl();
   const t = ctTotals(list);
   const p = new PdfDoc();
   let y = ctPdfHead(p, "CANTEEN DAY LEDGER", ctPretty(iso) + " (" + ctDayName(iso) + ")");
@@ -5574,9 +5605,8 @@ function ctPdfDayStr(iso) {
       ["Item-wise total", "", "", "", money(t.itemizedAmt)]);
   }
   if (t.totalModeCount) {
-    const note = t.totalModeCount + " entry me sirf ek-saath total likha hai (item ka alag rate nahi) \u2014 " + money(t.totalModeAmt) + ".";
-    p.wrap(note, 8, CW).forEach((ln) => { p.text(M, y, 8, ln, { color: T.mut }); y -= 10; });
-    y -= 4;
+    y = ctPdfInwordsBox(p, y, [[t.totalModeCount + " entry me sirf ek-saath total likha hai (item ka alag rate nahi) \u2014 ", 0],
+      [money(t.totalModeAmt) + ".", 1]]);
   }
   y = ctPdfNetBand(p, y, "Din ka net (bikri \u2212 saman \u2212 kharcha)",
     "Paid " + money(t.paid) + " \u00b7 Baki " + money(t.balance), t.net);
@@ -5587,7 +5617,6 @@ function ctPdfDayStr(iso) {
 function ctPdfMonthStr(y, m) {
   const list = ctInMonth(y, m);
   if (!list.length) return null;
-  const T = ctTpl();
   const t = ctTotals(list);
   const p = new PdfDoc();
   const days = ctMonthDays(y, m).filter((d) => d.list.length);
@@ -5595,7 +5624,7 @@ function ctPdfMonthStr(y, m) {
   yy = ctPdfSummary(p, yy,
     [["Saman aaya (purchase)", money(t.purchase)], ["Bikri / income", money(t.sale)], ["Kharcha", money(t.expense)]],
     [["Entries", t.count + " (" + days.length + " din)"], ["Paisa diya (paid)", money(t.paid)],
-     ["Baki / udhaar", money(t.balance), t.balance > 0.005 ? T.bad : T.ink]]);
+     ["Baki / udhaar", money(t.balance), t.balance > 0.005 ? ctTpl().bad : undefined]]);
   yy = ctPdfSecTitle(p, yy, "DIN-WISE LEDGER");
   yy = ctPdfTable(p, yy, CT_COLS_MONTH, days.map((d) => [ctPretty(d.iso), d.day.slice(0, 3), String(d.list.length),
     money0(d.t.purchase), money0(d.t.sale), money0(d.t.expense),
@@ -5610,16 +5639,14 @@ function ctPdfMonthStr(y, m) {
       i.avgRate < 1 ? rateS(i.avgRate) : money(i.avgRate), money(i.amt), String(i.n)]));
   }
   const parties = ctPartyAgg(list);
-  if (parties.length && yy > 120) {
+  if (parties.length && yy > 140) {
     yy = ctPdfSecTitle(p, yy, "PARTY / SUPPLIER-WISE");
     yy = ctPdfTable(p, yy, CT_COLS_PARTY, parties.slice(0, 30).map((x) => [x.name || "\u2014", String(x.n),
       money(x.amt), money(x.paid), x.bal > 0.005 ? money(x.bal) : "-"]));
   }
   yy = ctPdfNetBand(p, yy, "Mahine ka net (bikri \u2212 saman \u2212 kharcha)",
     monthLabel(y, m) + " \u00b7 Paid " + money(t.paid) + " \u00b7 Baki " + money(t.balance), t.net);
-  p.text(M, yy, 8, "Amount in words:", { color: T.mut });
-  p.text(M + pdfWidth("Amount in words: ", 8), yy, 8, inWords(Math.abs(t.net)), { bold: true, color: T.ink });
-  yy -= 16;
+  yy = ctPdfInwordsBox(p, yy, [["Amount in words: ", 0], [inWords(Math.abs(t.net)), 1]]);
   yy = ctPdfSign(p, yy);
   ctPdfFoot(p, "Hisaab \u00b7 Canteen \u00b7 mahine ka ledger \u00b7 " + monthLabel(y, m));
   return { str: p.build(), name: "Canteen_" + MONTHS_S[m] + "-" + y + ".pdf" };
@@ -5650,7 +5677,6 @@ function ctSharePdf(which, iso, y, m) {
       return;
     }
   } catch (e) {}
-  /* fallback (desktop / purana browser): PDF download + WhatsApp text khulo */
   const url = URL.createObjectURL(blob);
   const a = document.createElement("a");
   a.href = url; a.download = r.name; a.style.display = "none";
