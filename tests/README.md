@@ -26,6 +26,7 @@ Sab theek ho to aakhri line aati hai: `✅ SAB CHECKS PASS` / `✅ LOADER SAB TE
 | Ek-saath total | lump-sum amount, rate column disabled, rate list untouched |
 | Line-total price mode (v3.2) | `₹ poori line` select: 4 × ₹360 → total ₹360, per-unit ₹90 derive, amount ke neeche `= ₹90/kg`, rate list me 90/kg, edit me mode/lineTotal wapas, line↔unit toggle par number carry, ledger me Σ chip |
 | Bulk accuracy + OCR (v3.6) | scoring parser (code/qty-rate-total/90kg/per kg/(4)/nos/1,740/-/naam-me-number), total-verify chip, paid/baki info, editable preview + carry, OCR stub se photo→text→entries+photo |
+| PDF theme + WhatsApp PDF (v3.8) | branded header/zebra/totals cards/page footers; 📤 share: Web Share file route + desktop fallback (download + wa.me) |
 | Accuracy pro (v3.7) | Devanagari/sr-no/bullet/inline-date/sirf-qty skip; OCR clean (O→0,l→1) + enhancePixels + confidence; rate-list ⚠ cross-check + ek-click fix; duplicate chip; WhatsApp mahina; rate history; dashboard quick buttons |
 | Bulk paste (v3.5) | parser formats (line-total, @/x rate, comma, dozen, date line, skip rules) + UI: preview, 3 alag entries, amounts, undo, ek-entry mode |
 | Bill photo + PDF + unit auto (v3.4) | photo upload box → thumb → save → 📷 tag → lightbox → delete; PDF din/mahina (%PDF, tables); naam se unit auto (gram/ltr/dozen/pkt/kg) + user-unit respect |

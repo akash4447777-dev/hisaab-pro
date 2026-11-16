@@ -66,7 +66,7 @@ const iso = (d) => d.getFullYear() + "-" + String(d.getMonth() + 1).padStart(2, 
   ok(H().Store.data.canteen.entries.length > 0, "sample canteen entries load hui (" + H().Store.data.canteen.entries.length + ")");
   ok(H().Store.data.workers.length === 4, "workers safe (4 demo)");
   const verEl = $("[data-ver]");
-  ok(verEl && verEl.textContent === "3.7", "version badge 3.7", verEl && verEl.textContent);
+  ok(verEl && verEl.textContent === "3.8", "version badge 3.8", verEl && verEl.textContent);
   ok(root().innerHTML.indexOf("Canteen") >= 0, "dashboard par canteen card dikha");
   ok(root().innerHTML.indexOf("Saman aaya") >= 0, "dashboard canteen strip me 'Saman aaya'");
 
@@ -485,8 +485,8 @@ const iso = (d) => d.getFullYear() + "-" + String(d.getMonth() + 1).padStart(2, 
   await wait(30);
   let pdfText = pdfBytes ? Buffer.from(pdfBytes).toString("latin1") : "";
   ok(pdfText.indexOf("%PDF-") === 0, "din ki PDF file bani", pdfText.slice(0, 8));
-  ok(pdfText.indexOf("Din ka ledger") >= 0, "PDF me title 'Din ka ledger'");
-  ok(pdfText.indexOf("Saman item-wise") >= 0, "PDF me item-wise table");
+  ok(pdfText.indexOf("DIN KA LEDGER") >= 0, "PDF me title 'DIN KA LEDGER'");
+  ok(pdfText.indexOf("SAMAN ITEM-WISE") >= 0, "PDF me item-wise table");
   ok(pdfText.indexOf("Photo Test") >= 0 || pdfText.indexOf("Test Supplier") >= 0, "PDF me entry party");
   H().UI.ct.tab = "month"; H().render();
   ok(!!$('[data-act="ctPdfMonth"]'), "mahine tab par PDF button");
@@ -495,8 +495,8 @@ const iso = (d) => d.getFullYear() + "-" + String(d.getMonth() + 1).padStart(2, 
   await wait(30);
   const mText = pdfBytes ? Buffer.from(pdfBytes).toString("latin1") : "";
   ok(mText.indexOf("%PDF-") === 0, "mahine ki PDF bani");
-  ok(mText.indexOf("Mahine ka ledger") >= 0, "PDF me mahine ka title");
-  ok(mText.indexOf("Party-wise") >= 0, "PDF me party-wise table");
+  ok(mText.indexOf("MAHINE KA LEDGER") >= 0, "PDF me mahine ka title");
+  ok(mText.indexOf("PARTY-WISE") >= 0, "PDF me party-wise table");
   window.Blob = RB;
 
   section("\ud83d\udccb Bulk paste (v3.5) \u2014 parser");
@@ -720,6 +720,60 @@ const iso = (d) => d.getFullYear() + "-" + String(d.getMonth() + 1).padStart(2, 
   ok(!!$('[data-act="ctBulk"]') && !!$('[data-act="ctPdfMonth"]'),
      "dashboard canteen card par 📋 Paste + 📄 PDF quick buttons");
   H().go("canteen");
+
+  section("PDF theme v3.8 \u2014 branded header, footers, totals");
+  let pb8 = null;
+  const RB8 = window.Blob;
+  window.Blob = function (parts, opts) { pb8 = parts[0]; return new RB8(parts, opts); };
+  H().UI.ct.tab = "day"; H().UI.ct.date = todayIso; H().render();
+  ok(!!$('[data-act="ctSharePdfDay"]'), "din tab par 📤 WhatsApp PDF button");
+  click('[data-act="ctPdfDay"]');
+  await wait(30);
+  let d8 = pb8 ? Buffer.from(pb8).toString("latin1") : "";
+  ok(d8.indexOf("%PDF-") === 0, "din ki PDF bani");
+  ok(d8.indexOf("HISAAB PRO · CANTEEN LEDGER".replace("·", "\u00b7")) >= 0 || d8.indexOf("CANTEEN LEDGER") >= 0,
+     "brand band header", d8.slice(0, 0));
+  ok(d8.indexOf("Page 1 of") >= 0, "har page par page-number footer", d8.match(/Page \d+ of \d+/) && d8.match(/Page \d+ of \d+/)[0]);
+  ok(d8.indexOf("DIN KA TOTAL") >= 0, "totals block themed label");
+  ok(d8.indexOf("SAMAN ITEM-WISE") >= 0, "item-wise section");
+  ok(d8.indexOf("Generated") >= 0, "generated timestamp");
+  H().UI.ct.tab = "month"; H().render();
+  ok(!!$('[data-act="ctSharePdfMonth"]'), "mahine tab par 📤 WhatsApp PDF button");
+  pb8 = null;
+  click('[data-act="ctPdfMonth"]');
+  await wait(30);
+  const m8 = pb8 ? Buffer.from(pb8).toString("latin1") : "";
+  ok(m8.indexOf("MAHINE KA TOTAL") >= 0 && m8.indexOf("PARTY-WISE") >= 0, "mahine PDF me totals + party-wise");
+  ok(m8.indexOf("Page 1 of") >= 0, "mahine PDF me footer");
+  window.Blob = RB8;
+
+  section("📤 WhatsApp par seedha PDF (v3.8)");
+  /* Web Share API route (mobile jaisa) */
+  let shared8 = null;
+  Object.defineProperty(window.navigator, "canShare", { value: (o) => !!(o && o.files && o.files.length), configurable: true });
+  Object.defineProperty(window.navigator, "share", { value: (o) => { shared8 = o; return Promise.resolve(); }, configurable: true });
+  H().UI.ct.tab = "day"; H().UI.ct.date = todayIso; H().render();
+  click('[data-act="ctSharePdfDay"]');
+  await wait(40);
+  ok(!!shared8 && !!shared8.files && shared8.files.length === 1, "navigator.share ko PDF file gayi", shared8 && Object.keys(shared8));
+  ok(shared8 && shared8.files[0].type === "application/pdf", "share file type application/pdf", shared8 && shared8.files[0].type);
+  ok(shared8 && /Canteen_Din_.*\.pdf/.test(shared8.files[0].name), "file naam Canteen_Din_*.pdf", shared8 && shared8.files[0].name);
+  ok(shared8 && String(shared8.text).indexOf("canteen ledger") >= 0, "share text me ledger label", shared8 && shared8.text);
+  /* fallback route (desktop): download + wa.me */
+  Object.defineProperty(window.navigator, "canShare", { value: () => false, configurable: true });
+  let wa8 = null;
+  const ro8 = window.open;
+  window.open = (u) => { wa8 = u; return null; };
+  let fb8 = null;
+  window.Blob = function (parts, opts) { fb8 = parts[0]; return new RB8(parts, opts); };
+  H().UI.ct.tab = "month"; H().render();
+  click('[data-act="ctSharePdfMonth"]');
+  await wait(40);
+  window.open = ro8;
+  window.Blob = RB8;
+  ok(!!wa8 && String(wa8).indexOf("https://wa.me/") === 0, "fallback me wa.me khula", String(wa8).slice(0, 40));
+  ok(decodeURIComponent(String(wa8)).indexOf("attach") >= 0, "wa text me attach hint");
+  ok(!!fb8, "fallback me PDF download ke liye blob bana");
 
   section("CSV export");
   let csvText = "";
