@@ -65,6 +65,7 @@ File ka naam me version hona chahiye: **`Hisaab-Pro-v<number>.<number>.html`**
 
 | Version | Date | Kya badla | File |
 |---|---|---|---|
+| v3.14 | 2026-11-16 | **PDF = print CSS exact mirror.** Tables full-grid (har cell border + grey header fill #f3f4f6) jaisa print me; meta rows dashed underline; section titles solid underline; Amount-in-words dashed box; signature do boxes (top border); footer me version + page; fontsizes print px→pt exact. Default template print-exact; 5 templates colour tint. | `Hisaab-Pro-v3.14.html` |
 | v3.13 | 2026-11-16 | **PDF = print same-to-same (din + mahina).** User ki bheji PDF jaisa exact: din wali PDF me Date/Din/Entries + Saman/Bikri/Kharcha meta, ENTRIES table (Type/Party/Bill/Mode/Saman/Amount/Paid/Baki), SAMAN ITEM-WISE (RATE KE SAATH) + Item-wise total row, lump-sum note, DIN KA NET dark band, Prepared by signature; mahine me PARTY / SUPPLIER-WISE (Total/Paid/Baki), MAHINE KA NET band, Amount in words. Templates + WhatsApp same. | `Hisaab-Pro-v3.13.html` |
 | v3.12 | 2026-11-16 | **Print-ledger PDF format (user ki pasand wali photo jaisa).** Header: shop name + address left, CANTEEN MONTHLY/DAY LEDGER + month + generated right; 2-column summary (saman/bikri/kharcha \| entries/paid/baki); DIN-WISE LEDGER table + bold 'Mahine ka total' row andar; ITEM-WISE SUMMARY (rate wali entries); PARTY-WISE SUMMARY. 🎨 6 templates barkarar (accent/boxed/plain) aur 📤 WhatsApp par bhi yahi PDF format. | `Hisaab-Pro-v3.12.html` |
 | v3.11 | 2026-11-16 | **PDF alignment pro.** Sab PDF tables ab poori page-chaurai par exact align (mahine ki 8-column table ka 20pt right-gap khatam); row rhythm symmetric (text ke upar/neeche barabari space, hairlines exact boundary par); invoice-box ka bottom kinara aakhri row-line par exact; uniform 6pt column padding; totals hairlines centred; section titles table-text ke saath aligned. | `Hisaab-Pro-v3.11.html` |
@@ -82,7 +83,7 @@ File ka naam me version hona chahiye: **`Hisaab-Pro-v<number>.<number>.html`**
 | v2.0 | 2026-11-11 | Auto-update loader + fixed working hours/overtime removed. Hourly worker = rate × total hours (naya Hours column). Monthly = ÷30 fixed, Sunday auto-exclude. Version badge. | `Hisaab-Pro-v2.0.html` |
 
 > **File ka rule:** `hisaab_v3.html` = working/source file (yahan change hota hai).
-> `Hisaab-Pro-v3.13.html` = usi ka release copy, taaki upar wala loader apne aap sabse naya version utha le.
+> `Hisaab-Pro-v3.14.html` = usi ka release copy, taaki upar wala loader apne aap sabse naya version utha le.
 > Dono ka content abhi **bilkul same** hai. Purane `Hisaab-Pro-v3.1.html` / `v2.0` repo me pade rehne do.
 
 ---
