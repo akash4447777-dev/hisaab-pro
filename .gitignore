@@ -1,1 +1,7 @@
 node_modules/
+
+# Developer-only PDF/font analysis and local Python environment
+.cache/
+.venv/
+__pycache__/
+previews/

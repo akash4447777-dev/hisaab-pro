@@ -66,7 +66,7 @@ const iso = (d) => d.getFullYear() + "-" + String(d.getMonth() + 1).padStart(2, 
   ok(H().Store.data.canteen.entries.length > 0, "sample canteen entries load hui (" + H().Store.data.canteen.entries.length + ")");
   ok(H().Store.data.workers.length === 4, "workers safe (4 demo)");
   const verEl = $("[data-ver]");
-  ok(verEl && verEl.textContent === "3.15", "version badge 3.15", verEl && verEl.textContent);
+  ok(verEl && verEl.textContent === "3.16", "version badge 3.16", verEl && verEl.textContent);
   ok(root().innerHTML.indexOf("Canteen") >= 0, "dashboard par canteen card dikha");
   ok(root().innerHTML.indexOf("Saman aaya") >= 0, "dashboard canteen strip me 'Saman aaya'");
 
@@ -958,7 +958,7 @@ const iso = (d) => d.getFullYear() + "-" + String(d.getMonth() + 1).padStart(2, 
   ok(m14.indexOf("Proprietor") >= 0 && m14.indexOf("Prepared by") >= 0, "signature boxes (Prepared by / owner)");
   ok(m14.indexOf("Hisaab v") >= 0 && m14.indexOf("Page 1 of") >= 0, "footer me version + page number");
   ok(m14.indexOf("Amount in words") >= 0, "in-words dashed box");
-  ok(d14.indexOf("DIN KA NET") >= 0 && m14.indexOf("MAHINE KA NET") >= 0, "dark net bands dono me");
+  ok(d14.indexOf("DIN KA NET") >= 0 && m14.indexOf("MAHINE KA NET") >= 0, "net rows dono me (v3.16: reference jaisi light styling)");
   let g14 = true;
   H().canteen.tpls.forEach((t) => {
     H().canteen.setTpl(t.id);
