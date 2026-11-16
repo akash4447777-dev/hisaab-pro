@@ -66,7 +66,7 @@ const iso = (d) => d.getFullYear() + "-" + String(d.getMonth() + 1).padStart(2, 
   ok(H().Store.data.canteen.entries.length > 0, "sample canteen entries load hui (" + H().Store.data.canteen.entries.length + ")");
   ok(H().Store.data.workers.length === 4, "workers safe (4 demo)");
   const verEl = $("[data-ver]");
-  ok(verEl && verEl.textContent === "3.14", "version badge 3.14", verEl && verEl.textContent);
+  ok(verEl && verEl.textContent === "3.15", "version badge 3.15", verEl && verEl.textContent);
   ok(root().innerHTML.indexOf("Canteen") >= 0, "dashboard par canteen card dikha");
   ok(root().innerHTML.indexOf("Saman aaya") >= 0, "dashboard canteen strip me 'Saman aaya'");
 
@@ -731,7 +731,7 @@ const iso = (d) => d.getFullYear() + "-" + String(d.getMonth() + 1).padStart(2, 
   await wait(30);
   let d8 = pb8 ? Buffer.from(pb8).toString("latin1") : "";
   ok(d8.indexOf("%PDF-") === 0, "din ki PDF bani");
-  ok(d8.indexOf("CANTEEN DAY LEDGER") >= 0 && d8.indexOf("- CANTEEN") >= 0,
+  ok(d8.indexOf("CANTEEN DAY LEDGER") >= 0 && d8.indexOf(String.fromCharCode(151) + " CANTEEN") >= 0,
      "photo-style header (SHOP — CANTEEN + doc title)");
   ok(d8.indexOf("Page 1 of") >= 0, "har page par page-number footer", d8.match(/Page \d+ of \d+/) && d8.match(/Page \d+ of \d+/)[0]);
   ok(d8.indexOf("Item-wise total") >= 0, "bold total row table ke andar");
@@ -890,7 +890,7 @@ const iso = (d) => d.getFullYear() + "-" + String(d.getMonth() + 1).padStart(2, 
   const m12 = H().canteen.pdfMonthStr(H().UI.year, H().UI.month).str;
   const d12 = H().canteen.pdfDayStr(todayIso).str;
   ok(m12.indexOf("CANTEEN MONTHLY LEDGER") >= 0, "mahine PDF me doc title right side");
-  ok(m12.indexOf("- CANTEEN") >= 0, "header me SHOP — CANTEEN line");
+  ok(m12.indexOf(String.fromCharCode(151) + " CANTEEN") >= 0, "header me SHOP — CANTEEN line");
   ok(m12.indexOf("Main Market") >= 0, "header me shop address line", (H().Store.data.settings || {}).address);
   ["Saman aaya", "Bikri / income", "Kharcha", "Entries", "Paisa diya", "Baki / udhaar"].forEach((lb) => {
     ok(m12.indexOf(lb) >= 0, "2-column summary me '" + lb + "'");
@@ -952,7 +952,7 @@ const iso = (d) => d.getFullYear() + "-" + String(d.getMonth() + 1).padStart(2, 
   const d14 = H().canteen.pdfDayStr(todayIso).str;
   const m14 = H().canteen.pdfMonthStr(H().UI.year, H().UI.month).str;
   ok(/110\.00 [\d.]+ m 110\.00 [\d.]+ l S/.test(m14), "mahine table me FULL GRID vertical borders");
-  ok(/100\.00 [\d.]+ m 100\.00 [\d.]+ l S/.test(d14), "din table me FULL GRID vertical borders");
+  ok(/102\.00 [\d.]+ m 102\.00 [\d.]+ l S/.test(d14), "din table me FULL GRID vertical borders");
   ok(m14.indexOf("0.953 0.957 0.965 rg") >= 0, "header row grey fill (print #f3f4f6)");
   ok(m14.indexOf("0.898 0.906 0.922 RG") >= 0, "grid + dashed lines print grey (#e5e7eb)");
   ok(m14.indexOf("Proprietor") >= 0 && m14.indexOf("Prepared by") >= 0, "signature boxes (Prepared by / owner)");
@@ -965,6 +965,26 @@ const iso = (d) => d.getFullYear() + "-" + String(d.getMonth() + 1).padStart(2, 
     if (!/110\.00 [\d.]+ m 110\.00/.test(H().canteen.pdfMonthStr(H().UI.year, H().UI.month).str)) g14 = false;
   });
   ok(g14, "sab 6 templates me grid layout same");
+  H().canteen.setTpl("neela");
+
+  section("v3.15 — entries clean (no products), alignment, page-break guards");
+  const d15 = H().canteen.pdfDayStr(todayIso).str;
+  const iM15 = d15.indexOf("MODE"), iA15 = d15.indexOf("AMOUNT");
+  ok(iM15 > 0 && iA15 > iM15 && d15.slice(iM15, iA15).indexOf("SAMAN") < 0,
+     "entries table me Saman/products column nahi");
+  const iS15 = d15.indexOf("SAMAN ITEM-WISE");
+  ok(iS15 > 0 && d15.slice(iS15).length > 200, "products sirf item-wise summary me");
+  ok(d15.indexOf(String.fromCharCode(151)) >= 0, "header me em-dash (print jaisa, hyphen nahi)");
+  const w15 = H().canteen.pdfCols.day.reduce((a, c) => a + c.w, 0);
+  ok(Math.abs(w15 - (595.28 - 80)) < 0.01, "day columns poori chaurai (overlap fix)", w15);
+  const amt15 = H().canteen.pdfCols.day.find((c) => String(c.l).indexOf("Amount") === 0);
+  ok(amt15 && amt15.w >= 80, "amount column chauri (Rs.2,800.00 fit)", amt15 && amt15.w);
+  let v15 = true;
+  H().canteen.tpls.forEach((t) => {
+    H().canteen.setTpl(t.id);
+    if (H().canteen.pdfDayStr(todayIso).str.indexOf("%PDF-") !== 0) v15 = false;
+  });
+  ok(v15, "sab templates me day PDF valid");
   H().canteen.setTpl("neela");
 
   section("CSV export");
