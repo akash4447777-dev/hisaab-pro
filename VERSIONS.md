@@ -65,6 +65,7 @@ File ka naam me version hona chahiye: **`Hisaab-Pro-v<number>.<number>.html`**
 
 | Version | Date | Kya badla | File |
 |---|---|---|---|
+| v3.12 | 2026-11-16 | **Print-ledger PDF format (user ki pasand wali photo jaisa).** Header: shop name + address left, CANTEEN MONTHLY/DAY LEDGER + month + generated right; 2-column summary (saman/bikri/kharcha \| entries/paid/baki); DIN-WISE LEDGER table + bold 'Mahine ka total' row andar; ITEM-WISE SUMMARY (rate wali entries); PARTY-WISE SUMMARY. 🎨 6 templates barkarar (accent/boxed/plain) aur 📤 WhatsApp par bhi yahi PDF format. | `Hisaab-Pro-v3.12.html` |
 | v3.11 | 2026-11-16 | **PDF alignment pro.** Sab PDF tables ab poori page-chaurai par exact align (mahine ki 8-column table ka 20pt right-gap khatam); row rhythm symmetric (text ke upar/neeche barabari space, hairlines exact boundary par); invoice-box ka bottom kinara aakhri row-line par exact; uniform 6pt column padding; totals hairlines centred; section titles table-text ke saath aligned. | `Hisaab-Pro-v3.11.html` |
 | v3.10 | 2026-11-16 | **Clean PDF + naam HISAAB.** PDF design naya: hairline tables (box/zebra clutter khatam), totals invoice-summary style right side me + NET highlight band, header accent bar. **Σ/? jaisa koi unwanted symbol PDF me nahi** — "(Σ line-total)" marker hata aur WinAnsi-me-na-hone-wale characters drop. Picker cards me har template ka **mini visual preview**. Panel ka naam ab sirf **HISAAB**. | `Hisaab-Pro-v3.10.html` |
 | v3.9 | 2026-11-15 | **🎨 PDF templates (6 design).** Canteen PDF ab apni pasand ke design me: **Neela Classic**, **Hara Bahi-Khata**, **Dark Premium** (kaala band + golden tag), **Kesariya Dukaan**, **Laal Bill** (invoice style — boxed tables, beech ka header, right-side totals) aur **Simple S&W** (bina rang — syahi bachao). Toolbar me **🎨 PDF style** button — picker me card chuno, ✓ lag jata hai, pasand save rehti hai; 📄 PDF aur 📤 WhatsApp PDF dono usi template me banti hain. | `Hisaab-Pro-v3.9.html` |
@@ -80,7 +81,7 @@ File ka naam me version hona chahiye: **`Hisaab-Pro-v<number>.<number>.html`**
 | v2.0 | 2026-11-11 | Auto-update loader + fixed working hours/overtime removed. Hourly worker = rate × total hours (naya Hours column). Monthly = ÷30 fixed, Sunday auto-exclude. Version badge. | `Hisaab-Pro-v2.0.html` |
 
 > **File ka rule:** `hisaab_v3.html` = working/source file (yahan change hota hai).
-> `Hisaab-Pro-v3.11.html` = usi ka release copy, taaki upar wala loader apne aap sabse naya version utha le.
+> `Hisaab-Pro-v3.12.html` = usi ka release copy, taaki upar wala loader apne aap sabse naya version utha le.
 > Dono ka content abhi **bilkul same** hai. Purane `Hisaab-Pro-v3.1.html` / `v2.0` repo me pade rehne do.
 
 ---
