@@ -103,7 +103,7 @@ npm test
 # Optional local PDF examples / pagination stress fixtures (not for Git):
 node pdf.test.js --artifacts ../.cache/pdf-qa
 # Check a release copy as well:
-HISAAB_HTML=../Hisaab-Pro-v3.19.html node pdf.test.js
+HISAAB_HTML=../Hisaab-Pro-v3.20.html node pdf.test.js
 ```
 
 `pdf.test.js` checks real embedded-font payloads, full ASCII coverage,

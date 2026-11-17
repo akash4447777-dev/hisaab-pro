@@ -26,7 +26,7 @@ async function pageFor(b) {
 async function click(page, selector) { await page.locator(selector).first().click(); }
 async function screenshot(page, name, fullPage = false) {
   if (!CAPTURE) return;
-  await page.evaluate(() => window.scrollTo({ top: 0, behavior: "instant" }));
+  await page.evaluate(() => { window.scrollTo({ top: 0, behavior: "instant" }); const body = document.querySelector('.att-dialog .modal-b'); if (body) body.scrollTop = 0; });
   await page.waitForFunction(() => window.scrollY === 0); await page.waitForTimeout(280);
   await page.screenshot({ path: path.join(OUT, name), fullPage });
 }
@@ -68,11 +68,25 @@ async function exportFile(page, format, name) {
     await page.evaluate(() => Hisaab.attendance.setDate("2026-11-14")); await page.evaluate(() => Hisaab.render());
     await click(page, '[data-att-act="recordAdd"]'); await page.fill("#attRManager", "Aarav Sharma · M-001"); await page.locator("#attRManager").press("Tab"); await page.fill("#attRDate", "2026-11-14"); await page.selectOption("#attRShift", "day"); await page.selectOption("#attRStatus", "present"); await saveForm(page, "attRecordForm");
     check(await page.evaluate(() => Hisaab.attendance.data().records.length === 1), "native tap form saves exactly one record");
-    await click(page, '[data-att-act="recordAdd"]'); await page.fill("#attRManager", "Priya Mehta · M-002"); await page.locator("#attRManager").press("Tab"); await page.fill("#attRDate", "2026-11-14"); await page.selectOption("#attRShift", "night"); await click(page, '[data-att-act="recordMode"][data-value="time"]'); await page.fill("#attRIn", "2130"); await page.fill("#attROut", "0730"); await page.selectOption("#attROutDay", "1"); await page.fill("#attRBreak", "60");
-    check((await page.locator("#attRIn").inputValue()) === "21:30", "mobile-style digits format into unambiguous 24-hour clocks");
+    await click(page, '[data-att-act="recordAdd"]'); await page.fill("#attRManager", "Priya Mehta · M-002"); await page.locator("#attRManager").press("Tab"); await page.fill("#attRDate", "2026-11-14"); await page.selectOption("#attRShift", "night"); await click(page, '[data-att-act="recordMode"][data-value="time"]');
+    check(await page.evaluate(() => document.querySelector('#attRIn').value === '9:00' && document.querySelector('#attRInWhen').value === 'same-night' && document.querySelector('#attROut').value === '6:00' && document.querySelector('#attROutWhen').value === 'next-morning'), "Night shift defaults use 9 night → 6 next morning, not 24-hour fields");
+    const choices = ["Same day morning", "Same day night", "Next day morning", "Next day night"];
+    for (const id of ["attRInWhen", "attROutWhen"]) check(JSON.stringify(await page.locator('#' + id + ' option').allTextContents()) === JSON.stringify(choices), id + " offers the four exact morning/night day choices");
+    await page.fill("#attRIn", "13:00"); await page.locator('#attRecordForm button[type="submit"]').click();
+    check(await page.evaluate(() => !document.querySelector('#attRIn').checkValidity() && Hisaab.attendance.data().records.length === 1), "native validation blocks 13:00 instead of guessing a 12-hour time");
+    await page.fill("#attRIn", "0930"); await page.selectOption("#attRInWhen", "same-night"); await page.fill("#attROut", "0730"); await page.selectOption("#attROutWhen", "next-morning"); await page.fill("#attRBreak", "60");
+    check((await page.locator("#attRIn").inputValue()) === "9:30", "mobile-style 0930 digits format into a 12-hour clock");
+    check((await page.locator("#attTimeJourney").textContent()).includes('14 Nov 2026 → 15 Nov 2026'), "live timeline shows the actual two dates for an overnight shift");
+    await screenshot(page, "00-time-form-desktop.png");
+    check(await page.evaluate(() => { const header = document.querySelector('.att-dialog .modal-h').getBoundingClientRect(), footer = document.querySelector('.att-dialog .modal-f').getBoundingClientRect(); return header.top >= 0 && footer.bottom <= innerHeight; }), "desktop time dialog keeps its title and Save button visible while its body scrolls");
     const preview = await page.locator("#attCalcPreview").textContent(); check(preview.includes("9h 00m"), "native overnight preview calculates working time: " + preview);
     await page.locator('#attRecordForm button[type="submit"]').click(); await page.waitForSelector("#attRecordForm", { state: "detached" });
-    check(await page.evaluate(() => { const A = Hisaab.attendance, r = A.data().records.find((x) => x.shift === "night"); return A.calculate(r).overtimeMinutes === 60 && A.calculate(r).lateMinutes === 20; }), "night hours, overtime and grace are persisted correctly");
+    check(await page.evaluate(() => { const A = Hisaab.attendance, r = A.data().records.find((x) => x.shift === "night"); return r.checkIn === '21:30' && r.checkOut === '07:30' && r.outNextDay && A.calculate(r).overtimeMinutes === 60 && A.calculate(r).lateMinutes === 20; }), "12-hour night entry preserves canonical stored clocks, overtime and grace");
+    await page.evaluate(() => { const A = Hisaab.attendance; A.openRecord(A.data().records.find((r) => r.shift === 'night').id); });
+    check(await page.evaluate(() => document.querySelector('#attRIn').value === '9:30' && document.querySelector('#attRInWhen').value === 'same-night' && document.querySelector('#attROut').value === '7:30' && document.querySelector('#attROutWhen').value === 'next-morning'), "saved overnight entry reopens with its correct 12-hour values and day/period choices");
+    await page.selectOption('#attROutWhen', 'same-morning'); await page.locator('#attRecordForm button[type="submit"]').click();
+    check((await page.locator('#attFormError').textContent()).includes('morning/night'), "checkout before arrival stays open with a helpful day/period error");
+    await page.selectOption('#attROutWhen', 'next-morning'); await saveForm(page, 'attRecordForm');
     // Prevent a duplicate through the real form, not just the public API.
     await click(page, '[data-att-act="recordAdd"]'); await page.fill("#attRManager", "Priya Mehta · M-002"); await page.locator("#attRManager").press("Tab"); await page.fill("#attRDate", "2026-11-14"); await page.selectOption("#attRShift", "night"); await page.locator('#attRecordForm button[type="submit"]').click();
     check((await page.locator("#attFormError").textContent()).includes("already exists"), "native duplicate submission stays open with a clear error");
@@ -80,6 +94,13 @@ async function exportFile(page, format, name) {
     await page.evaluate(() => { const A = Hisaab.attendance; A.ui().shift = "day"; A.setDate("2026-11-15"); Hisaab.render(); });
     await click(page, '[data-att-act="bulk"]'); await page.selectOption("#attBStatus", "half"); await page.locator('#attBulkForm button[type="submit"]').click(); await page.waitForSelector("#attBulkForm", { state: "detached" });
     check(await page.evaluate(() => Hisaab.attendance.data().records.length === 3), "native bulk selection saves only the checked roster");
+    // Exercise noon/midnight through native validation and saving, not just helpers.
+    await page.evaluate(() => { const A = Hisaab.attendance; A.openRecord(null, A.data().managers.find((m) => m.code === 'M-002').id, '2026-11-16', 'night'); });
+    await click(page, '[data-att-act="recordMode"][data-value="time"]'); await page.fill('#attRIn', '12'); await page.selectOption('#attRInWhen', 'same-night'); await page.fill('#attROut', '12'); await page.selectOption('#attROutWhen', 'next-morning'); await page.fill('#attRBreak', '0');
+    check((await page.locator('#attTimeJourney').textContent()).includes('12 morning = midnight · 12 night = noon'), "12 o’clock displays a visible noon/midnight explanation");
+    await saveForm(page, 'attRecordForm');
+    check(await page.evaluate(() => { const A = Hisaab.attendance, r = A.data().records.find((r) => r.date === '2026-11-16'); return r.checkIn === '12:00' && r.checkOut === '00:00' && r.outNextDay && A.calculate(r).workedMinutes === 720; }), "12 night to next-day 12 morning saves noon-to-midnight, exactly 12 hours");
+    await page.evaluate(() => { const A = Hisaab.attendance; A.deleteRecord(A.data().records.find((r) => r.date === '2026-11-16').id); A.setDate('2026-11-15'); Hisaab.render(); });
     await page.selectOption("#attShiftFilter", "all");
     await click(page, '[data-att-act="tab"][data-value="calendar"]');
     check(await page.locator(".att-cal-cell").count() === 42, "calendar renders the complete monthly grid");
@@ -88,7 +109,11 @@ async function exportFile(page, format, name) {
     await click(page, '[data-att-act="tab"][data-value="records"]'); await click(page, '[data-att-act="period"][data-value="custom"]'); await page.fill("#attFrom", "2026-11-14"); await page.locator("#attFrom").dispatchEvent("change"); await page.fill("#attTo", "2026-11-16"); await page.locator("#attTo").dispatchEvent("change");
     await click(page, '[data-att-act="export"]'); await page.fill("#attEManager", "Aarav Sharma · M-001"); await page.locator("#attEManager").press("Tab"); await page.fill("#attEFrom", "2026-11-14"); await page.fill("#attETo", "2026-11-16");
     const latin = await exportFile(page, "pdf", "Latin-manager"); await exportFile(page, "xlsx", "Latin-manager");
-    check(latin.toString("latin1").includes("(2026-11-16)"), "custom final report date is present in the actual PDF"); await click(page, '#modalRoot [data-act="closeModal"]');
+    check(latin.toString("latin1").includes("(2026-11-16)"), "custom final report date is present in the actual PDF");
+    await page.fill("#attEManager", "Priya Mehta · M-002"); await page.locator("#attEManager").press("Tab");
+    const overnight = await exportFile(page, "pdf", "Overnight-manager"); await exportFile(page, "xlsx", "Overnight-manager");
+    check(['(9:30)', '(7:30)', '(Same day night)', '(Next day morning)'].every((text) => overnight.toString('latin1').includes(text)) && !overnight.toString('latin1').includes('(21:30)'), "downloaded overnight PDF shows 12-hour clocks with complete morning/night day labels");
+    await click(page, '#modalRoot [data-act="closeModal"]');
     // Extra profiles here are disposable QA fixtures, never production samples.
     await page.evaluate(() => { const A = Hisaab.attendance; ["Kabir Singh", "Neha Gupta", "Vikram Patel", "Riya Kapoor", "Arjun Verma", "Meera Nair"].forEach((name, i) => A.saveManager({ name, code: "QA-" + i, department: "Operations", defaultShift: i % 3 ? "day" : "night", joinedOn: "2026-11-01" })); A.ui().tab = "board"; A.ui().shift = "all"; A.ui().manager = "all"; A.ui().q = ""; A.setDate("2026-11-14"); Hisaab.render(); });
     await screenshot(page, "03-board-desktop.png", true);
@@ -96,7 +121,14 @@ async function exportFile(page, format, name) {
     check(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth + 1), "390px daily board has no page-level horizontal overflow");
     check(await page.locator('#nav [data-view="attendance"]').evaluate((el) => { const r = el.getBoundingClientRect(); return r.left >= 0 && r.right <= innerWidth; }), "mobile navigation scrolls the active Attendance tab into view");
     await click(page, '[data-att-act="recordAdd"]'); await click(page, '[data-att-act="recordMode"][data-value="time"]'); await page.waitForTimeout(250); if (CAPTURE) await page.screenshot({ path: path.join(OUT, "05-time-form-mobile.png") });
-    check(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth + 1), "mobile time form fits the viewport"); await click(page, '#modalRoot [data-act="closeModal"]');
+    check(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth + 1), "mobile time form fits the viewport");
+    check(await page.evaluate(() => { const header = document.querySelector('.att-dialog .modal-h').getBoundingClientRect(), footer = document.querySelector('.att-dialog .modal-f').getBoundingClientRect(); return header.top >= 0 && footer.bottom <= innerHeight; }), "mobile time form keeps the close and Save buttons in the viewport");
+    await page.setViewportSize({ width: 320, height: 780 });
+    check(await page.evaluate(() => { const ids = ['attRIn', 'attRInWhen', 'attROut', 'attROutWhen']; return document.documentElement.scrollWidth <= innerWidth + 1 && ids.every((id) => { const r = document.getElementById(id).getBoundingClientRect(); return r.left >= 0 && r.right <= innerWidth && r.width >= 180; }); }), "even a 320px mobile form keeps time inputs and full day/period controls inside the screen");
+    await click(page, '#modalRoot [data-act="closeModal"]');
+    await page.evaluate(() => Hisaab.attendance.openRules());
+    check(await page.evaluate(() => { const input = document.querySelector('#attNightStart'), select = document.querySelector('#attNightStartWhen'), box = select.getBoundingClientRect(); return input.value === '9:00' && select.value === 'night' && box.height < 65 && box.right <= innerWidth; }), "mobile shift-rule controls are compact 12-hour morning/night inputs");
+    await click(page, '#modalRoot [data-act="closeModal"]'); await page.setViewportSize({ width: 390, height: 844 });
     await click(page, '[data-att-act="tab"][data-value="calendar"]'); await screenshot(page, "06-calendar-mobile.png"); check(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth + 1), "mobile calendar fits all seven weekdays");
     await page.setViewportSize({ width: 1440, height: 1000 }); await click(page, '[data-att-act="tab"][data-value="board"]'); await click(page, '[data-act="toggleThemeIcon"]'); await screenshot(page, "07-board-dark.png");
     const before = await page.evaluate(() => JSON.stringify(Hisaab.sync.view(Hisaab.Store.data).attendance)); await page.reload(); await page.waitForFunction(() => !!window.Hisaab); await page.evaluate(() => Hisaab.go("attendance")); check(await page.evaluate((value) => JSON.stringify(Hisaab.sync.view(Hisaab.Store.data).attendance) === value, before), "profiles, snapshots, records and history survive a real page reload");

@@ -1,4 +1,4 @@
-# HISAAB v3.19 — manager Attendance
+# HISAAB v3.20 — manager Attendance
 
 **Attendance is a tab inside the existing Hisaab Panel**, not a separate app.
 Manager profiles, attendance, rules and history are stored alongside the existing
@@ -8,7 +8,7 @@ advances, deductions or payments.**
 ## Start here
 
 1. Existing users: Settings → **Backup (JSON)** first. Open the latest panel and
-   confirm **Panel v3.19**. Update other devices/tabs too; see [cloud safety](CLOUD-SYNC.md).
+   confirm **Panel v3.20**. Update other devices/tabs too; see [cloud safety](CLOUD-SYNC.md).
 2. Sidebar → **Attendance** → **Add manager**. Enter a name and a unique manager
    code, choose **Day** or **Night**, and optionally add role, phone, employment
    dates and notes. Codes distinguish managers with the same name. No real
@@ -22,8 +22,8 @@ advances, deductions or payments.**
 
 | Rule | Initial value |
 |---|---|
-| Day shift | 09:00–18:00 |
-| Night shift | 21:00–06:00 next day |
+| Day shift | 9:00 Same day morning → 6:00 Same day night |
+| Night shift | 9:00 Same day night → 6:00 Next day morning |
 | Full-day / half-day net targets | 8 hours / 4 hours |
 | Unpaid break | 60 minutes; editable on each time record |
 | Late grace / early-exit grace | 10 minutes / 0 minutes |
@@ -48,13 +48,27 @@ opts that one record into the current rules.
 
 ## Time mode and overnight attendance
 
-- Enter **24-hour HH:MM**, such as `09:00` or `21:00`; numeric mobile input also
-  accepts `2100` → `21:00`, `900` → `09:00` on leaving the field, and Hindi digits.
-  Shift labels are always **Day / Night**, never twelve-hour suffixes.
-- The attendance date is the **shift-start date**. A Night shift starting on
-  14 November and ending at 06:00 on 15 November is dated **14 November**;
-  select **Next day** for check-out. After-midnight arrivals can also use
-  **Next day** for check-in. The form shows an immediate calculation preview.
+- Use a **1–12 clock**, such as `9`, `9:30` or `12:15`. Numeric mobile entry
+  accepts `930` / `0930` → `9:30`, `9` → `9:00` on leaving the field, and Hindi
+  digits such as `९३०`. A 24-hour input such as `21:30` is rejected, not guessed.
+- For **each** check-in/check-out select one clear option:
+  **Same day morning**, **Same day night**, **Next day morning**, **Next day night**.
+  Shift names remain **Day / Night**; clock periods use **morning / night**.
+- **Same day** means the selected **Attendance date**; **Next day** means the
+  date after it. The live timeline shows both the readable times and actual dates.
+  For a Night shift on 14 November, enter `9:30` + **Same day night** for arrival
+  and `7:30` + **Next day morning** for departure on 15 November. After a 60-minute
+  unpaid break this is **9 hours worked** (1 hour OT with the initial 8-hour target).
+- **Morning** covers midnight to before noon; **Night** covers noon, afternoon,
+  evening and night. **12 morning = midnight; 12 night = noon.** The form shows
+  an extra visible reminder when either time is in the 12 o’clock hour.
+- **Use shift timings** fills both times, day/period choices and the default break
+  from the rules shown in the editor. Night defaults already select next-day
+  morning for check-out. On an old record it uses that record's saved rule snapshot
+  unless you explicitly select today’s rules. Review actual times before saving.
+- Worked time, overtime, credits and late/early results update immediately. Further
+  explanations and the saved/current shift rules can be expanded when needed.
+  The form body scrolls on short screens while its title and Save button stay visible.
 - Leave check-out empty for an open shift. The daily Time-mode card also has
   **Check in now / Check out now** using the device’s local clock.
 - A completed span must be positive and at most 24 hours; the unpaid break must
@@ -112,14 +126,17 @@ on the same date may have two credits; these are not automatically payroll days.
    remains in the dialog: tap it directly before closing the dialog.
 
 **PDF:** individual profile, range, KPI totals, every date, Day/Night, clock
-in/out with next-day flags, breaks, worked/overtime hours, late/early minutes,
+in/out in 12-hour form with full same/next-day morning/night labels, breaks,
+worked/overtime hours, late/early minutes,
 credits, notes, saved time rules, totals, verification lines and page footers.
 Hindi names/notes use bundled Devanagari shaping plus searchable/extractable
 Unicode text; see [font implementation and notices](PDF-FONTS.md).
 
 **Excel:** a genuine offline `.xlsx` workbook, not renamed CSV. It contains
 **Summary**, **Daily attendance**, and **Change history** sheets. Hours and credits
-are numeric; daily/history headers are frozen and filterable. Hindi/emoji/user
+are numeric; clocks, day/period choices, saved schedules and before/after history
+use the same readable 12-hour format. Daily/history headers are frozen and
+filterable. Hindi/emoji/user
 text are stored as literal strings, never spreadsheet formulas.
 
 An **Unmarked** day means no saved record for the selected shift(s) on that date;
@@ -128,6 +145,10 @@ contain only the selected manager/range/shifts; retained history is filtered by
 manager and attendance date, and may include profile actions in that date range.
 
 ## Saving, backup and device sync
+
+- Existing v3.19 attendance, hours and saved policies need **no migration**. Only
+  input/display boundaries change: JSON/cloud keep the same canonical clock values
+  and next-day flags, so old records reopen correctly and remain compatible.
 
 - Successful saves use the existing `hisaabPro.v1` localStorage key, the same
   JSON backup and, when configured/signed in, the same account’s cloud payload.

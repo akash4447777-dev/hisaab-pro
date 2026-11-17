@@ -1,8 +1,8 @@
 # Hisaab Pro — auto-update system (v2.0)
 
-> **Latest v3.19 — integrated manager Attendance:** Day/Night, Tap/Time, dynamic managers, calendar/ledger/history aur individual PDF + Excel. [Attendance use guide aur configurable starting rules](ATTENDANCE.md). Salary calculations aur v3.18 ke blank canteen summary labels unchanged.
+> **Latest v3.20 — simpler 12-hour Attendance:** 1–12 clock; Same day morning/night aur Next day morning/night ke clear choices, live date/time preview, correct overnight defaults aur readable PDF/Excel. Existing Day/Night shifts, Tap/Time modes, managers/calendar/ledger/history retained. [Attendance use guide aur configurable starting rules](ATTENDANCE.md). Salary calculations aur v3.18 ke blank canteen summary labels unchanged.
 >
-> **Data-safety update:** pehle bache-data wale device ka JSON backup lein, phir **dono devices aur purane tabs v3.19 par update/band karein**. Same Supabase project + same email par login karein; `Cloud synced` ki confirmation dekhein. Browser storage clear/reset mat karein. [Login, safe sync aur recovery guide](CLOUD-SYNC.md).
+> **Data-safety update:** pehle bache-data wale device ka JSON backup lein, phir **dono devices aur purane tabs v3.20 par update/band karein**. Same Supabase project + same email par login karein; `Cloud synced` ki confirmation dekhein. Browser storage clear/reset mat karein. [Login, safe sync aur recovery guide](CLOUD-SYNC.md).
 
 ## Ab kaise kaam karta hai
 
@@ -70,6 +70,7 @@ File ka naam me version hona chahiye: **`Hisaab-Pro-v<number>.<number>.html`**
 
 | Version | Date | Kya badla | File |
 |---|---|---|---|
+| v3.20 | 2026-11-14 | **Attendance Time mode ab easy 12-hour.** 1–12 clock + Same day morning / Same day night / Next day morning / Next day night; mobile/Hindi numeric entry, overnight presets, actual-date timeline, visible noon/midnight reminder, live hours/OT/late/early preview, compact expandable help and scrollable form with visible Save/Close. Shift rules, board, ledger/history and individual PDF/Excel use the same readable format. Existing canonical saved times/day flags/snapshots and cloud schema unchanged; no record migration or salary/canteen changes; v3.18 blank summary labels retained. **730 checks:** 406 canteen + 29 loader + 26 PDF + 99 cloud + 170 Attendance; optional real Chromium **45 checks**. [Use guide](ATTENDANCE.md). | `Hisaab-Pro-v3.20.html` |
 | v3.19 | 2026-11-14 | **Manager Attendance existing panel me integrated.** Dynamic profiles; Day/Night; one-tap Present/Absent/Half/Leave/Week off/Holiday; 24-hour Time mode + overnight check-in/out, breaks, saved rule snapshots, hours/OT/late/early. Daily board, calendar, weekly/monthly/custom ledger, search/filter/sort, bulk skip/explicit overwrite, duplicate prevention, history + dashboard. Real individual custom-range PDF (Hindi shaping) + 3-sheet Excel, persistent ready-file download links. Existing auto-save/JSON/safety copies/account-scoped conditional cloud merge includes Attendance; salary calculations and v3.18 blank canteen summary labels unchanged. **696 checks:** 406 canteen + 29 loader + 26 PDF + 99 cloud + 136 Attendance; optional real Chromium **27 checks**. [Use guide](ATTENDANCE.md). | `Hisaab-Pro-v3.19.html` |
 | v3.18 | 2026-11-14 | **Sirf PDF summary labels blank.** Screenshot wale Bikri / income aur Kharcha labels din + mahina summary me khaali; amounts (₹0.00 bhi), dashed rows, spacing, totals, fonts aur baaki format unchanged. Print/save-as-PDF aur WhatsApp attachment same. App entries, table columns aur v3.17 cloud safety unchanged. Tests: 406 canteen + 29 loader + 26 PDF + 76 cloud = **537**. | `Hisaab-Pro-v3.18.html` |
 | v3.17 | 2026-11-14 | **Cross-device data-loss fix.** Canteen-only / salary / settings data ko populated maana jata hai; fresh demo/empty login se cloud overwrite nahi. Durable offline working/base + account/project isolation; three-way merge; conditional update/unique insert (no upsert), races par retry. Financial/edit-v-delete/dependent salary conflicts par explicit values + choice, failed saves par honest status/retry banner. Suspicious legacy missing data protected; last 3 local safety copies + JSON/missing-data recovery. Loader API fail par cached old build se pehle known latest fix. Existing key, salary/canteen, Segoe PDF, 6 templates aur WhatsApp safe. **533 checks:** 406 canteen + 29 loader + 22 PDF + 76 cloud. [Guide](CLOUD-SYNC.md). | `Hisaab-Pro-v3.17.html` |
@@ -93,15 +94,15 @@ File ka naam me version hona chahiye: **`Hisaab-Pro-v<number>.<number>.html`**
 | v2.0 | 2026-11-11 | Auto-update loader + fixed working hours/overtime removed. Hourly worker = rate × total hours (naya Hours column). Monthly = ÷30 fixed, Sunday auto-exclude. Version badge. | `Hisaab-Pro-v2.0.html` |
 
 > **File ka rule:** `hisaab_v3.html` = working/source file (yahan change hota hai).
-> `Hisaab-Pro-v3.19.html` = usi ka release copy, taaki upar wala loader apne aap sabse naya version utha le.
+> `Hisaab-Pro-v3.20.html` = usi ka release copy, taaki upar wala loader apne aap sabse naya version utha le.
 > Dono ka content abhi **bilkul same** hai. Purane `Hisaab-Pro-v3.1.html` / `v2.0` repo me pade rehne do.
 
 ---
 
-# Manager Attendance (v3.19) — kaise use karein
+# Manager Attendance (v3.20) — kaise use karein
 
 Sidebar → **Attendance** → **Add manager** → **Shift & credit rules** review → Tap/Time mode.
-Day/Night, 24-hour + next-day clocks, calendar, ledger, bulk, custom-range PDF/Excel,
+Day/Night shifts, 12-hour clocks + same/next day morning/night choices, calendar, ledger, bulk, custom-range PDF/Excel,
 auto-save/backup aur limits: **[poora Attendance guide](ATTENDANCE.md)**.
 Starting hours/grace/credits configurable hain, user-approved business policy nahi;
 Attendance salary calculations ko nahi badalta.
@@ -227,6 +228,6 @@ red badge = is mahine kitni entries ka paisa baki hai.
 
 ## 7. Developer tests
 
-`tests/` folder me **696 offline checks** (canteen/salary, loader, PDF, cloud aur
-Attendance) + optional **27 real Chromium checks** hain. App ke liye test dependencies
+`tests/` folder me **730 offline checks** (canteen/salary, loader, PDF, cloud aur
+Attendance) + optional **45 real Chromium checks** hain. App ke liye test dependencies
 zaroori nahi. Commands, fixtures aur QA limits: [`tests/README.md`](tests/README.md).
