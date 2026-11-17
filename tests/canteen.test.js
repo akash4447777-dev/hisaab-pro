@@ -66,7 +66,7 @@ const iso = (d) => d.getFullYear() + "-" + String(d.getMonth() + 1).padStart(2, 
   ok(H().Store.data.canteen.entries.length > 0, "sample canteen entries load hui (" + H().Store.data.canteen.entries.length + ")");
   ok(H().Store.data.workers.length === 4, "workers safe (4 demo)");
   const verEl = $("[data-ver]");
-  ok(verEl && verEl.textContent === "3.17", "version badge 3.17", verEl && verEl.textContent);
+  ok(verEl && verEl.textContent === "3.18", "version badge 3.18", verEl && verEl.textContent);
   ok(root().innerHTML.indexOf("Canteen") >= 0, "dashboard par canteen card dikha");
   ok(root().innerHTML.indexOf("Saman aaya") >= 0, "dashboard canteen strip me 'Saman aaya'");
 
@@ -892,9 +892,11 @@ const iso = (d) => d.getFullYear() + "-" + String(d.getMonth() + 1).padStart(2, 
   ok(m12.indexOf("CANTEEN MONTHLY LEDGER") >= 0, "mahine PDF me doc title right side");
   ok(m12.indexOf(String.fromCharCode(151) + " CANTEEN") >= 0, "header me SHOP — CANTEEN line");
   ok(m12.indexOf("Main Market") >= 0, "header me shop address line", (H().Store.data.settings || {}).address);
-  ["Saman aaya", "Bikri / income", "Kharcha", "Entries", "Paisa diya", "Baki / udhaar"].forEach((lb) => {
+  ["Saman aaya", "Entries", "Paisa diya", "Baki / udhaar"].forEach((lb) => {
     ok(m12.indexOf(lb) >= 0, "2-column summary me '" + lb + "'");
   });
+  ok(m12.indexOf("(Bikri / income)") < 0, "v3.18: summary Bikri / income label blank");
+  ok(m12.indexOf("(Kharcha)") < 0, "v3.18: summary Kharcha label blank");
   ok(m12.indexOf("DIN-WISE LEDGER") >= 0 && m12.indexOf("Mahine ka total") >= 0, "din-wise table + bold total row andar");
   ok(m12.indexOf("ITEM-WISE SUMMARY") >= 0 && m12.indexOf("RATE WALI ENTRIES") >= 0, "item-wise summary section");
   ok(d12.indexOf("CANTEEN DAY LEDGER") >= 0 && d12.indexOf("ENTRIES") >= 0 && d12.indexOf("DIN KA NET") >= 0,
@@ -923,9 +925,11 @@ const iso = (d) => d.getFullYear() + "-" + String(d.getMonth() + 1).padStart(2, 
   const d13 = H().canteen.pdfDayStr(todayIso).str;
   const m13 = H().canteen.pdfMonthStr(H().UI.year, H().UI.month).str;
   /* din: print-day jaisa */
-  ["Date", "Din", "Entries", "Saman aaya", "Bikri", "Kharcha"].forEach((lb) => {
+  ["Date", "Din", "Entries", "Saman aaya"].forEach((lb) => {
     ok(d13.indexOf(lb) >= 0, "din meta me '" + lb + "'");
   });
+  ok(d13.indexOf("(Bikri)") < 0, "v3.18: din summary Bikri label blank");
+  ok(d13.indexOf("(Kharcha)") < 0, "v3.18: din summary Kharcha label blank");
   ok(d13.indexOf("ENTRIES") >= 0 && d13.indexOf("MODE") >= 0 && d13.indexOf("BILL") >= 0, "din entries table print jaisi (Type/Party/Bill/Mode/Saman)");
   ok(d13.indexOf("Item-wise") >= 0 && d13.indexOf("Lump-sum") >= 0 || d13.indexOf("Item-wise") >= 0, "mode column values");
   ok(d13.indexOf("SAMAN ITEM-WISE") >= 0 && d13.indexOf("RATE KE SAATH") >= 0, "din item-wise section print jaisa");

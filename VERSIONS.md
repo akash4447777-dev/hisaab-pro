@@ -67,6 +67,7 @@ File ka naam me version hona chahiye: **`Hisaab-Pro-v<number>.<number>.html`**
 
 | Version | Date | Kya badla | File |
 |---|---|---|---|
+| v3.18 | 2026-11-14 | **Sirf PDF summary labels blank.** Screenshot wale Bikri / income aur Kharcha labels din + mahina summary me khaali; amounts (₹0.00 bhi), dashed rows, spacing, totals, fonts aur baaki format unchanged. Print/save-as-PDF aur WhatsApp attachment same. App entries, table columns aur v3.17 cloud safety unchanged. Tests: 406 canteen + 29 loader + 26 PDF + 76 cloud = **537**. | `Hisaab-Pro-v3.18.html` |
 | v3.17 | 2026-11-14 | **Cross-device data-loss fix.** Canteen-only / salary / settings data ko populated maana jata hai; fresh demo/empty login se cloud overwrite nahi. Durable offline working/base + account/project isolation; three-way merge; conditional update/unique insert (no upsert), races par retry. Financial/edit-v-delete/dependent salary conflicts par explicit values + choice, failed saves par honest status/retry banner. Suspicious legacy missing data protected; last 3 local safety copies + JSON/missing-data recovery. Loader API fail par cached old build se pehle known latest fix. Existing key, salary/canteen, Segoe PDF, 6 templates aur WhatsApp safe. **533 checks:** 406 canteen + 29 loader + 22 PDF + 76 cloud. [Guide](CLOUD-SYNC.md). | `Hisaab-Pro-v3.17.html` |
 | v3.16 | 2026-11-14 | **Reference PDF re-analysis: asli Segoe UI Regular/Bold/Black embedded**, offline bhi same fonts, asli ₹ / minus, real glyph widths + ToUnicode. Bottom screenshot jaisa: white/light-grey net row (dark band nahi), rounded dashed amount-in-words box, 52px writing gap, Prepared by / owner lines, phir flowing note + version. Poora closing ek page par; continuation table top se restart; saare items/parties include. 6 templates, WhatsApp aur saved data safe. Tests: 406 canteen + 25 loader + 22 PDF. | `Hisaab-Pro-v3.16.html` |
 | v3.15 | 2026-11-16 | **Entries clean + alignment.** Din ki entries table me products list khatam (sirf item-wise summary me); Amount/Paid/Baki columns chauri — koi overlap nahi; page-2 par net band/in-words/signature footer se kabhi nahi takrate (auto page-break); header me em-dash print jaisa. | `Hisaab-Pro-v3.15.html` |
@@ -88,7 +89,7 @@ File ka naam me version hona chahiye: **`Hisaab-Pro-v<number>.<number>.html`**
 | v2.0 | 2026-11-11 | Auto-update loader + fixed working hours/overtime removed. Hourly worker = rate × total hours (naya Hours column). Monthly = ÷30 fixed, Sunday auto-exclude. Version badge. | `Hisaab-Pro-v2.0.html` |
 
 > **File ka rule:** `hisaab_v3.html` = working/source file (yahan change hota hai).
-> `Hisaab-Pro-v3.17.html` = usi ka release copy, taaki upar wala loader apne aap sabse naya version utha le.
+> `Hisaab-Pro-v3.18.html` = usi ka release copy, taaki upar wala loader apne aap sabse naya version utha le.
 > Dono ka content abhi **bilkul same** hai. Purane `Hisaab-Pro-v3.1.html` / `v2.0` repo me pade rehne do.
 
 ---
