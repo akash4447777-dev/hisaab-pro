@@ -811,7 +811,7 @@ select.ct-pm option{font-size:11.5px;font-weight:700}
       <button data-view="settings"><span class="ico">⚙</span>Settings</button>
     </nav>
     <div class="side-foot">
-      <div><span class="dot"></span><b>Auto-saved</b> · is browser me</div>
+      <div><span class="dot"></span><b data-save-label>Auto-saved</b> · is browser me</div>
       <div style="margin-top:6px" id="sideStats">—</div>
       <div style="margin-top:7px" data-cloud-badge></div>
       <div style="margin-top:6px;opacity:.85">Panel <b>v<span data-ver></span></b></div>
@@ -840,6 +840,7 @@ select.ct-pm option{font-size:11.5px;font-weight:700}
         <button class="btn primary" data-act="addWorker">+ Add Worker</button>
       </div>
     </div>
+    <div id="syncAlert" role="status" aria-live="polite" hidden></div>
     <div id="viewRoot"></div>
   </main>
 </div>
@@ -1820,7 +1821,7 @@ const rRate = (n) => { const x = Math.max(0, num(n)); return x >= 1 ? r2(x) : Ma
 /* rate dikhane ka format: <₹1 ho to 0.075 jaisa khula number, warna moneyS */
 const rateS = (n) => { const x = num(n); if (x > 0 && x < 1) return "₹" + String(Math.round((x + Number.EPSILON) * 10000) / 10000); return moneyS(x); };
 const clamp = (n, lo, hi) => Math.min(hi, Math.max(lo, n));
-const APP_VERSION = "3.16";
+const APP_VERSION = "3.17";
 const esc = (s) => String(s == null ? "" : s).replace(/[&<>"']/g, (m) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[m]));
 
 const MONTHS = ["January","February","March","April","May","June","July","August","September","October","November","December"];
@@ -1891,8 +1892,8 @@ function blankData() {
   return { settings: { ...DEFAULT_SETTINGS }, workers: [], records: [], canteen: blankCanteen() };
 }
 
-function sampleData() {
-  const now = new Date();
+function sampleData(anchor) {
+  const now = anchor || new Date();
   const y = now.getFullYear(), m = now.getMonth();
   const pm = m === 0 ? { y: y - 1, m: 11 } : { y, m: m - 1 };
   const workers = [
@@ -1926,22 +1927,51 @@ function sampleData() {
   return { settings: { ...DEFAULT_SETTINGS, demo: true }, workers, records: recs, canteen: sampleCanteen(y, m, pm) };
 }
 
+function demoSignature(data) {
+  const d = syncView(data), names = new Map(d.workers.map((w) => [w.id, w.name]));
+  const strip = (obj) => {
+    if (!obj || typeof obj !== "object") return obj;
+    if (Array.isArray(obj)) return obj.map(strip);
+    const out = {};
+    Object.keys(obj).forEach((key) => {
+      if (["id", "createdAt", "updatedAt", "ts", "date", "paidOn", "entryId"].includes(key)) return;
+      out[key] = key === "workerId" ? names.get(obj[key]) || obj[key] : strip(obj[key]);
+    });
+    return out;
+  };
+  return syncStable(strip(d));
+}
 const Store = {
-  data: blankData(),
+  data: blankData(), lastSaved: null, diskValue: null, demoPrint: null, storageProblem: false, unsaved: false,
+  remember() { this.lastSaved = syncClone(this.data); },
+  pristineDemo(d) {
+    if (!d || !d.settings || d.settings.demo !== true || d.canteen && d.canteen.demo === false) return false;
+    const signature = demoSignature(d);
+    if (this.demoPrint && signature === this.demoPrint) return true;
+    const records = (d.records || []).slice().sort((a, b) => b.year - a.year || b.month - a.month);
+    const anchor = records[0] ? new Date(records[0].year, records[0].month, 15) : new Date();
+    this.demoPrint = demoSignature(sampleData(anchor));
+    return signature === this.demoPrint;
+  },
   load() {
     let raw = null;
-    try { raw = localStorage.getItem(KEY); } catch (e) { raw = null; }
-    if (!raw) { this.data = sampleData(); this.save(true); return; }
-    try {
-      const d = JSON.parse(raw);
-      this.data = {
-        settings: { ...DEFAULT_SETTINGS, ...(d.settings || {}) },
-        workers: Array.isArray(d.workers) ? d.workers : [],
-        records: Array.isArray(d.records) ? d.records : [],
-        canteen: normCanteen(d.canteen)
-      };
-    } catch (e) { this.data = blankData(); }
-    this.migrate();
+    try { raw = localStorage.getItem(KEY); } catch (e) { this.storageProblem = true; Cloud.setStatus("storage", "Browser storage read nahi ho rahi — JSON backup zaroor lein"); this.remember(); return; }
+    this.diskValue = raw;
+    const cached = Cloud.restoreLocal();
+    if (cached) this.data = normalizeData(cached);
+    else if (!raw) {
+      this.data = Cloud.scope ? blankData() : sampleData();
+      this.demoPrint = demoSignature(this.data);
+      this.save(true, { bootstrap: true }); this.remember(); return;
+    } else {
+      try { const saved = JSON.parse(raw); validateRemote({ payload: saved }); this.data = normalizeData(saved); }
+      catch (e) {
+        this.data = blankData(); this.storageProblem = true;
+        Cloud.setStatus("storage", "Saved file read nahi hui. Browser storage clear mat karein; purana raw data overwrite nahi kiya gaya.");
+        this.remember(); return;
+      }
+    }
+    this.migrate(); this.remember();
   },
   /* one-time cleanup: old records had overtime fields / hourly day-hours */
   migrate() {
@@ -1960,17 +1990,32 @@ const Store = {
       this.data.canteen = normCanteen(this.data.canteen);
       changed = true;
     }
-    if (changed) this.save(true);
+    if (changed) this.save(true, { bootstrap: true });
   },
-  save(silent) {
-    let ok = true;
-    try { localStorage.setItem(KEY, JSON.stringify(this.data)); } catch (e) {
-      ok = false;
-      if (!silent) toast("Could not save — browser storage full or blocked", "bad");
+  save(silent, options) {
+    options = options || {};
+    if (this.storageProblem) { toast("Purana saved data read nahi hua — automatic overwrite band hai", "bad"); return false; }
+    const changed = !this.lastSaved || !samePayload(this.lastSaved, this.data);
+    const previous = this.lastSaved;
+    if (!options.bootstrap && changed && previous && this.pristineDemo(previous)) {
+      this.data.settings.demo = false; this.data.canteen.demo = false;
     }
+    if (!options.bootstrap && changed && previous && (options.checkpoint || removedRows(previous, this.data)) && !Recovery.capture(previous, "Local restore/delete se pehle")) {
+      Cloud.setStatus("storage", "Safety copy save nahi hui — storage full. JSON backup download karein.");
+      this.unsaved = true; if (!silent) toast(Cloud.lastError, "bad");
+      return false;
+    }
+    const dirty = Cloud.dirty;
+    if (!options.bootstrap && changed && Cloud.scope) Cloud.dirty = true;
+    if (!Cloud.persist(this.data, false)) {
+      Cloud.dirty = dirty; this.unsaved = true;
+      if (!silent) toast(Cloud.lastError || "Save NAHIN hua — browser storage full/blocked", "bad");
+      return false;
+    }
+    this.unsaved = false; this.remember();
     if (!silent) flashSaved();
-    try { Cloud.schedulePush(); } catch (e) {}
-    return ok;
+    if (!options.bootstrap && changed) { Cloud.editVersion++; Cloud.schedulePush(); }
+    return true;
   },
   workers() { return this.data.workers; },
   activeWorkers() { return this.data.workers.filter((w) => w.active !== false); },
@@ -1992,7 +2037,14 @@ const Store = {
     if (create) { this.data.records.push(rec); this.save(); }
     return rec;
   },
-  persistRecord(rec) { rec.updatedAt = Date.now(); this.save(); }
+  /* Discrete/destructive actions roll back on failure; inline drafts remain in
+     memory with a persistent warning until saved again or backed up. */
+  saveChange() {
+    if (this.save()) return true;
+    if (this.lastSaved) this.data = syncClone(this.lastSaved);
+    return false;
+  },
+  persistRecord(rec) { rec.updatedAt = Date.now(); return this.save(); }
 };
 
 /* ---------------------------- 4. CALCULATIONS --------------------------- */
@@ -2073,7 +2125,7 @@ function toast(msg, kind, undoable) {
 function flashSaved() {
   clearTimeout(saveTimer);
   const el = $("#sideStats");
-  if (el) el.innerHTML = '<span style="color:#34d399">✔ Saved just now</span>';
+  if (el) el.innerHTML = '<span style="color:#34d399">✔ Is device par saved</span>';
   saveTimer = setTimeout(updateSideStats, 2200);
 }
 function updateSideStats() {
@@ -2129,6 +2181,7 @@ function render() {
   else if (UI.view === "records") root.innerHTML = viewRecords();
   else if (UI.view === "settings") root.innerHTML = viewSettings();
   updateSideStats();
+  updateCloudBadge();
   syncMonthPickers();
   document.querySelectorAll("[data-ver]").forEach((el) => { el.textContent = APP_VERSION; });
   /* topbar ka primary button canteen view par entry add karta hai */
@@ -3081,6 +3134,7 @@ function viewSettings(){
 
     '<div style="text-align:center;font-size:11.5px;color:var(--muted);margin-top:18px;line-height:1.7">'+
       'Panel <b style="color:var(--ink)">v<span data-ver></span></b> · Auto-update enabled<br>'+
+      'v3.17 — <b style="color:var(--ink)">Safe cloud login + device sync</b>: naya/empty/demo device real data overwrite nahi karta; salary + canteen pehle compare aur safely merge hote hain. Offline changes reload ke baad bhi pending rehte hain; financial/edit-v-delete conflicts par explicit choice; failed local/cloud save par saaf warning. Account-wise safety copies + JSON recovery; purana data key, PDF/fonts, 6 templates aur WhatsApp unchanged<br>'+
       'v3.16 — <b style="color:var(--ink)">Reference PDF ka font + bottom</b>: asli Segoe UI Regular/Bold/Black fonts embedded (offline bhi); asli ₹ aur minus; halka net row, rounded dashed in-words box, 52px writing gap, Prepared by / owner lines; note + version signature ke turant neeche; poora closing block saath rehta hai. Tables ke page-break bhi reset hote hain. 🎨 6 templates aur WhatsApp same PDF<br>'+
       'v3.15 — <b style="color:var(--ink)">Entries clean + alignment fix</b>: din ki entries table me ab <b>products list nahi</b> (products sirf SAMAN ITEM-WISE summary me) — rows chhoti aur saaf; Amount/Paid/Baki columns <b>chauri</b> (Rs.2,800.00 jaise amounts overlap nahi karte); <b>page-2 fix</b> — net band / in-words / signature kabhi footer par nahi chadhte (auto page-break); header me print jaisa em-dash (—)<br>'+
       'v3.14 — <b style="color:var(--ink)">PDF = print CSS exact mirror</b>: tables ab <b>full grid</b> (har cell border, grey header fill #f3f4f6) jaisa print me; meta rows ke neeche <b>dashed underlines</b>; section titles ke neeche solid underline; <b>Amount in words dashed box</b>; signature <b>do boxes with top border</b> (Prepared by / owner); footer me version + page number; fontsizes print ke px→pt exact. Default template = print exact; baaki 5 templates colour tint dete hain<br>'+
@@ -3322,9 +3376,10 @@ function openWorkerModal(id) {
     if (!name) { $("#wName").classList.add("err"); $("#wName").focus(); toast("Please enter the worker's name", "bad"); return; }
     if (rate <= 0) { $("#wRate").classList.add("err"); $("#wRate").focus(); toast("Please enter a valid salary rate", "bad"); return; }
     const payload = { name, role: $("#wRole").value.trim(), phone: $("#wPhone").value.trim(), type, rate, active: $("#wActive").checked, note: $("#wNote").value.trim() };
-    if (isEdit) { Object.assign(w, payload); toast("Worker updated"); }
-    else { Store.data.workers.push({ id: uid(), ...payload }); toast("Worker added — hisaab ready"); }
-    Store.save(); closeModal(); render();
+    if (isEdit) { Object.assign(Store.worker(id), payload); }
+    else { Store.data.workers.push({ id: uid(), ...payload }); }
+    if (!Store.saveChange()) return;
+    closeModal(); render(); toast(isEdit ? "Worker updated" : "Worker added — hisaab ready", "ok");
   });
   setTimeout(() => { const n = $("#wName"); if (n) n.focus(); }, 60);
 }
@@ -3491,7 +3546,7 @@ function commitModal() {
   $("#dedList") && (rec.deductions = $$("#dedList .ded-row").map((row) => ({
     id: row.dataset.id, label: $(".d-label", row).value, amount: num($(".d-amt", row).value)
   })));
-  Store.persistRecord(rec);
+  return Store.persistRecord(rec);
 }
 
 function refreshRecModal() {
@@ -4059,13 +4114,12 @@ function downloadAllPdfs() {
 /* --------------------------- 15. SHARED ACTIONS ------------------------- */
 function togglePaid(wid, y, m) {
   const rec = Store.ensureRecord(wid, y, m, true);
-  if (rec.status === "paid") { rec.status = "pending"; rec.paidOn = ""; toast("Marked as pending"); }
+  if (rec.status === "paid") { rec.status = "pending"; rec.paidOn = ""; }
   else {
     rec.status = "paid";
     if (!rec.paidOn) { const d = new Date(); rec.paidOn = d.getFullYear() + "-" + String(d.getMonth() + 1).padStart(2, "0") + "-" + String(d.getDate()).padStart(2, "0"); }
-    toast("Marked as paid ✔", "ok");
   }
-  Store.persistRecord(rec);
+  if (Store.persistRecord(rec)) toast(rec.status === "paid" ? "Marked as paid ✔" : "Marked as pending", "ok");
 }
 
 function autoFillAll() {
@@ -4077,6 +4131,7 @@ function autoFillAll() {
       rec.presentDays = wd; rec.absentDays = 0;
       Store.persistRecord(rec);
     });
+    if (Store.unsaved) { render(); return; }
     render(); toast("Attendance auto-filled", "ok");
   });
 }
@@ -4091,6 +4146,7 @@ function copyPreviousMonth() {
     Store.persistRecord(rec); n++;
   });
   render();
+  if (Store.unsaved) return;
   toast(n ? "Copied attendance from " + MONTHS_S[pm.m] + " for " + n + " workers" : "No records found for " + monthLabel(pm.y, pm.m), n ? "ok" : "bad");
 }
 function markAllPaid() {
@@ -4102,6 +4158,7 @@ function markAllPaid() {
       rec.paidOn = d.getFullYear() + "-" + String(d.getMonth() + 1).padStart(2, "0") + "-" + String(d.getDate()).padStart(2, "0");
       Store.persistRecord(rec);
     });
+    if (Store.unsaved) { render(); return; }
     render(); toast("All workers marked paid", "ok");
   });
 }
@@ -4123,9 +4180,11 @@ function importData() {
     rd.onload = () => {
       try {
         const d = JSON.parse(rd.result);
-        if (!d.workers || !d.records) throw new Error("bad");
+        validateRemote({ payload: d });
+        const previous = syncClone(Store.data);
         Store.data = { settings: { ...DEFAULT_SETTINGS, ...(d.settings || {}) }, workers: d.workers, records: d.records, canteen: normCanteen(d.canteen) };
-        Store.save(); render(); toast("Backup restored", "ok");
+        if (!Store.save(false, { checkpoint: true })) { Store.data = previous; return; }
+        render(); toast("Backup restored — cloud status check karein", "ok");
       } catch (e) { toast("Invalid backup file", "bad"); }
     };
     rd.readAsText(f);
@@ -4133,8 +4192,11 @@ function importData() {
   inp.click();
 }
 
-/* ------------------ 18. CLOUD LOGIN & SYNC (Supabase) ------------------- */
+/* ------------------ 18. CLOUD LOGIN & SAFE SYNC (Supabase) -------------- */
 const CLOUD_KEY = "hisaabPro.cloud.v1";
+const OWNER_KEY = "hisaabPro.owner.v1";
+const SYNC_PREFIX = "hisaabPro.sync.v2.";
+const RECOVERY_PREFIX = "hisaabPro.recovery.v1.";
 const SUPABASE_CDN = "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2";
 
 function loadScriptOnce(src) {
@@ -4142,155 +4204,12 @@ function loadScriptOnce(src) {
     const s = document.createElement("script");
     s.src = src; s.async = true;
     s.onload = () => resolve(true);
-    s.onerror = () => reject(new Error("Could not load " + src));
+    s.onerror = () => reject(new Error("Cloud library load nahi hui — internet check karein"));
     document.head.appendChild(s);
   });
 }
-
-const Cloud = {
-  cfg: null, client: null, user: null, mode: "in",
-  status: "local", lastSync: 0, dirty: false, busy: false, pushTimer: null, blocked: false,
-
-  readCfg() {
-    try { const r = localStorage.getItem(CLOUD_KEY); this.cfg = r ? JSON.parse(r) : null; }
-    catch (e) { this.cfg = null; }
-    return this.cfg;
-  },
-  writeCfg(c) {
-    this.cfg = c;
-    try { if (c) localStorage.setItem(CLOUD_KEY, JSON.stringify(c)); else localStorage.removeItem(CLOUD_KEY); } catch (e) {}
-  },
-  configured() { return !!(this.cfg && this.cfg.url && this.cfg.key); },
-
-  async initClient() {
-    if (this.client) return this.client;
-    if (!window.supabase) await loadScriptOnce(SUPABASE_CDN);
-    if (!window.supabase) throw new Error("Supabase library load failed");
-    this.client = window.supabase.createClient(this.cfg.url, this.cfg.key, { auth: { persistSession: true, autoRefreshToken: true } });
-    return this.client;
-  },
-
-  async boot() {
-    this.readCfg();
-    if (!this.configured()) { this.status = "local"; updateCloudBadge(); return; }
-    try {
-      await this.initClient();
-      const res = await this.client.auth.getSession();
-      const session = res && res.data ? res.data.session : null;
-      this.user = session ? session.user : null;
-      if (this.user) {
-        this.status = "synced"; showLogin(false);
-        await this.maybePull(true);
-      } else { this.status = "loggedout"; showLogin(true); }
-    } catch (e) {
-      this.status = "error"; showLogin(true);
-    }
-    updateCloudBadge();
-  },
-
-  setStatus(s, msg) { this.status = s; updateCloudBadge(msg); },
-
-  async signIn(email, password) {
-    await this.initClient();
-    const { data, error } = await this.client.auth.signInWithPassword({ email, password });
-    if (error) throw error;
-    this.user = data.user;
-    await this.afterLogin();
-  },
-
-  async signUp(email, password) {
-    await this.initClient();
-    const { data, error } = await this.client.auth.signUp({ email, password });
-    if (error) throw error;
-    if (!data.session) return { needsConfirm: true };
-    this.user = data.user;
-    await this.afterLogin();
-    return { needsConfirm: false };
-  },
-
-  async signOut() {
-    try { if (this.client) await this.client.auth.signOut(); } catch (e) {}
-    this.user = null; this.status = "loggedout";
-    showLogin(true); render();
-  },
-
-  async fetchRemote() {
-    if (!this.user) return null;
-    const { data, error } = await this.client.from("hisaab_data").select("payload,updated_at").eq("user_id", this.user.id).maybeSingle();
-    if (error) throw error;
-    return data || null;
-  },
-
-  schedulePush() {
-    if (!this.user) return;
-    this.dirty = true;
-    clearTimeout(this.pushTimer);
-    this.pushTimer = setTimeout(() => this.pushNow(), 1200);
-  },
-
-  async pushNow() {
-    if (!this.user || this.busy) return;
-    this.busy = true; this.setStatus("saving");
-    try {
-      const payload = JSON.parse(JSON.stringify(Store.data));
-      delete payload.settings.demo;
-      const { error } = await this.client.from("hisaab_data")
-        .upsert({ user_id: this.user.id, payload: payload, updated_at: new Date().toISOString() });
-      if (error) throw error;
-      this.dirty = false; this.lastSync = Date.now(); this.setStatus("synced");
-    } catch (e) {
-      this.setStatus("offline");
-    }
-    this.busy = false;
-  },
-
-  async afterLogin() {
-    showLogin(false);
-    this.setStatus("synced");
-    try {
-      const remote = await this.fetchRemote();
-      const remoteHas = remote && remote.payload && Array.isArray(remote.payload.workers) && remote.payload.workers.length > 0;
-      const localHas = Store.data.workers.length > 0 && Store.data.settings.demo !== true;
-      if (remoteHas && localHas && !samePayload(remote.payload, Store.data)) {
-        askWhichData(remote);
-      } else if (remoteHas && !localHas) {
-        adoptRemote(remote);
-        toast("Cloud ka data load ho gaya ✔", "ok");
-      } else {
-        await this.pushNow();
-        toast("Data cloud par save ho gaya ✔", "ok");
-      }
-    } catch (e) {
-      toast("Cloud se connect nahi ho paya — internet check karein", "bad");
-      this.setStatus("offline");
-    }
-    render();
-  },
-
-  /* pull newer data made on another device */
-  async maybePull(force) {
-    if (!this.user || this.dirty || this.busy) return;
-    if ($("#overlay")) return; /* skip while a dialog is open */
-    try {
-      const remote = await this.fetchRemote();
-      if (!remote || !remote.payload) return;
-      const stamp = new Date(remote.updated_at).getTime();
-      const remoteHas = Array.isArray(remote.payload.workers);
-      if (!remoteHas) return;
-      if (stamp > this.lastSync + 1500) {
-        if (force || !this.dirty) {
-          Store.data = normalizeData(remote.payload);
-          Store.save(true);
-          this.lastSync = stamp;
-          render();
-          toast("Doosre device ka naya data aa gaya ✔", "ok");
-        }
-      } else if (!this.lastSync) { this.lastSync = stamp; }
-    } catch (e) { /* silent */ }
-  }
-};
-
 function normalizeData(d) {
+  d = d || {};
   return {
     settings: { ...DEFAULT_SETTINGS, ...(d.settings || {}) },
     workers: Array.isArray(d.workers) ? d.workers : [],
@@ -4298,42 +4217,619 @@ function normalizeData(d) {
     canteen: normCanteen(d.canteen)
   };
 }
-function adoptRemote(remote) {
-  Store.data = normalizeData(remote.payload);
-  Store.save(true);
-  Cloud.lastSync = new Date(remote.updated_at).getTime();
-  closeModal(); render();
+function syncClone(d) { return d === undefined ? undefined : JSON.parse(JSON.stringify(d)); }
+function syncStable(d) {
+  if (d === undefined) return "undefined";
+  if (d === null || typeof d !== "object") return JSON.stringify(d);
+  if (Array.isArray(d)) return "[" + d.map(syncStable).join(",") + "]";
+  return "{" + Object.keys(d).filter((k) => !["__proto__", "constructor", "prototype", "createdAt", "updatedAt"].includes(k)).sort()
+    .map((k) => JSON.stringify(k) + ":" + syncStable(d[k])).join(",") + "}";
 }
-/* dono taraf normalize kar ke compare — warna naya canteen key har login par
-   "kaunsa data rakhein?" dialog dikha deta, jabki asal me kuch badla hi nahi hota */
-function samePayload(a, b) {
-  try { return JSON.stringify(normalizeData(a)) === JSON.stringify(normalizeData(b)); }
-  catch (e) { return false; }
+/* Theme belongs to this device; demo markers are never financial data. */
+function syncView(d) {
+  const x = normalizeData(syncClone(d));
+  delete x.settings.demo; delete x.settings.theme; delete x.canteen.demo;
+  return x;
 }
-function ctCountOf(payload) {
-  return ((payload && payload.canteen && Array.isArray(payload.canteen.entries)) ? payload.canteen.entries : []).length;
+function samePayload(a, b) { return syncStable(syncView(a)) === syncStable(syncView(b)); }
+function dataCounts(d) {
+  const c = d && d.canteen || {};
+  return { workers: (d && d.workers || []).length, records: (d && d.records || []).length,
+    entries: (c.entries || []).length, rates: (c.rates || []).length, log: (c.log || []).length };
 }
-function askWhichData(remote) {
-  Cloud._pending = remote;
-  const remoteCount = (remote.payload.workers || []).length;
-  openModal(
-    '<div class="modal" style="max-width:480px"><div class="modal-h"><div><h3>Kaunsa data rakhein?</h3>' +
-      '<p>Aapke account me pehle se data hai, aur is device me bhi data hai.</p></div><button class="x" data-act="closeModal">✕</button></div>' +
-      '<div class="modal-b" style="font-size:13px;color:#475569">' +
-        '<div style="border:1px solid var(--line);border-radius:11px;padding:11px 13px;margin-bottom:10px">' +
-          '<b style="color:var(--ink)">Cloud par:</b> ' + remoteCount + " workers · " + ctCountOf(remote.payload) + " canteen entries<br>" +
-          '<span style="font-size:11.5px">Last update: ' + esc(String(remote.updated_at).slice(0, 16).replace("T", " ")) + "</span></div>" +
-        '<div style="border:1px solid var(--line);border-radius:11px;padding:11px 13px">' +
-          '<b style="color:var(--ink)">Is device par:</b> ' + Store.data.workers.length + " workers · " +
-          ctCountOf(Store.data) + " canteen entries</div>" +
-        '<p style="margin-top:12px;font-size:12px">Agar aap pehli baar login kar rahe hain, to <b>“Is device ka data upload”</b> chunein. ' +
-        "Baaki device par kaam kiya hai to <b>“Cloud ka data download”</b> chunein.</p>" +
-      '</div>' +
-      '<div class="modal-f" style="justify-content:flex-end;flex-wrap:wrap">' +
-        '<button class="btn" data-act="useCloud">☁️ Cloud ka data download</button>' +
-        '<button class="btn primary" data-act="useLocal">⤒ Is device ka data upload</button>' +
-      "</div></div>"
-  );
+function hasRows(d) { return Object.values(dataCounts(d)).some((n) => n > 0); }
+function hasUserData(d) {
+  if (hasRows(d)) return true;
+  const s = syncView(d).settings;
+  return Object.keys(s).some((key) => syncStable(s[key]) !== syncStable(DEFAULT_SETTINGS[key]));
+}
+function ctCountOf(d) { return dataCounts(d).entries; }
+function dataCountText(d) {
+  const n = dataCounts(d);
+  return n.workers + " workers · " + n.records + " salary records · " + n.entries + " canteen · " + n.rates + " rates";
+}
+function syncEntityKey(item, path) {
+  if (!item || typeof item !== "object" || Array.isArray(item)) return null;
+  if (path === "records" && item.workerId != null && item.year != null && item.month != null)
+    return String(item.workerId) + ":" + item.year + ":" + item.month;
+  return item.id == null ? null : String(item.id);
+}
+/* Three-way merge, NOT last-device-wins. Unknown/first-login absence is never a
+   deletion. A known baseline propagates intentional row/field deletions; a
+   concurrent edit-v-delete or different financial value pauses for a choice. */
+function mergeSyncData(base, local, remote, preference) {
+  const conflicts = [], details = [];
+  const eq = (a, b) => syncStable(a) === syncStable(b);
+  const merge = (b, l, r, path) => {
+    if (eq(l, r)) return syncClone(l);
+    if (eq(l, b)) return syncClone(r);
+    if (eq(r, b)) return syncClone(l);
+    if (path.endsWith(".updatedAt")) return Math.max(num(l), num(r));
+    if (path.startsWith("records[") && path.endsWith(".id")) return syncClone(r || l);
+    if (Array.isArray(l) && Array.isArray(r) && (b === undefined || Array.isArray(b))) {
+      const all = (b || []).concat(l, r);
+      if (all.every((item) => syncEntityKey(item, path) !== null)) {
+        const map = (list) => new Map((list || []).map((v) => [syncEntityKey(v, path), v]));
+        const bm = map(b), lm = map(l), rm = map(r), keys = new Set([...rm.keys(), ...lm.keys(), ...bm.keys()]);
+        return Array.from(keys).map((key) => merge(bm.get(key), lm.get(key), rm.get(key), path + "[" + key + "]"))
+          .filter((v) => v !== undefined);
+      }
+    }
+    const object = (x) => x && typeof x === "object" && !Array.isArray(x);
+    if (object(l) && object(r) && (b === undefined || object(b))) {
+      const out = {};
+      new Set([...Object.keys(b || {}), ...Object.keys(l), ...Object.keys(r)]).forEach((key) => {
+        if (["__proto__", "constructor", "prototype"].includes(key)) return;
+        const value = merge(b && b[key], l[key], r[key], path ? path + "." + key : key);
+        if (value !== undefined) out[key] = value;
+      });
+      return out;
+    }
+    conflicts.push(path); details.push({ path, local: syncStable(l), remote: syncStable(r) });
+    return syncClone(preference === "remote" ? r : l);
+  };
+  const data = merge(base, local, remote, "");
+  const conflict = (path, l, r) => { conflicts.push(path); details.push({ path, local: syncStable(l), remote: syncStable(r) }); };
+  /* A worker-delete and a new/edited salary must not leave an invisible orphan
+     record. Choosing the deleting side explicitly removes worker + salaries;
+     choosing the surviving side retains the worker for those records. */
+  if (data && Array.isArray(data.workers) && Array.isArray(data.records)) {
+    const ids = new Set(data.workers.map((w) => w.id));
+    new Set(data.records.filter((r) => !ids.has(r.workerId)).map((r) => r.workerId)).forEach((id) => {
+      const l = (local.workers || []).find((w) => w.id === id), r = (remote.workers || []).find((w) => w.id === id);
+      if (!l && !r) return; // preserve already-orphaned legacy records, do not invent/delete
+      const together = (worker, d) => worker ? { worker, records: (d.records || []).filter((rec) => rec.workerId === id) } : undefined;
+      conflict("workers[" + id + "].withSalary", together(l, local), together(r, remote));
+      const chosen = preference === "remote" ? r : l;
+      if (chosen) data.workers.push(syncClone(chosen));
+      else data.records = data.records.filter((rec) => rec.workerId !== id);
+    });
+  }
+  /* Related financial fields cannot be normalised into a different payment.
+     For example an amount reduction vs a concurrent payment must ask, not
+     silently clamp paid down to the new amount. Keep unrelated notes/rows. */
+  ((data && data.canteen || {}).entries || []).forEach((entry) => {
+    const find = (d) => ((d && d.canteen || {}).entries || []).find((e) => e.id === entry.id);
+    const b = find(base), l = find(local), r = find(remote);
+    const valid = (e) => e.paid <= e.amount && (e.mode !== "itemized" ||
+      Math.abs(e.amount - (e.items || []).reduce((n, item) => n + ctItemAmt(item), 0)) < 0.011);
+    if (!l || !r || eq(l, b) || eq(r, b) || valid(entry) || !valid(l) || !valid(r)) return;
+    const group = (e) => Object.fromEntries(["mode", "items", "amount", "paid"].map((k) => [k, e[k]]));
+    conflict("canteen.entries[" + entry.id + "].financialValues", group(l), group(r));
+    Object.assign(entry, syncClone(group(preference === "remote" ? r : l)));
+  });
+  return { data, conflicts, details };
+}
+function validateRemote(row) {
+  if (!row) return;
+  const d = row.payload;
+  if (!d || typeof d !== "object" || Array.isArray(d) || !Array.isArray(d.workers) || !Array.isArray(d.records))
+    throw new Error("Cloud data ka format galat hai. Local data nahi badla; backup lekar setup check karein.");
+  if (d.settings !== undefined && (!d.settings || typeof d.settings !== "object" || Array.isArray(d.settings)))
+    throw new Error("Cloud settings format galat hai — overwrite blocked");
+  const recordKeys = new Set();
+  d.records.forEach((r) => {
+    const key = syncEntityKey(r, "records");
+    if (recordKeys.has(key)) throw new Error("Cloud me duplicate worker/month records hain — automatic merge roka gaya");
+    recordKeys.add(key);
+  });
+  const lists = [d.workers, d.records];
+  const nested = (item, key, needsIds) => {
+    if (item && item[key] !== undefined) {
+      if (!Array.isArray(item[key])) throw new Error("Cloud " + key + " format galat hai — overwrite blocked");
+      if (needsIds) lists.push(item[key]);
+      else item[key].forEach((x) => financial(x));
+    }
+  };
+  const financial = (item) => {
+    if (!item || typeof item !== "object" || Array.isArray(item)) throw new Error("Cloud me invalid entry hai — overwrite blocked");
+    ["amount", "paid", "rate", "qty", "lineTotal", "presentDays", "absentDays", "totalHours", "bonus"].forEach((key) => {
+      if (item[key] != null && (typeof item[key] !== "number" && typeof item[key] !== "string" || !Number.isFinite(Number(item[key]))))
+        throw new Error("Cloud me invalid financial value hai — overwrite blocked");
+    });
+  };
+  d.records.forEach((r) => { nested(r, "advances", true); nested(r, "deductions", true); });
+  if (d.canteen !== undefined) {
+    if (!d.canteen || typeof d.canteen !== "object" || Array.isArray(d.canteen)) throw new Error("Cloud canteen format galat hai");
+    ["entries", "rates", "log"].forEach((key) => {
+      if (d.canteen[key] !== undefined && !Array.isArray(d.canteen[key])) throw new Error("Cloud " + key + " format galat hai");
+      if (d.canteen[key]) lists.push(d.canteen[key]);
+    });
+    (d.canteen.entries || []).forEach((entry) => nested(entry, "items", false));
+  }
+  lists.forEach((list) => {
+    const seen = new Set();
+    list.forEach((item) => {
+      if (!item || typeof item !== "object" || Array.isArray(item) || !item.id || seen.has(String(item.id)))
+        throw new Error("Cloud me invalid/duplicate record ID hai — automatic overwrite roka gaya");
+      seen.add(String(item.id)); financial(item);
+    });
+  });
+}
+/* A pre-canteen client does not know the missing collection: missing != delete. */
+function completeRemote(payload, fallback) {
+  const d = syncClone(payload), prev = fallback || blankData();
+  d.settings = { ...(prev.settings || {}), ...(d.settings || {}) };
+  if (d.canteen === undefined) d.canteen = syncClone(prev.canteen || blankCanteen());
+  else ["entries", "rates", "log"].forEach((key) => {
+    if (d.canteen[key] === undefined) d.canteen[key] = syncClone((prev.canteen || {})[key] || []);
+  });
+  return syncView(d);
+}
+function syncScope(cfg, user) { return String(cfg.url).replace(/\/+$/, "").toLowerCase() + "|" + user.id; }
+function syncCacheKey(scope) { return SYNC_PREFIX + encodeURIComponent(scope); }
+function recoveryKey(scope) { return RECOVERY_PREFIX + encodeURIComponent(scope || "local"); }
+/* Lossless string interning avoids storing a bill photo 3x in each baseline/
+   working cache. Canonical KEY stays ordinary JSON for old backups. */
+function packLocal(value) {
+  const strings = [], refs = new Map();
+  const encode = (v) => {
+    if (typeof v === "string" && v.length >= 512) {
+      if (!refs.has(v)) { refs.set(v, strings.length); strings.push(v); }
+      return ["s", refs.get(v)];
+    }
+    if (Array.isArray(v)) return ["a", v.map(encode)];
+    if (v && typeof v === "object") return ["o", Object.keys(v).map((k) => [k, encode(v[k])])];
+    return v;
+  };
+  return JSON.stringify({ encoding: "hisaab-intern-1", tree: encode(value), strings });
+}
+function unpackLocal(raw) {
+  const value = JSON.parse(raw);
+  if (!value || value.encoding !== "hisaab-intern-1") return value;
+  const decode = (v) => {
+    if (!Array.isArray(v)) return v;
+    if (v[0] === "s") return value.strings[v[1]];
+    if (v[0] === "a") return v[1].map(decode);
+    if (v[0] === "o") return Object.fromEntries(v[1].map(([k, x]) => [k, decode(x)]));
+    throw new Error("Invalid local safety-copy encoding");
+  };
+  return decode(value.tree);
+}
+function syncCollections(d) {
+  const c = d && d.canteen || {};
+  return { workers: d && d.workers || [], records: d && d.records || [], entries: c.entries || [], rates: c.rates || [] };
+}
+function unconfirmedRemoteLoss(base, local, remote, metadata) {
+  if (!base) return false;
+  const b = syncCollections(base), l = syncCollections(local), r = syncCollections(remote);
+  return Object.keys(b).some((key) => {
+    const remaining = new Set(l[key].map((x) => x.id)), remoteIds = new Set(r[key].map((x) => x.id));
+    const lost = b[key].some((x) => remaining.has(x.id) && !remoteIds.has(x.id));
+    if (!lost) return false;
+    if (!metadata || metadata.v !== 2) return true; // old client: absence is not deletion proof
+    return r[key].length === 0 && !(metadata.deletedCollections || []).includes(key) && !metadata.cleared;
+  });
+}
+function removedRows(before, after) {
+  const collections = (d) => [d.workers || [], d.records || [], ...(d.canteen ? [d.canteen.entries || [], d.canteen.rates || []] : [[], []])];
+  const old = collections(before), next = collections(after);
+  return old.some((list, i) => { const ids = new Set(next[i].map((x) => x.id)); return list.some((x) => !ids.has(x.id)); });
+}
+function localTransaction(pairs) {
+  const old = [];
+  try {
+    pairs.forEach(([key]) => old.push([key, localStorage.getItem(key)]));
+    pairs.forEach(([key, value]) => value === null ? localStorage.removeItem(key) : localStorage.setItem(key, value));
+    return true;
+  } catch (e) {
+    old.reverse().forEach(([key, value]) => { try { if (value === null) localStorage.removeItem(key); else localStorage.setItem(key, value); } catch (ignored) {} });
+    return false;
+  }
+}
+const Recovery = {
+  list(scope) {
+    try { const x = unpackLocal(localStorage.getItem(recoveryKey(scope === undefined ? Cloud.scope : scope)) || "[]"); return Array.isArray(x) ? x : []; }
+    catch (e) { return []; }
+  },
+  capture(data, reason, scope) {
+    if (!data || !hasUserData(data) || Store.pristineDemo(data)) return true;
+    const owner = scope === undefined ? Cloud.scope : scope, copies = this.list(owner);
+    if (copies.some((x) => samePayload(x.payload, data))) return true;
+    const copy = { id: uid(), at: Date.now(), reason, payload: syncClone(data) };
+    let next = [copy, ...copies].slice(0, 3);
+    while (next.length) {
+      try { localStorage.setItem(recoveryKey(owner), packLocal(next)); return true; }
+      catch (e) { if (next.length === 1) break; next.pop(); }
+    }
+    return false;
+  },
+  download(id) {
+    const copy = this.list().find((x) => x.id === id);
+    if (copy) downloadJson(copy.payload, "hisaab-safety-copy-" + new Date(copy.at).toISOString().slice(0, 10) + ".json");
+  },
+  merge(id) {
+    const copy = this.list().find((x) => x.id === id), owner = Cloud.scope;
+    if (!copy) return;
+    confirmDialog("Safety copy se data jodein?", "Is copy ki missing entries wapas judengi. Maujooda matching entries ke values nahi badlenge. Sync me conflict hua to alag choice aayegi.", "Data jodo", () => {
+      if (owner !== Cloud.scope) return toast("Account badal gaya — purani recovery choice cancel hai", "bad");
+      const before = syncClone(Store.data);
+      if (!this.capture(before, "Safety copy jodne se pehle")) return toast("Safety backup ke liye storage nahi — JSON download karein", "bad");
+      Store.data = normalizeData(mergeSyncData(syncView(blankData()), syncView(Store.data), syncView(copy.payload), "local").data);
+      if (!Store.save()) { Store.data = before; return; }
+      render(); toast("Safety copy ka data jod diya — cloud status check karein", "ok");
+    });
+  },
+  open() {
+    const copies = this.list();
+    openModal('<div class="modal" style="max-width:620px"><div class="modal-h"><div><h3>🛟 Data safety copies</h3>' +
+      '<p>Sirf is browser/account ki copies. Pehle se har jagah delete ho chuka data inke bina wapas nahi aa sakta.</p></div><button class="x" data-act="closeModal">✕</button></div>' +
+      '<div class="modal-b">' + (copies.length ? copies.map((copy) => '<div class="card" style="padding:12px;margin-bottom:10px">' +
+        '<b>' + esc(copy.reason) + '</b><div class="muted" style="font-size:12px">' + esc(new Date(copy.at).toLocaleString("en-IN")) + '<br>' +
+        esc(dataCountText(copy.payload)) + '</div><div style="display:flex;gap:8px;margin-top:10px;flex-wrap:wrap">' +
+        '<button class="btn sm" data-act="recoveryDownload" data-id="' + esc(copy.id) + '">⤓ JSON backup</button>' +
+        '<button class="btn sm primary" data-act="recoveryMerge" data-id="' + esc(copy.id) + '">Missing data jodo</button></div></div>').join("") :
+        '<p>Abhi koi safety copy nahi. Naye cloud/import/delete changes se pehle copy automatically banegi. Purana JSON backup ho to Restore se khol sakte hain.</p>') +
+      '</div><div class="modal-f"><button class="btn" data-act="exportData">⤓ Current data backup</button><button class="btn" data-act="closeModal">Band karo</button></div></div>');
+  }
+};
+
+const Cloud = {
+  cfg: null, client: null, user: null, mode: "in", scope: null,
+  status: "local", lastSync: 0, dirty: false, busy: false, pushTimer: null, blocked: false,
+  ready: false, base: null, stamp: null, epoch: 0, editVersion: 0, task: null,
+  _pending: null, lastError: "", retryDelay: 2000, offlineMode: false,
+
+  readCfg() {
+    try { const r = localStorage.getItem(CLOUD_KEY); this.cfg = r ? JSON.parse(r) : null; }
+    catch (e) { this.cfg = null; }
+    return this.cfg;
+  },
+  writeCfg(c) {
+    try {
+      if (c) localStorage.setItem(CLOUD_KEY, JSON.stringify(c)); else localStorage.removeItem(CLOUD_KEY);
+      this.cfg = c; return true;
+    } catch (e) { this.setStatus("storage", "Cloud setup save nahi hua — browser storage blocked/full"); return false; }
+  },
+  configured() { return !!(this.cfg && this.cfg.url && this.cfg.key); },
+  readCache(scope) {
+    const c = unpackLocal(localStorage.getItem(syncCacheKey(scope)) || "null");
+    if (!c) return null;
+    if (c.scope !== scope || !c.working) throw new Error("Account cache read nahi hua — automatic overwrite blocked");
+    validateRemote({ payload: c.working });
+    if (c.base) validateRemote({ payload: c.base });
+    return c;
+  },
+  restoreLocal() {
+    try {
+      this.scope = localStorage.getItem(OWNER_KEY) || null;
+      const c = this.scope && this.readCache(this.scope);
+      if (c) { this.base = c.base || null; this.stamp = c.stamp || null; this.dirty = !!c.dirty; this.lastSync = c.lastSync || 0; }
+      return c && c.working;
+    } catch (e) {
+      Store.storageProblem = true;
+      this.setStatus("storage", "Account ka pending cache read nahi hua. Browser storage clear mat karein; JSON backup lein. Automatic overwrite blocked hai.");
+      return null;
+    }
+  },
+  persist(data, remote) {
+    let owner = null;
+    try { owner = localStorage.getItem(OWNER_KEY) || null; }
+    catch (e) { this.setStatus("storage", "Browser storage read blocked — save confirm nahi hua. JSON backup lein."); return false; }
+    if (owner !== this.scope && !remote) {
+      this.setStatus("storage", "Doosre tab me account badla hai. Is tab ka JSON backup lein, phir reload karein.");
+      return false;
+    }
+    /* Another tab shares this browser's canonical key. Never overwrite its
+       newly persisted edits with this tab's older copy (even before its
+       storage event has been delivered). Account switches deliberately adopt
+       the selected account cache; ordinary saves/syncs must match our read. */
+    if (!this.diskCurrent()) return false;
+    const pairs = [];
+    if (this.scope) pairs.push([syncCacheKey(this.scope), packLocal({ v: 2, scope: this.scope, base: this.base,
+      stamp: this.stamp, working: data, dirty: this.dirty, lastSync: this.lastSync })]);
+    pairs.push([KEY, JSON.stringify(data)], [OWNER_KEY, this.scope]);
+    if (!localTransaction(pairs)) { this.setStatus("storage", "Browser storage full/blocked — save NAHIN hua. JSON backup download karein."); return false; }
+    Store.diskValue = JSON.stringify(data);
+    return true;
+  },
+  diskCurrent() {
+    try {
+      if (localStorage.getItem(KEY) === Store.diskValue) return true;
+    } catch (e) {}
+    this.setStatus("storage", "Doosre tab ne data badla ya storage unavailable hai. Is tab ka JSON backup lekar reload karein; purani copy se overwrite roka gaya.");
+    return false;
+  },
+  requireSaved() {
+    if (Store.storageProblem || Store.unsaved) {
+      this.setStatus("storage", "Local save confirm nahi hua — cloud write roki gayi. JSON backup lein aur save dobara try karein.");
+      throw new Error(this.lastError);
+    }
+    if (!this.diskCurrent()) throw new Error(this.lastError);
+  },
+  resetSession() {
+    this.epoch++; clearTimeout(this.pushTimer); this.pushTimer = null;
+    this.ready = false; this.busy = false; this.task = null; this._pending = null; this.retryDelay = 2000;
+  },
+  current(ctx) {
+    let owner;
+    try { owner = localStorage.getItem(OWNER_KEY) || null; } catch (e) { return false; }
+    return owner === this.scope && this.epoch === ctx.epoch && this.client === ctx.client && this.user && this.user.id === ctx.userId && this.scope === ctx.scope && !this.offlineMode;
+  },
+  async initClient() {
+    if (this.client) return this.client;
+    if (!window.supabase) await loadScriptOnce(SUPABASE_CDN);
+    if (!window.supabase) throw new Error("Supabase library load failed");
+    this.client = window.supabase.createClient(this.cfg.url, this.cfg.key, { auth: { persistSession: true, autoRefreshToken: true } });
+    return this.client;
+  },
+  async boot() {
+    this.readCfg();
+    if (Store.storageProblem) { this.setStatus("storage", "Saved data read nahi hua — cloud overwrite blocked. Browser storage clear mat karein."); return false; }
+    if (!this.configured()) { this.status = "local"; updateCloudBadge(); return false; }
+    const epoch = this.epoch;
+    try {
+      const client = await this.initClient();
+      const res = await client.auth.getSession();
+      if (epoch !== this.epoch || this.offlineMode) return false;
+      if (res.error) throw res.error;
+      const session = res && res.data ? res.data.session : null;
+      if (session && session.user) { await this.beginAccount(session.user); showLogin(false); return await this.syncNow(); }
+      this.status = "loggedout"; showLogin(true);
+    } catch (e) { this.setStatus("offline", "Login/session check nahi hua. Local data safe hai."); showLogin(true); }
+    updateCloudBadge(); return false;
+  },
+  setStatus(s, msg) { this.status = s; this.lastError = msg || ""; updateCloudBadge(); },
+  async beginAccount(user) {
+    if (Store.storageProblem || Store.unsaved) throw new Error("Pehle is device ka data save/backup karein — account switch abhi blocked hai");
+    this.resetSession(); this.offlineMode = false;
+    const oldState = { scope: this.scope, base: this.base, stamp: this.stamp, dirty: this.dirty, lastSync: this.lastSync };
+    const nextScope = syncScope(this.cfg, user), oldScope = this.scope;
+    const current = syncClone(Store.data), cached = this.readCache(nextScope);
+    const initial = oldScope === nextScope ? (Store.pristineDemo(current) ? blankData() : current) : cached ? cached.working : oldScope ? blankData() : Store.pristineDemo(current) ? blankData() : current;
+    if (oldScope !== nextScope && !Recovery.capture(current, "Account login se pehle", oldScope)) throw new Error("Account badalne se pehle backup nahi ban paya. JSON download karein.");
+    this.user = user; this.scope = nextScope;
+    this.base = cached && cached.base || null; this.stamp = cached && cached.stamp || null;
+    this.dirty = !!(cached && cached.dirty) || !this.base && hasUserData(initial);
+    this.lastSync = cached && cached.lastSync || 0;
+    Store.data = normalizeData(initial);
+    if (!this.persist(Store.data, true)) {
+      Store.data = current; Object.assign(this, oldState); this.user = null;
+      throw new Error("Account cache save nahi hua — local data nahi badla");
+    }
+    Store.remember(); lastUndo = null; closeModal();
+    UI.ct.edit = null; UI.ct.bulk = null;
+    this.setStatus("checking");
+  },
+  async signIn(email, password) {
+    this.resetSession(); this.user = null; this.offlineMode = false;
+    const epoch = this.epoch, client = await this.initClient();
+    const { data, error } = await client.auth.signInWithPassword({ email, password });
+    if (epoch !== this.epoch) return false;
+    if (error) throw error;
+    if (!data || !data.user) throw new Error("Login session nahi mili");
+    await this.beginAccount(data.user); return await this.afterLogin();
+  },
+  async signUp(email, password) {
+    this.resetSession(); this.user = null; this.offlineMode = false;
+    const epoch = this.epoch, client = await this.initClient();
+    const { data, error } = await client.auth.signUp({ email, password });
+    if (epoch !== this.epoch) return { needsConfirm: false, synced: false };
+    if (error) throw error;
+    if (!data.session) return { needsConfirm: true };
+    await this.beginAccount(data.user);
+    return { needsConfirm: false, synced: await this.afterLogin() };
+  },
+  async signOut() {
+    const client = this.client;
+    this.resetSession(); this.user = null; this.setStatus("loggedout");
+    showLogin(true); render();
+    try { if (client) await client.auth.signOut(); } catch (e) { /* account cache and pending edits intentionally retained */ }
+  },
+  async fetchRemote(ctx) {
+    const client = ctx ? ctx.client : this.client, userId = ctx ? ctx.userId : this.user && this.user.id;
+    if (!userId) return null;
+    const { data, error } = await client.from("hisaab_data").select("payload,updated_at").eq("user_id", userId).maybeSingle();
+    if (error) throw error;
+    validateRemote(data); return data || null;
+  },
+  schedulePush() {
+    if (!this.scope || !this.user || this.offlineMode) return;
+    this.dirty = true;
+    if (!this.ready || this._pending) return;
+    this.setStatus("pending");
+    clearTimeout(this.pushTimer);
+    this.pushTimer = setTimeout(() => this.syncNow(), 1200);
+  },
+  retry() {
+    if (!this.user || this._pending || this.offlineMode) return;
+    clearTimeout(this.pushTimer);
+    this.pushTimer = setTimeout(() => this.syncNow(), this.retryDelay);
+    this.retryDelay = Math.min(this.retryDelay * 2, 60000);
+  },
+  async afterLogin() {
+    showLogin(false);
+    const ok = await this.syncNow();
+    render();
+    if (ok) toast("Login + cloud sync ho gaya ✔", "ok");
+    else if (!this._pending) toast("Login hua; sync abhi pending hai. Local data safe — cloud status check karein.", "bad");
+    return ok;
+  },
+  hold(remote, conflicts, kind, details, recover) {
+    this._pending = { scope: this.scope, remote: syncClone(remote), conflicts, kind, details: details || [], recover: !!recover };
+    this.setStatus("conflict", kind === "empty" ? "Cloud me unconfirmed missing/demo data mila — deletion roki gayi" : "Dono devices ke matching data me farq hai — safe choice chahiye");
+    clearTimeout(this.pushTimer);
+    askWhichData();
+  },
+  applyMerged(data, base, stamp, dirty, ctx) {
+    if (!this.current(ctx)) return false;
+    const before = syncClone(Store.data), old = { base: this.base, stamp: this.stamp, dirty: this.dirty, lastSync: this.lastSync };
+    const next = normalizeData(data);
+    if (before.settings && before.settings.theme) next.settings.theme = before.settings.theme;
+    if ($("#overlay") && !samePayload(before, next)) {
+      const error = new Error("Editor/dialog khula hai — uske stale draft par cloud changes apply nahi kiye. Close/Save ke baad sync retry hoga.");
+      error.code = "EDITOR_OPEN"; throw error;
+    }
+    if (!samePayload(before, next) && !Recovery.capture(before, "Cloud sync se pehle")) throw new Error("Safety backup ke liye storage nahi. Current JSON backup lekar jagah khaali karein.");
+    this.base = syncClone(base); this.stamp = stamp; this.dirty = dirty;
+    if (!dirty) this.lastSync = Date.parse(stamp) || Date.now();
+    Store.data = next;
+    if (!this.persist(Store.data, true)) { Store.data = before; Object.assign(this, old); throw new Error("Cloud data browser me save nahi hua — purana data safe rakha hai"); }
+    Store.remember();
+    if (!samePayload(before, next)) render();
+    return true;
+  },
+  async syncNow(options) {
+    options = options || {};
+    if (!this.user || this.offlineMode) return false;
+    if (Store.storageProblem || Store.unsaved) { this.setStatus("storage", "Local save confirm nahi hua — cloud write roki gayi. JSON backup lein aur save dobara try karein."); return false; }
+    if (this._pending && !options.preference && !options.recover) { this.setStatus("conflict", this.lastError); return false; }
+    if (this.task) return this.task;
+    clearTimeout(this.pushTimer); this.pushTimer = null;
+    const ctx = { epoch: this.epoch, client: this.client, userId: this.user.id, scope: this.scope };
+    const run = this.runSync(ctx, options);
+    this.task = run;
+    try { return await run; }
+    finally { if (this.current(ctx)) { this.task = null; this.busy = false; } }
+  },
+  async runSync(ctx, options) {
+    this.busy = true; this.setStatus("checking");
+    try {
+      for (let attempt = 0; attempt < 5; attempt++) {
+        const remote = await this.fetchRemote(ctx);
+        if (!this.current(ctx)) return false;
+        this.requireSaved();
+        this.ready = true;
+        const local = syncView(Store.data), base = this.base || syncView(blankData());
+        const rdata = remote ? completeRemote(remote.payload, this.base || local) : syncView(blankData());
+        const remoteDemo = remote && Store.pristineDemo({ ...remote.payload, settings: { ...remote.payload.settings, demo: true } });
+        const suspicious = hasUserData(local) && (!remote && this.base && hasUserData(this.base) || remote &&
+          ((!hasUserData(rdata) && !remote.payload._sync?.cleared) || remoteDemo && !samePayload(local, rdata) ||
+           unconfirmedRemoteLoss(this.base, local, rdata, remote.payload._sync)));
+        if (suspicious && !options.recover) { this.hold(remote, [], "empty"); return false; }
+        /* Recovery is an additive merge, not another whole-snapshot overwrite.
+           A known pristine sample is not real remote work; preserve its copy. */
+        const result = options.recover && suspicious
+          ? mergeSyncData(syncView(blankData()), local, remoteDemo ? syncView(blankData()) : rdata, options.preference)
+          : mergeSyncData(base, local, rdata, options.preference);
+        const choiceValid = options.preference && result.details.every((detail) => (options.approved || []).some((ok) =>
+          ok.path === detail.path && ok.local === detail.local && ok.remote === detail.remote));
+        if (result.conflicts.length && !choiceValid) { this.hold(remote, result.conflicts, "fields", result.details, !!options.recover); return false; }
+        if (result.conflicts.length && !Recovery.capture(rdata, "Cloud values — conflict se pehle")) throw new Error("Conflict backup save nahi hua — overwrite roka gaya");
+        const storedRemote = remote ? syncView(remote.payload) : rdata;
+        if (samePayload(result.data, storedRemote)) {
+          this.applyMerged(result.data, rdata, remote && remote.updated_at || null, false, ctx);
+          this._pending = null; this.retryDelay = 2000; this.setStatus("synced"); return true;
+        }
+        /* No sample/empty first-login upload; read failure never reaches here. */
+        if (!remote && !hasUserData(result.data)) {
+          this.applyMerged(result.data, rdata, null, false, ctx);
+          this._pending = null; this.setStatus("synced"); return true;
+        }
+        if (remote && !Recovery.capture(rdata, "Cloud write se pehle")) throw new Error("Cloud pre-write backup save nahi hui — overwrite roka gaya");
+        this.applyMerged(result.data, rdata, remote && remote.updated_at || null, true, ctx);
+        const sent = syncView(Store.data), revision = uid();
+        const updatedAt = new Date(Math.max(Date.now(), (Date.parse(remote && remote.updated_at) || 0) + 1)).toISOString();
+        const row = { user_id: ctx.userId, payload: { ...sent, _sync: { v: 2, revision, app: APP_VERSION,
+          cleared: !hasRows(sent) && hasRows(rdata),
+          deletedCollections: Object.keys(dataCounts(rdata)).filter((key) => dataCounts(rdata)[key] > 0 && dataCounts(sent)[key] === 0) } }, updated_at: updatedAt };
+        this.setStatus("saving");
+        let query;
+        if (remote) {
+          query = ctx.client.from("hisaab_data").update({ payload: row.payload, updated_at: updatedAt }).eq("user_id", ctx.userId);
+          query = remote.updated_at == null ? query.is("updated_at", null) : query.eq("updated_at", remote.updated_at);
+        } else query = ctx.client.from("hisaab_data").insert(row);
+        const { data, error } = await query.select("payload,updated_at").maybeSingle();
+        if (!this.current(ctx)) return false;
+        this.requireSaved(); /* a failed local save during this request is NOT an ACK */
+        if (error) { if (error.code === "23505") continue; throw error; }
+        if (!data) continue; /* compare-and-set lost: re-fetch and re-merge, never upsert */
+        validateRemote(data);
+        if (!samePayload(data.payload, sent)) throw new Error("Cloud ne bheja hua data confirm nahi kiya — pending rakha hai");
+        const dirty = !samePayload(Store.data, sent);
+        this.applyMerged(Store.data, sent, data.updated_at || updatedAt, dirty, ctx);
+        this._pending = null;
+        if (!dirty) { this.retryDelay = 2000; this.setStatus("synced"); return true; }
+        /* A save while the request was in flight is NOT acknowledged by it. */
+      }
+      throw new Error("Dono devices abhi changes bhej rahe hain. Local changes safe hain; sync dobara try hoga.");
+    } catch (e) {
+      if (!this.current(ctx)) return false;
+      const code = e && e.code;
+      const msg = code === "42501" || code === "PGRST301" ? "Cloud permission/session error — Supabase RLS/setup check karein; local data safe hai." :
+        e && e.message || "Cloud sync fail — local data safe, retry pending";
+      this.setStatus(this.status === "storage" ? "storage" : code === "EDITOR_OPEN" ? "pending" : "offline", msg);
+      this.retry(); return false;
+    }
+  },
+  pushNow() { return this.syncNow(); },
+  async maybePull() {
+    if (!this.user || this.busy || this._pending || this.offlineMode || $("#overlay")) return false;
+    return this.syncNow();
+  },
+  async resolve(preference) {
+    if (!this._pending || this._pending.scope !== this.scope) return false;
+    const recover = this._pending.kind === "empty" || this._pending.recover, approved = this._pending.details;
+    closeModal();
+    const ok = await this.syncNow({ preference, recover, approved });
+    if (ok) { render(); toast("Safe merge + cloud sync ho gaya ✔", "ok"); }
+    else if (!this._pending) toast("Sync confirm nahi hua — local changes safe hain", "bad");
+    return ok;
+  }
+};
+
+function conflictRows(pending) {
+  const remote = pending.remote && pending.remote.payload || blankData();
+  const text = (raw) => {
+    if (raw === "undefined") return "Deleted / hata diya";
+    let value; try { value = JSON.parse(raw); } catch (e) { value = raw; }
+    if (value && typeof value === "object") {
+      if (value.worker) return value.worker.name + " · " + (value.records || []).length + " salary records";
+      if (value.amount !== undefined) return "Amount " + money(value.amount) + (value.paid !== undefined ? " · Paid " + money(value.paid) : "");
+      if (Array.isArray(value)) return value.length + " rows · " + JSON.stringify(value).slice(0, 80);
+      return JSON.stringify(value).slice(0, 100);
+    }
+    return String(value === "" ? "(blank)" : value).slice(0, 100);
+  };
+  return (pending.details || []).slice(0, 8).map((detail) => {
+    const entryId = /^canteen\.entries\[([^\]]+)\]/.exec(detail.path);
+    const entry = entryId && [...((Store.data.canteen || {}).entries || []), ...((remote.canteen || {}).entries || [])].find((e) => e.id === entryId[1]);
+    const title = entry ? (entry.party || "Canteen entry") + " · " + entry.date + " · " + detail.path.split(".").pop() : detail.path;
+    return '<tr><td style="overflow-wrap:anywhere"><b>' + esc(title) + '</b></td><td>' + esc(text(detail.local)) + '</td><td>' + esc(text(detail.remote)) + '</td></tr>';
+  }).join("");
+}
+function askWhichData() {
+  const pending = Cloud._pending;
+  if (!pending || pending.scope !== Cloud.scope) return;
+  const remote = pending.remote && pending.remote.payload || blankData(), empty = pending.kind === "empty";
+  openModal('<div class="modal" style="max-width:600px"><div class="modal-h"><div><h3>🛡️ Data overwrite roka gaya</h3>' +
+    '<p>' + (empty ? "Cloud me unconfirmed missing/demo data aaya. Is device ka bacha data delete nahi kiya gaya." :
+      "Dono devices ne same fields badli hain. Alag entries dono taraf ki rahengi — sirf conflicting values ke liye choice hai.") +
+    '</p></div><button class="x" data-act="closeModal">✕</button></div><div class="modal-b">' +
+    '<p><b>Cloud:</b> ' + esc(dataCountText(remote)) + '</p><p><b>Is device:</b> ' + esc(dataCountText(Store.data)) + '</p>' +
+    (!empty ? '<div class="banner warn" style="font-size:12px">Matching field changes / edit-v-delete. Financial values guess karke nahi badlenge.</div>' +
+      '<div class="twrap"><table class="tbl" style="min-width:340px;font-size:12px"><thead><tr><th>Entry / field</th><th>Is device par</th><th>Cloud par</th></tr></thead><tbody>' +
+      conflictRows(pending) + '</tbody></table></div>' + (pending.conflicts.length > 8 ? '<p>… aur ' + (pending.conflicts.length - 8) + ' conflicts. Choice sab matching conflicts par apply hogi.</p>' : "") : "") +
+    '<p style="font-size:12px">Choice se pehle safety copy banegi. Abhi band karoge to sync paused rahega; background me koi choice apply nahi hogi. Backup JSON bhi download kar sakte ho.</p></div>' +
+    '<div class="modal-f" style="flex-wrap:wrap"><button class="btn" data-act="exportData">⤓ Current backup</button>' +
+    (empty ? '<button class="btn primary" data-act="useLocal">🛟 Bacha data safely cloud me jodo</button>' :
+      '<button class="btn" data-act="useCloud">Cloud ki conflicting values</button><button class="btn primary" data-act="useLocal">Device ki conflicting values</button>') + '</div></div>');
+}
+function downloadJson(data, name) {
+  const blob = new Blob([JSON.stringify(data, null, 2)], { type: "application/json" });
+  const url = URL.createObjectURL(blob), a = document.createElement("a");
+  a.href = url; a.download = name; document.body.appendChild(a); a.click();
+  setTimeout(() => { URL.revokeObjectURL(url); a.remove(); }, 1500);
 }
 
 /* ------------------------------ login screen --------------------------- */
@@ -4401,8 +4897,9 @@ async function submitLogin() {
     } else {
       await Cloud.signIn(email, pass);
     }
+    if (!Cloud.user) { showLogin(true); return; }
     showLogin(false); render();
-    toast("Login ho gaya ✔", "ok");
+    if (Cloud.status === "synced") toast("Login + cloud sync ho gaya ✔", "ok");
   } catch (e) {
     const m = (e && e.message ? e.message : "").toLowerCase();
     let msg = "Login nahi ho paya. Internet aur details check karein.";
@@ -4417,20 +4914,39 @@ async function submitLogin() {
 
 /* ------------------------------ cloud widgets -------------------------- */
 function cloudStatusText() {
-  if (!Cloud.configured()) return { txt: "Local only", cls: "grey", tip: "Cloud login off hai" };
-  if (Cloud.status === "loggedout") return { txt: "Sign in needed", cls: "warn", tip: "Login karein" };
-  if (Cloud.status === "error") return { txt: "Cloud error", cls: "bad", tip: "Setup check karein" };
-  if (Cloud.status === "saving") return { txt: "Saving…", cls: "grey", tip: "Cloud par save ho raha hai" };
-  if (Cloud.status === "offline") return { txt: "Offline", cls: "bad", tip: "Internet aane par khud save hoga" };
+  if (Cloud.status === "storage") return { txt: "Save failed", cls: "bad", tip: Cloud.lastError };
+  if (!Cloud.configured()) return { txt: "Local only", cls: "grey", tip: "Data sirf is device par hai" };
+  const states = {
+    storage: ["Save failed", "bad"], loggedout: ["Sign in needed", "warn"], error: ["Cloud error", "bad"],
+    connecting: ["Connecting…", "grey"], checking: ["Cloud check…", "grey"], saving: ["Cloud saving…", "grey"],
+    pending: ["Local saved · sync pending", "warn"], conflict: ["Sync paused · data protected", "warn"],
+    offline: ["Offline · sync pending", "bad"]
+  };
+  const state = states[Cloud.status];
+  if (state) return { txt: state[0], cls: state[1], tip: Cloud.lastError || "Local data safe; cloud status check karein" };
+  if (!Cloud.user || !Cloud.ready) return { txt: "Sign in / sync needed", cls: "warn", tip: "Cloud save abhi verify nahi hui" };
+  if (Cloud.dirty) return { txt: "Local saved · sync pending", cls: "warn", tip: "Changes cloud ne abhi confirm nahi kiye" };
   const t = Cloud.lastSync ? new Date(Cloud.lastSync) : null;
   const hh = t ? String(t.getHours()).padStart(2, "0") + ":" + String(t.getMinutes()).padStart(2, "0") : "";
-  return { txt: "Cloud synced" + (hh ? " · " + hh : ""), cls: "ok", tip: Cloud.user ? Cloud.user.email : "" };
+  return { txt: "Cloud synced" + (hh ? " · " + hh : ""), cls: "ok", tip: Cloud.user.email || "" };
 }
 
 function updateCloudBadge() {
   const s = cloudStatusText();
   const html = '<span class="tag ' + s.cls + '" style="font-size:10.5px" title="' + esc(s.tip) + '">☁️ ' + esc(s.txt) + "</span>";
   $$("[data-cloud-badge]").forEach((el) => { el.innerHTML = html; });
+  $$("[data-save-label]").forEach((el) => { el.textContent = Cloud.status === "storage" ? "Save failed" : "Auto-saved"; });
+  const alert = $("#syncAlert"), important = ["storage", "conflict", "offline"].includes(Cloud.status);
+  if (alert) {
+    alert.hidden = !important;
+    alert.className = "banner warn";
+    alert.innerHTML = important ? '<div style="min-width:0;flex:1"><b>' + esc(s.txt) + '</b><div style="font-size:12px;overflow-wrap:anywhere">' +
+      esc(Cloud.lastError || s.tip) + '</div><div style="display:flex;gap:7px;margin-top:8px;flex-wrap:wrap">' +
+      '<button class="btn sm" data-act="exportData">⤓ JSON backup</button>' +
+      (Cloud.status === "storage" && !Store.storageProblem ? '<button class="btn sm" data-act="retrySave">↻ Local save retry</button>' : "") +
+      (Cloud._pending ? '<button class="btn sm primary" data-act="cloudResolve">🛡️ Resolve safely</button>' :
+        Cloud.user ? '<button class="btn sm" data-act="cloudSyncNow">↻ Sync retry</button>' : "") + '</div></div>' : "";
+  }
 }
 
 function cloudSettingsCard() {
@@ -4446,7 +4962,7 @@ function cloudSettingsCard() {
       "</div>" +
       '<div style="display:flex;gap:8px;margin-top:12px;flex-wrap:wrap;align-items:center">' +
         '<button class="btn primary" data-act="cloudConnect">☁️ Connect &amp; login</button>' +
-        '<span class="muted" style="font-size:11.5px">Setup steps: <b>Cloud-Login-Setup-Guide.html</b> file me likhe hain</span>' +
+        '<a class="muted" style="font-size:11.5px" href="https://github.com/akash4447777-dev/hisaab-pro/blob/main/CLOUD-SYNC.md" target="_blank" rel="noopener">Cloud sync / setup guide</a>' +
       "</div>";
   } else if (Cloud.user) {
     const s = cloudStatusText();
@@ -4454,13 +4970,15 @@ function cloudSettingsCard() {
       '<div style="display:flex;gap:12px;align-items:center;flex-wrap:wrap;justify-content:space-between">' +
         "<div><div style='font-size:11px;color:var(--muted);font-weight:800;letter-spacing:.06em'>SIGNED IN AS</div>" +
         '<div style="font-weight:750;font-size:14px">' + esc(Cloud.user.email) + "</div>" +
-        '<div style="margin-top:5px"><span class="tag ' + s.cls + '">☁️ ' + esc(s.txt) + "</span></div></div>" +
+        '<div style="margin-top:5px" data-cloud-badge></div></div>' +
         '<div style="display:flex;gap:7px;flex-wrap:wrap">' +
           '<button class="btn sm" data-act="cloudSyncNow">↻ Sync now</button>' +
+          (Cloud._pending ? '<button class="btn sm" data-act="cloudResolve">🛡️ Resolve safely</button>' : "") +
           '<button class="btn sm" data-act="cloudLogout">Sign out</button>' +
           '<button class="btn sm danger" data-act="cloudDisconnect">Disconnect cloud</button>' +
         "</div>" +
       "</div>" +
+      (Cloud.lastError ? '<div class="banner warn" style="margin-top:10px">' + esc(Cloud.lastError) + "</div>" : "") +
       '<div class="banner info" style="margin:12px 0 0"><span>🔒</span><div style="font-size:12px">Data aapke Supabase account me sirf aapke user ke liye locked hai (RLS). ' +
         "Har device par same email se login karein — data wahi milega.</div></div>";
   } else {
@@ -4473,7 +4991,8 @@ function cloudSettingsCard() {
   }
   return '<div class="card" style="margin-top:14px"><div class="card-h"><div><h3>Cloud login &amp; device sync</h3>' +
     '<div class="sub">Same data har device par — phone, laptop, tablet</div></div>' +
-    '<div data-cloud-badge></div></div><div class="card-b">' + inner + "</div></div>";
+    '<div data-cloud-badge></div></div><div class="card-b">' + inner +
+    '<div style="margin-top:12px"><button class="btn sm" data-act="recoveryOpen">🛟 Data safety copies</button></div></div></div>';
 }
 
 async function connectCloud() {
@@ -4481,8 +5000,8 @@ async function connectCloud() {
   const key = ($("#cfgKey") ? $("#cfgKey").value : "").trim();
   if (!url || url.indexOf("supabase.co") < 0) return toast("Sahi Supabase Project URL daalein", "bad");
   if (!key || key.length < 30) return toast("Sahi anon public key daalein", "bad");
-  Cloud.client = null;
-  Cloud.writeCfg({ url: url, key: key });
+  Cloud.resetSession(); Cloud.user = null; Cloud.client = null;
+  if (!Cloud.writeCfg({ url: url, key: key })) return toast(Cloud.lastError, "bad");
   Cloud.status = "connecting";
   try {
     await Cloud.initClient();
@@ -4495,10 +5014,13 @@ async function connectCloud() {
 }
 
 function disconnectCloud() {
-  confirmDialog("Disconnect cloud?", "Is device par cloud sync band ho jayega. Aapka data browser me safe rahega, aur cloud me bhi rahega. (Dobara connect kar sakte hain.)", "Disconnect", () => {
-    try { if (Cloud.client) Cloud.client.auth.signOut(); } catch (e) {}
-    Cloud.user = null; Cloud.client = null; Cloud.writeCfg(null); Cloud.status = "local";
-    showLogin(false); render(); toast("Cloud disconnect ho gaya");
+  confirmDialog("Disconnect cloud?", "Sync band hoga; account ka local cache aur pending changes safe rahenge. Dobara same project/account se sign in karke sync karein.", "Disconnect", () => {
+    const client = Cloud.client;
+    Cloud.resetSession(); Cloud.user = null; Cloud.client = null;
+    if (!Cloud.writeCfg(null)) return;
+    Cloud.status = "local";
+    try { if (client) client.auth.signOut().catch(() => {}); } catch (e) {}
+    showLogin(false); render(); toast("Cloud disconnect — pending data is browser me safe");
   }, true);
 }
 
@@ -5909,6 +6431,7 @@ function ctSave() {
   if (amount <= 0 && d.mode === "total") return toast("Pura total (₹) likho — jaise 3450", "bad");
 
   const isNew = !d.id;
+  const beforeSave = syncClone(Store.data);
   const C = ct();
   const prev = isNew ? null : (C.entries.find((x) => x.id === d.id) || null);
   const prevSnap = prev ? JSON.parse(JSON.stringify(prev)) : null;
@@ -5929,14 +6452,10 @@ function ctSave() {
   ctSyncRates(entry);
   ctLogIt(isNew ? "add" : "edit", entry, prevSnap, ctLogText(entry) + (isNew ? "" : " — edited"));
 
-  /* storage bhara ho (photo ki wajah se) to entry wapas nikal do — data kharab na ho */
+  /* Failed persistence never announces success or leaves half-updated rates. */
   if (!Store.save()) {
-    const j = C.entries.findIndex((x) => x.id === entry.id);
-    if (isNew) { if (j >= 0) C.entries.splice(j, 1); }
-    else if (prevSnap) { if (j >= 0) C.entries[j] = prevSnap; }
-    else if (j >= 0) C.entries.splice(j, 1);
-    if (C.log.length) C.log.pop();
-    return toast("Save NAHIN hua — browser storage bhara hai. Photo hata kar dobara save karo, ya purani entries ka backup le lo.", "bad");
+    Store.data = beforeSave;
+    return toast("Save NAHIN hua — draft yahin hai. Storage/JSON backup check karke dobara Save karein.", "bad");
   }
   closeModal();
   const u = ctUI();
@@ -5951,7 +6470,7 @@ function ctSave() {
       const j = CC.entries.findIndex((x) => x.id === entry.id);
       if (j >= 0) CC.entries.splice(j, 1);
       ctLogIt("delete", entry, entry, ctLogText(entry) + " — undo");
-      Store.save(); render(); toast("Entry hata di", "ok");
+      if (!Store.saveChange()) { render(); return; } render(); toast("Entry hata di", "ok");
     }, "Entry save ho gayi — " + ctKindOf(entry).label + " " + money0(entry.amount));
   } else {
     toast("Entry update ho gayi ✔", "ok");
@@ -5971,14 +6490,14 @@ function ctDelEntry(id) {
       const snap = JSON.parse(JSON.stringify(C.entries[i]));
       C.entries.splice(i, 1);
       ctLogIt("delete", snap, snap, ctLogText(snap) + " — deleted");
-      Store.save();
+      if (!Store.saveChange()) { render(); return; }
       closeModal();
       render();
       setUndo(() => {
         ct().entries.push(snap);
         ctSyncRates(snap);
         ctLogIt("restore", snap, null, ctLogText(snap) + " — restored");
-        Store.save(); render(); toast("Entry wapas aa gayi ✔", "ok");
+        if (!Store.saveChange()) { render(); return; } render(); toast("Entry wapas aa gayi ✔", "ok");
       }, "Entry delete ho gayi");
     }, true);
 }
@@ -6009,7 +6528,7 @@ function ctRestoreLog(logId) {
   C.entries.push(e);
   ctSyncRates(e);
   ctLogIt("restore", e, null, ctLogText(e) + " — activity se restore");
-  Store.save();
+  if (!Store.saveChange()) { render(); return; }
   render();
   toast("Entry wapas aa gayi ✔ — " + ctPretty(e.date), "ok");
 }
@@ -6051,7 +6570,7 @@ function ctPaySave(id) {
   if (modeEl && CT_PAY[modeEl.value] && add > 0) e.payMode = modeEl.value;
   e.updatedAt = Date.now();
   ctLogIt("payment", e, prev, "Payment diya · " + (e.party || "—") + " · " + money0(add) + " (baki " + money0(ctBalance(e)) + ")");
-  Store.save();
+  if (!Store.saveChange()) { render(); return; }
   closeModal();
   render();
   toast(add > 0 ? money0(add) + " paid likh diya ✔" : "Payment 0 tha — kuch nahi badla", add > 0 ? "ok" : "");
@@ -6065,7 +6584,7 @@ function ctPayZero(id) {
       e.paid = ctAmount(e);
       e.updatedAt = Date.now();
       ctLogIt("payment", e, prev, "Baki maaf · " + (e.party || "—") + " · " + money0(ctAmount(e)) + " settled");
-      Store.save(); closeModal(); render(); toast("Baki zero kar diya", "ok");
+      if (!Store.saveChange()) { render(); return; } closeModal(); render(); toast("Baki zero kar diya", "ok");
     }, true);
 }
 
@@ -6083,7 +6602,7 @@ function ctRateAdd() {
   if (hit) Object.assign(hit, rec, { id: hit.id });
   else C.rates.push(rec);
   ctLogIt("rate", null, null, (hit ? "Rate update · " : "Rate list me add · ") + name + (rate ? " — " + money0(rate) + "/" + rec.unit : ""));
-  Store.save();
+  if (!Store.saveChange()) { render(); return; }
   render();
   toast(hit ? name + " ka rate update ho gaya" : name + " rate list me add ho gaya", "ok");
 }
@@ -6117,7 +6636,7 @@ function ctRateSave(id) {
   const un = document.getElementById("erUnit"), rt = document.getElementById("erRate"), ca = document.getElementById("erCat");
   Object.assign(r, normCtRate({ id: r.id, name: name, unit: un ? un.value : r.unit, rate: num(rt ? rt.value : r.rate), cat: ca ? ca.value.trim() : r.cat }));
   ctLogIt("rate", null, null, "Rate edit · " + name + " — " + money0(r.rate) + "/" + r.unit);
-  Store.save(); closeModal(); render(); toast("Rate list update ho gayi", "ok");
+  if (!Store.saveChange()) { render(); return; } closeModal(); render(); toast("Rate list update ho gayi", "ok");
 }
 function ctRateDel(id) {
   const C = ct();
@@ -6127,8 +6646,8 @@ function ctRateDel(id) {
   const doIt = () => {
     C.rates.splice(i, 1);
     ctLogIt("rate", null, null, "Rate list se hataya · " + snap.name);
-    Store.save(); closeModal(); render();
-    setUndo(() => { ct().rates.push(snap); Store.save(); render(); toast("Item wapas aa gaya", "ok"); }, snap.name + " rate list se hat gaya");
+    if (!Store.saveChange()) { render(); return; } closeModal(); render();
+    setUndo(() => { ct().rates.push(snap); if (!Store.saveChange()) { render(); return; } render(); toast("Item wapas aa gaya", "ok"); }, snap.name + " rate list se hat gaya");
   };
   if (document.getElementById("overlay")) {
     confirmDialog("Item hatayein?", "<b>" + esc(snap.name) + "</b> rate list se hat jayega. Purani entries par koi asar nahi padega.", "Hata do", doIt, true);
@@ -6174,8 +6693,8 @@ function ctWipe() {
     "Canteen data erase", () => {
       const snap = JSON.parse(JSON.stringify(Store.data.canteen));
       Store.data.canteen = blankCanteen();
-      Store.save(); render();
-      setUndo(() => { Store.data.canteen = snap; Store.save(); render(); toast("Canteen data wapas aa gaya ✔", "ok"); },
+      if (!Store.saveChange()) { render(); return; } render();
+      setUndo(() => { Store.data.canteen = snap; if (!Store.saveChange()) { render(); return; } render(); toast("Canteen data wapas aa gaya ✔", "ok"); },
         "Canteen data erase ho gaya");
     }, true);
 }
@@ -6416,8 +6935,9 @@ function ctSetTpl(id) {
   const t = CT_TPLS.find((x) => x.id === id);
   if (!t) { toast("Aisa PDF template nahi mila", "bad"); return false; }
   if (!Store.data.settings) Store.data.settings = {};
+  const previous = Store.data.settings.pdfTpl;
   Store.data.settings.pdfTpl = id;
-  Store.save(true);
+  if (!Store.save(true)) { Store.data.settings.pdfTpl = previous; toast("PDF style save nahi hua — storage/backup check karein", "bad"); return false; }
   toast("PDF template: " + t.name + " \u2714 \u2014 ab PDF isi design me banegi", "ok");
   return true;
 }
@@ -7273,6 +7793,7 @@ function ctBulkSave() {
   if (!b) return;
   const rows = (b.rows && b.rows.length) ? b.rows : ctParseBulk(b.text, b.date).rows;
   if (!rows.length) return toast("Paste/OCR me se koi valid line nahi mili — preview dekhe", "bad");
+  const beforeSave = syncClone(Store.data);
   const CC = ct();
   const made = [];
   const build = (rows, date) => normCtEntry({
@@ -7296,9 +7817,8 @@ function ctBulkSave() {
   const sum = r2(made.reduce((t, e) => t + ctAmount(e), 0));
   ctLogIt("add", made[0], null, "📋 Paste se " + made.length + " entry" + (made.length > 1 ? "s" : "") + " · " + money0(sum));
   if (!Store.save()) {
-    made.forEach((e) => { const j = CC.entries.indexOf(e); if (j >= 0) CC.entries.splice(j, 1); });
-    if (CC.log.length) CC.log.pop();
-    return toast("Save NAHIN hua — browser storage bhara hai", "bad");
+    Store.data = beforeSave;
+    return toast("Save NAHIN hua — preview yahin hai. Storage/JSON backup check karein.", "bad");
   }
   closeModal();
   ctUI().bulk = null;
@@ -7310,7 +7830,7 @@ function ctBulkSave() {
     const C2 = ct();
     made.forEach((e) => { const j = C2.entries.findIndex((x) => x.id === e.id); if (j >= 0) C2.entries.splice(j, 1); });
     ctLogIt("delete", made[0], made[0], "📋 paste undo — " + made.length + " entries hati");
-    Store.save(); render(); toast(made.length + " entries hata di (undo)", "ok");
+    if (!Store.saveChange()) { render(); return; } render(); toast(made.length + " entries hata di (undo)", "ok");
   }, "📋 " + made.length + " entries aa gayi · total " + money0(sum) +
      (b.verify != null ? (Math.abs(b.verify - sum) < 0.51 ? " · TOTAL ✅ mila" : " · ⚠ paste TOTAL " + money0(b.verify) + " se alag") : ""));
 }
@@ -7436,7 +7956,7 @@ document.addEventListener("click", (e) => {
       confirmDialog("Delete worker?", "Remove <b>" + esc(w ? w.name : "") + "</b> and all of their salary records? This cannot be undone.", "Delete worker", () => {
         Store.data.workers = Store.data.workers.filter((x) => x.id !== wid);
         Store.data.records = Store.data.records.filter((r) => r.workerId !== wid);
-        Store.save(); render(); toast("Worker deleted");
+        if (!Store.saveChange()) { render(); return; } render(); toast("Worker deleted");
       }, true); break;
     case "workerHistory": { const ww = Store.worker(wid); UI.search = ww ? ww.name : ""; UI.filter = "all"; go("records"); break; }
     case "closeModal": closeModal(); break;
@@ -7512,9 +8032,9 @@ document.addEventListener("click", (e) => {
       confirmDialog("Delete record?", "Delete the " + monthLabel(UI.openRec.y, UI.openRec.m) + " hisaab for this worker?", "Delete", () => {
         const st = UI.openRec;
         Store.data.records = Store.data.records.filter((r) => !(r.workerId === st.wid && r.year === st.y && r.month === st.m));
-        Store.save(); closeModal(); render(); toast("Record deleted");
+        if (!Store.saveChange()) { render(); return; } closeModal(); render(); toast("Record deleted");
       }, true); break;
-    case "saveRecClose": commitModal(); closeModal(); render(); toast("Saved", "ok"); break;
+    case "saveRecClose": if (!commitModal()) break; closeModal(); render(); toast("Is device par saved", "ok"); break;
     case "printRecModal": { const st = UI.openRec; commitModal(); printStatement(st.wid, st.y, st.m); break; }
     case "pdfRecModal": { const st = UI.openRec; commitModal(); downloadStatementPdf(st.wid, st.y, st.m); break; }
     case "saveSettings": {
@@ -7524,16 +8044,16 @@ document.addEventListener("click", (e) => {
       s.phone = $("#sPhone").value.trim();
       s.address = $("#sAddress").value.trim();
       s.statementNote = $("#sNote").value;
-      Store.save(); render(); toast("Settings saved", "ok"); break;
+      if (!Store.saveChange()) { render(); return; } render(); toast("Settings saved", "ok"); break;
     }
-    case "keepDemo": Store.data.settings.demo = false; Store.save(); render(); break;
+    case "keepDemo": Store.data.settings.demo = false; if (!Store.saveChange()) { render(); return; } render(); break;
     case "clearDemo":
       confirmDialog("Start fresh?", "Erase the demo workers and records so you can add your own. <b>Your shop details in Settings are kept.</b>" +
         (ct().demo ? " Demo canteen entries bhi hat jayengi." : " <b>Aapki canteen entries safe rahengi.</b>"), "Start fresh", () => {
         const keep = { ...Store.data.settings, demo: false };
         const keepCt = ct().demo ? blankCanteen() : ct();
         Store.data = { settings: keep, workers: [], records: [], canteen: keepCt };
-        Store.save(); render(); toast("Demo data cleared — add your first worker", "ok");
+        if (!Store.saveChange()) { render(); return; } render(); toast("Demo data cleared — add your first worker", "ok");
       }, true); break;
     /* ------------------------- CANTEEN MODULE ------------------------- */
     case "gotoCanteen": ctUI().tab = ctUI().tab || "day"; go("canteen"); break;
@@ -7645,7 +8165,7 @@ document.addEventListener("click", (e) => {
           ctRenderBulk();
           toast(o.conf != null && o.conf < 55
             ? "OCR confidence kam (" + o.conf + "%) — preview me har cell check karo"
-            : "OCR text aa gaya" + (o.conf != null ? " (confidence " + o.conf + "%)" : "") + " — preview me check karke save karo", 
+            : "OCR text aa gaya" + (o.conf != null ? " (confidence " + o.conf + "%)" : "") + " — preview me check karke save karo",
             o.conf != null && o.conf < 55 ? "bad" : "ok");
         })
         .catch(() => toast("OCR ke liye internet chahiye — photo lagi rahegi, text paste karke bhi chal sakte ho", "bad"));
@@ -7682,30 +8202,44 @@ document.addEventListener("click", (e) => {
     case "ctWipe": ctWipe(); break;
 
     case "lcMode": Cloud.mode = btn.dataset.mode; showLogin(true); break;
-    case "continueOffline": showLogin(false); toast("Bina login — data sirf is device par save hoga"); break;
+    case "continueOffline":
+      Cloud.resetSession(); Cloud.user = null; Cloud.offlineMode = true;
+      showLogin(false); toast("Bina cloud sync — data sirf is device par; pending changes safe hain"); break;
     case "cloudConnect": connectCloud(); break;
     case "cloudLogin": Cloud.mode = "in"; showLogin(true); break;
     case "cloudLogout": Cloud.signOut(); break;
     case "cloudDisconnect": disconnectCloud(); break;
     case "cloudSyncNow":
-      Cloud.pushNow().then(() => { toast("Cloud par sync ho gaya ✔", "ok"); render(); });
+      if (Cloud._pending) { askWhichData(); break; }
+      Cloud.syncNow().then((ok) => { toast(ok ? "Cloud sync confirm ho gaya ✔" : "Sync confirm nahi hua — local data safe; status check karein", ok ? "ok" : "bad"); render(); });
       break;
-    case "useCloud":
-      if (Cloud._pending) { adoptRemote(Cloud._pending); Cloud._pending = null; toast("Cloud ka data load ho gaya ✔", "ok"); }
+    case "retrySave":
+      if (Store.save()) {
+        if (Cloud.user) Cloud.syncNow();
+        else Cloud.setStatus(Cloud.configured() ? "loggedout" : "local");
+        toast("Is device par save confirm hua", "ok");
+      }
       break;
-    case "useLocal":
-      closeModal();
-      Cloud.pushNow().then(() => { toast("Is device ka data cloud par upload ho gaya ✔", "ok"); render(); });
-      break;
+    case "cloudResolve": askWhichData(); break;
+    case "useCloud": Cloud.resolve("remote"); break;
+    case "useLocal": Cloud.resolve("local"); break;
+    case "recoveryOpen": Recovery.open(); break;
+    case "recoveryDownload": Recovery.download(btn.dataset.id); break;
+    case "recoveryMerge": Recovery.merge(btn.dataset.id); break;
     case "exportData": exportData(); break;
     case "importData": importData(); break;
     case "loadSample":
-      confirmDialog("Load sample data?", "This replaces all current workers and records with a demo set.", "Load sample", () => {
-        Store.data = sampleData(); Store.save(); render(); toast("Sample data loaded", "ok");
+      if (Cloud.scope) { toast("Account ke real data par demo load nahi kar sakte. Pehle JSON backup lein.", "bad"); break; }
+      confirmDialog("Load sample data?", "Saare current workers, salary records aur canteen data demo se replace honge. Pehle JSON backup lein.", "Load sample", () => {
+        const previous = Store.data; Store.data = sampleData();
+        if (!Store.save(false, { checkpoint: true })) { Store.data = previous; return; }
+        render(); toast("Sample data loaded", "ok");
       }, true); break;
     case "wipeData":
-      confirmDialog("Erase all data?", "This deletes <b>all workers and salary records</b> from this browser. Download a backup first if unsure.", "Erase everything", () => {
-        Store.data = blankData(); Store.save(); render(); toast("All data erased");
+      confirmDialog("Erase all data?", "Ye <b>saare workers, salary records aur canteen data</b> erase karega. Cloud login on hai to doosre devices par bhi deletion sync hogi. Pehle JSON backup lein.", "Erase everything", () => {
+        const previous = Store.data; Store.data = blankData();
+        if (!Store.save(false, { checkpoint: true })) { Store.data = previous; return; }
+        render(); toast("Data cleared — safety copy available; cloud status check karein");
       }, true); break;
   }
 });
@@ -7807,6 +8341,19 @@ document.addEventListener("change", (e) => {
 document.addEventListener("keydown", (e) => {
   if (e.key === "Escape") { if ($("#overlay")) closeModal(); }
 });
+window.addEventListener("storage", (event) => {
+  if (event.key === KEY && event.newValue !== Store.diskValue || event.key === null) {
+    Cloud.resetSession(); Cloud.user = null; Cloud.offlineMode = true;
+    Cloud.setStatus("storage", "Doosre tab me data badla. Is tab ka JSON backup lekar reload karein; stale copy se overwrite blocked hai.");
+  }
+  if (event.key === OWNER_KEY && event.newValue !== Cloud.scope) {
+    Cloud.resetSession(); Cloud.user = null; Cloud.offlineMode = true;
+    Cloud.setStatus("storage", "Doosre tab me account badla. Is tab ka JSON backup lekar reload karein; is data ko doosre account me upload nahi kiya gaya.");
+    toast(Cloud.lastError, "bad");
+  }
+});
+window.addEventListener("online", () => { if (Cloud.user && !Cloud._pending) Cloud.syncNow(); });
+window.addEventListener("focus", () => { Cloud.maybePull(); });
 document.addEventListener("visibilitychange", () => { if (!document.hidden) { try { Cloud.maybePull(); } catch (e) {} } });
 setInterval(() => { try { Cloud.maybePull(); } catch (e) {} }, 60000);
 
@@ -7887,7 +8434,8 @@ document.addEventListener("input", (e) => {
 syncMonthPickers();
 go("dashboard");
 try { Cloud.boot(); } catch (e) {}
-window.Hisaab = { Store, calc, monthMeta, PdfDoc, inWords, UI, render, go, Cloud,
+window.Hisaab = { Store, calc, monthMeta, PdfDoc, inWords, UI, render, go, Cloud, Recovery,
+  sync: { merge: mergeSyncData, view: syncView, same: samePayload, counts: dataCounts, hasData: hasUserData },
   /* canteen module API */
   canteen: { data: ct, totals: ctTotals, entries: ctAll, onDate: ctOnDate, inMonth: ctInMonth,
              dayLedger: ctDayLedger, monthLedger: ctMonthLedger, openModal: openCtModal, save: ctSave,

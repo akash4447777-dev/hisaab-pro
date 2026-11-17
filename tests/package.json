@@ -1,14 +1,15 @@
 {
   "name": "hisaab-pro-tests",
-  "version": "3.16.0",
+  "version": "3.17.0",
   "private": true,
-  "description": "Hisaab Pro — Canteen module ke jsdom smoke tests (developer-only, app ko iski zaroorat nahi)",
+  "description": "Hisaab \u2014 canteen, salary regression, loader, PDF aur safe cloud sync ke developer-only tests",
   "scripts": {
-    "test": "node canteen.test.js && node loader.test.js && node pdf.test.js",
+    "test": "node canteen.test.js && node loader.test.js && node pdf.test.js && node cloud.test.js",
     "test:canteen": "node canteen.test.js",
     "test:loader": "node loader.test.js",
     "test:pdf": "node pdf.test.js",
-    "test:v2.0": "node canteen.test.js ../Hisaab-Pro-v2.0.html"
+    "test:v2.0": "node canteen.test.js ../Hisaab-Pro-v2.0.html",
+    "test:cloud": "node cloud.test.js"
   },
   "devDependencies": {
     "jsdom": "^26.0.0"
