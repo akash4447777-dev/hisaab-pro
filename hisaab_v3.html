@@ -817,7 +817,7 @@ select.ct-pm option{font-size:11.5px;font-weight:700}
 .att-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;padding:16px}.att-person{padding:16px;background:var(--surface);border:1px solid var(--line);border-radius:13px;min-width:0;transition:border-color .16s,box-shadow .16s}.att-person:hover{border-color:color-mix(in srgb,var(--primary) 35%,var(--line));box-shadow:var(--shadow-1)}
 .att-person-top{display:flex;align-items:center;gap:10px}.att-avatar{width:39px;height:39px;flex:0 0 39px;display:grid;place-items:center;border-radius:12px;background:var(--primary-soft);color:var(--primary);font-size:12px;font-weight:800}.att-person-name{font-size:12.5px;font-weight:750;overflow-wrap:anywhere}.att-person-sub{font-size:10px;color:var(--muted);margin-top:2px}.att-person-top .att-status{margin-left:auto}
 .att-person-meta{display:flex;align-items:center;justify-content:space-between;font-size:10px;color:var(--muted);gap:10px;border-top:1px solid var(--line-2);margin-top:13px;padding-top:11px}.att-person-time{display:flex;gap:13px;font-size:10px;align-items:center;margin:10px 0;color:var(--muted)}.att-person-time b{font-size:13px;color:var(--ink);display:block;font-variant-numeric:tabular-nums}.att-tap{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:5px;margin-top:12px}.att-tap button{border:1px solid var(--line);background:var(--surface-2);color:var(--muted);font-size:10px;font-weight:700;border-radius:7px;padding:7px 3px;cursor:pointer;transition:.15s}.att-tap button:hover{border-color:var(--primary);color:var(--primary)}.att-tap button.on{background:var(--primary-soft);border-color:var(--primary);color:var(--primary)}
-.att-status{font-size:9px;font-weight:750;padding:4px 7px;display:inline-flex;align-items:center;gap:5px;border-radius:6px;white-space:nowrap;background:var(--surface-3);color:var(--muted)}.att-status.present{color:var(--ok);background:var(--ok-soft)}.att-status.absent{color:var(--bad);background:var(--bad-soft)}.att-status.half,.att-status.short{color:var(--warn);background:var(--warn-soft)}.att-status.leave,.att-status.holiday{color:var(--primary);background:var(--primary-soft)}.att-status.pending{color:var(--cyan);background:var(--cyan-soft)}
+.att-status{font-size:9px;font-weight:750;padding:4px 7px;display:inline-flex;align-items:center;gap:5px;border-radius:6px;white-space:nowrap;background:var(--surface-3);color:var(--muted)}.att-status.present{color:var(--ok);background:var(--ok-soft)}.att-status.absent{color:var(--bad);background:var(--bad-soft)}.att-status.half{color:var(--warn);background:var(--warn-soft)}.att-status.leave,.att-status.holiday{color:var(--primary);background:var(--primary-soft)}.att-status.pending{color:var(--cyan);background:var(--cyan-soft)}
 .att-shift{display:inline-flex;align-items:center;gap:4px;font-size:10px;font-weight:650;color:var(--muted)}.att-shift.night{color:var(--primary)}.att-shift svg{width:12px;height:12px}.att-icon{width:16px;height:16px;vertical-align:middle;flex-shrink:0}
 .att-empty{padding:42px 22px;text-align:center}.att-empty-icon{width:58px;height:58px;display:grid;place-items:center;margin:0 auto 14px;background:var(--primary-soft);border:1px solid var(--line);border-radius:18px;color:var(--primary)}.att-empty-icon svg{width:27px;height:27px}.att-empty h4{font-size:15px;margin-bottom:6px}.att-empty p{font-size:12px;line-height:1.65;color:var(--muted);max-width:420px;margin:0 auto 18px}.att-empty .att-actions{justify-content:center}
 .att-pulse-row{margin-bottom:19px}.att-pulse-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:7px;font-size:11px}.att-progress{height:5px;background:var(--surface-3);overflow:hidden;border-radius:8px}.att-progress i{display:block;height:100%;background:var(--primary);border-radius:8px}.att-pulse-legend{display:flex;gap:10px;font-size:10px;color:var(--muted);margin-top:8px}.att-note{background:var(--surface-2);border:1px solid var(--line);border-radius:10px;padding:12px;color:var(--muted);font-size:10.5px;line-height:1.65}.att-note b{color:var(--ink-2)}
@@ -835,6 +835,7 @@ select.ct-pm option{font-size:11.5px;font-weight:700}
 @media(max-width:1180px){.att-content-grid{grid-template-columns:minmax(0,1fr) 220px}.att-grid{grid-template-columns:1fr}.att-hero{padding:20px}.att-hero h3{font-size:22px}}
 @media(max-width:800px){.att-content-grid{grid-template-columns:1fr}.att-side{display:grid;grid-template-columns:1fr 1fr;gap:12px}.att-side .att-panel{margin:0!important}.att-kpis{gap:9px}.att-stat{padding:13px}.att-stat strong{font-size:23px}.att-hero{align-items:flex-start;flex-direction:column;gap:15px}.att-calendar .att-cal-cell{padding:7px;min-height:91px}}
 @media(max-width:560px){.att-page{gap:13px}.att-kpis{grid-template-columns:repeat(2,minmax(0,1fr))}.att-grid{padding:11px;gap:10px}.att-side{grid-template-columns:1fr}.att-hero{padding:18px;border-radius:15px}.att-hero .att-actions{width:100%}.att-hero .att-actions .btn{flex:1;font-size:11px;padding:8px 9px}.att-filterbar{padding:12px;gap:9px}.att-filterbar .att-field{min-width:calc(50% - 10px)}.att-filterbar .att-period-field,.att-filterbar .att-search{min-width:100%}.att-navline{gap:8px}.att-tabs{width:100%;justify-content:space-between}.att-tabs button{padding:8px 9px;font-size:10.5px}.att-mode{width:100%;justify-content:center}.att-calc-preview{grid-template-columns:repeat(2,minmax(0,1fr))}.att-form-grid{gap:12px}.att-form-grid .wide-mobile{grid-column:1/-1}.att-time-input{flex-direction:column}.att-time-input select{width:100%;flex:auto}.att-dialog .modal-b{padding:16px}.att-cal-cell{min-height:88px!important;padding:6px 4px!important}.att-cal-marks{gap:2px}.att-cal-marks .att-status{font-size:8px;padding:2px 3px}.att-cal-credit{font-size:8px}.att-cal-dow{font-size:9px}.att-profile{padding:16px}.att-profile h4{font-size:16px}.att-dashboard .strip{grid-template-columns:repeat(2,minmax(0,1fr))}}
+.att-calc-preview{grid-template-columns:repeat(2,minmax(0,1fr))}.att-sunday-count{display:inline-block;font-size:11px;background:var(--primary-soft);color:var(--primary);padding:3px 7px;border-radius:7px;margin-left:5px}.att-sunday-person{padding:11px 0;border-bottom:1px solid var(--line-2);overflow-wrap:anywhere}.att-sunday-person>b{font-size:13px;margin-right:10px}.att-sunday-dates{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}.att-sunday-date{display:inline-block;border:1px solid var(--line);border-radius:9px;padding:9px 11px;background:var(--primary-soft);font-size:12px;font-weight:700}.att-sunday-date small{display:block;font-size:10px;font-weight:500;color:var(--muted);margin-top:4px}@media(max-width:560px){.att-tabs{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));overflow:visible}.att-tabs button{width:100%;padding:9px 5px}}
 @media(prefers-reduced-motion:reduce){.att-page{animation:none}.att-page *{transition:none!important}}
 
 </style>
@@ -1963,7 +1964,7 @@ const rRate = (n) => { const x = Math.max(0, num(n)); return x >= 1 ? r2(x) : Ma
 /* rate dikhane ka format: <₹1 ho to 0.075 jaisa khula number, warna moneyS */
 const rateS = (n) => { const x = num(n); if (x > 0 && x < 1) return "₹" + String(Math.round((x + Number.EPSILON) * 10000) / 10000); return moneyS(x); };
 const clamp = (n, lo, hi) => Math.min(hi, Math.max(lo, n));
-const APP_VERSION = "3.20";
+const APP_VERSION = "3.21";
 const esc = (s) => String(s == null ? "" : s).replace(/[&<>"']/g, (m) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[m]));
 
 const MONTHS = ["January","February","March","April","May","June","July","August","September","October","November","December"];
@@ -3288,6 +3289,7 @@ function viewSettings(){
 
     '<div style="text-align:center;font-size:11.5px;color:var(--muted);margin-top:18px;line-height:1.7">'+
       'Panel <b style="color:var(--ink)">v<span data-ver></span></b> · Auto-update enabled<br>'+
+      'v3.21 — <b style="color:var(--ink)">Actual hours + Sundays + clear reports</b>: ab working hours fixed nahi; check-out minus check-in, koi break deduction ya automatic OT/late/half-day target nahi. Sunday ko kis-kis date aaye, alag tab aur manager report me dates/count; dono shifts par ek Sunday ek baar. PDF me readable summary cards, Sunday dates aur simple 6-column daily ledger; Excel me alag Sunday sheet. Purane clocks/history/backups safe; old Attendance totals ab full in→out hours dikhate hain. Salary/canteen aur blank PDF labels unchanged<br>'+
       'v3.20 — <b style="color:var(--ink)">Easy 12-hour Attendance</b>: ab 9 / 9:30 jaisa time; Same day morning, Same day night, Next day morning, Next day night ke clear choices. Night defaults, actual-date timeline, live hours/OT preview, Use shift timings aur mobile-friendly form. Rules, board, ledger/history aur PDF/Excel bhi readable 12-hour me; purane records, saved rules, auto-save/cloud aur salary/canteen unchanged<br>'+
       'v3.19 — <b style="color:var(--ink)">Manager Attendance</b>: naya integrated tab — Tap/Time modes, Day/Night shifts, manager profiles, bulk marking, calendar, late/early/overtime, searchable ledger/history, individual PDF + real Excel reports, configurable rule snapshots, automatic saves/backups aur safe cloud merge. Salary aur canteen calculations unchanged<br>'+
       'v3.18 — <b style="color:var(--ink)">PDF summary labels</b>: screenshot wale Bikri aur Kharcha labels blank; amounts, dashed rows, spacing, totals aur baaki format same. Din/mahina, print aur WhatsApp PDF me bhi yahi change; app entries/data aur cloud sync unchanged<br>'+
@@ -8132,6 +8134,8 @@ function ctRateHist(id) {
   if (document.fonts && document.fonts.load) Promise.all([400,700].map((weight) => document.fonts.load(weight + ' 16px "Hisaab Indic"'))).catch(() => {});
 })();
 function attDefaults() {
+  /* Legacy schedule/target keys are retained for JSON/cloud compatibility only.
+     v3.21 hours never use them; editable settings now concern manual credits. */
   return { dayStart: "09:00", dayEnd: "18:00", nightStart: "21:00", nightEnd: "06:00", standardMinutes: 480,
     halfDayMinutes: 240, breakMinutes: 60, lateGraceMinutes: 10, earlyGraceMinutes: 0,
     paidLeave: true, paidHoliday: true, paidWeekOff: false };
@@ -8141,7 +8145,7 @@ const ATT_STATUS = {
   present: { label: "Present", short: "P", credit: 1 }, absent: { label: "Absent", short: "A", credit: 0 },
   half: { label: "Half day", short: "H", credit: .5 }, leave: { label: "Leave", short: "L" },
   weekoff: { label: "Week off", short: "W" }, holiday: { label: "Holiday", short: "HD" },
-  pending: { label: "Checked in", short: "IN", credit: 0 }, short: { label: "Short hours", short: "S", credit: 0 },
+  pending: { label: "Checked in", short: "IN", credit: 0 },
   unmarked: { label: "Unmarked", short: "—", credit: 0 }, notscheduled: { label: "Not scheduled", short: "—", credit: 0 }
 };
 const ATT_TAP = ["present", "absent", "half", "leave", "weekoff", "holiday"];
@@ -8191,6 +8195,7 @@ function attReadableValue(value) {
   ["checkIn", "checkOut"].forEach((key) => { if (attTime(value[key])) result[key] = attTimeLabel(value[key], value[key === "checkIn" ? "inNextDay" : "outNextDay"]); });
   ["dayStart", "dayEnd", "nightStart", "nightEnd"].forEach((key) => { if (attTime(value[key])) result[key] = attClockLabel(value[key]); });
   if (value.policy) result.policy = attReadableValue(value.policy);
+  ["breakMinutes", "standardMinutes", "halfDayMinutes", "dayStart", "dayEnd", "nightStart", "nightEnd", "lateGraceMinutes", "earlyGraceMinutes"].forEach((key) => delete result[key]);
   return result;
 }
 function attDuration(minutes) { const m = Math.max(0, Math.round(num(minutes))); return Math.floor(m / 60) + "h " + String(m % 60).padStart(2, "0") + "m"; }
@@ -8241,6 +8246,9 @@ function attCheckRules(p) {
 }
 function attCalculate(record) {
   const r = record || {}, p = { ...attDefaults(), ...(r.policy || {}) };
+  /* v3.21: actual elapsed time, never an assumed workday length. Legacy break,
+     schedule and target fields stay in backups for compatibility, not arithmetic.
+     Zeroed legacy counters are kept only for callers on the existing API. */
   const result = { valid: true, error: "", status: r.status || "unmarked", credit: 0, workedMinutes: 0,
     overtimeMinutes: 0, lateMinutes: 0, earlyMinutes: 0, durationMinutes: 0, open: false, equivalentMinutes: 0 };
   try {
@@ -8248,28 +8256,61 @@ function attCalculate(record) {
     if (r.mode !== "time") {
       if (!ATT_TAP.includes(r.status)) throw new Error("Choose a valid tap status.");
       result.credit = r.status === "leave" ? +p.paidLeave : r.status === "holiday" ? +p.paidHoliday : r.status === "weekoff" ? +p.paidWeekOff : ATT_STATUS[r.status].credit;
-      result.equivalentMinutes = Math.round(result.credit * p.standardMinutes); return result;
+      return result;
     }
-    if (!attTime(r.checkIn)) throw new Error("Saved check-in time is invalid. Re-enter it using 1–12 and morning/night.");
-    const start = attMinutes(r.checkIn) + (r.inNextDay ? 1440 : 0);
-    const scheduledStart = attMinutes(p[(r.shift === "night" ? "night" : "day") + "Start"]);
-    let scheduledEnd = attMinutes(p[(r.shift === "night" ? "night" : "day") + "End"]);
-    if (scheduledEnd <= scheduledStart) scheduledEnd += 1440;
-    result.lateMinutes = Math.max(0, start - scheduledStart - p.lateGraceMinutes);
-    if (!Number.isInteger(r.breakMinutes) || r.breakMinutes < 0 || r.breakMinutes > 1439) throw new Error("Break must be a whole number of minutes between 0 and 1439.");
+    if (r.breakMinutes !== undefined && (!Number.isInteger(r.breakMinutes) || r.breakMinutes < 0 || r.breakMinutes > 1439)) throw new Error("Invalid legacy time metadata. Restore a valid JSON backup.");
+    if (!attTime(r.checkIn)) throw new Error("Enter check-in using 1–12 and morning/night.");
     if (!r.checkOut) { result.status = "pending"; result.open = true; return result; }
-    if (!attTime(r.checkOut)) throw new Error("Saved check-out time is invalid. Re-enter it using 1–12 and morning/night.");
-    const end = attMinutes(r.checkOut) + (r.outNextDay ? 1440 : 0), duration = end - start;
+    if (!attTime(r.checkOut)) throw new Error("Enter check-out using 1–12 and morning/night.");
+    const start = attMinutes(r.checkIn) + (r.inNextDay ? 1440 : 0), end = attMinutes(r.checkOut) + (r.outNextDay ? 1440 : 0);
+    const duration = end - start;
     if (duration <= 0 || duration > 1440) throw new Error("Check-out must be after check-in and within one day. Check both morning/night and same/next day choices.");
-    if (!Number.isInteger(r.breakMinutes) || r.breakMinutes < 0 || r.breakMinutes >= duration) throw new Error("Break must be a whole number of minutes, shorter than the recorded shift.");
-    result.durationMinutes = duration; result.workedMinutes = duration - r.breakMinutes;
-    result.overtimeMinutes = Math.max(0, result.workedMinutes - p.standardMinutes);
-    result.earlyMinutes = Math.max(0, scheduledEnd - end - p.earlyGraceMinutes);
-    result.status = result.workedMinutes >= p.standardMinutes ? "present" : result.workedMinutes >= p.halfDayMinutes ? "half" : "short";
-    result.credit = result.status === "present" ? 1 : result.status === "half" ? .5 : 0;
-    result.equivalentMinutes = Math.round(result.credit * p.standardMinutes);
+    result.durationMinutes = duration; result.workedMinutes = duration;
+    result.status = "present"; result.credit = 1;
   } catch (error) { result.valid = false; result.error = error.message; }
   return result;
+}
+function attArrivalDate(r) { return r.mode === "time" && r.inNextDay ? ctShiftDate(r.date, 1) : r.date; }
+function attVisits(records, from, to) {
+  const visits = new Map();
+  records.forEach((r) => {
+    const c = attCalculate(r);
+    if (!c.valid || !(r.mode === "time" ? attTime(r.checkIn) : ["present", "half"].includes(r.status))) return;
+    const date = attArrivalDate(r);
+    if (!attDate(date) || from && date < from || to && date > to) return;
+    const key = r.managerId + "|" + date;
+    if (!visits.has(key)) visits.set(key, { managerId: r.managerId, date, shifts: [], recordIds: [], open: false });
+    const visit = visits.get(key);
+    if (!visit.shifts.includes(r.shift)) { visit.shifts.push(r.shift); visit.shifts.sort(); }
+    visit.recordIds.push(r.id); visit.open = visit.open || c.open;
+  });
+  return Array.from(visits.values()).sort((a, b) => a.date.localeCompare(b.date) || a.managerId.localeCompare(b.managerId));
+}
+function attSundayVisits(records, from, to) { return attVisits(records, from, to).filter((v) => ctDateObj(v.date).getDay() === 0); }
+function attNiceDate(date, weekday) {
+  const day = ctDateObj(date);
+  return (weekday ? day.toLocaleDateString("en-IN", { weekday: "short" }) + ", " : "") + day.toLocaleDateString("en-IN", { day: "2-digit", month: "short", year: "numeric" });
+}
+function attSundaySource(from, to) {
+  const u = attUI(), q = u.q.trim().toLowerCase();
+  return att().records.filter((r) => {
+    const m = attManager(r.managerId);
+    return m && (u.manager === "all" || r.managerId === u.manager) && (u.shift === "all" || r.shift === u.shift) &&
+      (!q || (m.name + " " + m.code + " " + m.department + " " + r.note).toLowerCase().includes(q));
+  });
+}
+function attSundayHTML(visits, compact) {
+  const grouped = new Map(); visits.forEach((v) => { if (!grouped.has(v.managerId)) grouped.set(v.managerId, []); grouped.get(v.managerId).push(v); });
+  const groups = Array.from(grouped).sort(([a], [b]) => (attManager(a)?.name || "").localeCompare(attManager(b)?.name || "") || a.localeCompare(b));
+  const pager = !compact ? attPager(groups.length, 24) : "";
+  const visible = compact ? groups : groups.slice(attUI().page * 24, (attUI().page + 1) * 24);
+  return '<section class="att-panel att-sundays" aria-label="Sundays attended"><div class="att-panel-head"><div><h4>Sundays attended <span class="att-sunday-count">' + visits.length + '</span></h4><p>Only Sundays they came · one count per manager per Sunday</p></div>' + attIcon("calendar") + '</div><div class="att-panel-body">' +
+    (grouped.size ? visible.map(([id, list]) => { const m = attManager(id); return '<div class="att-sunday-person"><b>' + esc(m ? attLabel(m) : "Manager") + '</b><span class="att-mini">' + list.length + ' Sunday' + (list.length === 1 ? '' : 's') + '</span><div class="att-sunday-dates">' + list.map((v) => '<span class="att-sunday-date">' + esc(attNiceDate(v.date, true)) + '<small>' + v.shifts.map((s) => s === "night" ? "Night" : "Day").join(" + ") + (v.open ? ' · Checked in' : '') + '</small></span>').join('') + '</div></div>'; }).join('') : '<p class="att-mini">No Sunday attendance recorded in this period.</p>') +
+    '<p class="att-mini" style="margin-top:12px">Time mode uses the actual check-in date. Tap mode counts Present / Half day only. Leave, holiday, week off and absent marks are not visits.</p></div>' + (!compact && groups.length > 24 ? pager : "") + '</section>';
+}
+function attSundaysView() {
+  const range = attSelectedRange(); if (range.error) return '';
+  return '<div class="att-note">' + esc(attNiceDate(range.from) + ' → ' + attNiceDate(range.to)) + ' · selected manager / shift filters apply</div>' + attSundayHTML(attSundayVisits(attSundaySource(), range.from, range.to));
 }
 function attValidate(a, partial) {
   if (a === undefined) return true;
@@ -8350,7 +8391,7 @@ function attPrepareRecord(input) {
   if (input.id && !old) throw new Error("This attendance record was removed. Open the current ledger.");
   const m = attManager(input.managerId || old && old.managerId); if (!m) throw new Error("Choose a manager from the list.");
   if (!old && !m.active) throw new Error("This manager is inactive. Reactivate the profile before adding attendance.");
-  if (input.breakMinutes !== undefined && (!Number.isInteger(Number(input.breakMinutes)) || Number(input.breakMinutes) < 0)) throw new Error("Break must be a non-negative whole number of minutes.");
+  if (input.breakMinutes !== undefined && (!Number.isInteger(Number(input.breakMinutes)) || Number(input.breakMinutes) < 0)) throw new Error("Invalid archived attendance metadata. Restore a valid JSON backup.");
   const next = attNormRecord({ ...old, ...input, id: old ? old.id : uid(), managerId: m.id,
     policy: input.policy || old && old.policy || attPolicy(input.shift || m.defaultShift),
     createdAt: old ? old.createdAt : Date.now(), updatedAt: Date.now() });
@@ -8403,10 +8444,10 @@ function attBulkMark(managerIds, date, shift, status, overwrite) {
 function attClockIn(managerId, shift, now) {
   now = now || new Date(); const m = attManager(managerId); if (!m) throw new Error("Choose a manager.");
   shift = shift || m.defaultShift;
-  const policy = attPolicy(shift), time = attClock(now), start = attMinutes(policy[shift + "Start"]), end = attMinutes(policy[shift + "End"]);
-  const nextDay = end < start && attMinutes(time) < end, date = nextDay ? ctShiftDate(isoDate(now), -1) : isoDate(now);
+  const policy = attPolicy(shift), time = attClock(now);
+  const nextDay = shift === "night" && now.getHours() < 12, date = nextDay ? ctShiftDate(isoDate(now), -1) : isoDate(now);
   return attSaveRecord({ managerId, shift, date, mode: "time", status: "auto", checkIn: time, checkOut: "",
-    inNextDay: nextDay, outNextDay: nextDay || end < start, breakMinutes: policy.breakMinutes, policy });
+    inNextDay: nextDay, outNextDay: nextDay || shift === "night", breakMinutes: 0, policy });
 }
 function attClockOut(id, now) {
   now = now || new Date(); const r = attRecord(id);
@@ -8423,7 +8464,10 @@ function attSummary(records) {
     s.credit += c.credit; s.workedMinutes += c.workedMinutes; s.overtimeMinutes += c.overtimeMinutes;
     s.lateMinutes += c.lateMinutes; s.earlyMinutes += c.earlyMinutes; s.lateCount += +(c.lateMinutes > 0); s.earlyCount += +(c.earlyMinutes > 0);
     if (r.mode === "time") s.timeRecords++; else s.tapRecords++;
-  }); return s;
+  });
+  s.attendedDays = attVisits(records).length;
+  s.sundayCount = attSundayVisits(records).length;
+  return s;
 }
 function attRange(kind, date, from, to) {
   if (!attDate(date)) date = isoDate(new Date());
@@ -8450,7 +8494,8 @@ function attReport(managerId, from, to, shift) {
       rows.push({ date, shift: shift === "all" ? manager.defaultShift : shift, status: scheduled ? "unmarked" : "notscheduled", record: null, calc: null });
     } else list.sort((a, b) => a.shift.localeCompare(b.shift)).forEach((r) => rows.push({ date, shift: r.shift, status: attCalculate(r).status, record: r, calc: attCalculate(r) }));
   }
-  return { manager: syncClone(manager), from, to, shift, rows, summary: { ...attSummary(records), unmarked, notScheduled, calendarDays: attDateDiff(from, to) + 1 },
+  const sundays = attSundayVisits(att().records.filter((r) => r.managerId === managerId && (shift === "all" || r.shift === shift)), from, to);
+  return { manager: syncClone(manager), from, to, shift, rows, sundays, summary: { ...attSummary(records), sundayCount: sundays.length, attendedDays: attVisits(att().records.filter((r) => r.managerId === managerId && (shift === "all" || r.shift === shift)), from, to).length, unmarked, notScheduled, calendarDays: attDateDiff(from, to) + 1 },
     history: att().history.filter((h) => h.managerId === managerId && h.date >= from && h.date <= to).slice().sort((a, b) => a.at - b.at) };
 }
 
@@ -8577,11 +8622,10 @@ function attStat(label, value, note, icon) {
 }
 function attKpis() {
   const u = attUI(), rows = attFilteredRecords(), s = attSummary(rows), all = att().managers.filter((m) => m.active).length;
-  const complete = s.marks - s.pending, attended = s.present + s.half;
   return '<div class="att-kpis">' + attStat("Active managers", all, att().managers.length + " profiles · " + s.marks + " marks in range", "people") +
     attStat("Attendance credits", s.credit.toLocaleString("en-IN"), s.present + " present · " + s.half + " half · " + s.absent + " absent", "check") +
-    attStat("Working hours", attDuration(s.workedMinutes), s.timeRecords + " time entries · tap marks do not add hours", "clock") +
-    attStat("Overtime", attDuration(s.overtimeMinutes), s.lateCount + " late · " + s.earlyCount + " early · " + s.pending + " open", "report") + '</div>';
+    attStat("Actual working hours", attDuration(s.workedMinutes), s.timeRecords + " time entries · tap marks do not add hours", "clock") +
+    attStat("Open shifts", s.pending, "Actual in → out hours · no fixed daily target", "report") + '</div>';
 }
 function attFilterHTML() {
   const u = attUI(), board = u.tab === "board", calendar = u.tab === "calendar", managers = u.tab === "managers", history = u.tab === "history";
@@ -8594,9 +8638,9 @@ function attFilterHTML() {
     (!managers ? f("Manager", '<select class="inp" id="attManagerFilter" aria-label="Filter manager"><option value="all">All managers</option>' + attManagersSorted().map((m) => '<option value="' + esc(m.id) + '"' + (u.manager === m.id ? " selected" : "") + '>' + esc(attLabel(m) + (!m.active ? " (inactive)" : "")) + '</option>').join("") + '</select>') :
       f("Profiles", '<select class="inp" id="attManagerState" aria-label="Manager profile status">' + options([["active", "Active managers"], ["inactive", "Inactive managers"], ["all", "All profiles"]], u.managerState) + '</select>')) +
     (!managers ? f("Shift", '<select class="inp" id="attShiftFilter" aria-label="Filter shift">' + options([["all", "All shifts"], ["day", "Day shift"], ["night", "Night shift"]], u.shift) + '</select>') : "") +
-    (!managers && !history ? f("Status", '<select class="inp" id="attStatusFilter" aria-label="Filter attendance status">' + options([["all", "All statuses"], ...Object.entries(ATT_STATUS).filter(([k]) => k !== "notscheduled").map(([k, v]) => [k, v.label])], u.status) + '</select>') : "") +
+    (!managers && !history && u.tab !== "sundays" ? f("Status", '<select class="inp" id="attStatusFilter" aria-label="Filter attendance status">' + options([["all", "All statuses"], ...Object.entries(ATT_STATUS).filter(([k]) => k !== "notscheduled").map(([k, v]) => [k, v.label])], u.status) + '</select>') : "") +
     f("Search", '<input class="inp" type="search" id="attSearch" placeholder="' + (managers ? "Name, code, department…" : "Manager, code, note…") + '" aria-label="Search attendance" value="' + esc(u.q) + '">', "att-search") +
-    (!board && !calendar && !history ? f("Sort", '<select class="inp" id="attSort" aria-label="Sort attendance">' + options(managers ? [["name", "Name A–Z"], ["newest", "Recently added"]] : [["newest", "Newest first"], ["oldest", "Oldest first"], ["name", "Manager name"], ["hours", "Most hours"]], u.sort) + '</select>', "att-sort-field") : "") +
+    (!board && !calendar && !history && u.tab !== "sundays" ? f("Sort", '<select class="inp" id="attSort" aria-label="Sort attendance">' + options(managers ? [["name", "Name A–Z"], ["newest", "Recently added"]] : [["newest", "Newest first"], ["oldest", "Oldest first"], ["name", "Manager name"], ["hours", "Most hours"]], u.sort) + '</select>', "att-sort-field") : "") +
     attBtn("Reset", "resetFilters", "", "sm") + '</div>';
 }
 function viewAttendance() {
@@ -8607,13 +8651,13 @@ function viewAttendance() {
     '<div class="att-hero"><div><div class="att-eyebrow">' + attIcon("calendar") + ' PEOPLE &amp; OPERATIONS</div><h3>A little tap. A clear record.</h3><p>Manager attendance, Day &amp; Night shifts, and hours that add up. All in your Hisaab panel.</p></div><div class="att-actions">' +
     attBtn(attIcon("download") + " Individual report", "export", "", "") + attBtn("+ Add manager", "managerAdd", "", "primary") + '</div></div>' +
     attKpis() +
-    '<div class="att-navline"><div class="att-tabs" role="tablist" aria-label="Attendance sections">' + [["board", "Daily board"], ["calendar", "Calendar"], ["records", "Ledger & reports"], ["managers", "Managers"], ["history", "History"]].map(([v, t]) => '<button type="button" role="tab" aria-selected="' + (u.tab === v) + '" data-att-act="tab" data-value="' + v + '">' + t + '</button>').join("") + '</div>' +
+    '<div class="att-navline"><div class="att-tabs" role="tablist" aria-label="Attendance sections">' + [["board", "Daily board"], ["calendar", "Calendar"], ["records", "Ledger & reports"], ["sundays", "Sundays"], ["managers", "Managers"], ["history", "History"]].map(([v, t]) => '<button type="button" role="tab" aria-selected="' + (u.tab === v) + '" data-att-act="tab" data-value="' + v + '">' + t + '</button>').join("") + '</div>' +
     (u.tab === "board" ? '<div class="att-mode" role="group" aria-label="Attendance entry mode"><span>Entry mode</span><button type="button" aria-pressed="' + (u.mode === "tap") + '" data-att-act="mode" data-value="tap">Tap mode</button><button type="button" aria-pressed="' + (u.mode === "time") + '" data-att-act="mode" data-value="time">Time mode</button></div>' :
-      '<div class="att-actions">' + attBtn(attIcon("settings") + " Shift rules", "rules", "", "sm") + attBtn("+ Mark attendance", "recordAdd", "", "sm primary") + '</div>') + '</div>' +
+      '<div class="att-actions">' + attBtn(attIcon("settings") + " Attendance settings", "rules", "", "sm") + attBtn("+ Mark attendance", "recordAdd", "", "sm primary") + '</div>') + '</div>' +
     attFilterHTML() +
     (range.error ? '<div class="att-form-error" role="alert">' + esc(range.error) + '</div>' : "") +
-    (u.tab === "board" ? attBoardHTML() : u.tab === "calendar" ? attCalendarHTML() : u.tab === "managers" ? attManagersHTML() : u.tab === "history" ? attHistoryHTML() : attLedgerHTML()) +
-    '<div class="att-footnote"><span>' + attIcon("check") + ' Saved automatically on this device · included in JSON backup &amp; configured cloud sync</span><span>Attendance credits are per shift. Salary records are never changed.</span></div></section>';
+    (u.tab === "board" ? attBoardHTML() : u.tab === "calendar" ? attCalendarHTML() : u.tab === "managers" ? attManagersHTML() : u.tab === "history" ? attHistoryHTML() : u.tab === "sundays" ? attSundaysView() : attLedgerHTML()) +
+    '<div class="att-footnote"><span>' + attIcon("check") + ' Saved automatically on this device · included in JSON backup &amp; configured cloud sync</span><span>Full in → out hours, including old records. No deductions. Salary records are unchanged.</span></div></section>';
 }
 function attBoardCards() {
   const u = attUI(), q = u.q.trim().toLowerCase(), date = u.date, list = [];
@@ -8637,13 +8681,12 @@ function attBoardHTML() {
     attBtn("Bulk mark", "bulk", "", "sm") + attBtn("+ Mark", "recordAdd", "", "sm primary") + '</div></div>' +
     (cards.length ? '<div class="att-grid">' + cards.slice(u.page * 24, (u.page + 1) * 24).map(({ m, r, c, shift, status }) => {
       const attrs = 'data-mid="' + esc(m.id) + '" data-shift="' + shift + '"';
-      const schedule = r ? r.policy : att().settings;
       return '<article class="att-person" data-att-manager="' + esc(m.id) + '"><div class="att-person-top"><div class="att-avatar">' + esc(attInitials(m.name)) + '</div><div style="min-width:0"><div class="att-person-name">' + esc(m.name) + '</div><div class="att-person-sub">' + esc(m.code + (m.department ? " · " + m.department : "") + (!m.active ? " · Inactive" : "")) + '</div></div>' + attStatusHTML(status) + '</div>' +
-        '<div class="att-person-meta">' + attShiftHTML(shift) + '<span class="att-schedule">' + esc(attScheduleLabel(schedule, shift)) + '</span></div>' +
+        '<div class="att-person-meta">' + attShiftHTML(shift) + '<span class="att-schedule">' + "Flexible hours · actual times only" + '</span></div>' +
         (r && r.mode === "time" ? '<div class="att-person-time"><span>Check-in<b>' + attClockParts(r.checkIn).time + '</b><small>' + attWhenLabel(r.checkIn, r.inNextDay) + '</small></span><span>Check-out<b>' + (r.checkOut ? attClockParts(r.checkOut).time : "Open") + '</b><small>' + (r.checkOut ? attWhenLabel(r.checkOut, r.outNextDay) : "Check-out pending") + '</small></span><span>Worked<b>' + (c.open ? "In progress" : attDuration(c.workedMinutes)) + '</b></span></div>' : "") +
         (u.mode === "tap" ? '<div class="att-tap" role="group" aria-label="Mark ' + esc(m.name) + '">' + [["present", "Present"], ["absent", "Absent"], ["half", "Half day"], ["leave", "Leave"]].map(([st, label]) => '<button type="button" class="' + (r && r.mode === "tap" && r.status === st ? "on" : "") + '" data-att-act="tap" ' + attrs + ' data-value="' + st + '" aria-pressed="' + (!!r && r.mode === "tap" && r.status === st) + '">' + label + '</button>').join("") + '</div>' :
           '<div class="att-actions" style="margin-top:12px">' + (!r ? (u.date === isoDate(new Date()) ? attBtn(attIcon("clock") + " Check in now", "clockIn", attrs, "sm primary") : "") + attBtn("Enter times", "recordFor", attrs, "sm") : r.mode === "time" && !r.checkOut ? attBtn("Check out now", "clockOut", 'data-id="' + esc(r.id) + '"', "sm primary") + attBtn("Edit times", "recordEdit", 'data-id="' + esc(r.id) + '"', "sm") : attBtn("Edit record", "recordEdit", 'data-id="' + esc(r.id) + '"', "sm")) + '</div>') +
-        '<div class="att-person-meta"><span>' + (c ? (c.lateMinutes ? c.lateMinutes + "m late after grace" : c.overtimeMinutes ? attDuration(c.overtimeMinutes) + " overtime" : r.mode === "tap" ? c.credit + " credit · tap mode" : c.open ? "Clock-out pending" : c.credit + " attendance credit") : "Ready to mark") + '</span><div class="att-actions">' +
+        '<div class="att-person-meta"><span>' + (c ? (r.mode === "tap" ? c.credit + " credit · tap mode" : c.open ? "Clock-out pending" : c.credit + " attendance credit") : "Ready to mark") + '</span><div class="att-actions">' +
         attBtn(r ? "Edit" : "More", r ? "recordEdit" : "recordFor", r ? 'data-id="' + esc(r.id) + '"' : attrs, "ghost sm") + attBtn("Ledger →", "managerLedger", 'data-mid="' + esc(m.id) + '"', "ghost sm") + '</div></div></article>';
     }).join("") + '</div>' + (cards.length > 24 ? pager : "") : attEmpty(att().managers.length ? "No managers in this view" : "Your team starts here", att().managers.length ? "Try another shift, manager or date. Use Mark attendance to record a substitute shift; an unmarked day is never counted as absent." : "Add your managers, choose their Day or Night shift, and mark attendance with a tap or precise check-in and check-out times.", att().managers.length ? "recordAdd" : "managerAdd", att().managers.length ? "+ Mark attendance" : "+ Add your first manager", "people")) + '</div>' + attSideHTML() + '</div>';
 }
@@ -8654,7 +8697,7 @@ function attSideHTML() {
   const recent = att().history.slice().sort((a, b) => b.at - a.at).slice(0, 3);
   return '<aside class="att-side"><div class="att-panel" style="margin-bottom:14px"><div class="att-panel-head"><h4>Shift pulse</h4>' + attIcon("clock") + '</div><div class="att-panel-body"><div class="att-pulse-row"><div class="att-pulse-top"><span>Roster marked</span><b>' + percent + '%</b></div><div class="att-progress"><i style="width:' + percent + '%"></i></div><div class="att-pulse-legend">' + marked + ' marked / ' + cards.length + ' visible shifts</div></div>' +
     item("Present", s.present, "var(--ok)") + item("Absent", s.absent, "var(--bad)") + item("Half day / leave", s.half + s.leave, "var(--warn)") +
-    '<div class="att-note"><b>Simple 1–12 time.</b><br>Choose same day morning/night or next day morning/night. Same day is the selected attendance date. Tap mode tracks credits, not worked hours.</div><div style="margin-top:12px">' + attBtn(attIcon("settings") + " Shift & credit rules", "rules", "", "sm") + '</div></div></div>' +
+    '<div class="att-note"><b>Simple 1–12 time.</b><br>Choose same day morning/night or next day morning/night. Same day is the selected attendance date. Tap mode tracks credits, not worked hours.</div><div style="margin-top:12px">' + attBtn(attIcon("settings") + " Attendance settings", "rules", "", "sm") + '</div></div></div>' +
     '<div class="att-panel"><div class="att-panel-head"><h4>Recent activity</h4>' + attIcon("history") + '</div><div class="att-panel-body"><div class="att-mini-list">' + (recent.length ? recent.map((h) => '<div class="att-mini-item"><div>' + esc(h.text) + '<small>' + esc(attStamp(h.at)) + '</small></div></div>').join("") : '<span class="att-mini">Your first saved action will appear here.</span>') + '</div><div style="margin-top:16px">' + attBtn("View history →", "tab", 'data-value="history"', "ghost sm") + '</div></div></div></aside>';
 }
 function attCalendarHTML() {
@@ -8687,10 +8730,11 @@ function attLedgerHTML() {
   }
   const pager = attPager(rows.length, 40), profile = report && report.manager;
   return (profile ? '<div class="att-profile" style="margin-bottom:16px"><div class="att-profile-main"><div class="att-avatar">' + esc(attInitials(profile.name)) + '</div><div><h4>' + esc(profile.name) + '</h4><p>' + esc(profile.code + (profile.department ? " · " + profile.department : "") + (profile.phone ? " · " + profile.phone : "")) + '</p></div></div><div class="att-actions">' + attBtn("Edit profile", "managerEdit", 'data-mid="' + esc(profile.id) + '"', "sm") + attBtn(attIcon("download") + " Download report", "export", 'data-mid="' + esc(profile.id) + '"', "primary sm") + '</div><div class="att-note" style="width:100%">' + report.summary.unmarked + ' unmarked calendar days · ' + report.summary.pending + ' open shifts · ' + report.summary.credit + ' attendance credits. Missing dates are shown explicitly, never converted into absences. Two recorded shifts can earn two credits on one date.</div></div>' : "") +
+    (report ? '<div style="margin-bottom:16px">' + attSundayHTML(report.sundays, true) + '</div>' : '') +
     '<div class="att-panel"><div class="att-panel-head"><div><h4>' + (profile ? "Individual attendance ledger" : "Attendance ledger") + '</h4><p>' + esc(range.from + " → " + range.to) + ' · ' + (profile ? "including unmarked dates" : "saved records only; choose a manager for a day-by-day ledger") + '</p></div><div class="att-actions">' + attBtn("Bulk mark", "bulk", "", "sm") + attBtn("+ Mark attendance", "recordAdd", "", "sm primary") + '</div></div>' +
-    (rows.length ? '<div class="twrap"><table class="att-table"><thead><tr><th>Date</th><th>Manager</th><th>Shift</th><th>Status</th><th>In → out</th><th class="num">Worked</th><th class="num">Overtime</th><th class="num">Late / early</th><th class="num">Credits</th><th>Actions</th></tr></thead><tbody>' + rows.slice(u.page * 40, (u.page + 1) * 40).map((row) => {
+    (rows.length ? '<div class="twrap"><table class="att-table"><thead><tr><th>Date</th><th>Manager</th><th>Shift</th><th>Status</th><th>In → out</th><th class="num">Actual hours</th><th class="num">Credits</th><th>Actions</th></tr></thead><tbody>' + rows.slice(u.page * 40, (u.page + 1) * 40).map((row) => {
       const r = row.record, c = row.calc, m = r ? attManager(r.managerId) : profile;
-      return '<tr><td>' + esc(row.date) + '</td><td class="att-namecell"><b>' + esc(m ? m.name : "Manager") + '</b><small>' + esc(m ? m.code + (r && r.note ? " · " + r.note.slice(0, 75) : "") : "") + '</small></td><td>' + attShiftHTML(row.shift) + '</td><td>' + attStatusHTML(row.status) + '</td><td>' + (r && r.mode === "time" ? '<div class="att-ledger-clock">' + attClockHTML(r.checkIn, r.inNextDay) + '<span class="muted">→</span>' + attClockHTML(r.checkOut, r.outNextDay) + '</div>'  : r ? '<span class="muted">Tap mark</span>' : '—') + '</td><td class="num">' + (r && r.mode === "time" && !c.open ? attDuration(c.workedMinutes) : '—') + '</td><td class="num">' + (c && c.overtimeMinutes ? attDuration(c.overtimeMinutes) : '—') + '</td><td class="num">' + (c ? c.lateMinutes + 'm / ' + c.earlyMinutes + 'm' : '—') + '</td><td class="num">' + (c ? c.credit : '—') + '</td><td><div class="att-actions">' + (r ? attBtn("Edit", "recordEdit", 'data-id="' + esc(r.id) + '"', "sm") + attBtn("History", "recordHistory", 'data-mid="' + esc(m.id) + '" data-date="' + r.date + '"', "sm ghost") : row.status === "unmarked" ? attBtn("Mark", "recordFor", 'data-mid="' + esc(m.id) + '" data-date="' + row.date + '" data-shift="' + row.shift + '"', "sm") : '—') + '</div></td></tr>';
+      return '<tr><td>' + esc(row.date) + '</td><td class="att-namecell"><b>' + esc(m ? m.name : "Manager") + '</b><small>' + esc(m ? m.code + (r && r.note ? " · " + r.note.slice(0, 75) : "") : "") + '</small></td><td>' + attShiftHTML(row.shift) + '</td><td>' + attStatusHTML(row.status) + '</td><td>' + (r && r.mode === "time" ? '<div class="att-ledger-clock">' + attClockHTML(r.checkIn, r.inNextDay) + '<span class="muted">→</span>' + attClockHTML(r.checkOut, r.outNextDay) + '</div>'  : r ? '<span class="muted">Tap mark</span>' : '—') + '</td><td class="num">' + (r && r.mode === "time" && !c.open ? attDuration(c.workedMinutes) : '—') + '</td><td class="num">' + (c ? c.credit : '—') + '</td><td><div class="att-actions">' + (r ? attBtn("Edit", "recordEdit", 'data-id="' + esc(r.id) + '"', "sm") + attBtn("History", "recordHistory", 'data-mid="' + esc(m.id) + '" data-date="' + r.date + '"', "sm ghost") : row.status === "unmarked" ? attBtn("Mark", "recordFor", 'data-mid="' + esc(m.id) + '" data-date="' + row.date + '" data-shift="' + row.shift + '"', "sm") : '—') + '</div></td></tr>';
     }).join("") + '</tbody></table></div>' + pager : attEmpty("No attendance in this range", "Change the date range or filters, or save your first attendance record. Choose one manager to see unmarked days as well.", "recordAdd", "+ Mark attendance", "report")) + '</div>';
 }
 function attManagersHTML() {
@@ -8712,10 +8756,10 @@ function attHistoryHTML() {
 }
 function attDashboardCard(y, m) {
   const records = att().records.filter((r) => r.date >= monthFirst(y, m) && r.date <= monthLast(y, m)), s = attSummary(records), active = att().managers.filter((m) => m.active).length;
-  return '<div class="card att-dashboard"><div class="card-h"><div><h3>' + attIcon("calendar") + ' Manager attendance</h3><div class="sub">' + monthLabel(y, m) + ' · Day &amp; Night · separate from worker salaries</div></div>' + attBtn("Open Attendance →", "open", "", "sm") + '</div><div class="strip"><div><small>Managers</small><b>' + active + '</b><div class="sub">active profiles</div></div><div><small>Attendance credits</small><b>' + s.credit + '</b><div class="sub">' + s.marks + ' shift records</div></div><div><small>Worked</small><b style="font-size:18px">' + attDuration(s.workedMinutes) + '</b><div class="sub">time-mode entries</div></div><div><small>Overtime</small><b style="font-size:18px">' + attDuration(s.overtimeMinutes) + '</b><div class="sub">' + s.lateCount + ' late · ' + s.pending + ' open</div></div></div></div>';
+  return '<div class="card att-dashboard"><div class="card-h"><div><h3>' + attIcon("calendar") + ' Manager attendance</h3><div class="sub">' + monthLabel(y, m) + ' · Day &amp; Night · separate from worker salaries</div></div>' + attBtn("Open Attendance →", "open", "", "sm") + '</div><div class="strip"><div><small>Managers</small><b>' + active + '</b><div class="sub">active profiles</div></div><div><small>Attendance credits</small><b>' + s.credit + '</b><div class="sub">' + s.marks + ' shift records</div></div><div><small>Worked</small><b style="font-size:18px">' + attDuration(s.workedMinutes) + '</b><div class="sub">time-mode entries</div></div><div><small>Open shifts</small><b style="font-size:18px">' + s.pending + '</b><div class="sub">no fixed daily hours</div></div></div></div>';
 }
 function attSettingsCard() {
-  return '<div class="card" style="margin-top:14px"><div class="card-h"><div><h3>' + attIcon("calendar") + ' Manager attendance</h3><div class="sub">Day / Night schedules, breaks, grace, half-day targets &amp; attendance credits</div></div>' + attBtn("Configure shift rules", "rules", "", "sm") + '</div><div class="card-b"><div class="att-note">Included in the same automatic save, cloud sync, JSON backups and safety copies as your other records. Attendance does not update salary calculations. Individual PDF and genuine Excel workbooks are available inside Attendance.</div></div></div>';
+  return '<div class="card" style="margin-top:14px"><div class="card-h"><div><h3>' + attIcon("calendar") + ' Manager attendance</h3><div class="sub">Flexible actual hours, Sunday visits &amp; manual attendance credits</div></div>' + attBtn("Attendance settings", "rules", "", "sm") + '</div><div class="card-b"><div class="att-note">Included in the same automatic save, cloud sync, JSON backups and safety copies as your other records. Attendance does not update salary calculations. Individual PDF and genuine Excel workbooks are available inside Attendance.</div></div></div>';
 }
 
 /* --------------------- Attendance forms & delegated events --------------------- */
@@ -8774,11 +8818,11 @@ function attSetTimeControl(id, value, nextDay) {
   $('#' + id).value = part.time;
   $('#' + id + 'When').value = record ? (nextDay ? "next-" : "same-") + part.period : part.period;
 }
-function attUseShiftTimes() {
+function attSuggestPeriods() {
   if (!attEditor || attEditor.kind !== "record") return;
-  const p = attEditor.policy, shift = $("#attRShift").value;
-  attSetTimeControl("attRIn", p[shift + "Start"], false);
-  attSetTimeControl("attROut", p[shift + "End"], attMinutes(p[shift + "End"]) < attMinutes(p[shift + "Start"]));
+  const night = $("#attRShift").value === "night";
+  $("#attRInWhen").value = night ? "same-night" : "same-morning";
+  $("#attROutWhen").value = night ? "next-morning" : "same-night";
 }
 function attTimeJourney() {
   const node = $("#attTimeJourney"); if (!node) return;
@@ -8795,28 +8839,26 @@ function attOpenRecord(id, managerId, date, shift) {
   const m = attManager(r ? r.managerId : managerId || (u.manager !== "all" ? u.manager : ""));
   if (!r && !att().managers.some((x) => x.active)) { toast("Add an active manager first", "bad"); attOpenManager(); return; }
   shift = r ? r.shift : shift || (m ? m.defaultShift : u.shift === "night" ? "night" : "day"); date = r ? r.date : date || u.date;
-  const p = r ? r.policy : attPolicy(shift), mode = r ? r.mode : u.mode, status = r && r.mode === "tap" ? r.status : "present", overnight = attMinutes(p[shift + "End"]) < attMinutes(p[shift + "Start"]);
+  const p = r ? r.policy : attPolicy(shift), mode = r ? r.mode : u.mode, status = r && r.mode === "tap" ? r.status : "present";
   attDialog("attRecordForm", r ? "Edit attendance" : "Mark attendance", "Use a 1–12 clock. Choose same/next day morning or night for each time — no conversion needed.",
     '<div class="att-form-grid">' + attField("Manager", attManagerPickHTML("attRManager", m && m.id, !!r), "wide", "Search by name or code; choose the matching profile.") +
     attField("Attendance date · same day", attInput("attRDate", date, 'type="date" required')) + attField("Shift", attShiftSelect("attRShift", shift)) +
     '<div class="wide att-form-rule"><div class="att-mode" role="group" aria-label="Record entry mode"><button type="button" data-att-act="recordMode" data-value="tap" aria-pressed="' + (mode === "tap") + '">Tap mode</button><button type="button" data-att-act="recordMode" data-value="time" aria-pressed="' + (mode === "time") + '">Time mode</button></div><span class="att-mini">Tap = status &amp; credits · Time = actual hours</span></div>' +
     '<div class="wide" id="attTapFields"' + (mode === "time" ? ' hidden' : '') + '>' + attField("Attendance status", attStatusSelect("attRStatus", status)) + '</div>' +
     '<div class="wide" id="attTimeFields"' + (mode === "tap" ? ' hidden' : '') + '><div class="att-form-grid">' +
-      '<div class="wide att-time-guide"><span><b>Time, made simple.</b> Type 9 or 9:30, then choose the day &amp; morning/night.</span>' + attBtn("Use shift timings", "useShiftTimes", "", "sm") + '</div>' +
-      attField("Check-in", attTimeControl("attRIn", r && r.mode === "time" ? r.checkIn : p[shift + "Start"], r && r.inNextDay), "wide-mobile att-clock-field") +
-      attField("Check-out", attTimeControl("attROut", r && r.mode === "time" ? r.checkOut : p[shift + "End"], r && r.mode === "time" ? r.outNextDay : overnight), "wide-mobile att-clock-field", "Leave blank if the manager has not checked out yet.") +
+      '<div class="wide att-time-guide"><span><b>No fixed working hours.</b> Enter actual arrival and departure. Hours = out − in, with no deductions.</span></div>' +
+      attField("Check-in", attTimeControl("attRIn", r && r.mode === "time" ? r.checkIn : "", r && r.inNextDay), "wide-mobile att-clock-field") +
+      attField("Check-out", attTimeControl("attROut", r && r.mode === "time" ? r.checkOut : "", r && r.mode === "time" ? r.outNextDay : shift === "night"), "wide-mobile att-clock-field", "Leave blank if the manager has not checked out yet.") +
       '<div class="wide att-time-journey" id="attTimeJourney" aria-live="polite"></div>' +
-      attField("Unpaid break (minutes)", attInput("attRBreak", r && r.mode === "time" ? r.breakMinutes : p.breakMinutes, 'type="number" min="0" max="1439" step="1"'), "wide-mobile", "This break is subtracted once from working time.") +
       '<details class="att-note att-time-help"><summary>Morning / night &amp; 12 o’clock</summary><p>Morning = midnight to before noon. Night = noon, afternoon, evening and night.<br><b>12 morning = midnight · 12 night = noon.</b><br>Same day = the selected attendance date; next day = the date after it.</p></details></div></div>' +
     '<div class="wide"><div id="attCalcPreview" class="att-calc-preview" aria-live="polite"></div></div>' +
     attField("Note (optional)", '<textarea class="inp" id="attRNote" maxlength="600" rows="2" placeholder="Reason, adjustment or handover note">' + esc(r && r.note || "") + '</textarea>', "wide") +
-    '<details class="wide att-note att-time-help"><summary>Shift rules used for this entry</summary><div id="attRuleNote" style="margin-top:8px"></div></details>' +
-    (r ? '<label class="wide" style="font-size:11px;display:flex;align-items:center;gap:8px"><input type="checkbox" id="attRLatest"> Recalculate this record with today’s shift rules (old rules kept unless checked)</label>' : '') + '</div>',
+    '<div class="wide att-note" id="attRuleNote">No fixed daily target. Half day is a manual Tap mark; no automatic overtime or late/early classification.</div>' +
+    (r ? '<label class="wide" style="font-size:11px;display:flex;align-items:center;gap:8px"><input type="checkbox" id="attRLatest"> Use current leave / holiday credit settings for this record</label>' : '') + '</div>',
     (r ? '<div class="left">' + attBtn("Delete record…", "recordDelete", 'data-id="' + esc(r.id) + '"', "danger sm") + '</div>' : '') + '<button type="button" class="btn" data-act="closeModal">Cancel</button><button type="submit" class="btn primary">Save attendance</button>', 700);
   attEditor = { kind: "record", id: r && r.id || "", original: r && syncStable(r), scope: Cloud.scope, mode, policy: syncClone(p), savedPolicy: syncClone(p) };
-  /* An open shift has no saved out-period: suggest its scheduled end period,
-     but do not fill a check-out or change its saved same/next-day offset. */
-  if (r && r.mode === "time" && !r.checkOut) $("#attROutWhen").value = (r.outNextDay ? "next-" : "same-") + attClockParts(p[shift + "End"]).period;
+  if (!r || r.mode !== "time") attSuggestPeriods();
+  else if (!r.checkOut) $("#attROutWhen").value = (r.outNextDay ? "next-" : "same-") + (shift === "night" ? "morning" : "night");
   attSetRecordMode(mode); attPreviewRecord(); $("#attRManager")?.focus();
 }
 function attReadRecord() {
@@ -8827,7 +8869,7 @@ function attReadRecord() {
   return { id: attEditor.id || undefined, managerId: m.id, date: $("#attRDate").value, shift: $("#attRShift").value,
     mode, status: mode === "tap" ? $("#attRStatus").value : "auto", checkIn: start.time, checkOut: end.time,
     inNextDay: start.nextDay, outNextDay: end.nextDay,
-    breakMinutes: mode === "time" ? Number($("#attRBreak").value) : 0, note: $("#attRNote").value, policy: syncClone(attEditor.policy) };
+    note: $("#attRNote").value, policy: syncClone(attEditor.policy) };
 }
 function attSetRecordMode(mode) {
   if (!attEditor || attEditor.kind !== "record") return;
@@ -8840,28 +8882,19 @@ function attSetRecordMode(mode) {
 }
 function attPreviewRecord() {
   if (!attEditor || attEditor.kind !== "record" || !$("#attCalcPreview")) return;
-  const p = attEditor.policy, shift = $("#attRShift").value;
   attTimeJourney();
-  $("#attRuleNote").innerHTML = '<b>' + (attEditor.id && !$("#attRLatest").checked ? "Saved rule snapshot" : "Current shift rules") + ':</b> ' + (shift === "night" ? "Night" : "Day") + ' · ' + esc(attScheduleLabel(p, shift)) + ' · full ' + attDuration(p.standardMinutes) + ' · half ' + attDuration(p.halfDayMinutes) + ' · late grace ' + p.lateGraceMinutes + 'm · early grace ' + p.earlyGraceMinutes + 'm. Credits are not payroll.';
   try {
     const r = attReadRecord(), c = attCalculate(r);
     if (!c.valid) throw new Error(c.error);
-    $("#attCalcPreview").innerHTML = '<div><small>Status / credits</small><b>' + esc(ATT_STATUS[c.status].label) + ' · ' + c.credit + '</b></div><div><small>Worked</small><b>' + (r.mode === "tap" ? "Not timed" : c.open ? "Open shift" : attDuration(c.workedMinutes)) + '</b></div><div><small>Overtime</small><b>' + attDuration(c.overtimeMinutes) + '</b></div><div><small>Late / early, after grace</small><b>' + c.lateMinutes + 'm / ' + c.earlyMinutes + 'm</b></div>';
+    $("#attCalcPreview").innerHTML = '<div><small>Status / credits</small><b>' + esc(ATT_STATUS[c.status].label) + ' · ' + c.credit + '</b></div><div><small>Actual working time</small><b>' + (r.mode === "tap" ? "Not timed" : c.open ? "Open shift" : attDuration(c.workedMinutes)) + '</b></div>';
   } catch (e) { $("#attCalcPreview").innerHTML = '<div style="grid-column:1/-1;font-size:11px">' + esc(e.message) + '</div>'; }
 }
 function attOpenRules() {
   const p = att().settings;
-  const clockField = (id, title, value) => attField(title, attTimeControl(id, value, false, title), "wide-mobile");
-  attDialog("attRulesForm", "Shift & attendance rules", "Use a 1–12 clock with morning/night. An overnight shift ends the next day automatically; saved records keep their own rules.",
-    '<div class="att-section-label">Scheduled shifts</div><div class="att-form-grid">' + clockField("attDayStart", "Day · start", p.dayStart) + clockField("attDayEnd", "Day · end", p.dayEnd) + clockField("attNightStart", "Night · start", p.nightStart) + clockField("attNightEnd", "Night · end", p.nightEnd) +
-    '<div class="wide att-note">Morning = midnight to before noon. Night includes noon, afternoon and evening. <b>12 morning = midnight · 12 night = noon.</b></div>' +
-    '<div class="wide att-section-label" style="margin:4px 0 -5px">Calculation targets</div>' +
-    attField("Full-day target (hours)", attInput("attStandard", p.standardMinutes / 60, 'type="number" min="0.25" max="24" step="0.25" required')) + attField("Half-day target (hours)", attInput("attHalf", p.halfDayMinutes / 60, 'type="number" min="0.25" max="24" step="0.25" required')) +
-    attField("Default unpaid break (minutes)", attInput("attBreak", p.breakMinutes, 'type="number" min="0" max="1439" step="1" required'), "wide-mobile", "Override for an individual time record if needed.") +
-    attField("Late grace (minutes)", attInput("attLateGrace", p.lateGraceMinutes, 'type="number" min="0" max="1440" step="1" required')) + attField("Early-exit grace (minutes)", attInput("attEarlyGrace", p.earlyGraceMinutes, 'type="number" min="0" max="1440" step="1" required')) +
-    '<div class="wide att-section-label" style="margin:4px 0 -5px">Attendance credits for time off</div><div class="wide att-actions" style="gap:18px">' + [["attPaidLeave", "paidLeave", "Leave = 1 credit"], ["attPaidHoliday", "paidHoliday", "Holiday = 1 credit"], ["attPaidOff", "paidWeekOff", "Week off = 1 credit"]].map(([id, key, label]) => '<label style="font-size:11px;display:flex;gap:7px;align-items:center"><input type="checkbox" id="' + id + '"' + (p[key] ? ' checked' : '') + '>' + label + '</label>').join("") + '</div></div>' +
-    '<div class="att-note" style="margin-top:17px"><b>How it works:</b> Tap Present = 1 credit, Half day = 0.5, Absent = 0. Time mode: net hours ≥ full-day target = Present; ≥ half-day target = Half day; less = Short hours (0 credits). Overtime = net hours above the full target. Late/early minutes are the excess <b>after</b> the respective grace. No holidays or absences are created automatically. These rules never change salaries or past records unless you explicitly recalculate an edited record.</div>',
-    '<button type="button" class="btn" data-act="closeModal">Cancel</button><button type="submit" class="btn primary">Save shift rules</button>', 690);
+  attDialog("attRulesForm", "Attendance settings", "Working hours are not fixed. Enter actual check-in and check-out; no daily target or automatic deductions.",
+    '<div class="att-note"><b>Actual working time = check-out − check-in.</b><br>Any completed valid time entry is Present. Half day is a manual Tap mark. No automatic overtime, late or early-exit classification.</div>' +
+    '<div class="att-section-label" style="margin-top:20px">Manual time-off credits</div><div class="att-actions" style="gap:18px">' + [["attPaidLeave", "paidLeave", "Leave = 1 credit"], ["attPaidHoliday", "paidHoliday", "Holiday = 1 credit"], ["attPaidOff", "paidWeekOff", "Week off = 1 credit"]].map(([id, key, label]) => '<label style="font-size:12px;display:flex;gap:7px;align-items:center"><input type="checkbox" id="' + id + '"' + (p[key] ? ' checked' : '') + '>' + label + '</label>').join("") + '</div><div class="att-note" style="margin-top:18px">Credits are per saved shift, not payroll days. Existing records keep their saved credit switches. Sunday visits are counted separately from leave / holiday credits. No salary calculations are changed.</div>',
+    '<button type="button" class="btn" data-act="closeModal">Cancel</button><button type="submit" class="btn primary">Save settings</button>', 620);
   attEditor = { kind: "rules", scope: Cloud.scope };
 }
 function attBulkList() {
@@ -8890,7 +8923,7 @@ function attOpenExport(managerId) {
     '<div class="att-form-grid">' + attField("Manager", attManagerPickHTML("attEManager", managerId || (u.manager !== "all" ? u.manager : ""), true), "wide") +
     attField("From date", attInput("attEFrom", range.from, 'type="date" required')) + attField("To date", attInput("attETo", range.to, 'type="date" required')) + attField("Shift selection", attShiftSelect("attEShift", u.shift, true), "wide") +
     '<div class="wide att-actions">' + attBtn("This month", "exportRange", 'data-value="month"', "sm") + attBtn("Last 7 days", "exportRange", 'data-value="week"', "sm") + attBtn("This year", "exportRange", 'data-value="year"', "sm") + '</div>' +
-    '<div class="wide att-note"><b>PDF:</b> individual profile, totals, every date, Day/Night shifts, check-in/out, hours, overtime, late/early and notes.<br><b>Excel (.xlsx):</b> a real workbook with Summary, Daily attendance and Change history sheets. Numeric hours and credits remain numeric; names and notes are safe text, not formulas.<br>Open shifts and tap marks do not count as measured working hours. Attendance credits do not imply salary payments.</div><div class="wide att-note" id="attDownloadLinks" hidden><b>Your report is ready.</b><br>If your browser blocks the automatic download, use the ready file link below.<div class="att-actions" style="margin-top:9px" id="attReadyFiles"></div></div></div>',
+    '<div class="wide att-note"><b>PDF:</b> individual profile, totals, every date, Day/Night shifts, check-in/out, actual hours, Sundays attended and notes.<br><b>Excel (.xlsx):</b> a real workbook with Summary, Daily attendance, Sundays attended and Change history sheets. Numeric hours and credits remain numeric; names and notes are safe text, not formulas.<br>Open shifts and tap marks do not count as measured working hours. Attendance credits do not imply salary payments.</div><div class="wide att-note" id="attDownloadLinks" hidden><b>Your report is ready.</b><br>If your browser blocks the automatic download, use the ready file link below.<div class="att-actions" style="margin-top:9px" id="attReadyFiles"></div></div></div>',
     '<button type="button" class="btn" data-act="closeModal">Cancel</button><button type="submit" name="format" value="pdf" class="btn">' + attIcon("report") + ' Download PDF</button><button type="submit" name="format" value="xlsx" class="btn primary">' + attIcon("download") + ' Download Excel</button>', 650);
   attEditor = { kind: "export", scope: Cloud.scope }; $("#attEManager")?.focus();
 }
@@ -8912,10 +8945,9 @@ function attAction(button) {
   const complete = (fn, message) => { try { const result = fn(); closeModal(); render(); if (message) toast(message, "ok"); return result; } catch (e) { attFormError(e); return null; } };
   switch (action) {
     case "open": u.tab = "board"; go("attendance"); break;
-    case "tab": u.tab = value; u.page = 0; u.status = "all"; if (["records", "history"].includes(value)) u.period = "month"; render(); break;
+    case "tab": u.tab = value; u.page = 0; u.status = "all"; if (["records", "history", "sundays"].includes(value)) u.period = "month"; render(); break;
     case "mode": u.mode = value; render(); break;
     case "recordMode": attSetRecordMode(value); break;
-    case "useShiftTimes": attUseShiftTimes(); $("#attRBreak").value = attEditor.policy.breakMinutes; attPreviewRecord(); break;
     case "period": u.period = value; u.page = 0; if (value === "custom" && (!u.from || !u.to)) { const range = attRange("month", u.date); u.from = range.from; u.to = range.to; } render(); break;
     case "dayShift": attSetDate(ctShiftDate(u.date, Number(value))); render(); break;
     case "today": attSetDate(isoDate(new Date())); render(); break;
@@ -8986,12 +9018,10 @@ document.addEventListener("submit", (event) => {
       attCheckEditor("record"); const r = attSaveRecord(attReadRecord()); closeModal(); attSetDate(r.date); render(); toast("Attendance saved automatically", "ok");
     } else if (form.id === "attRulesForm") {
       attCheckEditor("rules");
-      const settings = { dayStart: attReadTimeControl("attDayStart").time, dayEnd: attReadTimeControl("attDayEnd").time, nightStart: attReadTimeControl("attNightStart").time, nightEnd: attReadTimeControl("attNightEnd").time,
-        standardMinutes: Number($("#attStandard").value) * 60, halfDayMinutes: Number($("#attHalf").value) * 60, breakMinutes: Number($("#attBreak").value),
-        lateGraceMinutes: Number($("#attLateGrace").value), earlyGraceMinutes: Number($("#attEarlyGrace").value), paidLeave: $("#attPaidLeave").checked, paidHoliday: $("#attPaidHoliday").checked, paidWeekOff: $("#attPaidOff").checked };
+      const settings = { ...att().settings, paidLeave: $("#attPaidLeave").checked, paidHoliday: $("#attPaidHoliday").checked, paidWeekOff: $("#attPaidOff").checked };
       attCheckRules(settings);
-      attTransaction(() => { const old = syncClone(att().settings); att().settings = settings; attAudit("rules-edit", settings, old, "Attendance shift and credit rules updated"); });
-      closeModal(); render(); toast("Shift rules saved · previous records unchanged", "ok");
+      attTransaction(() => { const old = syncClone(att().settings); att().settings = settings; attAudit("rules-edit", settings, old, "Attendance credit settings updated"); });
+      closeModal(); render(); toast("Attendance settings saved · recorded times unchanged", "ok");
     } else if (form.id === "attBulkForm") {
       attCheckEditor("bulk"); const ids = $$("[name=attBulkManager]:checked:not(:disabled)").map((el) => el.value), date = $("#attBDate").value, shift = $("#attBShift").value, status = $("#attBStatus").value, overwrite = $("#attBOverwrite").checked;
       const result = attBulkMark(ids, date, shift, status, overwrite); closeModal(); attSetDate(date); render(); toast(result.saved + " saved · " + result.skipped + " existing/ineligible skipped", "ok");
@@ -9002,7 +9032,7 @@ document.addEventListener("submit", (event) => {
   } catch (error) { attFormError(error); }
 });
 function attFormatClock(el, finishing) {
-  if (!["attRIn", "attROut", "attDayStart", "attDayEnd", "attNightStart", "attNightEnd"].includes(el.id)) return;
+  if (!["attRIn", "attROut"].includes(el.id)) return;
   const value = el.value.replace(/[०-९]/g, (ch) => String(ch.charCodeAt(0) - 0x966)).trim();
   if (finishing || /^\d{4}$/.test(value)) {
     try { el.value = attParseClock(value).time; return; } catch (error) { /* keep invalid input for correction; never silently convert a different clock */ }
@@ -9028,11 +9058,11 @@ document.addEventListener("change", (event) => {
   if (el.id === "attRManager" && attEditor && !attEditor.id) {
     try {
       const m = attResolveManager(el.value, false); $("#attRShift").value = m.defaultShift;
-      attUseShiftTimes();
+      attSuggestPeriods();
     } catch (e) { /* allow the user to finish typing */ }
   }
   if (el.id === "attRShift" && attEditor && !attEditor.id) {
-    attUseShiftTimes();
+    attSuggestPeriods();
   }
   if (el.closest("#attRecordForm")) { $("#attFormError").textContent = ""; attPreviewRecord(); }
 });
@@ -9040,79 +9070,99 @@ document.addEventListener("change", (event) => {
 /* ------------------- Individual PDF & native OOXML Excel ------------------- */
 function attPdfString(report) {
   attPdfMeasureCache.clear();
-  const p = new PdfDoc(), m = report.manager, s = report.summary, generated = attStamp(Date.now());
-  const widths = [55, 34, 66, 68, 68, 32, 48, 48, 63, CW - 482];
-  const labels = ["Date", "Shift", "Status", "In", "Out", "Break", "Worked", "Overtime", "Late / early", "Credit"];
-  const text = (x, y, size, value, options) => attPdfText(p, x, y, size, value, options);
+  const p = new PdfDoc(), m = report.manager, s = report.summary, visits = report.sundays || [];
+  const ink = [0.10,0.15,0.24], muted = [0.37,0.42,0.50], accent = [0.31,0.25,0.80], pale = [0.96,0.96,0.99], line = [0.86,0.88,0.92];
+  const widths = [80, 43, 83, 112, 112, CW - 430], labels = ["Date / day", "Shift", "Attendance", "Check-in", "Check-out", "Actual hours"];
+  const text = (x, yy, size, value, options) => attPdfText(p, x, yy, size, value, { color: ink, ...(options || {}) });
   const wrap = (value, size, width, bold) => attPdfWrap(value, size, width, bold);
   let y = 800;
   function header(first) {
-    const shop = Store.data.settings.shopName || "Hisaab";
-    text(M, 800, 14, shop, { bold: true, maxWidth: 290 });
-    text(RIGHT, 800, 11, "ATTENDANCE REPORT", { bold: true, align: "right", color: C.primary });
-    text(M, 785, 8, first ? "MANAGER / INDIVIDUAL LEDGER" : m.name + " · " + m.code, { color: C.muted, maxWidth: 290 });
-    text(RIGHT, 785, 8, report.from + " to " + report.to, { align: "right", color: C.muted });
-    p.line(M, 773, RIGHT, 773, C.line); y = 753;
+    text(M, 800, 12, Store.data.settings.shopName || "Hisaab", { bold: true, maxWidth: 285 });
+    text(RIGHT, 800, 9, "HISAAB / ATTENDANCE", { bold: true, align: "right", color: accent });
+    p.line(M, 787, RIGHT, 787, line); y = 768;
+    if (!first) {
+      text(M, y, 11, m.name + " · " + m.code, { bold: true, maxWidth: 285 });
+      text(RIGHT, y, 9, report.from + " to " + report.to, { color: muted, align: "right" }); y -= 24;
+    }
   }
+  function ensure(height, table) {
+    if (y - height >= 85) return;
+    p.newPage(); header(false); if (table) tableHead();
+  }
+  function paragraph(value, size = 9, bold = false, color = muted) {
+    wrap(value, size, CW, bold).forEach((value) => { ensure(15, false); text(M, y, size, value, { bold, color }); y -= 15; });
+  }
+  function section(title) { ensure(45, false); text(M, y, 12, title, { bold: true, color: accent }); y -= 22; }
   function tableHead() {
-    p.rect(M, y - 22, CW, 22, C.hdr); let x = M;
-    labels.forEach((label, i) => { text(x + 6, y - 14, 7, label, { bold: true, color: C.muted, maxWidth: widths[i] - 10 }); x += widths[i]; });
-    y -= 22;
-  }
-  function ensure(height, table) { if (y - height >= 92) return; p.newPage(); header(false); if (table) tableHead(); }
-  function paragraph(value, size, bold, color) {
-    wrap(value, size || 8.5, CW, bold).forEach((line) => { ensure(13, false); text(M, y, size || 8.5, line, { bold: !!bold, color: color || C.muted }); y -= 13; });
+    p.rect(M, y - 28, CW, 28, accent); let x = M;
+    labels.forEach((label, i) => { text(x + 7, y - 18, 9, label, { bold: true, color: [1,1,1], maxWidth: widths[i] - 12 }); x += widths[i]; }); y -= 28;
   }
   header(true);
-  wrap(m.name, 20, CW, true).forEach((line) => { text(M, y, 20, line, { bold: true }); y -= 24; });
-  paragraph(m.code + (m.department ? " · " + m.department : "") + (m.phone ? " · " + m.phone : ""));
-  paragraph((m.active ? "Active profile" : "Inactive profile") + " · Default " + (m.defaultShift === "night" ? "Night" : "Day") + " shift" + (m.joinedOn ? " · Joined " + m.joinedOn : "") + (m.endedOn ? " · Last working date " + m.endedOn : ""));
-  paragraph("Report: " + (report.shift === "all" ? "All shifts" : report.shift === "night" ? "Night shift" : "Day shift") + " · " + s.calendarDays + " calendar days · Generated " + generated);
-  y -= 10;
-  const tiles = [ ["ATTENDANCE CREDITS", s.credit], ["PRESENT / HALF", s.present + " / " + s.half], ["ABSENT", s.absent], ["UNMARKED DAYS", s.unmarked],
-    ["WORKED", attDuration(s.workedMinutes)], ["OVERTIME", attDuration(s.overtimeMinutes)], ["LATE / EARLY", s.lateCount + " / " + s.earlyCount], ["OPEN SHIFTS", s.pending] ];
-  const gap = 8, w = (CW - gap * 3) / 4;
-  tiles.forEach(([label, value], i) => {
-    const col = i % 4, row = Math.floor(i / 4), x = M + col * (w + gap), yy = y - row * 53;
-    p.box(x, yy - 45, w, 45, C.line, C.light); text(x + 9, yy - 13, 6.8, label, { bold: true, color: C.muted, maxWidth: w - 18 }); text(x + 9, yy - 33, 14, value, { bold: true, maxWidth: w - 18 });
-  });
-  y -= 117;
-  paragraph("Leave " + s.leave + " · Holiday " + s.holiday + " · Week off " + s.weekoff + " · Short hours " + s.short + " · Outside working dates " + s.notScheduled + ".");
-  paragraph("Measured time only: " + s.timeRecords + " time records; " + s.tapRecords + " tap marks. Tap credits do not create worked hours.", 8);
-  paragraph("Credits are per shift, not salary days. Missing dates are not absences. Late/early is after grace.", 8);
-  paragraph("Time uses 1–12 with same/next day morning or night. Same day = attendance date; 12 morning = midnight, 12 night = noon.", 8);
-  y -= 10; ensure(46, false); text(M, y, 9, "DAILY ATTENDANCE LEDGER", { bold: true, color: C.primary }); y -= 12; tableHead();
+  text(M, y, 24, "Attendance report", { bold: true }); y -= 32;
+  wrap(m.name, 19, CW, true).forEach((name) => { text(M, y, 19, name, { bold: true }); y -= 24; });
+  paragraph(m.code + (m.department ? " · " + m.department : "") + (m.phone ? " · " + m.phone : ""), 10);
+  paragraph(attNiceDate(report.from) + " — " + attNiceDate(report.to) + "  |  " + (report.shift === "all" ? "Day + Night shifts" : report.shift === "night" ? "Night shift" : "Day shift"), 10, true, ink);
+  y -= 8; ensure(78, false);
+  const cards = [["ACTUAL HOURS", attDuration(s.workedMinutes)], ["DAYS ATTENDED", s.attendedDays || 0], ["SUNDAYS ATTENDED", visits.length], ["OPEN SHIFTS", s.pending]];
+  const gap = 10, w = (CW - gap * 3) / 4;
+  cards.forEach(([label, value], i) => { const x = M + i * (w + gap); p.box(x, y - 61, w, 61, line, pale); text(x + 10, y - 18, 8.5, label, { bold: true, color: muted, maxWidth: w - 18 }); text(x + 10, y - 44, 18, value, { bold: true, maxWidth: w - 18 }); }); y -= 76;
+  paragraph("Shifts: Present " + s.present + "   ·   Half day " + s.half + "   ·   Absent " + s.absent + "   ·   Leave " + s.leave + "   |   Unmarked dates " + s.unmarked, 9.5, true, ink);
+  paragraph("Actual hours = check-out minus check-in. No fixed daily hours or deductions.", 9.5);
+  paragraph("Tap marks / open shifts add no completed hours. Status counts are per shift, not days.", 9);
+  y -= 9; section("01  Sundays attended / Sunday ko aaye");
+  if (!visits.length) paragraph("No Sunday attendance recorded in this period.", 10, true, ink);
+  else {
+    const cols = 3, cell = (CW - 16) / cols;
+    for (let i = 0; i < visits.length; i += cols) {
+      if (y - 44 < 85) { p.newPage(); header(false); section("Sundays attended — continued"); }
+      visits.slice(i, i + cols).forEach((v, j) => { const x = M + j * (cell + 8); p.box(x, y - 38, cell, 38, line, pale); text(x + 9, y - 15, 10, attNiceDate(v.date, true), { bold: true, maxWidth: cell - 17 }); text(x + 9, y - 29, 8.5, v.shifts.map((shift) => shift === "night" ? "Night" : "Day").join(" + ") + (v.open ? " · Checked in" : ""), { color: muted }); }); y -= 46;
+    }
+  }
+  y -= 5; paragraph("Only visits: check-in date for Time mode; marked date for Tap Present / Half day.", 8.5);
+  paragraph("Each Sunday counts once. Leave, holiday, week off and absent are not Sunday visits.", 8.5);
+  y -= 7; section("02  Daily attendance"); ensure(70, false); tableHead();
   report.rows.forEach((row, index) => {
-    const r = row.record, c = row.calc;
-    const notes = [];
-    if (r && r.mode === "time") notes.push("Rules: " + (row.shift === "night" ? "Night" : "Day") + " · " + attScheduleLabel(r.policy, row.shift) + " · full " + attDuration(r.policy.standardMinutes) + " / half " + attDuration(r.policy.halfDayMinutes) + " · late grace " + r.policy.lateGraceMinutes + "m / early grace " + r.policy.earlyGraceMinutes + "m");
-    if (r && r.note) notes.push("Note: " + r.note);
-    const lines = notes.flatMap((note) => wrap(note, 7, CW - 16));
-    const timed = r && r.mode === "time", rowHeight = timed ? 36 : 23;
-    const height = rowHeight + (lines.length ? lines.length * 10 + 8 : 0); ensure(height + 1, true);
-    if (index % 2 === 0) p.rect(M, y - height, CW, height, C.light);
-    const values = [row.date, row.shift === "night" ? "Night" : "Day", ATT_STATUS[row.status].label,
-      timed ? attClockParts(r.checkIn).time : "—",
-      timed ? r.checkOut ? attClockParts(r.checkOut).time : "Open" : "—",
-      r && r.mode === "time" ? r.breakMinutes + "m" : "—", r && r.mode === "time" && !c.open ? attDuration(c.workedMinutes) : "—",
-      c && c.overtimeMinutes ? attDuration(c.overtimeMinutes) : "—", c && r.mode === "time" ? c.lateMinutes + "m / " + c.earlyMinutes + "m" : "—", c ? c.credit : "—"];
+    const r = row.record, c = row.calc, timed = r && r.mode === "time", sunday = ctDateObj(row.date).getDay() === 0;
+    const notes = r && r.note ? wrap("Note: " + r.note, 9, CW - 18) : [];
+    const baseHeight = timed ? 44 : 36, height = baseHeight + (notes.length ? notes.length * 13 + 8 : 0);
+    ensure(Math.min(height, 610), true);
+    const paint = (h) => { if (sunday || index % 2 === 0) p.rect(M, y - h, CW, h, sunday ? pale : [0.98,0.985,0.99]); };
+    paint(baseHeight);
     let x = M;
-    values.forEach((value, i) => {
-      text(x + 6, y - 15, 7.2, value, { bold: i === 2 && !!r, color: r ? C.ink : C.muted, maxWidth: widths[i] - 11 });
-      if (timed && (i === 3 || i === 4) && (i === 3 || r.checkOut)) text(x + 6, y - 27, 6.2, attWhenLabel(i === 3 ? r.checkIn : r.checkOut, i === 3 ? r.inNextDay : r.outNextDay), { color: C.muted, maxWidth: widths[i] - 11 });
-      x += widths[i];
+    text(x + 7, y - 16, 9.5, attNiceDate(row.date), { bold: true, maxWidth: widths[0] - 14 });
+    text(x + 7, y - 30, 9, ctDateObj(row.date).toLocaleDateString("en-IN", { weekday: "long" }), { color: sunday ? accent : muted }); x += widths[0];
+    text(x + 7, y - 18, 9.5, row.shift === "night" ? "Night" : "Day"); x += widths[1];
+    wrap(ATT_STATUS[row.status].label, 9.5, widths[2] - 14, !!r).slice(0, 2).forEach((label, i) => text(x + 7, y - 17 - i * 13, 9.5, label, { bold: !!r, color: r ? ink : muted })); x += widths[2];
+    ["checkIn", "checkOut"].forEach((key, i) => {
+      const value = timed ? r[key] : "", next = key === "checkIn" ? r && r.inNextDay : r && r.outNextDay;
+      text(x + 7, y - 17, timed && value ? 11 : 9, timed ? value ? attClockParts(value).time : "Still open" : r ? "Not timed" : "—", { bold: !!value, color: value ? ink : muted });
+      if (timed && value) text(x + 7, y - 32, 8.5, attWhenLabel(value, next), { color: muted, maxWidth: widths[3 + i] - 14 });
+      x += widths[3 + i];
     });
-    let noteY = y - rowHeight - 7; lines.forEach((line) => { text(M + 8, noteY, 7, line, { color: C.muted }); noteY -= 10; });
-    y -= height; p.line(M, y, RIGHT, y, C.line, .4);
+    text(x + 7, y - 18, 10, timed && !c.open ? attDuration(c.workedMinutes) : "—", { bold: timed && !c.open, color: timed && !c.open ? ink : muted, maxWidth: widths[5] - 12 }); y -= baseHeight;
+    notes.forEach((note) => {
+      if (y - 20 < 85) { p.newPage(); header(false); tableHead(); text(M + 8, y - 15, 8.5, attNiceDate(row.date) + " · note continued", { bold: true, color: muted }); y -= 25; }
+      text(M + 9, y - 13, 9, note, { color: muted }); y -= 13;
+    });
+    if (notes.length) y -= 8;
+    p.line(M, y, RIGHT, y, line, .4);
   });
-  y -= 20; ensure(68, false);
-  paragraph("TOTAL: " + s.marks + " recorded shifts · " + s.credit + " credits · Worked " + attDuration(s.workedMinutes) + " · Overtime " + attDuration(s.overtimeMinutes), 9, true, C.ink);
-  paragraph("Late after grace: " + s.lateMinutes + " minutes (" + s.lateCount + " records). Early after grace: " + s.earlyMinutes + " minutes (" + s.earlyCount + " records).", 8);
-  paragraph("Unmarked days: " + s.unmarked + ". Unmarked = no saved record for the selected shift(s) on that calendar date; it is not an absence.", 8);
-  y -= 10; ensure(75, false); p.line(M, y - 30, M + 170, y - 30, C.line); p.line(RIGHT - 170, y - 30, RIGHT, y - 30, C.line);
-  text(M, y - 43, 8, "Prepared by", { color: C.muted }); text(RIGHT - 170, y - 43, 8, "Manager / verified by", { color: C.muted });
+  const closing = [
+    ["TOTAL ACTUAL HOURS   " + attDuration(s.workedMinutes), 12, true, ink],
+    [s.marks + " saved shifts · " + s.attendedDays + " arrival dates · " + visits.length + " Sundays attended · " + s.pending + " open shifts", 10, true, ink],
+    ["Attendance credits: " + s.credit + " (per saved shift, not payroll days). Not marked is not Absent.", 9, false, muted],
+    ["Arrival counts use check-in dates; the table uses attendance dates. Tap visits use marked dates.", 8.5, false, muted],
+    ["Same day = attendance date; next day = following date. 12 morning = midnight; 12 night = noon.", 8.5, false, muted]
+  ];
+  // Totals, explanation and verification lines travel together, never an orphan signature page.
+  const closingHeight = closing.reduce((height, [value, size, bold]) => height + wrap(value, size, CW, bold).length * 15, 0) + 43;
+  y -= 18; ensure(closingHeight, false);
+  closing.forEach(([value, size, bold, color]) => paragraph(value, size, bold, color));
+  y -= 25;
+  p.line(M, y, M + 180, y, line); p.line(RIGHT - 180, y, RIGHT, y, line);
+  text(M, y - 14, 9, "Prepared by", { color: muted }); text(RIGHT - 180, y - 14, 9, "Manager / verified by", { color: muted });
   const pages = p.pages.length;
-  p.pages.forEach((ops, i) => { p.cur = ops; p.line(M, 65, RIGHT, 65, C.line); text(M, 51, 7, "Hisaab v" + APP_VERSION + " · Attendance only · No salary changes", { color: C.muted }); text(RIGHT, 51, 7, "Page " + (i + 1) + " / " + pages, { align: "right", color: C.muted }); });
+  p.pages.forEach((ops, i) => { p.cur = ops; p.line(M, 66, RIGHT, 66, line); text(M, 52, 8, "Hisaab v" + APP_VERSION + " · Attendance only · " + attStamp(Date.now()), { color: muted, maxWidth: CW - 95 }); text(RIGHT, 52, 8, "Page " + (i + 1) + " / " + pages, { align: "right", color: muted }); });
   return attPdfBuild(p);
 }
 /* Latin uses the panel's embedded vector fonts. Complex-script text is drawn
@@ -9211,38 +9261,35 @@ function attSheet(rows, widths, filter) {
   return '<?xml version="1.0" encoding="UTF-8" standalone="yes"?><worksheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main"><dimension ref="A1:' + attCol(Math.max(...rows.map((r) => r.length)) - 1) + rows.length + '"/><sheetViews><sheetView workbookViewId="0">' + (filter ? '<pane ySplit="1" topLeftCell="A2" activePane="bottomLeft" state="frozen"/>' : '') + '</sheetView></sheetViews><sheetFormatPr defaultRowHeight="18"/><cols>' + widths.map((width, i) => '<col min="' + (i + 1) + '" max="' + (i + 1) + '" width="' + width + '" customWidth="1"/>').join("") + '</cols><sheetData>' + data + '</sheetData>' + (filter ? '<autoFilter ref="A1:' + attCol(rows[0].length - 1) + rows.length + '"/>' : '') + '<pageMargins left="0.3" right="0.3" top="0.5" bottom="0.5" header="0.2" footer="0.2"/></worksheet>';
 }
 function attXlsxBytes(report) {
-  const m = report.manager, s = report.summary;
-  const summary = [ [{ v: "INDIVIDUAL ATTENDANCE REPORT", s: 1 }, { v: Store.data.settings.shopName, s: 1 }],
-    ["Manager", m.name], ["Manager code", m.code], ["Department / role", m.department], ["Phone", m.phone], ["Default shift", m.defaultShift === "night" ? "Night" : "Day"],
-    ["Profile", m.active ? "Active" : "Inactive"], ["Joined on", m.joinedOn], ["Last working date", m.endedOn], ["From", report.from], ["To", report.to], ["Shifts", report.shift === "all" ? "All shifts" : report.shift === "night" ? "Night" : "Day"],
-    ["Generated (device clock)", attStamp(Date.now())], ["Calendar days", s.calendarDays], ["Recorded shifts", s.marks], ["Present shifts", s.present], ["Absent shifts", s.absent], ["Half-day shifts", s.half],
-    ["Leave shifts", s.leave], ["Holiday shifts", s.holiday], ["Week-off shifts", s.weekoff], ["Short-hours shifts", s.short], ["Open shifts", s.pending], ["Unmarked calendar days", s.unmarked], ["Outside employment dates", s.notScheduled],
-    ["Attendance credits (per shift)", s.credit], ["Worked hours (measured)", s.workedMinutes / 60], ["Overtime hours", s.overtimeMinutes / 60], ["Late minutes after grace", s.lateMinutes], ["Early minutes after grace", s.earlyMinutes],
-    ["Late records", s.lateCount], ["Early records", s.earlyCount], ["Tap marks", s.tapRecords], ["Time-mode records", s.timeRecords],
-    ["Important", "Attendance only: salary records and payments are never changed. Credits are per recorded shift; two shifts can earn two credits on one date."],
-    ["Unmarked dates", "No saved record for the selected shift(s) on that calendar date; not an absence. Outside employment dates are shown separately."],
-    ["Time calculations", "1–12 clock with Same day morning / Same day night / Next day morning / Next day night. Same day is the attendance date. 12 morning = midnight; 12 night = noon. Worked = out − in − break; tap marks and open shifts have no measured hours."],
-    ["Rule snapshots", "Each record keeps its saved targets, shift schedule and grace. Editing global rules does not recalculate earlier entries."],
-    ["History", "Most recent " + ATT_HISTORY_LIMIT + " actions are kept in the app. The Change history sheet contains retained actions for this manager and date range; it is not tamper-proof."], ["Manager notes", m.note] ];
-  summary.forEach((row, i) => { if (i) row[0] = { v: row[0], s: 3 }; if (i >= 34) row[1] = { v: row[1], s: 5 }; });
-  const daily = [["Date", "Weekday", "Shift", "Mode", "Status", "Check-in (12-hour)", "Check-in day / period", "Check-out (12-hour)", "Check-out day / period", "Break minutes", "Worked hours", "Overtime hours", "Late minutes (after grace)", "Early minutes (after grace)", "Attendance credits", "Note", "Scheduled start", "Scheduled end", "Full target hours", "Half target hours", "Late grace minutes", "Early grace minutes", "Leave credit enabled", "Holiday credit enabled", "Week-off credit enabled", "Record ID", "Updated (device clock)"]];
+  const m = report.manager, s = report.summary, sundays = report.sundays || [];
+  const summary = [[{ v: "ATTENDANCE REPORT", s: 1 }, { v: Store.data.settings.shopName, s: 1 }],
+    ["Manager", m.name], ["Manager code", m.code], ["Department / role", m.department], ["Phone", m.phone], ["From date", report.from], ["To date", report.to], ["Shifts", report.shift], ["Generated", attStamp(Date.now())], ["", ""],
+    ["Actual hours worked", s.workedMinutes / 60], ["Days attended (arrival dates)", s.attendedDays], ["Sundays attended", sundays.length], ["Present shifts", s.present], ["Half-day marks (manual)", s.half], ["Absent marks", s.absent], ["Leave", s.leave], ["Holiday", s.holiday], ["Week off", s.weekoff], ["Open shifts", s.pending], ["Unmarked dates", s.unmarked], ["Saved shifts", s.marks], ["Attendance credits", s.credit],
+    ["Hours explained", "Actual hours = check-out minus check-in. No fixed daily target or deductions. Tap marks / open shifts add no completed hours. Half day is manual; no automatic overtime or late/early classification."],
+    ["Sundays explained", "Only actual check-in dates on Sunday, or Tap Present / Half day dates. One Sunday per manager, even with both shifts. Leave / absent / holiday / week off do not count. See Sundays attended sheet."],
+    ["Time format", "1–12 clock. Same day = attendance date; next day = following date. 12 morning = midnight; 12 night = noon."], ["History", "Retained change history only; not a tamper-proof audit. Original legacy fields remain in JSON backups, but are not used for hours."], ["Manager note", m.note], ["Date basis", "Daily rows / hours use the attendance date. Visit and Sunday counts use actual check-in dates, including open check-ins; Tap Present / Half day uses the marked date. Both shifts on one arrival date count once."]];
+  summary.forEach((row, i) => { if (i) row[0] = { v: row[0], s: 3 }; if (i >= 23) row[1] = { v: row[1], s: 5 }; });
+  const daily = [["Attendance date", "Weekday", "Shift", "Mode", "Attendance", "Check-in (12-hour)", "Check-in day / period", "Check-out (12-hour)", "Check-out day / period", "Actual hours", "Sunday arrival date", "Note", "Record ID", "Updated (device clock)"]];
   report.rows.forEach((row) => {
-    const r = row.record, c = row.calc, timed = r && r.mode === "time", p = r && r.policy;
+    const r = row.record, c = row.calc, timed = r && r.mode === "time", arrival = r && attArrivalDate(r);
+    const sunday = r && (timed || ["present", "half"].includes(r.status)) && ctDateObj(arrival).getDay() === 0;
     daily.push([row.date, DAYS[ctDateObj(row.date).getDay()], row.shift === "night" ? "Night" : "Day", r ? timed ? "Time" : "Tap" : "", ATT_STATUS[row.status].label,
-      timed ? attClockParts(r.checkIn).time : "", timed ? attWhenLabel(r.checkIn, r.inNextDay) : "", timed ? attClockParts(r.checkOut).time : "", timed && r.checkOut ? attWhenLabel(r.checkOut, r.outNextDay) : "", timed ? r.breakMinutes : "", timed && !c.open ? c.workedMinutes / 60 : "", timed && !c.open ? c.overtimeMinutes / 60 : "", timed ? c.lateMinutes : "", timed && !c.open ? c.earlyMinutes : "", c ? c.credit : "", { v: r && r.note || "", s: 5 },
-      p ? attTimeLabel(p[row.shift + "Start"], false) : "", p ? attTimeLabel(p[row.shift + "End"], attMinutes(p[row.shift + "End"]) < attMinutes(p[row.shift + "Start"])) : "", p ? p.standardMinutes / 60 : "", p ? p.halfDayMinutes / 60 : "", p ? p.lateGraceMinutes : "", p ? p.earlyGraceMinutes : "", p ? +p.paidLeave : "", p ? +p.paidHoliday : "", p ? +p.paidWeekOff : "", r ? r.id : "", r ? attStamp(r.updatedAt) : ""]);
+      timed ? attClockParts(r.checkIn).time : "", timed ? attWhenLabel(r.checkIn, r.inNextDay) : "", timed ? attClockParts(r.checkOut).time : "", timed && r.checkOut ? attWhenLabel(r.checkOut, r.outNextDay) : "", timed && !c.open ? c.workedMinutes / 60 : "", sunday ? arrival : "", { v: r && r.note || "", s: 5 }, r ? r.id : "", r ? attStamp(r.updatedAt) : ""]);
   });
-  const history = [["Changed at (device clock)", "Attendance date", "Action", "Details", "Actor", "Record ID", "Before (JSON)", "After (JSON)"]];
+  const history = [["Changed at (device clock)", "Attendance date", "Action", "Details", "Actor", "Record ID", "Before (readable)", "After (readable)"]];
   report.history.forEach((h) => history.push([attStamp(h.at), h.date, h.action, h.text, h.actor, h.recordId, h.before ? JSON.stringify(attReadableValue(h.before)) : "", h.after ? JSON.stringify(attReadableValue(h.after)) : ""]));
+  const sundayRows = [["Sunday attended", "Weekday", "Shifts (counted once)", "Arrival status"]];
+  sundays.forEach((v) => sundayRows.push([v.date, "Sunday", v.shifts.map((shift) => shift === "night" ? "Night" : "Day").join(" + "), v.open ? "Checked in / open shift" : "Attended"]));
   const NS = "http://schemas.openxmlformats.org/", files = {
-    "[Content_Types].xml": '<?xml version="1.0" encoding="UTF-8"?><Types xmlns="' + NS + 'package/2006/content-types"><Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/><Default Extension="xml" ContentType="application/xml"/><Override PartName="/xl/workbook.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet.main+xml"/><Override PartName="/xl/styles.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.styles+xml"/>' + [1, 2, 3].map((n) => '<Override PartName="/xl/worksheets/sheet' + n + '.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.worksheet+xml"/>').join("") + '</Types>',
+    "[Content_Types].xml": '<?xml version="1.0" encoding="UTF-8"?><Types xmlns="' + NS + 'package/2006/content-types"><Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/><Default Extension="xml" ContentType="application/xml"/><Override PartName="/xl/workbook.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet.main+xml"/><Override PartName="/xl/styles.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.styles+xml"/>' + [1, 2, 3, 4].map((n) => '<Override PartName="/xl/worksheets/sheet' + n + '.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.worksheet+xml"/>').join("") + '</Types>',
     "_rels/.rels": '<?xml version="1.0"?><Relationships xmlns="' + NS + 'package/2006/relationships"><Relationship Id="rId1" Type="' + NS + 'officeDocument/2006/relationships/officeDocument" Target="xl/workbook.xml"/></Relationships>',
-    "xl/workbook.xml": '<?xml version="1.0" encoding="UTF-8"?><workbook xmlns="' + NS + 'spreadsheetml/2006/main" xmlns:r="' + NS + 'officeDocument/2006/relationships"><bookViews><workbookView/></bookViews><sheets><sheet name="Summary" sheetId="1" r:id="rId1"/><sheet name="Daily attendance" sheetId="2" r:id="rId2"/><sheet name="Change history" sheetId="3" r:id="rId3"/></sheets></workbook>',
-    "xl/_rels/workbook.xml.rels": '<?xml version="1.0"?><Relationships xmlns="' + NS + 'package/2006/relationships">' + [1, 2, 3].map((n) => '<Relationship Id="rId' + n + '" Type="' + NS + 'officeDocument/2006/relationships/worksheet" Target="worksheets/sheet' + n + '.xml"/>').join("") + '<Relationship Id="rId4" Type="' + NS + 'officeDocument/2006/relationships/styles" Target="styles.xml"/></Relationships>',
+    "xl/workbook.xml": '<?xml version="1.0" encoding="UTF-8"?><workbook xmlns="' + NS + 'spreadsheetml/2006/main" xmlns:r="' + NS + 'officeDocument/2006/relationships"><bookViews><workbookView/></bookViews><sheets><sheet name="Summary" sheetId="1" r:id="rId1"/><sheet name="Daily attendance" sheetId="2" r:id="rId2"/><sheet name="Change history" sheetId="3" r:id="rId3"/><sheet name="Sundays attended" sheetId="4" r:id="rId4"/></sheets></workbook>',
+    "xl/_rels/workbook.xml.rels": '<?xml version="1.0"?><Relationships xmlns="' + NS + 'package/2006/relationships">' + [1, 2, 3, 4].map((n) => '<Relationship Id="rId' + n + '" Type="' + NS + 'officeDocument/2006/relationships/worksheet" Target="worksheets/sheet' + n + '.xml"/>').join("") + '<Relationship Id="rId5" Type="' + NS + 'officeDocument/2006/relationships/styles" Target="styles.xml"/></Relationships>',
     "xl/styles.xml": '<?xml version="1.0"?><styleSheet xmlns="' + NS + 'spreadsheetml/2006/main"><numFmts count="1"><numFmt numFmtId="164" formatCode="0.00"/></numFmts><fonts count="4"><font><sz val="11"/><name val="Calibri"/></font><font><b/><sz val="16"/><color rgb="FF635BDB"/><name val="Calibri"/></font><font><b/><sz val="10"/><color rgb="FFFFFFFF"/><name val="Calibri"/></font><font><b/><sz val="11"/><name val="Calibri"/></font></fonts><fills count="3"><fill><patternFill patternType="none"/></fill><fill><patternFill patternType="gray125"/></fill><fill><patternFill patternType="solid"><fgColor rgb="FF635BDB"/><bgColor indexed="64"/></patternFill></fill></fills><borders count="1"><border><left/><right/><top/><bottom/><diagonal/></border></borders><cellStyleXfs count="1"><xf numFmtId="0" fontId="0" fillId="0" borderId="0"/></cellStyleXfs><cellXfs count="6"><xf numFmtId="0" fontId="0" fillId="0" borderId="0" xfId="0"/><xf numFmtId="0" fontId="1" fillId="0" borderId="0" xfId="0"/><xf numFmtId="0" fontId="2" fillId="2" borderId="0" xfId="0" applyAlignment="1"><alignment vertical="center" wrapText="1"/></xf><xf numFmtId="0" fontId="3" fillId="0" borderId="0" xfId="0"/><xf numFmtId="164" fontId="0" fillId="0" borderId="0" xfId="0" applyNumberFormat="1"/><xf numFmtId="0" fontId="0" fillId="0" borderId="0" xfId="0" applyAlignment="1"><alignment wrapText="1" vertical="top"/></xf></cellXfs><cellStyles count="1"><cellStyle name="Normal" xfId="0" builtinId="0"/></cellStyles></styleSheet>',
     "xl/worksheets/sheet1.xml": attSheet(summary, [37, 110], false),
-    "xl/worksheets/sheet2.xml": attSheet(daily, [13, 15, 10, 10, 18, 19, 24, 19, 24, 14, 15, 15, 20, 20, 18, 60, 34, 34, 17, 17, 19, 19, 20, 20, 21, 30, 30], true),
-    "xl/worksheets/sheet3.xml": attSheet(history, [27, 17, 22, 65, 30, 30, 85, 85], true)
+    "xl/worksheets/sheet2.xml": attSheet(daily, [19, 15, 10, 10, 18, 19, 24, 19, 24, 16, 20, 60, 30, 30], true),
+    "xl/worksheets/sheet3.xml": attSheet(history, [27, 17, 22, 65, 30, 30, 85, 85], true),
+    "xl/worksheets/sheet4.xml": attSheet(sundayRows, [22, 16, 27, 32], true)
   };
   return attZip(files);
 }
@@ -9789,7 +9836,7 @@ window.Hisaab = { Store, calc, monthMeta, PdfDoc, inWords, UI, render, go, Cloud
   sync: { merge: mergeSyncData, view: syncView, same: samePayload, counts: dataCounts, hasData: hasUserData },
   attendance: { data: att, blank: blankAttendance, defaults: attDefaults, validate: attValidate, calculate: attCalculate, summary: attSummary,
     saveManager: attSaveManager, deleteManager: attDeleteManager, manager: attManager, saveRecord: attSaveRecord, deleteRecord: attDeleteRecord, record: attRecord, bulk: attBulkMark,
-    clockIn: attClockIn, clockOut: attClockOut, report: attReport, range: attRange, dateValid: attDate, duration: attDuration, key: attKey,
+    clockIn: attClockIn, clockOut: attClockOut, report: attReport, sundays: attSundayVisits, range: attRange, dateValid: attDate, duration: attDuration, key: attKey,
     clockParts: attClockParts, clockFrom12: attClockFrom12, timeLabel: attTimeLabel, scheduleLabel: attScheduleLabel,
     ui: attUI, openManager: attOpenManager, openRecord: attOpenRecord, openRules: attOpenRules, openBulk: attOpenBulk, openExport: attOpenExport,
     pdfString: attPdfString, xlsxBytes: attXlsxBytes, download: attDownloadReport, setDate: attSetDate, resolveManager: attResolveManager },

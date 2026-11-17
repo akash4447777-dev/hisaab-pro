@@ -1,17 +1,21 @@
-# HISAAB v3.20 — safe login, device sync aur recovery
+# HISAAB v3.21 — safe login, device sync aur recovery
 
 v3.17’s data-safety protocol remains in place. v3.19 extends the same protection
 to the integrated manager Attendance tab; no new Supabase table/project is needed.
-v3.20 changes Attendance entry/display to 12-hour morning/night without changing
-stored clocks, day offsets, rule snapshots or the cloud schema.
-[Attendance usage and configurable rules](ATTENDANCE.md).
+v3.21 keeps the easy 12-hour entry and now measures **actual out − in hours**, with
+no fixed target or break deduction (including old records), plus dated Sunday visits
+and clearer reports. Original clocks, day offsets, archived policies/history and
+the cloud schema are retained; no migration is required. Old Attendance hours/status
+summaries can change because retired calculations are no longer applied. Update all
+clients for consistent results. Salary/canteen calculations remain independent.
+[Attendance guide, Sunday date rules and backup advice](ATTENDANCE.md).
 
 ## Pehle ye karein (existing users)
 
 1. **Jis phone/laptop par asli data abhi dikh raha hai, uska Settings → Backup (JSON) download karein.** Salary, canteen aur saved Attendance sab isi backup me aate hain. Doosre device par bhi bacha data ho to uska alag backup rakhein.
-2. **Dono devices aur saare purane tabs par v3.20 kholein:**
-   [Hisaab-Pro-v3.20.html](https://akash4447777-dev.github.io/hisaab-pro/Hisaab-Pro-v3.20.html).
-   Sidebar me **Panel v3.20** confirm karein. Browser/site storage clear, uninstall, “Erase all data” ya “Sample data” mat karein.
+2. **Dono devices aur saare purane tabs par v3.21 kholein:**
+   [Hisaab-Pro-v3.21.html](https://akash4447777-dev.github.io/hisaab-pro/Hisaab-Pro-v3.21.html).
+   Sidebar me **Panel v3.21** confirm karein. Browser/site storage clear, uninstall, “Erase all data” ya “Sample data” mat karein.
 3. Pehle bache-data wale device par **usi Supabase Project URL aur usi email/account** se sign in karein. Existing setup ko reset ya naya project/account banane ki zaroorat nahi.
 4. Settings → **Sync now**. `Cloud synced` aane par doosre updated device par bhi same project/account se sign in karein. Pehli login par cloud read hota hai; naya khaali/demo device populated cloud ko replace nahi karta.
 5. `Sync paused · data protected` aaye to neeche wali conflict/recovery choice dekhein. `Local saved · sync pending` ya `Offline · sync pending` ko cloud backup ki confirmation **na** maanein.

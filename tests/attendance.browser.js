@@ -69,19 +69,19 @@ async function exportFile(page, format, name) {
     await click(page, '[data-att-act="recordAdd"]'); await page.fill("#attRManager", "Aarav Sharma · M-001"); await page.locator("#attRManager").press("Tab"); await page.fill("#attRDate", "2026-11-14"); await page.selectOption("#attRShift", "day"); await page.selectOption("#attRStatus", "present"); await saveForm(page, "attRecordForm");
     check(await page.evaluate(() => Hisaab.attendance.data().records.length === 1), "native tap form saves exactly one record");
     await click(page, '[data-att-act="recordAdd"]'); await page.fill("#attRManager", "Priya Mehta · M-002"); await page.locator("#attRManager").press("Tab"); await page.fill("#attRDate", "2026-11-14"); await page.selectOption("#attRShift", "night"); await click(page, '[data-att-act="recordMode"][data-value="time"]');
-    check(await page.evaluate(() => document.querySelector('#attRIn').value === '9:00' && document.querySelector('#attRInWhen').value === 'same-night' && document.querySelector('#attROut').value === '6:00' && document.querySelector('#attROutWhen').value === 'next-morning'), "Night shift defaults use 9 night → 6 next morning, not 24-hour fields");
+    check(await page.evaluate(() => document.querySelector('#attRIn').value === '' && document.querySelector('#attRInWhen').value === 'same-night' && document.querySelector('#attROut').value === '' && document.querySelector('#attROutWhen').value === 'next-morning'), "new Night records suggest periods but never invent fixed working clocks");
     const choices = ["Same day morning", "Same day night", "Next day morning", "Next day night"];
     for (const id of ["attRInWhen", "attROutWhen"]) check(JSON.stringify(await page.locator('#' + id + ' option').allTextContents()) === JSON.stringify(choices), id + " offers the four exact morning/night day choices");
     await page.fill("#attRIn", "13:00"); await page.locator('#attRecordForm button[type="submit"]').click();
     check(await page.evaluate(() => !document.querySelector('#attRIn').checkValidity() && Hisaab.attendance.data().records.length === 1), "native validation blocks 13:00 instead of guessing a 12-hour time");
-    await page.fill("#attRIn", "0930"); await page.selectOption("#attRInWhen", "same-night"); await page.fill("#attROut", "0730"); await page.selectOption("#attROutWhen", "next-morning"); await page.fill("#attRBreak", "60");
+    await page.fill("#attRIn", "0930"); await page.selectOption("#attRInWhen", "same-night"); await page.fill("#attROut", "0730"); await page.selectOption("#attROutWhen", "next-morning");
     check((await page.locator("#attRIn").inputValue()) === "9:30", "mobile-style 0930 digits format into a 12-hour clock");
     check((await page.locator("#attTimeJourney").textContent()).includes('14 Nov 2026 → 15 Nov 2026'), "live timeline shows the actual two dates for an overnight shift");
     await screenshot(page, "00-time-form-desktop.png");
     check(await page.evaluate(() => { const header = document.querySelector('.att-dialog .modal-h').getBoundingClientRect(), footer = document.querySelector('.att-dialog .modal-f').getBoundingClientRect(); return header.top >= 0 && footer.bottom <= innerHeight; }), "desktop time dialog keeps its title and Save button visible while its body scrolls");
-    const preview = await page.locator("#attCalcPreview").textContent(); check(preview.includes("9h 00m"), "native overnight preview calculates working time: " + preview);
+    const preview = await page.locator("#attCalcPreview").textContent(); check(preview.includes("10h 00m"), "native overnight preview calculates working time: " + preview);
     await page.locator('#attRecordForm button[type="submit"]').click(); await page.waitForSelector("#attRecordForm", { state: "detached" });
-    check(await page.evaluate(() => { const A = Hisaab.attendance, r = A.data().records.find((x) => x.shift === "night"); return r.checkIn === '21:30' && r.checkOut === '07:30' && r.outNextDay && A.calculate(r).overtimeMinutes === 60 && A.calculate(r).lateMinutes === 20; }), "12-hour night entry preserves canonical stored clocks, overtime and grace");
+    check(await page.evaluate(() => { const A = Hisaab.attendance, r = A.data().records.find((x) => x.shift === "night"); return r.checkIn === '21:30' && r.checkOut === '07:30' && r.outNextDay && A.calculate(r).workedMinutes === 600 && A.calculate(r).overtimeMinutes === 0 && A.calculate(r).lateMinutes === 0 && r.breakMinutes === 0; }), "actual ten-hour overnight entry has no deduction, fixed target, OT or lateness");
     await page.evaluate(() => { const A = Hisaab.attendance; A.openRecord(A.data().records.find((r) => r.shift === 'night').id); });
     check(await page.evaluate(() => document.querySelector('#attRIn').value === '9:30' && document.querySelector('#attRInWhen').value === 'same-night' && document.querySelector('#attROut').value === '7:30' && document.querySelector('#attROutWhen').value === 'next-morning'), "saved overnight entry reopens with its correct 12-hour values and day/period choices");
     await page.selectOption('#attROutWhen', 'same-morning'); await page.locator('#attRecordForm button[type="submit"]').click();
@@ -96,7 +96,7 @@ async function exportFile(page, format, name) {
     check(await page.evaluate(() => Hisaab.attendance.data().records.length === 3), "native bulk selection saves only the checked roster");
     // Exercise noon/midnight through native validation and saving, not just helpers.
     await page.evaluate(() => { const A = Hisaab.attendance; A.openRecord(null, A.data().managers.find((m) => m.code === 'M-002').id, '2026-11-16', 'night'); });
-    await click(page, '[data-att-act="recordMode"][data-value="time"]'); await page.fill('#attRIn', '12'); await page.selectOption('#attRInWhen', 'same-night'); await page.fill('#attROut', '12'); await page.selectOption('#attROutWhen', 'next-morning'); await page.fill('#attRBreak', '0');
+    await click(page, '[data-att-act="recordMode"][data-value="time"]'); await page.fill('#attRIn', '12'); await page.selectOption('#attRInWhen', 'same-night'); await page.fill('#attROut', '12'); await page.selectOption('#attROutWhen', 'next-morning');
     check((await page.locator('#attTimeJourney').textContent()).includes('12 morning = midnight · 12 night = noon'), "12 o’clock displays a visible noon/midnight explanation");
     await saveForm(page, 'attRecordForm');
     check(await page.evaluate(() => { const A = Hisaab.attendance, r = A.data().records.find((r) => r.date === '2026-11-16'); return r.checkIn === '12:00' && r.checkOut === '00:00' && r.outNextDay && A.calculate(r).workedMinutes === 720; }), "12 night to next-day 12 morning saves noon-to-midnight, exactly 12 hours");
@@ -106,13 +106,38 @@ async function exportFile(page, format, name) {
     check(await page.locator(".att-cal-cell").count() === 42, "calendar renders the complete monthly grid");
     await screenshot(page, "02-calendar-desktop.png"); await click(page, '.att-cal-cell[data-date="2026-11-14"]');
     check(await page.locator(".att-person").count() === 2, "calendar day opens the editable daily board");
+    // A short actual Sunday shift is Present without an hours threshold.
+    await page.evaluate(() => { const A = Hisaab.attendance; A.openRecord(null, A.data().managers.find((m) => m.code === 'M-002').id, '2026-11-15', 'night'); });
+    await click(page, '[data-att-act="recordMode"][data-value="time"]');
+    check(await page.locator('#attRBreak, #attRStandard, #attRHalf, [data-att-act="recordDefaults"]').count() === 0, "time editor has no break/target inputs or fixed-clock preset");
+    await page.fill('#attRIn', '1:15'); await page.selectOption('#attRInWhen', 'same-night'); await page.fill('#attROut', '5'); await page.selectOption('#attROutWhen', 'same-night');
+    check((await page.locator('#attCalcPreview').textContent()).includes('3h 45m') && (await page.locator('#attCalcPreview').textContent()).includes('Present'), "a 3h 45m Sunday shift is actual hours, not auto Half day");
+    await saveForm(page, 'attRecordForm');
+    await page.evaluate(() => { const A = Hisaab.attendance; A.openRecord(null, A.data().managers.find((m) => m.code === 'M-002').id, '2026-11-15', 'day'); });
+    await saveForm(page, 'attRecordForm');
+    await click(page, '[data-att-act="tab"][data-value="sundays"]');
+    check(await page.locator('.att-sunday-date').count() === 2, "Sundays tab lists only the two managers who attended, not Saturday check-outs");
+    check((await page.locator('.att-sunday-person').filter({ hasText: 'Priya Mehta' }).textContent()).includes('Day + Night'), "Sunday Day + Night shifts are grouped into one dated visit");
+    await screenshot(page, '09-sundays-desktop.png');
+    await page.selectOption('#attShiftFilter', 'night');
+    check(await page.locator('.att-sunday-person').count() === 1 && (await page.locator('.att-sundays').textContent()).includes('Sun, 15 Nov 2026'), "Sunday shift filter keeps only the recorded Night arrival");
+    const priyaId = await page.evaluate(() => Hisaab.attendance.data().managers.find((m) => m.code === 'M-002').id);
+    await page.selectOption('#attManagerFilter', priyaId); await page.selectOption('#attShiftFilter', 'all');
+    check(await page.locator('.att-sunday-date').count() === 1 && (await page.locator('.att-sunday-count').textContent()) === '1', "selected-manager Sunday count deduplicates the two shifts");
+    await page.setViewportSize({ width: 320, height: 780 });
+    // Resizing crosses the shell's responsive transition; wait for settled layout.
+    await page.waitForFunction(() => document.documentElement.scrollWidth <= innerWidth + 1, null, { timeout: 3000 });
+    check(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth + 1), "320px Sunday list and date chips do not overflow");
+    await screenshot(page, '10-sundays-mobile.png'); await page.setViewportSize({ width: 1440, height: 1000 });
+    await page.selectOption('#attManagerFilter', 'all');
     await click(page, '[data-att-act="tab"][data-value="records"]'); await click(page, '[data-att-act="period"][data-value="custom"]'); await page.fill("#attFrom", "2026-11-14"); await page.locator("#attFrom").dispatchEvent("change"); await page.fill("#attTo", "2026-11-16"); await page.locator("#attTo").dispatchEvent("change");
     await click(page, '[data-att-act="export"]'); await page.fill("#attEManager", "Aarav Sharma · M-001"); await page.locator("#attEManager").press("Tab"); await page.fill("#attEFrom", "2026-11-14"); await page.fill("#attETo", "2026-11-16");
     const latin = await exportFile(page, "pdf", "Latin-manager"); await exportFile(page, "xlsx", "Latin-manager");
-    check(latin.toString("latin1").includes("(2026-11-16)"), "custom final report date is present in the actual PDF");
+    check(latin.toString("latin1").includes("(16 Nov 2026)"), "custom final report date is present in the actual PDF");
     await page.fill("#attEManager", "Priya Mehta · M-002"); await page.locator("#attEManager").press("Tab");
     const overnight = await exportFile(page, "pdf", "Overnight-manager"); await exportFile(page, "xlsx", "Overnight-manager");
     check(['(9:30)', '(7:30)', '(Same day night)', '(Next day morning)'].every((text) => overnight.toString('latin1').includes(text)) && !overnight.toString('latin1').includes('(21:30)'), "downloaded overnight PDF shows 12-hour clocks with complete morning/night day labels");
+    check(overnight.toString('latin1').includes('(Sun, 15 Nov 2026)') && overnight.toString('latin1').includes('(13h 45m)'), "downloaded PDF separately lists Sunday 15 November and the full 13h 45m total");
     await click(page, '#modalRoot [data-act="closeModal"]');
     // Extra profiles here are disposable QA fixtures, never production samples.
     await page.evaluate(() => { const A = Hisaab.attendance; ["Kabir Singh", "Neha Gupta", "Vikram Patel", "Riya Kapoor", "Arjun Verma", "Meera Nair"].forEach((name, i) => A.saveManager({ name, code: "QA-" + i, department: "Operations", defaultShift: i % 3 ? "day" : "night", joinedOn: "2026-11-01" })); A.ui().tab = "board"; A.ui().shift = "all"; A.ui().manager = "all"; A.ui().q = ""; A.setDate("2026-11-14"); Hisaab.render(); });
@@ -127,7 +152,7 @@ async function exportFile(page, format, name) {
     check(await page.evaluate(() => { const ids = ['attRIn', 'attRInWhen', 'attROut', 'attROutWhen']; return document.documentElement.scrollWidth <= innerWidth + 1 && ids.every((id) => { const r = document.getElementById(id).getBoundingClientRect(); return r.left >= 0 && r.right <= innerWidth && r.width >= 180; }); }), "even a 320px mobile form keeps time inputs and full day/period controls inside the screen");
     await click(page, '#modalRoot [data-act="closeModal"]');
     await page.evaluate(() => Hisaab.attendance.openRules());
-    check(await page.evaluate(() => { const input = document.querySelector('#attNightStart'), select = document.querySelector('#attNightStartWhen'), box = select.getBoundingClientRect(); return input.value === '9:00' && select.value === 'night' && box.height < 65 && box.right <= innerWidth; }), "mobile shift-rule controls are compact 12-hour morning/night inputs");
+    check(await page.evaluate(() => { const form = document.querySelector('#attRulesForm'); return form && form.querySelectorAll('input').length === 3 && !form.querySelector('input[type=number]') && !form.querySelector('select') && form.textContent.includes('Working hours are not fixed') && form.getBoundingClientRect().right <= innerWidth; }), "mobile Attendance settings have manual credit switches only, never fixed clocks, targets or breaks");
     await click(page, '#modalRoot [data-act="closeModal"]'); await page.setViewportSize({ width: 390, height: 844 });
     await click(page, '[data-att-act="tab"][data-value="calendar"]'); await screenshot(page, "06-calendar-mobile.png"); check(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth + 1), "mobile calendar fits all seven weekdays");
     await page.setViewportSize({ width: 1440, height: 1000 }); await click(page, '[data-att-act="tab"][data-value="board"]'); await click(page, '[data-act="toggleThemeIcon"]'); await screenshot(page, "07-board-dark.png");
@@ -138,11 +163,13 @@ async function exportFile(page, format, name) {
   const hindiBrowser = await browser();
   try {
     const page = await pageFor(hindiBrowser);
-    await page.evaluate(() => { const A = Hisaab.attendance, m = A.saveManager({ name: "अजय कुमार", code: "M-HI", department: "प्रबंधक", defaultShift: "night", joinedOn: "2026-11-01" }); A.saveRecord({ managerId: m.id, date: "2026-11-14", shift: "night", mode: "time", checkIn: "21:00", checkOut: "06:00", outNextDay: true, breakMinutes: 60, note: "रात्रि पाली पूरी हुई" }); A.setDate("2026-11-14"); Hisaab.render(); });
+    await page.evaluate(() => { const A = Hisaab.attendance, m = A.saveManager({ name: "अजय कुमार", code: "M-HI", department: "प्रबंधक", defaultShift: "night", joinedOn: "2026-11-01" }); A.saveRecord({ managerId: m.id, date: "2026-11-08", shift: "night", mode: "time", checkIn: "21:00", checkOut: "06:00", outNextDay: true, breakMinutes: 60, note: "रात्रि पाली पूरी हुई" }); A.setDate("2026-11-14"); Hisaab.render(); });
     await click(page, '[data-att-act="export"]'); await page.fill("#attEManager", "अजय कुमार · M-HI"); await page.locator("#attEManager").press("Tab"); await page.fill("#attEFrom", "2026-11-01"); await page.fill("#attETo", "2026-11-30");
     const pdf = await exportFile(page, "pdf", "Hindi-manager"); await exportFile(page, "xlsx", "Hindi-manager");
-    check(pdf.toString("latin1").includes("/ActualText <FEFF"), "Hindi PDF has extractable Unicode text, not dropped manager names");
+    const nameHex = Buffer.from("अजय कुमार", "utf16le").swap16().toString("hex");
+    check(pdf.toString("latin1").includes("/ActualText <FEFF" + nameHex + ">") && pdf.toString("latin1").includes("/Subtype /Image"), "Hindi PDF keeps shaped text images and the original Unicode name metadata");
     check(await page.evaluate(() => document.fonts.check('400 16px "Hisaab Indic"') && document.fonts.check('700 16px "Hisaab Indic"')), "both bundled Hindi font weights load without a font CDN");
+    check(pdf.toString('latin1').includes('(Sun, 08 Nov 2026)') && pdf.toString('latin1').includes('(9h 00m)'), "Hindi report includes its Sunday and ignores the archived sixty-minute deduction");
     await screenshot(page, "08-ready-report-links.png");
   } finally { await hindiBrowser.close(); }
   check(errors.length === 0, "no uncaught JavaScript errors in either real browser");

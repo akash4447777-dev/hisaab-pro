@@ -637,7 +637,7 @@ function closedDialog(d) { d.w.document.getElementById("modalRoot").innerHTML = 
     const db = new Server(payload), a = await device(db), b = await device(db); await a.login(); await b.login();
     api(a).saveRecord({ ...api(a).data().records[0], checkIn: "10:00" }); api(b).saveRecord({ ...api(b).data().records[0], checkOut: "20:00" }); await a.C.pushNow(); assert.equal(await b.C.pushNow(), false);
     assert.ok(b.C._pending.conflicts.some((x) => x.endsWith("calculationInputs"))); assert.equal(await b.C.resolve("local"), true);
-    const result = db.get().payload.attendance.records[0]; assert.equal(result.checkIn, "09:00"); assert.equal(result.checkOut, "20:00"); assert.equal(api(b).calculate(result).workedMinutes, 600);
+    const result = db.get().payload.attendance.records[0]; assert.equal(result.checkIn, "09:00"); assert.equal(result.checkOut, "20:00"); assert.equal(api(b).calculate(result).workedMinutes, 660);
   });
   await test("attendance edit versus deletion asks and can retain the exact edited row", async () => {
     const db = new Server(ap([ar()])), a = await device(db), b = await device(db); await a.login(); await b.login();

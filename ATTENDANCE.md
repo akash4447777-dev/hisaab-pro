@@ -1,171 +1,179 @@
-# HISAAB v3.20 — manager Attendance
+# HISAAB v3.21 — manager Attendance
 
 **Attendance is a tab inside the existing Hisaab Panel**, not a separate app.
-Manager profiles, attendance, rules and history are stored alongside the existing
-salary/canteen data. **Attendance never changes worker salary records, wages,
-advances, deductions or payments.**
+Manager profiles, attendance, credit settings and history share the panel’s
+existing local save, JSON backup and configured cloud sync. **Attendance never
+changes worker salaries, wages, advances, deductions or payments.**
+
+## What changed in v3.21
+
+- **Working hours are not fixed at 8 or 12 hours.** Enter actual arrival and departure.
+- **No Unpaid break minutes input and no break deduction**, including old records.
+- No schedule/target presets, automatic overtime, lateness, early-exit or hour-based
+  Half day. **Half day is a manual Tap mark.**
+- A separate **Sundays** tab lists **which Sundays each manager attended**, with
+  dates/counts. The individual ledger, PDF and Excel include these visits too.
+- The PDF now has clear summary cards, a dated Sunday section and a readable
+  six-column daily ledger, instead of the crowded old calculation table.
+
+**Existing users: take a JSON backup first.** Original clocks, day offsets,
+record IDs and history are not rewritten. Older break/target/schedule metadata
+remains in JSON/history for compatibility and validation, **not arithmetic**.
+Consequently, old timed entries now display their **full in → out hours** and
+completed valid Time entries display Present, rather than the old target-based
+classification. Previous printed totals can differ; keep previous reports if needed.
+Update all devices/tabs to v3.21 for consistent calculations; do not clear storage.
 
 ## Start here
 
-1. Existing users: Settings → **Backup (JSON)** first. Open the latest panel and
-   confirm **Panel v3.20**. Update other devices/tabs too; see [cloud safety](CLOUD-SYNC.md).
-2. Sidebar → **Attendance** → **Add manager**. Enter a name and a unique manager
-   code, choose **Day** or **Night**, and optionally add role, phone, employment
-   dates and notes. Codes distinguish managers with the same name. No real
-   manager names or sample attendance are preloaded.
-3. Open **Shift & credit rules** and review the starting defaults below before use.
-4. Pick the date, manager and shift. Use **Tap mode** for a status, or **Time mode**
-   for actual clock times. Saved records immediately update the board, calendar,
-   ledger and summaries.
-
-### Configurable starting defaults — not an approved workplace policy
-
-| Rule | Initial value |
-|---|---|
-| Day shift | 9:00 Same day morning → 6:00 Same day night |
-| Night shift | 9:00 Same day night → 6:00 Next day morning |
-| Full-day / half-day net targets | 8 hours / 4 hours |
-| Unpaid break | 60 minutes; editable on each time record |
-| Late grace / early-exit grace | 10 minutes / 0 minutes |
-| Leave / holiday / week-off credits | 1 / 1 / 0 |
-
-These are editable starting settings, **not assumptions about your business**.
-No holidays, weekly offs or absences are created automatically. Rules apply to
-new records; each saved record retains its own rule snapshot. When editing an
-older record, **Recalculate this record with today’s shift rules** explicitly
-opts that one record into the current rules.
+1. Settings → **Backup (JSON)**. Open the latest panel and confirm **Panel v3.21**.
+   See [safe device sync](CLOUD-SYNC.md).
+2. Sidebar → **Attendance** → **Add manager**. Enter a name and unique code,
+   choose **Day / Night**, and optionally add role, phone, employment dates and notes.
+   No real managers or sample attendance are preloaded.
+3. Pick the date, manager and shift. Use **Tap mode** for a status, or **Time mode**
+   for actual check-in/out. Saves immediately update the board, calendar and ledger.
+4. **Attendance settings** contains only the manual credit switches:
+   Leave = 1 credit (initially on), Holiday = 1 (on), Week off = 1 (off).
+   These are configurable defaults, not an approved workplace/payroll policy.
 
 ## Tap mode
 
-- **Present**, **Absent**, **Half day** and **Leave** are one-tap buttons on a
+- **Present**, **Absent**, **Half day** and **Leave** are quick buttons on each
   manager’s daily card. **More / Edit** also offers **Week off** and **Holiday**.
-- Present = 1 attendance credit; Half day = 0.5; Absent = 0. Leave, Holiday and
-  Week off use the saved configurable credit switches.
-- A tap mark records a status/credit, **not invented check-in times or worked hours**.
-- Repeating the same mark does nothing. Changing an existing mark asks before
-  replacement. Replacing a time entry with a tap mark clears its clock fields;
-  prior values remain in history and a safety copy.
+- Present = 1 credit, Half day = 0.5, Absent = 0. Leave/Holiday/Week off use the
+  record’s saved credit switches. Settings changes affect new records; an older
+  record’s **Use current leave / holiday credit settings** checkbox explicitly
+  updates only that record’s snapshot.
+- Tap records attendance, **not invented times or working hours**.
+- Repeating a mark is a no-op. Replacing a different mark asks first. Replacing
+  Time with Tap clears its clocks; prior values remain in retained history/safety copies.
 
-## Time mode and overnight attendance
+## Time mode — actual, variable hours
 
-- Use a **1–12 clock**, such as `9`, `9:30` or `12:15`. Numeric mobile entry
-  accepts `930` / `0930` → `9:30`, `9` → `9:00` on leaving the field, and Hindi
-  digits such as `९३०`. A 24-hour input such as `21:30` is rejected, not guessed.
-- For **each** check-in/check-out select one clear option:
-  **Same day morning**, **Same day night**, **Next day morning**, **Next day night**.
-  Shift names remain **Day / Night**; clock periods use **morning / night**.
-- **Same day** means the selected **Attendance date**; **Next day** means the
-  date after it. The live timeline shows both the readable times and actual dates.
-  For a Night shift on 14 November, enter `9:30` + **Same day night** for arrival
-  and `7:30` + **Next day morning** for departure on 15 November. After a 60-minute
-  unpaid break this is **9 hours worked** (1 hour OT with the initial 8-hour target).
-- **Morning** covers midnight to before noon; **Night** covers noon, afternoon,
-  evening and night. **12 morning = midnight; 12 night = noon.** The form shows
-  an extra visible reminder when either time is in the 12 o’clock hour.
-- **Use shift timings** fills both times, day/period choices and the default break
-  from the rules shown in the editor. Night defaults already select next-day
-  morning for check-out. On an old record it uses that record's saved rule snapshot
-  unless you explicitly select today’s rules. Review actual times before saving.
-- Worked time, overtime, credits and late/early results update immediately. Further
-  explanations and the saved/current shift rules can be expanded when needed.
-  The form body scrolls on short screens while its title and Save button stay visible.
-- Leave check-out empty for an open shift. The daily Time-mode card also has
-  **Check in now / Check out now** using the device’s local clock.
-- A completed span must be positive and at most 24 hours; the unpaid break must
-  be a whole number of minutes shorter than that span.
+New records have **blank clocks**, not fixed shift timings. Day/Night only suggests
+which morning/night and same/next-day choices to start with; verify each choice.
 
-Calculations:
+- Use a **1–12 clock**: `9`, `9:30`, `12:15`. Numeric entry supports `930` / `0930`
+  → `9:30`, `9` → `9:00` on leaving the field, and Hindi digits such as `९३०`.
+  A 24-hour input such as `21:30` is rejected, not silently converted.
+- Each clock has **Same day morning**, **Same day night**, **Next day morning**,
+  **Next day night**. Shift names remain **Day / Night**.
+- **Same day** means the selected **Attendance date**. **Next day** means the
+  following date. The live timeline shows the actual two dates.
+- Morning = midnight to before noon; Night = noon, afternoon, evening and night.
+  **12 morning = midnight; 12 night = noon.** A reminder appears for 12 o’clock.
+- A Night entry of `9:30` + **Same day night** → `7:30` + **Next day morning** is
+  **10h 00m**, with no deduction. A `9` → `11:30` morning entry is **2h 30m**;
+  it does not automatically become Half day, Short hours or Absent.
+- A completed span must be positive and at most **24 hours** (an input-safety
+  limit, not a daily working-hours target). Correct the day/period if departure
+  is before arrival.
+- Leave check-out blank for an **open shift**. A valid check-in counts as a visit,
+  but there are **zero completed hours/credits** until checkout is saved.
+- **Check in now / Check out now** uses the device’s local clock. Night check-in
+  before noon is grouped under the preceding attendance date with a next-day flag;
+  the actual arrival date is still preserved for visit/Sunday counts. Use the
+  editor for a different attendance-date grouping.
+- The dialog body scrolls while its title, Close and Save controls remain visible.
 
 ```text
-Worked minutes = check-out − check-in − unpaid break
-Overtime       = max(0, worked minutes − saved full-day target)
-Late minutes   = max(0, arrival − scheduled start − saved late grace)
-Early minutes  = max(0, scheduled end − departure − saved early grace)
+Actual working minutes = check-out − check-in (including explicit day offsets)
+Completed valid Time record → Present, 1 credit
+Open Time record            → Checked in, no completed hours or credit
+Tap Half day                → manual 0.5 credit, no invented hours
 ```
 
-Net work at/above the full-day target = Present (1 credit); at/above the
-half-day target = Half day (0.5); below it = Short hours (0 credits, **not an
-Absent mark**). Open shifts have no completed worked hours/overtime/credits yet.
-Calculations use local wall-clock minutes, not timezone-tracked punch hardware.
+There is no fixed daily target, break deduction or automatic OT/late/early
+classification. Minutes use local wall-clock times, not timezone-tracked punch
+hardware. **Credits are per saved shift, not payroll days:** Day + Night can earn
+two credits while representing one attended date.
 
-**Credits are per recorded shift.** A manager with both Day and Night records
-on the same date may have two credits; these are not automatically payroll days.
+## Sundays — kis-kis Sunday ko aaye
 
-## Views, filters and editing
+Open **Attendance → Sundays**, then choose a month/week/day/custom range,
+manager, shift or name/code/note search. Each manager has a dated list and count.
+The selected manager’s **Ledger & reports** also shows the Sunday list.
+
+- **Time:** use the actual **check-in date**, including next-day arrival.
+  Saturday night → Sunday morning checkout is **not** a Sunday arrival.
+  An after-midnight Sunday check-in saved under Saturday **is** a Sunday visit.
+- **Tap:** only Present / Half day counts. Absent, Leave, Holiday, Week off and
+  Unmarked are **not** visits, regardless of any paid-credit setting.
+- Day + Night on the same Sunday counts **once per manager**; both shifts are listed.
+- Open valid Sunday check-ins are included and labelled **Checked in**.
+- Range boundaries use the **actual arrival date** for visits. The daily ledger
+  and actual-hours total use the saved **Attendance date**. Thus a prior-month
+  Night record can contribute a Sunday visit to this month without moving its
+  hours/daily row into this month. Reports explain the two date bases.
+- No missing Sunday is automatically marked Absent. No Sunday deduction or
+  salary effect is introduced.
+
+## Views, editing and scale
 
 | View | Use |
 |---|---|
-| **Daily board** | Roster plus recorded shifts for a date, quick marks, clock actions, edit, bulk marking and shift pulse. |
-| **Calendar** | Monthly seven-day grid, manager/shift filters and day totals. Tap a date to open its daily board. |
-| **Ledger & reports** | Daily, Monday–Sunday weekly, monthly or custom inclusive ranges; search/status/shift filters, sort, edit/delete and an individual manager ledger. |
-| **Managers** | Add/edit profiles, search/filter, change default shift, deactivate, individual ledger/report, or explicitly delete. |
-| **History** | Time, actor, action and before/after values for retained changes; filter by manager/date and open details. Workspace rule edits are labelled separately. |
+| **Daily board** | Roster + recorded shifts, quick statuses, clock actions, edit, bulk marking and shift pulse. |
+| **Calendar** | Monthly grid, manager/shift filters and saved-day totals; tap a date to edit. |
+| **Ledger & reports** | Day, Monday–Sunday week, month or custom inclusive range; filters/search/sort, edit/delete and individual day-by-day ledger. |
+| **Sundays** | Manager-by-manager Sunday dates, deduplicated counts and filters. |
+| **Managers** | Dynamic profiles, unique codes, employment dates, active/inactive, ledger/report and explicit delete. |
+| **History** | Retained time/actor/action and readable before/after details; original canonical JSON stays intact. |
 
-- Manager selectors search by name/code. Same-name managers require their unique
-  code. Joined/last-working dates prevent new attendance outside employment dates.
-- **Inactive** removes a manager from new attendance while retaining existing
-  records and reports. **Delete manager** explicitly removes that profile and
-  its attendance; it warns and saves a safety copy first.
-- Only **one record per manager + date + shift** is allowed. Edit the existing
-  record rather than adding a duplicate; Day and Night on the same date are allowed.
-- **Bulk mark** defaults to the selected shift’s roster and skips existing records.
-  Select/deselect managers as needed. **Replace existing attendance too** is an
-  explicit overwrite option, including replacement of time records with tap marks.
-- Board cards paginate at 24; ledger/history at 40. Statistics use the complete
-  filtered selection, not just the visible page. Browser storage is still finite.
-- History retains the **latest 2,000 actions per workspace**. It is an editable
-  local/cloud audit aid, not an immutable or tamper-proof compliance record.
+- Smart manager selectors search name/code. Duplicate names require unique codes.
+- Only **one manager + date + shift** record is allowed; edit it instead of duplicating.
+- Joined/last-working dates prevent new marks outside employment. Inactive keeps
+  historical records/reports while blocking new attendance. Delete explicitly
+  removes the manager and their records after a warning/safety copy.
+- **Bulk mark** selects the shift’s roster, skips existing records by default,
+  and requires **Replace existing attendance too** for intentional overwrites.
+- Board/Sunday manager lists paginate at 24; ledger/history at 40. Totals use
+  the complete selection. Browser storage remains finite.
+- History retains the latest **2,000 actions**; it is not tamper-proof or immutable.
 
-## Individual PDF and Excel downloads
+## Individual PDF and Excel
 
-1. Click **Individual report**, or a manager’s report button.
-2. Select **one manager**, **From**, **To**, and **All shifts / Day / Night**.
-   Dates are inclusive; shortcuts are provided. Split ranges longer than 3,660 days.
-3. Choose **Download PDF** or **Download Excel**. If the browser blocks an
-   automatic download, the generated **Save PDF / Save Excel workbook** link
-   remains in the dialog: tap it directly before closing the dialog.
+1. **Individual report** / a manager’s **Report** button.
+2. Choose **one manager**, inclusive **From / To**, and **All shifts / Day / Night**.
+   Split ranges longer than 3,660 days.
+3. **Download PDF** / **Download Excel**. If an automatic download is blocked,
+   tap the generated **Save PDF / Save Excel workbook** link before closing the dialog.
 
-**PDF:** individual profile, range, KPI totals, every date, Day/Night, clock
-in/out in 12-hour form with full same/next-day morning/night labels, breaks,
-worked/overtime hours, late/early minutes,
-credits, notes, saved time rules, totals, verification lines and page footers.
-Hindi names/notes use bundled Devanagari shaping plus searchable/extractable
-Unicode text; see [font implementation and notices](PDF-FONTS.md).
+**PDF:** manager/range at the top; Actual hours, Days attended, Sundays attended
+and Open shifts cards; separately dated Sundays; then six columns — Date/day,
+Shift, Attendance, Check-in, Check-out, Actual hours. Clocks include full same/next-day
+morning/night captions. Notes span the row; totals and verification lines stay
+together, with continuation headers/page numbers. No break/target/OT columns.
+Hindi uses bundled offline shaping with Unicode `ActualText`; copy/search support
+for that image-backed text varies by PDF viewer/parser. Excel/JSON retain literal
+Unicode. See [fonts and notices](PDF-FONTS.md).
 
-**Excel:** a genuine offline `.xlsx` workbook, not renamed CSV. It contains
-**Summary**, **Daily attendance**, and **Change history** sheets. Hours and credits
-are numeric; clocks, day/period choices, saved schedules and before/after history
-use the same readable 12-hour format. Daily/history headers are frozen and
-filterable. Hindi/emoji/user
-text are stored as literal strings, never spreadsheet formulas.
+**Excel:** a genuine offline `.xlsx`, not renamed CSV. Four sheets: **Summary**,
+**Daily attendance**, **Change history**, **Sundays attended**. Actual hours and
+credits are numeric. Clock/context columns and history use readable 12-hour text;
+Sunday dates are independently listed. Daily/history/Sunday headers are frozen and
+filterable. User names/notes are literal strings, never spreadsheet formulas.
 
-An **Unmarked** day means no saved record for the selected shift(s) on that date;
-it is not an absence. Dates outside employment are shown separately. Reports
-contain only the selected manager/range/shifts; retained history is filtered by
-manager and attendance date, and may include profile actions in that date range.
+Unmarked is **not** Absent. Dates outside employment are shown separately. Reports
+include only the selected manager/range/shifts; history follows attendance dates.
 
-## Saving, backup and device sync
+## Saving, backup and sync safety
 
-- Existing v3.19 attendance, hours and saved policies need **no migration**. Only
-  input/display boundaries change: JSON/cloud keep the same canonical clock values
-  and next-day flags, so old records reopen correctly and remain compatible.
+- Same `hisaabPro.v1` storage key, JSON backup and configured account cloud payload;
+  no new account, table, backend or record migration is needed.
+- Automatic local safety copy before the first Attendance change each day/account,
+  plus destructive/replacement checkpoints. Up to **3 distinct copies**, subject
+  to available storage; download regular external JSON backups too.
+- Quota/save failure rolls the whole Attendance change back with an error. Stale
+  editor/account/disk baselines are blocked instead of silently overwriting.
+- Old JSON without Attendance preserves current Attendance. Included Attendance
+  can replace it after validation/safety copy. Full erase includes Attendance;
+  canteen-only erase/demo actions do not.
+- Different records merge. Same-date/shift conflicts, competing clock spans,
+  delete dependencies and malformed legacy metadata require a safe choice or
+  block unsafe adoption. Existing cloud CAS/account guards remain in place.
+  See [CLOUD-SYNC.md](CLOUD-SYNC.md).
 
-- Successful saves use the existing `hisaabPro.v1` localStorage key, the same
-  JSON backup and, when configured/signed in, the same account’s cloud payload.
-- Attendance takes an automatic local safety copy before its first change each
-  day/account, plus checkpoints for destructive/replacement operations. Existing
-  safety storage retains up to **3 distinct copies**, subject to browser space.
-  It is **not** an external backup service: download JSON backups regularly.
-- A failed/quota-blocked save rolls the Attendance operation back and shows an
-  error. A stale editing tab/account/editor is blocked, not silently accepted.
-- Old JSON backups without Attendance preserve existing Attendance. Backups that
-  include Attendance can replace it after validation and a safety copy. Explicit
-  **Erase everything** includes Attendance; canteen-only erase/demo actions do not.
-- Different device records merge; conflicting marks for the same manager/date/shift,
-  competing clock spans and delete/dependency conflicts require a safe choice.
-  Existing read-before-write/conditional cloud protection also covers Attendance.
-  See [CLOUD-SYNC.md](CLOUD-SYNC.md) for recovery and limitations.
-
-Verified with automated offline tests and real Chromium desktop/mobile-size forms,
-reloads, PDF/XLSX downloads and independent PDF/workbook parsers. This is not a
-claim of physical-phone testing or live customer Supabase/RLS verification.
+QA covers automated offline tests, real Chromium desktop/mobile-size forms,
+reloads/downloads, PDF rendering/geometry and independent workbook parsing.
+This is not physical-phone, Safari or live customer Supabase/RLS verification.
