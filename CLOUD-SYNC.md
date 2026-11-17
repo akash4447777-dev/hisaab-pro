@@ -1,11 +1,15 @@
-# HISAAB v3.17 — safe login, device sync aur recovery
+# HISAAB v3.19 — safe login, device sync aur recovery
+
+v3.17’s data-safety protocol remains in place. v3.19 extends the same protection
+to the integrated manager Attendance tab; no new Supabase table/project is needed.
+[Attendance usage and configurable rules](ATTENDANCE.md).
 
 ## Pehle ye karein (existing users)
 
-1. **Jis phone/laptop par asli data abhi dikh raha hai, uska Settings → Backup (JSON) download karein.** Salary aur canteen dono isi backup me aate hain. Doosre device par bhi bacha data ho to uska alag backup rakhein.
-2. **Dono devices aur saare purane tabs par v3.17 kholein:**
-   [Hisaab-Pro-v3.17.html](https://akash4447777-dev.github.io/hisaab-pro/Hisaab-Pro-v3.17.html).
-   Sidebar me **Panel v3.17** confirm karein. Browser/site storage clear, uninstall, “Erase all data” ya “Sample data” mat karein.
+1. **Jis phone/laptop par asli data abhi dikh raha hai, uska Settings → Backup (JSON) download karein.** Salary, canteen aur saved Attendance sab isi backup me aate hain. Doosre device par bhi bacha data ho to uska alag backup rakhein.
+2. **Dono devices aur saare purane tabs par v3.19 kholein:**
+   [Hisaab-Pro-v3.19.html](https://akash4447777-dev.github.io/hisaab-pro/Hisaab-Pro-v3.19.html).
+   Sidebar me **Panel v3.19** confirm karein. Browser/site storage clear, uninstall, “Erase all data” ya “Sample data” mat karein.
 3. Pehle bache-data wale device par **usi Supabase Project URL aur usi email/account** se sign in karein. Existing setup ko reset ya naya project/account banane ki zaroorat nahi.
 4. Settings → **Sync now**. `Cloud synced` aane par doosre updated device par bhi same project/account se sign in karein. Pehli login par cloud read hota hai; naya khaali/demo device populated cloud ko replace nahi karta.
 5. `Sync paused · data protected` aaye to neeche wali conflict/recovery choice dekhein. `Local saved · sync pending` ya `Offline · sync pending` ko cloud backup ki confirmation **na** maanein.
@@ -61,6 +65,44 @@ v3.17:
 - Local transaction rollback best-effort hai, browser storage finite hai. Local cache account-scoped hai, encrypted vault nahi; shared/untrusted browser ko authenticated isolation ka substitute na samjhein.
 
 No salary/canteen schema reset, existing data-key change, PDF/font/template/WhatsApp-format change required.
+
+## Attendance sync extension (v3.19)
+
+- `payload.attendance` contains independent `managers`, `records`, `history` and
+  `settings`; salary workers/records are not reused or recalculated. An
+  Attendance-only/rules-only account counts as real populated data, not demo/empty.
+- Stable IDs plus the natural key **manager ID + date + Day/Night shift** prevent
+  duplicate marks. Independent records merge. Identical marks created under
+  different IDs deduplicate; differing statuses for the same natural key require
+  an explicit device/cloud choice. A note edit may merge with an independent
+  clock edit, but competing clock spans/breaks/day offsets are chosen atomically.
+- Manager deletion versus new/edited dependent attendance asks before keeping or
+  removing the profile and records together. Duplicate codes, moved-key collisions,
+  orphan references, invalid dates/clocks/rules/history and corrupt payloads block
+  unsafe adoption/write. Global rule conflicts remain explicit; saved per-record
+  rule snapshots are retained.
+- An older/partial payload that omits Attendance collections is **not proof of
+  deletion**. Known collections/rules/history are preserved; suspicious unproven
+  empty collections pause for additive recovery. A proven deliberate deletion
+  still propagates. **All devices must update**: old clients are not server-blocked
+  and do not understand this new module.
+- Same JSON backup, account-scoped pending/base cache, recovery copies and
+  read-before-write/CAS apply. Local saves validate and roll back the whole
+  Attendance operation on failure. Open dialogs block remote replacement;
+  stale item/account/disk baselines block Attendance form saves. Account/project
+  switching clears Attendance UI/editor state and pending report links.
+- Existing old JSON backups **without** `attendance` keep the current Attendance;
+  explicit full wipe includes it and retains a safety copy. Canteen-only erase,
+  loading sample data and clearing sample data do not remove Attendance.
+- Automatic local Attendance safety copies/checkpoints share the existing
+  **maximum 3 distinct copies** and finite browser storage. History keeps the most
+  recent **2,000 actions**; neither is an external or tamper-proof backup.
+
+`cloud.test.js` now has **99 checks**, including 23 Attendance merge/race/recovery
+scenarios; `attendance.test.js` adds 136 calculation/UI/storage/export checks.
+Real Chromium form/reload/download QA is separate. Tests use disposable fixtures
+and a deterministic mock backend, **not** customer Supabase credentials/live RLS
+or physical phones. See [tests](tests/README.md).
 
 ## Supabase setup (sirf pehli baar / permissions error par)
 

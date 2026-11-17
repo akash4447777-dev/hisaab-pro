@@ -1,20 +1,23 @@
 # Hisaab Pro — tests (developer only)
 
-Ye folder **app ke liye zaroori nahi**. `hisaab_v3.html` / `Hisaab-Pro-v3.18.html` akeli file me chalti hai —
+Ye folder **app ke liye zaroori nahi**. `hisaab_v3.html` / `Hisaab-Pro-v3.19.html` akeli file me chalti hai —
 kisi install ki zaroorat nahi. Ye tests sirf tab chalao jab code me change kiya ho aur check karna ho
-ki **Canteen module**, salary, PDF, loader aur **cross-device cloud sync** toot to nahi gaye.
+ki **Attendance**, **Canteen**, salary, PDF, loader aur **cross-device cloud sync** toot to nahi gaye.
+Attendance use/rule details: [`ATTENDANCE.md`](../ATTENDANCE.md).
 
 ## Chalane ka tarika
 
 ```bash
 cd tests
 npm ci               # lockfile se jsdom install hota hai
-npm test             # 537 checks: canteen 406 + loader 29 + PDF 26 + cloud 76
-node canteen.test.js ../Hisaab-Pro-v3.18.html   # kisi aur file par chalana ho
+npm test             # 696: canteen 406 + loader 29 + PDF 26 + cloud 99 + Attendance 136
+node canteen.test.js ../Hisaab-Pro-v3.19.html   # kisi aur file par chalana ho
 node loader.test.js  # sirf index.html loader ke tests
 node pdf.test.js     # fonts + bottom geometry + multi-page
-node cloud.test.js   # fake backend + independent browser stores, 76 sync checks
-HISAAB_HTML=../Hisaab-Pro-v3.18.html node cloud.test.js  # exact release bhi check karein
+node cloud.test.js   # fake backend + independent browser stores, 99 sync checks
+node attendance.test.js # calculation, forms, backup, exports: 136 checks
+HISAAB_HTML=../Hisaab-Pro-v3.19.html npm test  # exact release, all 696 checks
+node attendance.test.js --artifacts ../.cache/attendance-qa # real fixture PDF + .xlsx
 node pdf.test.js --artifacts ../.cache/pdf-qa # optional local sample PDFs
 ```
 
@@ -24,6 +27,10 @@ Sab theek ho to aakhri line aati hai: `✅ SAB CHECKS PASS` / `✅ LOADER SAB TE
 
 | Area | Checks |
 |---|---|
+| Attendance (v3.19), 136 | dynamic profiles/unique codes/same-name resolution, active/employment rules, Tap/Time + Day/Night, mobile numeric clocks, overnight/24h/break/grace/full/half/short/open/OT boundaries, rule snapshots and explicit recalculation, duplicate prevention, bulk skip/overwrite, actual forms, calendar/ledger/day/week/month/custom/search/sort, dashboard/settings/keyboard, escaped text, history/actor/before-after, stale editor/account/disk guards, quota rollback, local reload, old JSON/demo/reset/recovery preservation, 250 managers + 750 records pagination and 2,000-history limit |
+| Attendance exports (included above) | genuine individual PDF + 3-sheet OOXML XLSX; chosen manager/shift/custom dates, unmarked vs absent, xrefs/stream lengths/paper bounds/100-row pagination, bundled Hindi font + complete OFL notice, ZIP/CRC/XML/numeric hours, Unicode/emoji/formula-safe literal text, retained history/rules, actual Blob MIME/filenames/ready-file links/no-gesture fallback/failure reporting and salary/canteen non-mutation |
+| Attendance cloud (23 of the 99 cloud checks) | independent records, same-natural-key dedup/conflict, note+clock merges vs atomic competing clock spans, profile/record deletion dependencies, duplicate code/moved-key collisions, full and partial legacy payloads, proven deletion vs unproven empties, durable offline reload, open-editor/account reset, invalid-cloud/quota rollback/recovery and rule conflicts |
+| Optional native Chromium (27, not in npm test) | real profile/record/bulk forms, overnight preview, duplicate UI error, calendar day, custom-range Latin/Hindi PDF/XLSX native downloads/headers, mobile no-overflow/navigation, real reload persistence, bundled Hindi fonts/ActualText and no uncaught JS errors; optional desktop/mobile/modal/calendar/dark screenshots |
 | PDF summary labels (v3.18) | screenshot ke Bikri/Kharcha labels blank, zero aur nonzero amounts same right-aligned positions par; saare 6 templates ke day/month drawing ops v3.17 se identical (sirf 2 labels/version differ); print + WhatsApp PDF bhi same; app labels/data unchanged |
 | Safe cloud sync (v3.17) | canteen-only/records/rates/log/settings-only login, demo suppression, stale demo flags, no echo, independent changes + first-insert/CAS races, financial/worker-delete-v-salary/payment conflicts, exact-value re-approval, in-flight edits/save failures, offline reload + online retry, legacy missing/empty snapshots, RLS/read/write failures, null stamp, account/project/logout/late-session guards, cross-tab stale writes, corrupt JSON/cache, quota rollback, photo dedup, scoped recovery, no fake success, modal baseline guard |
 | Loader safety (v3.17) | API list + latest release, API failure par cached older build se pehle known data-safety fix, future cached release aur missing-cache fallback, file chooser |
@@ -62,6 +69,40 @@ Sab theek ho to aakhri line aati hai: `✅ SAB CHECKS PASS` / `✅ LOADER SAB TE
 Font analysis, embedding notices aur locally licensed input se rebuild: [`PDF-FONTS.md`](../PDF-FONTS.md).
 PDF fixtures optionally `.cache/` me bante hain; Git me nahi jaate.
 
+
+## Optional real-browser Attendance QA
+
+The regular suite only needs locked jsdom dependencies. Native browser QA is
+separate so a Chromium download is not required for every `npm test` run:
+
+```bash
+# In tests/, after npm ci (does not change package.json/lockfile):
+npm install --no-save --package-lock=false playwright
+npx playwright install chromium
+# In another terminal, serve the repository root; default script port is 8000:
+# python3 -m http.server 8000 --bind 0.0.0.0
+HISAAB_URL=http://127.0.0.1:8000/hisaab_v3.html npm run test:attendance:browser
+# Exact release and screenshots:
+HISAAB_URL=http://127.0.0.1:8000/Hisaab-Pro-v3.19.html HISAAB_SCREENSHOTS=1 npm run test:attendance:browser
+```
+
+`127.0.0.1` here is only the **local test runner**, never a browser-facing app API.
+The test runs on a local server or a `file:///absolute/path/...html` URL. It opens
+isolated **browser processes**, uses disposable fixtures, and never touches a
+customer account. `HISAAB_ARTIFACTS` changes the output folder (default ignored
+`.cache/attendance-browser-qa`). `HISAAB_CHROME_EXECUTABLE` and
+`HISAAB_CHROME_ARGS` (JSON array) support a supplied browser. `NODE_PATH` can point
+at scratch-installed Playwright instead of adding it to the locked dependencies.
+On a serverless Chromium build, software `--disable-gpu` rendering was used for
+stable captures; serverless SwiftShader/single-process flags were omitted.
+
+Review native form inputs/download events as well as API fixtures. Inspect PDFs
+with PyMuPDF and workbooks with openpyxl if export code changes. v3.19 QA opened
+native Latin/Hindi reports plus the unit artifacts independently: valid unrepaired
+PDFs, extractable Hindi, three sheets, expected numeric totals, frozen/filterable
+headers and no formula cells. All generated data/screenshots stay out of Git.
+This is desktop/mobile-viewport Chromium testing, **not physical-phone, Safari,
+or live customer Supabase testing**.
 
 ## Cloud test setup aur limits
 

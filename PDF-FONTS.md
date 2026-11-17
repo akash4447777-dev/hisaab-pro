@@ -1,4 +1,12 @@
-# v3.16 — reference PDF ke fonts aur bottom format
+# HISAAB PDF fonts — Canteen reference + Attendance Hindi
+
+Canteen’s reference-matched Segoe PDFs (v3.16+) and Attendance’s separate
+Hindi-capable report renderer (v3.19+) are described below. Attendance does not
+change the existing salary/canteen PDF font payloads, drawing geometry, six
+templates or WhatsApp file generation. The indicated Bikri/Kharcha summary-label
+spaces remain blank as shipped in v3.18, with amounts and rows unchanged.
+
+## Canteen reference (v3.16)
 
 ## Re-analysis ka result
 
@@ -28,8 +36,9 @@ Helvetica ka dash ya font-size badalne se ye match nahi milta tha.
   ready hone ke baad khulta hai. Koi font CDN, runtime fetch ya browser/system
   font par dependency nahi — downloaded single HTML bhi self-contained hai.
 - 6 table templates aur WhatsApp download/share same PDF builder use karte hain.
-- Unsupported non-Latin scripts pehle ki tarah cleanly drop hote hain; ye
-  update full Hindi/complex-script shaping implement nahi karta.
+- **Canteen’s existing renderer:** unsupported non-Latin scripts pehle ki tarah
+  cleanly drop hote hain; the v3.16 reference renderer does not implement Hindi
+  shaping. This does **not** describe the separate v3.19 Attendance renderer below.
 
 ## Bottom block (Canteen)
 
@@ -94,7 +103,7 @@ npm test
 # Optional local PDF examples / pagination stress fixtures (not for Git):
 node pdf.test.js --artifacts ../.cache/pdf-qa
 # Check a release copy as well:
-HISAAB_HTML=../Hisaab-Pro-v3.16.html node pdf.test.js
+HISAAB_HTML=../Hisaab-Pro-v3.19.html node pdf.test.js
 ```
 
 `pdf.test.js` checks real embedded-font payloads, full ASCII coverage,
@@ -107,3 +116,68 @@ used during reference comparison; it is not a runtime or npm-test dependency.
 Real Chromium smoke check bhi pass: teen inline font weights load, white/grey
 print styles, browser PDF download, mobile-viewport WhatsApp file, aur network
 blocked `file://` standalone HTML. Browser console me runtime errors nahi.
+
+
+## Attendance Hindi renderer (v3.19)
+
+Attendance reports do not route Hindi names/notes through WinAnsi. Their Latin
+text still uses the established embedded vector Segoe font. A line containing
+unsupported complex-script Unicode is shaped by the browser’s Canvas text engine
+with the bundled **Noto Sans Devanagari** static 400/700 WOFF2 subsets (CSS alias
+`Hisaab Indic`). Layout/shaping tables are retained. Fonts are loaded before PDF
+creation; no font CDN/network connection is needed.
+
+The shaped line is embedded as a 4× high-DPI JPEG image with UTF-16BE PDF
+`ActualText` (including surrogate pairs), so Hindi appearance is preserved and
+text remains extractable/searchable in supporting PDF readers. Grapheme-aware
+wrapping avoids splitting Devanagari combining syllables. This is not a claim of
+vector Indic glyphs or guaranteed embedded coverage for every world script/emoji:
+other scripts rely on available browser fallback fonts. Excel stores Unicode
+text directly. Existing canteen PDF/print/WhatsApp paths are unchanged.
+
+### Noto notice and pinned source
+
+Copyright 2022 The Noto Project Authors
+(https://github.com/notofonts/devanagari). **SIL Open Font License 1.1.**
+Full notice/license: [`assets/OFL-NotoSansDevanagari.txt`](assets/OFL-NotoSansDevanagari.txt).
+The **complete notice is also inline** as `#hisaab-attendance-font-license` in each
+new source/release HTML, so distributing a single offline HTML retains it.
+The Noto subsets remain under OFL, not the proprietary Segoe terms above.
+
+- Source: Google Fonts `ofl/notosansdevanagari/NotoSansDevanagari[wdth,wght].ttf`.
+- Immutable GitHub blob: `163f04bddc5a96fc523e4080466cac5c588f6594`
+  ([API](https://api.github.com/repos/google/fonts/git/blobs/163f04bddc5a96fc523e4080466cac5c588f6594)).
+- Source SHA-256: `14ec4af41f27482216d1c2229f417ff9b1425e1babb014e57d1d40d03229853e`.
+- Static normal-width subsets: **54,276 bytes (400)** / **57,748 bytes (700)**.
+  Printable Latin, Devanagari/extended/Vedic marks, punctuation and rupee are kept.
+  Full upstream TTF and generated standalone subset files are not committed.
+
+Rebuild/check with the pinned local source font (no network inside the tool):
+
+```bash
+.venv/bin/pip install fonttools==4.68.0 brotli==1.2.1
+.venv/bin/python tools/embed_attendance_font.py /local/NotoSansDevanagari.ttf --check
+# To replace only Attendance’s inline JSON font data:
+.venv/bin/python tools/embed_attendance_font.py /local/NotoSansDevanagari.ttf
+```
+
+The tool verifies the source hash, fixes width/weight, subsets without timestamp
+changes and records source provenance. Its `--check` result is byte-identical
+with these tool versions. It never rewrites the established salary/canteen font
+block. After rebuilding, make a new release copy and run the full suite.
+
+### Attendance verification
+
+`attendance.test.js` checks both offline WOFF2 signatures/provenance/full notice,
+PDF xrefs/stream lengths/text bounds/pagination, real XLSX ZIP/CRC/XML/numeric cells,
+Unicode and literal formula-looking text, native Blob names/MIME, blocked-download
+ready links and unchanged salary/canteen data. Optional `attendance.browser.js`
+uses real Chromium forms and native Latin/Hindi PDF/XLSX downloads. A browser
+without current user activation gets a persistent **Save PDF** link instead of a
+false successful-download claim; close/regeneration revokes the old Blob URLs.
+
+Native Hindi reports for **अजय कुमार / प्रबंधक**, with the note **रात्रि पाली पूरी हुई**,
+were independently rendered/extracted with PyMuPDF and opened with openpyxl;
+Hindi shaping/text, totals, three sheets, freeze/filter headers and numeric types
+were checked. Artifacts stay in ignored `.cache/`; these Python tools and
+Playwright are optional developer QA, not app runtime dependencies.
