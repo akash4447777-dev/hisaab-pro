@@ -595,6 +595,123 @@ function closedDialog(d) { d.w.document.getElementById("modalRoot").innerHTML = 
     db.rows.delete(A.id); assert.equal(await d.C.maybePull(), false); assert.equal(d.C.status, "conflict");
     assert.equal(d.S.data.settings.shopName, "Keep My Shop"); await d.C.resolve("local"); assert.equal(db.get().payload.settings.shopName, "Keep My Shop");
   });
+  console.log("\n▸ v3.19 — attendance on two independent devices, accounts and old clients");
+  const attRules = () => ({ dayStart: "09:00", dayEnd: "18:00", nightStart: "21:00", nightEnd: "06:00", standardMinutes: 480, halfDayMinutes: 240, breakMinutes: 60, lateGraceMinutes: 10, earlyGraceMinutes: 0, paidLeave: true, paidHoliday: true, paidWeekOff: false });
+  const am = (id = "manager-a", code = "M-001") => ({ id, code, name: "Manager " + id, defaultShift: "day", active: true, joinedOn: "", endedOn: "", department: "Operations", phone: "", note: "", createdAt: 1, updatedAt: 1 });
+  const ar = (extra = {}) => ({ id: "attendance-a", managerId: "manager-a", date: "2026-11-14", shift: "day", mode: "tap", status: "present", checkIn: "", checkOut: "", inNextDay: false, outNextDay: false, breakMinutes: 0, policy: attRules(), note: "", createdAt: 1, updatedAt: 1, ...extra });
+  const ap = (records = [], managers = [am()]) => ({ ...data(), attendance: { managers, records, history: [], settings: attRules() } });
+  const api = (d) => d.H.attendance;
+  const attendanceIds = (db) => db.get().payload.attendance.records.map((r) => r.id).sort();
+  await test("fresh second device adopts attendance-only cloud without seeding demo or writing", async () => {
+    const db = new Server(ap([ar()])), d = await device(db); assert.equal(await d.login(), true);
+    assert.equal(d.S.data.workers.length, 0); assert.equal(d.S.data.canteen.entries.length, 0); assert.equal(api(d).data().managers.length, 1); assert.equal(api(d).data().records.length, 1); assert.equal(db.writes.length, 0); noOverwrite(db);
+  });
+  await test("attendance rules-only account is real data even without managers or rows", async () => {
+    const payload = ap([], []); payload.attendance.settings.lateGraceMinutes = 17;
+    const db = new Server(payload), d = await device(db); await d.login(); assert.equal(api(d).data().settings.lateGraceMinutes, 17); assert.equal(db.writes.length, 0);
+  });
+  await test("independent attendance records from two devices merge with salary/canteen intact", async () => {
+    const payload = ap([], [am(), am("manager-b", "M-002")]); payload.canteen.entries.push(ctEntry("real-bill")); payload.workers.push(worker()); payload.records.push(record());
+    const db = new Server(payload), a = await device(db), b = await device(db); await a.login(); await b.login();
+    api(a).saveRecord(ar({ id: undefined })); api(b).saveRecord(ar({ id: undefined, managerId: "manager-b", status: "half" })); await a.C.pushNow(); assert.equal(await b.C.pushNow(), true);
+    assert.equal(db.get().payload.attendance.records.length, 2); assert.deepEqual(rowIds(db), ["real-bill"]); assert.equal(db.get().payload.records[0].presentDays, 24); assert.equal(db.get().payload.workers.length, 1); noOverwrite(db);
+  });
+  await test("same manager/date/shift marked identically on both devices produces one record", async () => {
+    const db = new Server(ap()), a = await device(db), b = await device(db); await a.login(); await b.login();
+    const ra = api(a).saveRecord(ar({ id: undefined })), rb = api(b).saveRecord(ar({ id: undefined })); assert.notEqual(ra.id, rb.id); await a.C.pushNow(); assert.equal(await b.C.pushNow(), true);
+    assert.equal(db.get().payload.attendance.records.length, 1); assert.equal(db.get().payload.attendance.records[0].status, "present");
+  });
+  await test("different simultaneous tap marks require an explicit value choice, never duplicates", async () => {
+    const db = new Server(ap()), a = await device(db), b = await device(db); await a.login(); await b.login();
+    api(a).saveRecord(ar({ id: undefined })); api(b).saveRecord(ar({ id: undefined, status: "absent" })); await a.C.pushNow(); assert.equal(await b.C.pushNow(), false); assert.equal(b.C.status, "conflict");
+    assert.equal(await b.C.resolve("local"), true); assert.equal(db.get().payload.attendance.records.length, 1); assert.equal(db.get().payload.attendance.records[0].status, "absent");
+  });
+  await test("note edit and a separate clock edit merge without recomputing salary", async () => {
+    const payload = ap([ar({ mode: "time", status: "auto", checkIn: "09:00", checkOut: "18:00", breakMinutes: 60 })]);
+    const db = new Server(payload), a = await device(db), b = await device(db); await a.login(); await b.login();
+    api(a).saveRecord({ ...api(a).data().records[0], checkIn: "09:10" }); api(b).saveRecord({ ...api(b).data().records[0], note: "Manager verified" }); await a.C.pushNow(); assert.equal(await b.C.pushNow(), true);
+    const result = db.get().payload.attendance.records[0]; assert.equal(result.checkIn, "09:10"); assert.equal(result.note, "Manager verified");
+  });
+  await test("two independently edited clock spans are not synthesized into a third duration", async () => {
+    const payload = ap([ar({ mode: "time", status: "auto", checkIn: "09:00", checkOut: "18:00", breakMinutes: 60 })]);
+    const db = new Server(payload), a = await device(db), b = await device(db); await a.login(); await b.login();
+    api(a).saveRecord({ ...api(a).data().records[0], checkIn: "10:00" }); api(b).saveRecord({ ...api(b).data().records[0], checkOut: "20:00" }); await a.C.pushNow(); assert.equal(await b.C.pushNow(), false);
+    assert.ok(b.C._pending.conflicts.some((x) => x.endsWith("calculationInputs"))); assert.equal(await b.C.resolve("local"), true);
+    const result = db.get().payload.attendance.records[0]; assert.equal(result.checkIn, "09:00"); assert.equal(result.checkOut, "20:00"); assert.equal(api(b).calculate(result).workedMinutes, 600);
+  });
+  await test("attendance edit versus deletion asks and can retain the exact edited row", async () => {
+    const db = new Server(ap([ar()])), a = await device(db), b = await device(db); await a.login(); await b.login();
+    api(a).deleteRecord("attendance-a"); api(b).saveRecord({ ...api(b).data().records[0], status: "half" }); await a.C.pushNow(); assert.equal(await b.C.pushNow(), false); await b.C.resolve("local"); assert.deepEqual(attendanceIds(db), ["attendance-a"]); assert.equal(db.get().payload.attendance.records[0].status, "half");
+  });
+  await test("intentional profile deletion propagates with attendance collection deletion proof", async () => {
+    const db = new Server(ap([ar()])), a = await device(db), b = await device(db); await a.login(); await b.login();
+    api(a).deleteManager("manager-a"); assert.equal(await a.C.pushNow(), true); assert.ok(db.get().payload._sync.deletedCollections.includes("managers")); assert.ok(db.get().payload._sync.deletedCollections.includes("attendance"));
+    assert.equal(await b.C.maybePull(), true); assert.equal(api(b).data().managers.length, 0); assert.equal(api(b).data().records.length, 0);
+  });
+  for (const preference of ["local", "remote"]) await test("manager delete vs newly added attendance is an explicit dependent choice: " + preference, async () => {
+    const db = new Server(ap()), a = await device(db), b = await device(db); await a.login(); await b.login();
+    api(a).deleteManager("manager-a"); api(b).saveRecord(ar({ id: undefined })); await a.C.pushNow(); assert.equal(await b.C.pushNow(), false); assert.ok(b.C._pending.conflicts.some((x) => x.endsWith("withAttendance")));
+    assert.equal(await b.C.resolve(preference), true); assert.equal(db.get().payload.attendance.managers.length, preference === "local" ? 1 : 0); assert.equal(db.get().payload.attendance.records.length, preference === "local" ? 1 : 0);
+  });
+  await test("concurrent duplicate unique manager codes ask about profiles and dependent attendance", async () => {
+    const db = new Server(ap()), a = await device(db), b = await device(db); await a.login(); await b.login();
+    const ma = api(a).saveManager({ name: "First person", code: "SAME", defaultShift: "day" }), mb = api(b).saveManager({ name: "Second person", code: "SAME", defaultShift: "night" });
+    api(a).saveRecord(ar({ id: undefined, managerId: ma.id })); api(b).saveRecord(ar({ id: undefined, managerId: mb.id, shift: "night" })); await a.C.pushNow(); assert.equal(await b.C.pushNow(), false); assert.ok(b.C._pending.conflicts.includes("attendance.managers.uniqueCodes"));
+    assert.equal(await b.C.resolve("local"), true); assert.equal(db.get().payload.attendance.managers.filter((m) => m.code === "SAME").length, 1); assert.equal(db.get().payload.attendance.managers.find((m) => m.code === "SAME").name, "Second person"); assert.ok(db.get().payload.attendance.records.every((r) => r.managerId !== ma.id));
+  });
+  await test("v3.18 client omitting Attendance cannot erase it while updating a bill", async () => {
+    const payload = ap([ar()]); payload.canteen.entries.push(ctEntry("bill")); const db = new Server(payload), d = await device(db); await d.login();
+    const legacy = copy(db.get().payload); delete legacy.attendance; legacy.canteen.entries[0].amount = 6000; legacy._sync = { v: 2, app: "3.18", deletedCollections: [] }; db.set(A, legacy, "2026-11-14T12:00:00Z");
+    assert.equal(await d.C.maybePull(), true); assert.equal(api(d).data().records.length, 1); assert.equal(db.get().payload.attendance.managers.length, 1); assert.equal(db.get().payload.canteen.entries[0].amount, 6000);
+  });
+  await test("partial Attendance payload preserves omitted managers/rules/history from known baseline", async () => {
+    const payload = ap([ar()]), db = new Server(payload), d = await device(db); await d.login();
+    const remote = copy(db.get().payload); remote.attendance = { records: [{ ...ar(), note: "Partial client correction" }] }; db.set(A, remote, "2026-11-14T12:00:00Z");
+    assert.equal(await d.C.maybePull(), true); assert.equal(api(d).data().managers.length, 1); assert.equal(api(d).data().records[0].note, "Partial client correction"); assert.equal(db.get().payload.attendance.settings.standardMinutes, 480);
+  });
+  await test("unproven empty attendance collections pause instead of erasing a populated device", async () => {
+    const db = new Server(ap([ar()])), d = await device(db); await d.login(); const remote = copy(db.get().payload); remote.attendance.managers = []; remote.attendance.records = []; remote._sync = { v: 2, app: "3.18", deletedCollections: [] }; db.set(A, remote, "2026-11-14T12:00:00Z");
+    assert.equal(await d.C.maybePull(), false); assert.equal(d.C.status, "conflict"); assert.equal(api(d).data().records.length, 1); await d.C.resolve("local"); assert.equal(db.get().payload.attendance.records.length, 1);
+  });
+  await test("offline attendance survives reload and merges independent new remote records", async () => {
+    const db = new Server(ap([], [am(), am("manager-b", "M-002")])), a = await device(db), b = await device(db); await a.login(); await b.login();
+    api(a).saveRecord(ar({ id: undefined })); const saved = a.dump(); a.close();
+    api(b).saveRecord(ar({ id: undefined, managerId: "manager-b" })); await b.C.pushNow();
+    const reopened = await device(db, { storage: saved }); assert.equal(api(reopened).data().records.length, 1); assert.equal(reopened.C.dirty, true); assert.equal(await reopened.login(), true); assert.equal(db.get().payload.attendance.records.length, 2);
+  });
+  await test("open attendance editor blocks remote adoption and baseline advance until closed", async () => {
+    const db = new Server(ap([ar()])), d = await device(db); await d.login(); api(d).openRecord("attendance-a");
+    const remote = copy(db.get().payload); remote.attendance.records[0].status = "half"; db.set(A, remote, "2026-11-14T12:00:00Z");
+    assert.equal(await d.C.pushNow(), false); assert.equal(d.C.base.attendance.records[0].status, "present"); assert.equal(api(d).data().records[0].status, "present"); closedDialog(d); assert.equal(await d.C.pushNow(), true); assert.equal(api(d).data().records[0].status, "half");
+  });
+  await test("account switch resets Attendance selectors/drafts and never inherits another account's managers", async () => {
+    const db = new Server(ap([ar()])); db.set(B, data()); const d = await device(db); await d.login(); api(d).ui().manager = "manager-a"; api(d).ui().q = "private"; api(d).openManager("manager-a");
+    assert.equal(await d.login(B), true); assert.equal(api(d).data().managers.length, 0); assert.equal(api(d).ui().manager, "all"); assert.equal(api(d).ui().q, ""); assert.equal(d.w.document.querySelector("#overlay"), null); assert.equal(db.get(B).payload.attendance, undefined);
+  });
+  await test("duplicate/invalid Attendance on cloud is rejected without dropping surviving local data", async () => {
+    const payload = ap([ar(), ar({ id: "duplicate" })]), db = new Server(payload), d = await device(db, { payload: ap([ar({ status: "half" })]) });
+    assert.equal(await d.login(), false); assert.equal(db.writes.length, 0); assert.equal(api(d).data().records[0].status, "half");
+  });
+  await test("attendance local quota failure cannot become a later cloud upload", async () => {
+    const db = new Server(ap()), d = await device(db); await d.login(); const original = d.w.Storage.prototype.setItem;
+    d.w.Storage.prototype.setItem = () => { throw new Error("quota"); }; assert.throws(() => api(d).saveRecord(ar({ id: undefined }))); assert.equal(api(d).data().records.length, 0); d.w.Storage.prototype.setItem = original;
+    await d.C.pushNow(); assert.equal(db.get().payload.attendance.records.length, 0); assert.equal(db.writes.length, 0);
+  });
+  await test("incompatible concurrent target edits require choosing one valid rule set", async () => {
+    const db = new Server(ap()), a = await device(db), b = await device(db); await a.login(); await b.login();
+    api(a).data().settings.standardMinutes = 240; a.S.save(true); api(b).data().settings.halfDayMinutes = 360; b.S.save(true); await a.C.pushNow(); assert.equal(await b.C.pushNow(), false); assert.ok(b.C._pending.conflicts.includes("attendance.settings.calculationRules"));
+    assert.equal(await b.C.resolve("local"), true); assert.equal(db.get().payload.attendance.settings.standardMinutes, 480); assert.equal(db.get().payload.attendance.settings.halfDayMinutes, 360);
+  });
+  await test("moved date versus edited attendance does not create duplicate persistent IDs", async () => {
+    const db = new Server(ap([ar()])), a = await device(db), b = await device(db); await a.login(); await b.login();
+    api(a).saveRecord({ ...api(a).data().records[0], date: "2026-11-15" }); api(b).saveRecord({ ...api(b).data().records[0], note: "Verified original date" }); await a.C.pushNow(); assert.equal(await b.C.pushNow(), false);
+    if (!await b.C.resolve("remote")) await b.C.resolve("remote"); assert.equal(db.get().payload.attendance.records.length, 1); assert.equal(db.get().payload.attendance.records[0].date, "2026-11-15");
+  });
+  await test("attendance recovery adds missing records without duplicating a date/shift", async () => {
+    const db = new Server(ap([ar()])), d = await device(db); await d.login(); api(d).deleteRecord("attendance-a"); await d.C.pushNow();
+    const saved = d.H.Recovery.list().find((c) => c.payload.attendance?.records.length); assert.ok(saved); d.H.Recovery.merge(saved.id); d.click("#cfmOk"); assert.equal(api(d).data().records.length, 1); assert.equal(await d.C.pushNow(), true); assert.equal(db.get().payload.attendance.records.length, 1);
+  });
+
   await test("all test browsers run without uncaught JavaScript errors", async () => {
     const db = new Server(data(["a"])), d = await device(db); await d.login(); d.H.go("settings");
     d.H.Recovery.open(); assert.deepEqual(d.errors, []); assert.deepEqual(runtimeErrors, []);

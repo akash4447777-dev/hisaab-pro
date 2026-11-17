@@ -1,13 +1,16 @@
 # Hisaab Pro — auto-update system (v2.0)
 
-> **v3.17 data-safety update:** pehle bache-data wale device ka JSON backup lein, phir **dono devices aur purane tabs update/band karein**. Same Supabase project + same email par login karein; `Cloud synced` ki confirmation dekhein. Browser storage clear/reset mat karein. [Login, safe sync aur recovery guide](CLOUD-SYNC.md).
+> **Latest v3.19 — integrated manager Attendance:** Day/Night, Tap/Time, dynamic managers, calendar/ledger/history aur individual PDF + Excel. [Attendance use guide aur configurable starting rules](ATTENDANCE.md). Salary calculations aur v3.18 ke blank canteen summary labels unchanged.
+>
+> **Data-safety update:** pehle bache-data wale device ka JSON backup lein, phir **dono devices aur purane tabs v3.19 par update/band karein**. Same Supabase project + same email par login karein; `Cloud synced` ki confirmation dekhein. Browser storage clear/reset mat karein. [Login, safe sync aur recovery guide](CLOUD-SYNC.md).
 
 ## Ab kaise kaam karta hai
 
 Repo me **`index.html` ek chhota "loader" hai**. Ye har baar khulte hi check karta hai ki repo me
 sabse naya version kaun sa hai, aur **seedha usi ko khol deta hai**.
 
-Iska matlab: **link kabhi nahi badalta, `index.html` bhi kabhi nahi badalna.**
+Iska matlab: **user ka root link nahi badalta**. Loader sabse naya release chunta hai;
+maintainers naye release par known fallback list bhi update karte hain.
 
 > ⚠️ **v3.1 me loader wapas aaya.** Pehle `index.html` repo se delete ho gaya tha, isi liye
 > `https://<username>.github.io/<repo>/` par **404 "File not found"** aa raha tha
@@ -44,8 +47,8 @@ https://<username>.github.io/<repo>/        <- yahi link hamesha
 3. Link refresh karo (wahi purana link) → **panel khud naya version khol lega**
    *(sidebar me `Panel v2.1` likha milega = confirm)*
 
-> `index.html` ko dobara chhune ki zaroorat kabhi nahi. Purane version files bhi repo me pade rehne do —
-> loader apne aap sabse naya uthata hai. (Chaho to purane delete bhi kar sakte ho, koi dikkat nahi.)
+> Purane version files ko historical releases ki tarah unchanged rakhein. Loader API se
+> latest chunta hai; API fail ho to latest known release ko older cached build se pehle probe karta hai.
 
 ## Naam ka rule (important)
 
@@ -67,6 +70,7 @@ File ka naam me version hona chahiye: **`Hisaab-Pro-v<number>.<number>.html`**
 
 | Version | Date | Kya badla | File |
 |---|---|---|---|
+| v3.19 | 2026-11-14 | **Manager Attendance existing panel me integrated.** Dynamic profiles; Day/Night; one-tap Present/Absent/Half/Leave/Week off/Holiday; 24-hour Time mode + overnight check-in/out, breaks, saved rule snapshots, hours/OT/late/early. Daily board, calendar, weekly/monthly/custom ledger, search/filter/sort, bulk skip/explicit overwrite, duplicate prevention, history + dashboard. Real individual custom-range PDF (Hindi shaping) + 3-sheet Excel, persistent ready-file download links. Existing auto-save/JSON/safety copies/account-scoped conditional cloud merge includes Attendance; salary calculations and v3.18 blank canteen summary labels unchanged. **696 checks:** 406 canteen + 29 loader + 26 PDF + 99 cloud + 136 Attendance; optional real Chromium **27 checks**. [Use guide](ATTENDANCE.md). | `Hisaab-Pro-v3.19.html` |
 | v3.18 | 2026-11-14 | **Sirf PDF summary labels blank.** Screenshot wale Bikri / income aur Kharcha labels din + mahina summary me khaali; amounts (₹0.00 bhi), dashed rows, spacing, totals, fonts aur baaki format unchanged. Print/save-as-PDF aur WhatsApp attachment same. App entries, table columns aur v3.17 cloud safety unchanged. Tests: 406 canteen + 29 loader + 26 PDF + 76 cloud = **537**. | `Hisaab-Pro-v3.18.html` |
 | v3.17 | 2026-11-14 | **Cross-device data-loss fix.** Canteen-only / salary / settings data ko populated maana jata hai; fresh demo/empty login se cloud overwrite nahi. Durable offline working/base + account/project isolation; three-way merge; conditional update/unique insert (no upsert), races par retry. Financial/edit-v-delete/dependent salary conflicts par explicit values + choice, failed saves par honest status/retry banner. Suspicious legacy missing data protected; last 3 local safety copies + JSON/missing-data recovery. Loader API fail par cached old build se pehle known latest fix. Existing key, salary/canteen, Segoe PDF, 6 templates aur WhatsApp safe. **533 checks:** 406 canteen + 29 loader + 22 PDF + 76 cloud. [Guide](CLOUD-SYNC.md). | `Hisaab-Pro-v3.17.html` |
 | v3.16 | 2026-11-14 | **Reference PDF re-analysis: asli Segoe UI Regular/Bold/Black embedded**, offline bhi same fonts, asli ₹ / minus, real glyph widths + ToUnicode. Bottom screenshot jaisa: white/light-grey net row (dark band nahi), rounded dashed amount-in-words box, 52px writing gap, Prepared by / owner lines, phir flowing note + version. Poora closing ek page par; continuation table top se restart; saare items/parties include. 6 templates, WhatsApp aur saved data safe. Tests: 406 canteen + 25 loader + 22 PDF. | `Hisaab-Pro-v3.16.html` |
@@ -89,8 +93,18 @@ File ka naam me version hona chahiye: **`Hisaab-Pro-v<number>.<number>.html`**
 | v2.0 | 2026-11-11 | Auto-update loader + fixed working hours/overtime removed. Hourly worker = rate × total hours (naya Hours column). Monthly = ÷30 fixed, Sunday auto-exclude. Version badge. | `Hisaab-Pro-v2.0.html` |
 
 > **File ka rule:** `hisaab_v3.html` = working/source file (yahan change hota hai).
-> `Hisaab-Pro-v3.18.html` = usi ka release copy, taaki upar wala loader apne aap sabse naya version utha le.
+> `Hisaab-Pro-v3.19.html` = usi ka release copy, taaki upar wala loader apne aap sabse naya version utha le.
 > Dono ka content abhi **bilkul same** hai. Purane `Hisaab-Pro-v3.1.html` / `v2.0` repo me pade rehne do.
+
+---
+
+# Manager Attendance (v3.19) — kaise use karein
+
+Sidebar → **Attendance** → **Add manager** → **Shift & credit rules** review → Tap/Time mode.
+Day/Night, 24-hour + next-day clocks, calendar, ledger, bulk, custom-range PDF/Excel,
+auto-save/backup aur limits: **[poora Attendance guide](ATTENDANCE.md)**.
+Starting hours/grace/credits configurable hain, user-approved business policy nahi;
+Attendance salary calculations ko nahi badalta.
 
 ---
 
@@ -213,5 +227,6 @@ red badge = is mahine kitni entries ka paisa baki hai.
 
 ## 7. Developer tests
 
-`tests/` folder me jsdom smoke tests hain (~269 canteen + ~27 loader checks) — app ke liye zaroori nahi, sirf
-change ke baad verify karne ke liye. Details: `tests/README.md`.
+`tests/` folder me **696 offline checks** (canteen/salary, loader, PDF, cloud aur
+Attendance) + optional **27 real Chromium checks** hain. App ke liye test dependencies
+zaroori nahi. Commands, fixtures aur QA limits: [`tests/README.md`](tests/README.md).

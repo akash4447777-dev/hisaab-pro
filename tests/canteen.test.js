@@ -3,7 +3,7 @@ const fs = require("fs");
 const path = require("path");
 const { JSDOM, VirtualConsole } = require("jsdom");
 
-const FILE = process.argv[2] ? path.resolve(process.argv[2]) : path.join(__dirname, "..", "hisaab_v3.html");
+const FILE = process.argv[2] ? path.resolve(process.argv[2]) : process.env.HISAAB_HTML || path.join(__dirname, "..", "hisaab_v3.html");
 const html = fs.readFileSync(FILE, "utf8");
 
 const errors = [];
@@ -66,7 +66,7 @@ const iso = (d) => d.getFullYear() + "-" + String(d.getMonth() + 1).padStart(2, 
   ok(H().Store.data.canteen.entries.length > 0, "sample canteen entries load hui (" + H().Store.data.canteen.entries.length + ")");
   ok(H().Store.data.workers.length === 4, "workers safe (4 demo)");
   const verEl = $("[data-ver]");
-  ok(verEl && verEl.textContent === "3.18", "version badge 3.18", verEl && verEl.textContent);
+  ok(verEl && verEl.textContent === "3.19", "version badge 3.19", verEl && verEl.textContent);
   ok(root().innerHTML.indexOf("Canteen") >= 0, "dashboard par canteen card dikha");
   ok(root().innerHTML.indexOf("Saman aaya") >= 0, "dashboard canteen strip me 'Saman aaya'");
 
