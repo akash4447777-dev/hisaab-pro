@@ -1,6 +1,6 @@
 {
   "name": "hisaab-pro-tests",
-  "version": "3.17.0",
+  "version": "3.18.0",
   "private": true,
   "description": "Hisaab \u2014 canteen, salary regression, loader, PDF aur safe cloud sync ke developer-only tests",
   "scripts": {

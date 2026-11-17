@@ -1821,7 +1821,7 @@ const rRate = (n) => { const x = Math.max(0, num(n)); return x >= 1 ? r2(x) : Ma
 /* rate dikhane ka format: <₹1 ho to 0.075 jaisa khula number, warna moneyS */
 const rateS = (n) => { const x = num(n); if (x > 0 && x < 1) return "₹" + String(Math.round((x + Number.EPSILON) * 10000) / 10000); return moneyS(x); };
 const clamp = (n, lo, hi) => Math.min(hi, Math.max(lo, n));
-const APP_VERSION = "3.17";
+const APP_VERSION = "3.18";
 const esc = (s) => String(s == null ? "" : s).replace(/[&<>"']/g, (m) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[m]));
 
 const MONTHS = ["January","February","March","April","May","June","July","August","September","October","November","December"];
@@ -3134,6 +3134,7 @@ function viewSettings(){
 
     '<div style="text-align:center;font-size:11.5px;color:var(--muted);margin-top:18px;line-height:1.7">'+
       'Panel <b style="color:var(--ink)">v<span data-ver></span></b> · Auto-update enabled<br>'+
+      'v3.18 — <b style="color:var(--ink)">PDF summary labels</b>: screenshot wale Bikri aur Kharcha labels blank; amounts, dashed rows, spacing, totals aur baaki format same. Din/mahina, print aur WhatsApp PDF me bhi yahi change; app entries/data aur cloud sync unchanged<br>'+
       'v3.17 — <b style="color:var(--ink)">Safe cloud login + device sync</b>: naya/empty/demo device real data overwrite nahi karta; salary + canteen pehle compare aur safely merge hote hain. Offline changes reload ke baad bhi pending rehte hain; financial/edit-v-delete conflicts par explicit choice; failed local/cloud save par saaf warning. Account-wise safety copies + JSON recovery; purana data key, PDF/fonts, 6 templates aur WhatsApp unchanged<br>'+
       'v3.16 — <b style="color:var(--ink)">Reference PDF ka font + bottom</b>: asli Segoe UI Regular/Bold/Black fonts embedded (offline bhi); asli ₹ aur minus; halka net row, rounded dashed in-words box, 52px writing gap, Prepared by / owner lines; note + version signature ke turant neeche; poora closing block saath rehta hai. Tables ke page-break bhi reset hote hain. 🎨 6 templates aur WhatsApp same PDF<br>'+
       'v3.15 — <b style="color:var(--ink)">Entries clean + alignment fix</b>: din ki entries table me ab <b>products list nahi</b> (products sirf SAMAN ITEM-WISE summary me) — rows chhoti aur saaf; Amount/Paid/Baki columns <b>chauri</b> (Rs.2,800.00 jaise amounts overlap nahi karte); <b>page-2 fix</b> — net band / in-words / signature kabhi footer par nahi chadhte (auto page-break); header me print jaisa em-dash (—)<br>'+
@@ -6786,6 +6787,7 @@ function ctStmtHead(title, sub, right) {
       '<div style="font-size:10.5px;color:#6b7280;margin-top:2px">' + esc(right || "") + "</div></div>" +
   "</div>";
 }
+/* v3.18: summary ke sale/expense labels blank; amounts, rows aur hisaab unchanged. */
 function ctPrintHTML(kind, arg) {
   const y = UI.year, m = UI.month;
   if (kind === "day") {
@@ -6797,7 +6799,7 @@ function ctPrintHTML(kind, arg) {
       '<div class="meta"><div>' +
         mRow("Date", ctPretty(arg)) + mRow("Din", ctDayName(arg)) + mRow("Entries", String(t.count)) +
       "</div><div>" +
-        mRow("Saman aaya", money(t.purchase)) + mRow("Bikri", money(t.sale)) + mRow("Kharcha", money(t.expense)) +
+        mRow("Saman aaya", money(t.purchase)) + mRow("", money(t.sale)) + mRow("", money(t.expense)) +
       "</div></div>" +
       '<h4 class="sec">Entries</h4>' +
       (list.length
@@ -6836,7 +6838,7 @@ function ctPrintHTML(kind, arg) {
   return '<div class="stmt ct-stmt"><div class="pad">' +
     ctStmtHead("CANTEEN MONTHLY LEDGER", monthLabel(y, m), "Generated " + new Date().toLocaleString("en-IN")) +
     '<div class="meta"><div>' +
-      mRow("Saman aaya (purchase)", money(t.purchase)) + mRow("Bikri / income", money(t.sale)) + mRow("Kharcha", money(t.expense)) +
+      mRow("Saman aaya (purchase)", money(t.purchase)) + mRow("", money(t.sale)) + mRow("", money(t.expense)) +
     "</div><div>" +
       mRow("Entries", t.count + " (" + days.length + " din)") + mRow("Paisa diya (paid)", money(t.paid)) + mRow("Baki / udhaar", money(t.balance)) +
     "</div></div>" +
@@ -7208,7 +7210,7 @@ function ctPdfDayStr(iso) {
   let y = ctPdfHead(p, "CANTEEN DAY LEDGER", ctPretty(iso) + " (" + ctDayName(iso) + ")");
   y = ctPdfSummary(p, y,
     [["Date", ctPretty(iso)], ["Din", ctDayName(iso)], ["Entries", String(t.count)]],
-    [["Saman aaya", money(t.purchase)], ["Bikri", money(t.sale)], ["Kharcha", money(t.expense)]]);
+    [["Saman aaya", money(t.purchase)], ["", money(t.sale)], ["", money(t.expense)]]);
   y = ctPdfSecTitle(p, y, "ENTRIES");
   y = ctPdfTable(p, y, CT_COLS_DAY, list.slice().reverse().map((e) => [
     ctKindOf(e).en, e.party || "\u2014", e.billNo || "\u2014",
@@ -7238,7 +7240,7 @@ function ctPdfMonthStr(y, m) {
   const days = ctMonthDays(y, m).filter((d) => d.list.length);
   let yy = ctPdfHead(p, "CANTEEN MONTHLY LEDGER", monthLabel(y, m));
   yy = ctPdfSummary(p, yy,
-    [["Saman aaya (purchase)", money(t.purchase)], ["Bikri / income", money(t.sale)], ["Kharcha", money(t.expense)]],
+    [["Saman aaya (purchase)", money(t.purchase)], ["", money(t.sale)], ["", money(t.expense)]],
     [["Entries", t.count + " (" + days.length + " din)"], ["Paisa diya (paid)", money(t.paid)],
      ["Baki / udhaar", money(t.balance), t.balance > 0.005 ? ctTpl().bad : undefined]]);
   yy = ctPdfSecTitle(p, yy, "DIN-WISE LEDGER");

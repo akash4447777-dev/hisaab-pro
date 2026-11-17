@@ -90,7 +90,7 @@ function closing(pdf) {
   const words = find(page, "Amount in words:");
   const prepared = find(page, "Prepared by"), owner = page.texts.find((t) => t.text === "Proprietor");
   assert.ok(owner, "signature owner, not the address header");
-  const footer = find(page, "Hisaab v3.17"), note = find(page, "This is a computer-generated");
+  const footer = find(page, "Hisaab v3.18"), note = find(page, "This is a computer-generated");
   const value = page.texts.find((t) => t.font === 3 && t.y < label.y && t.y > words.y);
   assert.ok(value, "16.5pt Black net value");
   close(label.size, 8.25); close(label.spacing, .825);
@@ -109,6 +109,20 @@ function closing(pdf) {
   assert.ok(!/515\.28 28\.00 re f/.test(ending), "no dark net rectangle");
   return { page, label, words, prepared, footer, value };
 }
+// Summary labels alone are blank: keep all three rows, values and baselines.
+function blankSummary(pdf, which, amounts) {
+  const page = pages(pdf)[0], labelX = which === "day" ? 312.64 : 40;
+  const rows = [768, 754, 740].map((y) => page.texts.find((t) => t.font === 1 && t.size === 8.625 && Math.abs(t.x - labelX) < .01 && t.y === y));
+  assert.ok(rows.every(Boolean), "all three summary label slots retained");
+  assert.ok(rows[0].text.startsWith("Saman aaya"));
+  assert.deepEqual(rows.slice(1).map((t) => t.text), ["", ""]);
+  const right = labelX + 242.64;
+  amounts.forEach((amount, i) => {
+    const text = encoded("₹" + amount.toLocaleString("en-IN", { minimumFractionDigits: 2, maximumFractionDigits: 2 }));
+    assert.ok(page.texts.some((t) => t.font === 2 && t.size === 8.625 && t.y === 768 - i * 14 && t.text === text &&
+      Math.abs(t.x + P.measure(t.text, t.size, true) - right) < .02), "summary amount stays right-aligned: " + amount);
+  });
+}
 function bodyBounds(pdf) {
   for (const page of pages(pdf)) for (const t of page.texts) {
     if (/ · Page \d+ of \d+$/.test(t.text)) continue;
@@ -119,7 +133,7 @@ function bodyBounds(pdf) {
 }
 
 (async () => {
-  console.log("\n▸ v3.17 — reference PDF font + closing geometry");
+  console.log("\n▸ v3.18 — reference PDF font + closing geometry");
   check("Segoe UI Regular/Bold/Black embedded, not a Helvetica substitute", () => {
     assert.deepEqual([fonts.regular.name, fonts.bold.name, fonts.black.name], ["SegoeUI", "SegoeUI-Bold", "SegoeUIBlack"]);
     for (const key of ["regular", "bold", "black"]) {
@@ -139,8 +153,8 @@ function bodyBounds(pdf) {
   });
   fixture([entry("ref1", 3438), entry("ref2", 2800, { kind: "expense", party: "GAS AGENCY" }), entry("ref3", 228, { kind: "expense", party: "Misc" })]);
   const referenceDay = day(), referenceMonth = month();
-  artifact("Hisaab-v3.17-day-preview.pdf", referenceDay);
-  artifact("Hisaab-v3.17-format-preview.pdf", referenceMonth);
+  artifact("Hisaab-v3.18-day-preview.pdf", referenceDay);
+  artifact("Hisaab-v3.18-format-preview.pdf", referenceMonth);
   check("₹ / minus / em dash have correct ToUnicode mappings (copy/search works)", () => {
     for (const str of ["<80> <20b9>", "<81> <2212>", "<97> <2014>"]) assert.ok(referenceMonth.includes(str));
     assert.ok(referenceMonth.includes("(" + encoded("−₹6,466.00") + ") Tj"));
@@ -167,6 +181,46 @@ function bodyBounds(pdf) {
   check("six templates keep their table designs and the same reference closing", () => {
     for (const tpl of C.tpls) { C.setTpl(tpl.id); closing(day()); closing(month()); }
     C.setTpl("neela");
+  });
+  check("v3.18: screenshot summary has blank Bikri/Kharcha labels, but ₹0.00 rows remain", () => {
+    fixture([entry("screenshot", 228)]);
+    blankSummary(day(), "day", [228, 0, 0]); blankSummary(month(), "month", [228, 0, 0]);
+    artifact("Hisaab-v3.18-labels-preview.pdf", day());
+  });
+  check("v3.18: all six templates match v3.17 drawing ops except the two summary labels/version", () => {
+    const previous = new JSDOM(fs.readFileSync(path.join(__dirname, "..", "Hisaab-Pro-v3.17.html"), "utf8"), {
+      runScripts: "dangerously", url: "https://previous.example.test/", virtualConsole: new VirtualConsole(),
+      beforeParse(w) { w.scrollTo = () => {}; w.print = () => {}; }
+    });
+    try {
+      fixture([entry("purchase", 228), entry("sale", 910, { kind: "sale" }), entry("expense", 47, { kind: "expense" })]);
+      const old = previous.window.Hisaab; old.Store.data = JSON.parse(JSON.stringify(H.Store.data));
+      const normal = (pdf) => pages(pdf).map((pg) => pg.ops
+        .replace(/(BT \/F1 8\.625 Tf [^\n]*? Tm )\((?:Bikri(?: \/ income)?|Kharcha)\)( Tj ET)/g, "$1()$2")
+        .replace(/^BT .*\(Generated .*$/gm, "GENERATED HEADER")
+        .replace(/Hisaab v3\.1[78]/g, "Hisaab vVERSION"));
+      for (const tpl of C.tpls) {
+        C.setTpl(tpl.id); old.canteen.setTpl(tpl.id);
+        const d = day(), m = month();
+        blankSummary(d, "day", [228, 910, 47]); blankSummary(m, "month", [228, 910, 47]);
+        assert.deepEqual(normal(d), normal(old.canteen.pdfDayStr(DATE).str), tpl.id + " day: no other layout/text/amount changes");
+        assert.deepEqual(normal(m), normal(old.canteen.pdfMonthStr(YEAR, MONTH).str), tpl.id + " month: no other layout/text/amount changes");
+      }
+      C.setTpl("neela");
+    } finally { previous.window.close(); }
+  });
+  check("v3.18: print/save-as-PDF summary mirrors blanks; nonzero amounts/data/UI stay intact", () => {
+    const before = JSON.stringify(H.Store.data);
+    for (const which of ["day", "month"]) {
+      if (which === "day") C.printDay(); else C.printMonth();
+      const column = w.document.querySelector("#print-root .meta").children[which === "day" ? 1 : 0];
+      assert.deepEqual(Array.from(column.querySelectorAll(".r > span"), (el) => el.textContent).slice(1), ["", ""]);
+      assert.deepEqual(Array.from(column.querySelectorAll(".r > b"), (el) => el.textContent), ["₹228.00", "₹910.00", "₹47.00"]);
+    }
+    assert.equal(JSON.stringify(H.Store.data), before);
+    H.go("canteen");
+    assert.ok(w.document.getElementById("viewRoot").textContent.includes("Bikri"));
+    assert.ok(w.document.getElementById("viewRoot").textContent.includes("Kharcha"));
   });
   check("all ASCII letters/digits work in each weight, not just the PDF's subset", () => {
     const p = new P(), text = "QVXZ jqxz 1234567890 ₹ − — –";
@@ -205,7 +259,7 @@ function bodyBounds(pdf) {
   check("multipage: earlier sheets have page markers, final footer is reference-style", () => {
     const ps = pages(multiMonth);
     ps.slice(0, -1).forEach((pg, i) => find(pg, "Page " + (i + 1) + " of " + ps.length));
-    assert.ok(!find(ps.at(-1), "Hisaab v3.17").text.includes("Page"));
+    assert.ok(!find(ps.at(-1), "Hisaab v3.18").text.includes("Page"));
   });
   check("entries table contains no products; item-wise summary still has them", () => {
     const text = pages(multiDay).map((pg) => pg.texts.map((t) => t.text).join("\n")).join("\n");
@@ -229,7 +283,7 @@ function bodyBounds(pdf) {
     const words = find(pg, "Amount in words:"), prepared = find(pg, "Prepared by");
     const wordsLast = pg.texts.filter((t) => t.font === 2 && t.size === 8.625).at(-1);
     assert.ok(words.y >= wordsLast.y && wordsLast.y - prepared.y >= 64.4);
-    const foot = find(pg, "Hisaab v3.17");
+    const foot = find(pg, "Hisaab v3.18");
     assert.ok(prepared.y - foot.y >= 38.25);
     assert.ok(pg.texts.filter((t) => t.size === 7.5).length > 2);
     artifact("wrapped-closing.pdf", pdf);
@@ -250,6 +304,13 @@ function bodyBounds(pdf) {
     assert.equal(shared.files[0].type, "application/pdf");
     assert.ok(pdf.includes("/BaseFont /SegoeUIBlack") && pdf.includes("/FontFile2"));
   });
+  check("v3.18: WhatsApp day AND month PDFs have the same blank summary labels", () => {
+    for (const which of ["day", "month"]) {
+      shared = null; blobBytes = null; C.sharePdf(which, DATE, YEAR, MONTH);
+      assert.ok(shared && blobBytes); blankSummary(blobBytes.toString("latin1"), which, [6466, 0, 0]);
+    }
+  });
+  await Promise.resolve();
   w.Blob = RealBlob;
   C.printDay();
   const dayPrint = w.document.getElementById("print-root").innerHTML;

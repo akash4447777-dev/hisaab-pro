@@ -1,6 +1,6 @@
 # Hisaab Pro — tests (developer only)
 
-Ye folder **app ke liye zaroori nahi**. `hisaab_v3.html` / `Hisaab-Pro-v3.17.html` akeli file me chalti hai —
+Ye folder **app ke liye zaroori nahi**. `hisaab_v3.html` / `Hisaab-Pro-v3.18.html` akeli file me chalti hai —
 kisi install ki zaroorat nahi. Ye tests sirf tab chalao jab code me change kiya ho aur check karna ho
 ki **Canteen module**, salary, PDF, loader aur **cross-device cloud sync** toot to nahi gaye.
 
@@ -9,12 +9,12 @@ ki **Canteen module**, salary, PDF, loader aur **cross-device cloud sync** toot 
 ```bash
 cd tests
 npm ci               # lockfile se jsdom install hota hai
-npm test             # 533 checks: canteen 406 + loader 29 + PDF 22 + cloud 76
-node canteen.test.js ../Hisaab-Pro-v3.17.html   # kisi aur file par chalana ho
+npm test             # 537 checks: canteen 406 + loader 29 + PDF 26 + cloud 76
+node canteen.test.js ../Hisaab-Pro-v3.18.html   # kisi aur file par chalana ho
 node loader.test.js  # sirf index.html loader ke tests
 node pdf.test.js     # fonts + bottom geometry + multi-page
 node cloud.test.js   # fake backend + independent browser stores, 76 sync checks
-HISAAB_HTML=../Hisaab-Pro-v3.17.html node cloud.test.js  # exact release bhi check karein
+HISAAB_HTML=../Hisaab-Pro-v3.18.html node cloud.test.js  # exact release bhi check karein
 node pdf.test.js --artifacts ../.cache/pdf-qa # optional local sample PDFs
 ```
 
@@ -24,6 +24,7 @@ Sab theek ho to aakhri line aati hai: `✅ SAB CHECKS PASS` / `✅ LOADER SAB TE
 
 | Area | Checks |
 |---|---|
+| PDF summary labels (v3.18) | screenshot ke Bikri/Kharcha labels blank, zero aur nonzero amounts same right-aligned positions par; saare 6 templates ke day/month drawing ops v3.17 se identical (sirf 2 labels/version differ); print + WhatsApp PDF bhi same; app labels/data unchanged |
 | Safe cloud sync (v3.17) | canteen-only/records/rates/log/settings-only login, demo suppression, stale demo flags, no echo, independent changes + first-insert/CAS races, financial/worker-delete-v-salary/payment conflicts, exact-value re-approval, in-flight edits/save failures, offline reload + online retry, legacy missing/empty snapshots, RLS/read/write failures, null stamp, account/project/logout/late-session guards, cross-tab stale writes, corrupt JSON/cache, quota rollback, photo dedup, scoped recovery, no fake success, modal baseline guard |
 | Loader safety (v3.17) | API list + latest release, API failure par cached older build se pehle known data-safety fix, future cached release aur missing-cache fallback, file chooser |
 | Boot | sidebar me Canteen, `Store.data.canteen`, sample data, version badge, dashboard card |
