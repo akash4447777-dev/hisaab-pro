@@ -12,13 +12,14 @@ function ok(c, l, e) {
   else { fails++; console.log("  \u274C " + l + (e !== undefined ? " \u2192 " + JSON.stringify(e) : "")); }
 }
 
-function makeDom({ files, apiStatus = 200, url = "https://akash4447777-dev.github.io/hisaab-pro/" }) {
+function makeDom({ files, apiStatus = 200, cache, url = "https://akash4447777-dev.github.io/hisaab-pro/" }) {
   const vc = new VirtualConsole();
   const calls = [];
   let redirected = null;
   const dom = new JSDOM(html, {
     runScripts: "dangerously", pretendToBeVisual: true, url, virtualConsole: vc,
     beforeParse(w) {
+      if (cache) w.localStorage.setItem("hisaabPro.loader.v1", cache);
       w.fetch = (u, opts) => {
         calls.push(String(u) + " " + ((opts && opts.method) || "GET"));
         if (String(u).indexOf("api.github.com") === 0) {
@@ -97,7 +98,7 @@ const wait = (ms) => new Promise((r) => setTimeout(r, ms));
     dom.window.close();
   }
 
-  console.log("\n\u25b8 boot: purane + v3.16 sab ho \u2192 v3.16 khule");
+  console.log("\n\u25b8 boot: purane + v3.17 sab ho \u2192 v3.17 khule");
   {
     const files = [
       { name: "index.html", type: "file", size: 9000 },
@@ -116,14 +117,15 @@ const wait = (ms) => new Promise((r) => setTimeout(r, ms));
       { name: "Hisaab-Pro-v3.13.html", type: "file", size: 380000 },
       { name: "Hisaab-Pro-v3.14.html", type: "file", size: 382000 },
       { name: "Hisaab-Pro-v3.15.html", type: "file", size: 384000 },
-      { name: "Hisaab-Pro-v3.16.html", type: "file", size: 384000 },
+      { name: "Hisaab-Pro-v3.16.html", type: "file", size: 610729 },
+      { name: "Hisaab-Pro-v3.17.html", type: "file", size: 650000 },
       { name: "Hisaab-Pro-v2.0.html", type: "file", size: 143224 }
     ];
     const dom = makeDom({ files });
     await wait(200);
-    ok(dom.window.__getRedirect() === "/hisaab-pro/Hisaab-Pro-v3.16.html",
-       "sabse naya version v3.16 chuna", dom.window.__getRedirect());
-    ok(dom.window.localStorage.getItem("hisaabPro.loader.v1") === "Hisaab-Pro-v3.16.html", "v3.16 cache hua");
+    ok(dom.window.__getRedirect() === "/hisaab-pro/Hisaab-Pro-v3.17.html",
+       "sabse naya version v3.17 chuna", dom.window.__getRedirect());
+    ok(dom.window.localStorage.getItem("hisaabPro.loader.v1") === "Hisaab-Pro-v3.17.html", "v3.17 cache hua");
     await wait(80);
     dom.window.close();
   }
@@ -139,6 +141,30 @@ const wait = (ms) => new Promise((r) => setTimeout(r, ms));
     ok(dom.window.__getRedirect() === "/hisaab-pro/Hisaab-Pro-v3.1.html",
        "API band ho to probe se v3.1 mila", dom.window.__getRedirect());
     await wait(80);
+    dom.window.close();
+  }
+
+  console.log("\n▸ API fail: cached old release cannot outrank the data-safety fix");
+  {
+    const files = [{ name: "Hisaab-Pro-v3.16.html", type: "file" }, { name: "Hisaab-Pro-v3.17.html", type: "file" }];
+    const dom = makeDom({ files, apiStatus: 403, cache: "Hisaab-Pro-v3.16.html" });
+    await wait(200);
+    ok(dom.window.__getRedirect() === "/hisaab-pro/Hisaab-Pro-v3.17.html", "cached v3.16 ke badle v3.17 safety fix khuli");
+    ok(dom.window.__calls.find((c) => c.endsWith(" HEAD")).includes("v3.17"), "HEAD probe bhi naya release pehle");
+    dom.window.close();
+  }
+  {
+    const files = [{ name: "Hisaab-Pro-v3.18.html", type: "file" }, { name: "Hisaab-Pro-v3.17.html", type: "file" }];
+    const dom = makeDom({ files, apiStatus: 403, cache: "Hisaab-Pro-v3.18.html" });
+    await wait(200);
+    ok(dom.window.__getRedirect() === "/hisaab-pro/Hisaab-Pro-v3.18.html", "future cached version known candidates se naya ho to wahi");
+    dom.window.close();
+  }
+  {
+    const files = [{ name: "Hisaab-Pro-v3.17.html", type: "file" }];
+    const dom = makeDom({ files, apiStatus: 403, cache: "Hisaab-Pro-v99.0.html" });
+    await wait(200);
+    ok(dom.window.__getRedirect() === "/hisaab-pro/Hisaab-Pro-v3.17.html", "missing future cache par known latest fallback");
     dom.window.close();
   }
 
@@ -170,8 +196,8 @@ const wait = (ms) => new Promise((r) => setTimeout(r, ms));
     await wait(100);
     ok(dom.window.document.getElementById("err").hidden === false, "file mode me chooser dikha");
     const btns = dom.window.document.getElementById("errBtns").textContent;
-    ok(btns.indexOf("Hisaab-Pro-v3.16.html") >= 0, "file mode me v3.16 link bhi hai");
-    ok(btns.indexOf("Hisaab-Pro-v3.16.html") < btns.indexOf("Hisaab-Pro-v3.14.html") &&
+    ok(btns.indexOf("Hisaab-Pro-v3.17.html") >= 0, "file mode me v3.17 link bhi hai");
+    ok(btns.indexOf("Hisaab-Pro-v3.17.html") < btns.indexOf("Hisaab-Pro-v3.14.html") &&
        btns.indexOf("Hisaab-Pro-v3.14.html") < btns.indexOf("Hisaab-Pro-v3.13.html") &&
        btns.indexOf("Hisaab-Pro-v3.13.html") < btns.indexOf("Hisaab-Pro-v3.12.html") &&
        btns.indexOf("Hisaab-Pro-v3.12.html") < btns.indexOf("Hisaab-Pro-v3.11.html") &&

@@ -1,5 +1,7 @@
 # Hisaab Pro — auto-update system (v2.0)
 
+> **v3.17 data-safety update:** pehle bache-data wale device ka JSON backup lein, phir **dono devices aur purane tabs update/band karein**. Same Supabase project + same email par login karein; `Cloud synced` ki confirmation dekhein. Browser storage clear/reset mat karein. [Login, safe sync aur recovery guide](CLOUD-SYNC.md).
+
 ## Ab kaise kaam karta hai
 
 Repo me **`index.html` ek chhota "loader" hai**. Ye har baar khulte hi check karta hai ki repo me
@@ -65,6 +67,7 @@ File ka naam me version hona chahiye: **`Hisaab-Pro-v<number>.<number>.html`**
 
 | Version | Date | Kya badla | File |
 |---|---|---|---|
+| v3.17 | 2026-11-14 | **Cross-device data-loss fix.** Canteen-only / salary / settings data ko populated maana jata hai; fresh demo/empty login se cloud overwrite nahi. Durable offline working/base + account/project isolation; three-way merge; conditional update/unique insert (no upsert), races par retry. Financial/edit-v-delete/dependent salary conflicts par explicit values + choice, failed saves par honest status/retry banner. Suspicious legacy missing data protected; last 3 local safety copies + JSON/missing-data recovery. Loader API fail par cached old build se pehle known latest fix. Existing key, salary/canteen, Segoe PDF, 6 templates aur WhatsApp safe. **533 checks:** 406 canteen + 29 loader + 22 PDF + 76 cloud. [Guide](CLOUD-SYNC.md). | `Hisaab-Pro-v3.17.html` |
 | v3.16 | 2026-11-14 | **Reference PDF re-analysis: asli Segoe UI Regular/Bold/Black embedded**, offline bhi same fonts, asli ₹ / minus, real glyph widths + ToUnicode. Bottom screenshot jaisa: white/light-grey net row (dark band nahi), rounded dashed amount-in-words box, 52px writing gap, Prepared by / owner lines, phir flowing note + version. Poora closing ek page par; continuation table top se restart; saare items/parties include. 6 templates, WhatsApp aur saved data safe. Tests: 406 canteen + 25 loader + 22 PDF. | `Hisaab-Pro-v3.16.html` |
 | v3.15 | 2026-11-16 | **Entries clean + alignment.** Din ki entries table me products list khatam (sirf item-wise summary me); Amount/Paid/Baki columns chauri — koi overlap nahi; page-2 par net band/in-words/signature footer se kabhi nahi takrate (auto page-break); header me em-dash print jaisa. | `Hisaab-Pro-v3.15.html` |
 | v3.14 | 2026-11-16 | **PDF = print CSS exact mirror.** Tables full-grid (har cell border + grey header fill #f3f4f6) jaisa print me; meta rows dashed underline; section titles solid underline; Amount-in-words dashed box; signature do boxes (top border); footer me version + page; fontsizes print px→pt exact. Default template print-exact; 5 templates colour tint. | `Hisaab-Pro-v3.14.html` |
@@ -85,7 +88,7 @@ File ka naam me version hona chahiye: **`Hisaab-Pro-v<number>.<number>.html`**
 | v2.0 | 2026-11-11 | Auto-update loader + fixed working hours/overtime removed. Hourly worker = rate × total hours (naya Hours column). Monthly = ÷30 fixed, Sunday auto-exclude. Version badge. | `Hisaab-Pro-v2.0.html` |
 
 > **File ka rule:** `hisaab_v3.html` = working/source file (yahan change hota hai).
-> `Hisaab-Pro-v3.15.html` = usi ka release copy, taaki upar wala loader apne aap sabse naya version utha le.
+> `Hisaab-Pro-v3.17.html` = usi ka release copy, taaki upar wala loader apne aap sabse naya version utha le.
 > Dono ka content abhi **bilkul same** hai. Purane `Hisaab-Pro-v3.1.html` / `v2.0` repo me pade rehne do.
 
 ---

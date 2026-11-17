@@ -77,6 +77,7 @@
   var LS_KEY = "hisaabPro.loader.v1";
   /* API band ho to inhe order se try karo (naya pehle) */
   var CANDIDATES = [
+    "Hisaab-Pro-v3.17.html",
     "Hisaab-Pro-v3.16.html",
     "Hisaab-Pro-v3.15.html",
     "Hisaab-Pro-v3.14.html",
@@ -160,6 +161,18 @@
   function cacheGet() { try { return localStorage.getItem(LS_KEY); } catch (e) { return null; } }
   function cacheSet(n) { try { localStorage.setItem(LS_KEY, n); } catch (e) {} }
 
+  /* A cached unsafe/older release must not outrank a known newer fix when
+     the GitHub list is unavailable. Still accept a future cached version. */
+  function fallbackNames() {
+    var c = cacheGet(), seen = {};
+    return (c ? [c] : []).concat(CANDIDATES).filter(function (n) {
+      if (seen[n]) return false; seen[n] = true; return true;
+    }).sort(function (a, b) {
+      var av = verOf(a), bv = verOf(b);
+      return av && bv ? cmpVer(bv, av) : av ? -1 : bv ? 1 : 0;
+    });
+  }
+
   /* ---- network ---- */
   function fetchList() {
     var pr = ownerRepo();
@@ -201,12 +214,11 @@
     errTxt.innerHTML = "<p style='margin:8px 0 0'>" + String(why && why.message ? why.message : why) +
       ". Internet ya GitHub API slow ho sakta hai. Neeche se panel seedha khol lo:</p>";
     errBtns.innerHTML = "";
-    var c = cacheGet();
-    var names = (c ? [c] : []).concat(CANDIDATES);
+    var names = fallbackNames();
     var seen = {};
     names.forEach(function (n) {
       if (seen[n]) return; seen[n] = 1;
-      errBtns.appendChild(btn(" " + n, urlFor(n), n === (c || CANDIDATES[0])));
+      errBtns.appendChild(btn(" " + n, urlFor(n), n === names[0]));
     });
     errBtns.appendChild(btn("↻ Dobara try karo", location.href, false));
   }
@@ -248,8 +260,7 @@
       })
       .catch(function (e1) {
         say("List nahi mili — jaane hue naam try kar rahe hain…");
-        var c = cacheGet();
-        var chain = (c ? [c] : []).concat(CANDIDATES);
+        var chain = fallbackNames();
         return probeAll(chain).then(function (n) {
           if (n) go(n, "probe");
           else hardFail(e1);
