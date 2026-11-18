@@ -1,6 +1,6 @@
-/* v3.21 — real manager attendance, UI forms, storage/backup, PDF and OOXML.
+/* v3.22 — real manager attendance, UI forms, storage/backup, PDF and OOXML.
    Offline, deterministic, no customer data or external services required.
-   HISAAB_HTML=../Hisaab-Pro-v3.21.html node attendance.test.js
+   HISAAB_HTML=../Hisaab-Pro-v3.22.html node attendance.test.js
    Optional --artifacts <ignored-folder> writes a fixture PDF and .xlsx. */
 const assert = require("node:assert/strict");
 const fs = require("node:fs"), path = require("node:path");
@@ -105,9 +105,13 @@ function assertPdf(pdf) {
     ["a longer Night shift stays actual hours, not automatic OT", timed({ shift: "night", checkIn: "21:00", checkOut: "08:00", outNextDay: true }), { workedMinutes: 660, overtimeMinutes: 0 }],
     ["after-midnight arrival uses actual elapsed time", timed({ shift: "night", checkIn: "00:30", inNextDay: true, checkOut: "06:00", outNextDay: true, breakMinutes: 30 }), { workedMinutes: 330, lateMinutes: 0, status: "present" }],
     ["open shifts have no fabricated hours or credit", timed({ checkIn: "09:30", checkOut: "" }), { open: true, status: "pending", workedMinutes: 0, credit: 0, lateMinutes: 0 }],
-    ["a whole-day span is supported without a fixed workday target", timed({ checkIn: "09:00", checkOut: "09:00", outNextDay: true, breakMinutes: 0 }), { workedMinutes: 1440, overtimeMinutes: 0 }]
+    ["a whole-day span is supported without a fixed workday target", timed({ checkIn: "09:00", checkOut: "09:00", outNextDay: true, breakMinutes: 0 }), { workedMinutes: 1440, overtimeMinutes: 0 }],
+    ["one minute beyond 24 hours remains exact actual working time", timed({ checkOut: "09:01", outNextDay: true }), { workedMinutes: 1441, status: "present", credit: 1, overtimeMinutes: 0 }],
+    ["the screenshot span is 27h 01m, not an error or a clamped 24 hours", timed({ checkIn: "10:32", checkOut: "13:33", outNextDay: true }), { workedMinutes: 1621, durationMinutes: 1621, status: "present", credit: 1 }],
+    ["midnight to next-day noon measures 36 hours without deductions", timed({ checkIn: "00:00", checkOut: "12:00", outNextDay: true }), { workedMinutes: 2160, status: "present", credit: 1 }],
+    ["all positive minutes representable by same/next-day clocks are supported", timed({ checkIn: "00:00", checkOut: "23:59", outNextDay: true }), { workedMinutes: 2879, status: "present", credit: 1 }]
   ];  for (const [name, record, expected] of cases) await test(name, () => { const c = A.calculate(record); assert.equal(c.valid, true, c.error); for (const [key, value] of Object.entries(expected)) assert.equal(c[key], value, key); });
-  for (const [label, extra] of [["missing overnight flag", { checkIn: "21:00", checkOut: "06:00" }], ["checkout before check-in", { checkOut: "08:59" }], ["over 24 hours", { checkOut: "10:00", outNextDay: true }], ["invalid clock hour", { checkIn: "25:00" }], ["twelve-hour text", { checkIn: "9 PM" }], ["non-numeric break", { breakMinutes: NaN }], ["negative break", { breakMinutes: -1 }], ["fractional break", { breakMinutes: 1.5 }], ["invalid open-shift break", { checkOut: "", breakMinutes: -1 }]]) await test(label + " is rejected, not silently repaired", () => assert.equal(A.calculate(timed(extra)).valid, false));
+  for (const [label, extra] of [["missing overnight flag", { checkIn: "21:00", checkOut: "06:00" }], ["checkout before check-in", { checkOut: "08:59" }], ["equal same-day clocks", { checkOut: "09:00" }], ["invalid clock hour", { checkIn: "25:00" }], ["twelve-hour text", { checkIn: "9 PM" }], ["non-numeric break", { breakMinutes: NaN }], ["negative break", { breakMinutes: -1 }], ["fractional break", { breakMinutes: 1.5 }], ["invalid open-shift break", { checkOut: "", breakMinutes: -1 }]]) await test(label + " is rejected, not silently repaired", () => assert.equal(A.calculate(timed(extra)).valid, false));
   for (const [status, credit] of [["present", 1], ["absent", 0], ["half", .5], ["leave", 1], ["holiday", 1], ["weekoff", 0]]) await test("Tap " + status + " has explicit credits and no measured hours", () => { const c = A.calculate({ mode: "tap", status, policy: A.defaults() }); assert.equal(c.credit, credit); assert.equal(c.workedMinutes, 0); assert.equal(c.overtimeMinutes, 0); });
   await test("leave/holiday/week-off credits are configurable independently", () => { const policy = { ...A.defaults(), paidLeave: false, paidHoliday: false, paidWeekOff: true }; assert.equal(A.calculate({ mode: "tap", status: "leave", policy }).credit, 0); assert.equal(A.calculate({ mode: "tap", status: "holiday", policy }).credit, 0); assert.equal(A.calculate({ mode: "tap", status: "weekoff", policy }).credit, 1); });
   for (const [name, change] of [["half target above full", { halfDayMinutes: 600 }], ["zero full target", { standardMinutes: 0 }], ["ambiguous equal shift bounds", { dayEnd: "09:00" }], ["break longer than schedule", { breakMinutes: 600 }], ["invalid grace", { lateGraceMinutes: -1 }], ["bad schedule", { nightEnd: "6:00" }], ["non-boolean credits", { paidLeave: "false" }]]) await test(name + " blocks corrupt archived metadata or invalid manual credits", () => assert.equal(A.calculate(timed({ policy: { ...A.defaults(), ...change } })).valid, false));
@@ -129,6 +133,51 @@ function assertPdf(pdf) {
   await test("bulk respects inactive and employment-date limits", () => { const inactive = manager({ code: "M-003", active: false }), joinedLater = manager({ code: "M-004", joinedOn: "2026-12-01" }); const result = A.bulk([inactive.id, joinedLater.id], "2026-11-14", "day", "present", false); assert.equal(result.saved, 0); assert.equal(result.skipped, 2); });
   await test("empty/bad bulk actions make no partial changes", () => { const before = JSON.stringify(S.data); assert.throws(() => A.bulk([], "2026-11-14", "day", "present"), /select/i); assert.throws(() => A.bulk([A.data().managers[0].id], "bad", "day", "present"), /valid/i); assert.throws(() => A.bulk([A.data().managers[0].id], "2026-11-14", "day", "invalid"), /valid/i); assert.equal(JSON.stringify(S.data), before); });
 
+  console.log("\n▸ v3.22 — next-day attendance over 24 hours");
+  await test("screenshot entry: 6 Nov 10:32 morning to 7 Nov 1:33 night previews and saves 27h 01m", () => {
+    reset(); const m = manager(); A.ui().mode = "time"; A.openRecord(null, m.id, "2026-11-06", "day");
+    input("attRIn", "10:32"); input("attRInWhen", "same-morning", "change"); input("attROut", "1:33"); input("attROutWhen", "next-night", "change");
+    assert.ok($("#attTimeJourney").textContent.includes("6 Nov 2026 → 7 Nov 2026")); assert.ok($("#attCalcPreview").textContent.includes("27h 01m"));
+    submit("attRecordForm"); assert.equal($("#attRecordForm"), null); const r = A.data().records[0];
+    assert.equal(r.date, "2026-11-06"); assert.equal(r.checkIn, "10:32"); assert.equal(r.checkOut, "13:33"); assert.equal(r.inNextDay, false); assert.equal(r.outNextDay, true); assert.equal(r.breakMinutes, 0);
+    assert.equal(A.calculate(r).workedMinutes, 1621); assert.equal(A.calculate(r).credit, 1); assert.equal(A.calculate(r).overtimeMinutes, 0); salaryUnchanged();
+  });
+  await test("long saved entry reopens without changing clocks; reversed edits cannot overwrite it", () => {
+    reset(); const m = manager(), r = mark(m, { date: "2026-11-06", mode: "time", checkIn: "10:32", checkOut: "13:33", outNextDay: true }); const before = JSON.stringify(A.data()); A.openRecord(r.id);
+    assert.equal($("#attRIn").value, "10:32"); assert.equal($("#attROut").value, "1:33"); assert.equal($("#attROutWhen").value, "next-night");
+    input("attROutWhen", "same-morning", "change"); submit("attRecordForm"); assert.equal(JSON.stringify(A.data()), before); assert.ok($("#attFormError").textContent.includes("after check-in")); assert.ok(!$("#attFormError").textContent.includes("within one day"));
+    input("attROutWhen", "next-night", "change"); submit("attRecordForm"); assert.equal(A.record(r.id).id, r.id); assert.equal(A.calculate(A.record(r.id)).workedMinutes, 1621); salaryUnchanged();
+  });
+  await test("Check in now / Check out now accepts the following afternoon after 27h 01m", () => {
+    reset(); const m = manager(), r = A.clockIn(m.id, "day", new w.Date("2026-11-06T10:32:00")); assert.equal(A.calculate(r).workedMinutes, 0); assert.equal(A.calculate(r).open, true);
+    const out = A.clockOut(r.id, new w.Date("2026-11-07T13:33:00")); assert.equal(out.id, r.id); assert.equal(out.outNextDay, true); assert.equal(out.checkOut, "13:33"); assert.equal(A.calculate(out).workedMinutes, 1621); assert.equal(A.data().history.at(-1).before.checkOut, ""); salaryUnchanged();
+  });
+  await test("long attendance survives local reload and JSON restore with unchanged schema/history", async () => {
+    reset(); const m = manager(), r = mark(m, { date: "2026-11-06", mode: "time", checkIn: "10:32", checkOut: "13:33", outNextDay: true, breakMinutes: 60 }); const saved = copy(S.data);
+    const fresh = boot(JSON.parse(w.localStorage.getItem(KEY))).Hisaab; assert.equal(fresh.attendance.calculate(fresh.attendance.record(r.id)).workedMinutes, 1621); assert.equal(fresh.attendance.record(r.id).breakMinutes, 60);
+    A.deleteRecord(r.id); await importFixture(saved); assert.equal(A.record(r.id).outNextDay, true); assert.equal(A.calculate(A.record(r.id)).workedMinutes, 1621); assert.equal(A.data().history.length, saved.attendance.history.length); assert.deepEqual(copy(A.record(r.id)), saved.attendance.records[0]); salaryUnchanged();
+  });
+  await test("long-shift ledger/PDF/Excel keep the full 27h 01m, numeric hours and one arrival/credit", () => {
+    reset(); const m = manager(), r = mark(m, { date: "2026-11-06", mode: "time", checkIn: "10:32", checkOut: "13:33", outNextDay: true, breakMinutes: 60 }); const report = A.report(m.id, "2026-11-06", "2026-11-07", "all"), before = JSON.stringify(S.data);
+    assert.equal(report.summary.workedMinutes, 1621); assert.equal(report.summary.attendedDays, 1); assert.equal(report.summary.credit, 1); assert.equal(report.summary.marks, 1); assert.equal(report.summary.unmarked, 1); assert.equal(report.rows[0].record.id, r.id);
+    A.ui().manager = m.id; A.ui().tab = "records"; A.ui().period = "month"; H.render(); assert.ok($(".att-table").textContent.includes("27h 01m"));
+    const pdf = A.pdfString(report); assertPdf(pdf); assert.ok(pdf.includes("(27h 01m)")); assert.ok(pdf.includes("(Next day night)")); assert.ok(pdf.includes("(TOTAL ACTUAL HOURS   27h 01m)") || pdf.includes("(TOTAL ACTUAL HOURS 27h 01m)"));
+    const entries = parseZip(A.xlsxBytes(report)), summary = xml(entries["xl/worksheets/sheet1.xml"]), daily = xml(entries["xl/worksheets/sheet2.xml"]);
+    assert.equal(Number(cell(summary, "B11").text), 1621 / 60); assert.equal(Number(cell(summary, "B23").text), 1); assert.equal(cell(daily, "J2").type, null); assert.equal(Number(cell(daily, "J2").text), 1621 / 60); assert.equal(cell(daily, "F2").text, "10:32"); assert.equal(cell(daily, "H2").text, "1:33"); assert.equal(cell(daily, "I2").text, "Next day night"); assert.equal(JSON.stringify(S.data), before); salaryUnchanged();
+  });
+  await test("a long Saturday-to-Sunday shift does not invent a second Sunday visit or credit", () => {
+    reset(); const m = manager(); mark(m, { date: "2026-11-07", mode: "time", checkIn: "08:00", checkOut: "23:00", outNextDay: true }); const saturday = A.report(m.id, "2026-11-07", "2026-11-08", "all");
+    assert.equal(saturday.summary.workedMinutes, 2340); assert.equal(saturday.summary.attendedDays, 1); assert.equal(saturday.summary.credit, 1); assert.equal(saturday.sundays.length, 0);
+    mark(m, { date: "2026-11-15", mode: "time", checkIn: "08:00", checkOut: "23:00", outNextDay: true }); const sunday = A.report(m.id, "2026-11-15", "2026-11-16", "all"); assert.equal(sunday.sundays.length, 1); assert.equal(sunday.sundays[0].date, "2026-11-15"); assert.equal(sunday.summary.credit, 1); salaryUnchanged();
+  });
+  await test("same/next-day combinations use exact elapsed minutes without a 24-hour cap or guessing", () => {
+    const clock = (n) => String(Math.floor(n / 60)).padStart(2, "0") + ":" + String(n % 60).padStart(2, "0");
+    for (const start of [0, 1, 59, 632, 720, 1439]) for (const end of [0, 1, 33, 813, 1439]) for (const inNextDay of [false, true]) for (const outNextDay of [false, true]) {
+      const span = end + (outNextDay ? 1440 : 0) - start - (inNextDay ? 1440 : 0), c = A.calculate(timed({ checkIn: clock(start), checkOut: clock(end), inNextDay, outNextDay }));
+      assert.equal(c.valid, span > 0, JSON.stringify({ start, end, inNextDay, outNextDay, span })); if (span > 0) { assert.equal(c.workedMinutes, span); assert.equal(c.credit, 1); assert.equal(c.overtimeMinutes, 0); }
+    }
+  });
+
   console.log("\n▸ Date ranges, summaries and truthful reports");
   for (const [value, valid] of [["2024-02-29", true], ["2026-02-29", false], ["2026-11-31", false], ["2026-01-01", true], ["2026-1-1", false], ["2026-11-14T00:00", false], ["1899-12-31", false], ["9999-12-31", false]]) await test("date validation " + value, () => assert.equal(A.dateValid(value), valid));
   await test("daily/weekly/monthly/custom ranges have deterministic inclusive boundaries", () => { assert.deepEqual(copy(A.range("day", "2026-11-14")), { from: "2026-11-14", to: "2026-11-14" }); assert.deepEqual(copy(A.range("week", "2026-11-01")), { from: "2026-10-26", to: "2026-11-01" }); assert.deepEqual(copy(A.range("month", "2024-02-29")), { from: "2024-02-01", to: "2024-02-29" }); assert.deepEqual(copy(A.range("custom", "", "2026-10-30", "2026-11-02")), { from: "2026-10-30", to: "2026-11-02" }); assert.throws(() => A.range("custom", "", "2026-11-03", "2026-11-01"), /before/i); });
@@ -149,7 +198,10 @@ function assertPdf(pdf) {
     ["same-morning", "6", "next-morning", "6", "06:00", "06:00", false, true, 1440],
     ["same-night", "11", "next-night", "10", "23:00", "22:00", false, true, 1380],
     ["next-night", "1", "next-night", "3", "13:00", "15:00", true, true, 120],
-    ["same-night", "12", "next-morning", "12", "12:00", "00:00", false, true, 720]
+    ["same-night", "12", "next-morning", "12", "12:00", "00:00", false, true, 720],
+    ["same-morning", "10:32", "next-night", "1:33", "10:32", "13:33", false, true, 1621],
+    ["same-morning", "9", "next-morning", "9:01", "09:00", "09:01", false, true, 1441],
+    ["same-morning", "12", "next-night", "11:59", "00:00", "23:59", false, true, 2879]
   ];
   for (const [startChoice, start, endChoice, end, checkIn, checkOut, inNextDay, outNextDay, worked] of clockCases) await test("real form: " + start + " " + startChoice + " → " + end + " " + endChoice, () => { reset(); const m = manager({ defaultShift: "night" }); A.ui().mode = "time"; A.openRecord(null, m.id, "2026-11-14", "night"); input("attRIn", start); input("attRInWhen", startChoice, "change"); input("attROut", end); input("attROutWhen", endChoice, "change"); assert.ok($("#attRecordForm").checkValidity()); assert.ok($("#attTimeJourney").textContent.includes("2026")); submit("attRecordForm"); assert.equal($("#attRecordForm"), null); const r = A.data().records[0]; assert.equal(r.checkIn, checkIn); assert.equal(r.checkOut, checkOut); assert.equal(r.inNextDay, inNextDay); assert.equal(r.outNextDay, outNextDay); assert.equal(A.calculate(r).workedMinutes, worked); salaryUnchanged(); });
   await test("new time forms keep four explicit choices but never invent fixed check-in/out times", () => { reset(); const m = manager({ defaultShift: "night" }); A.openRecord(null, m.id, "2026-11-14", "night"); for (const id of ["attRInWhen", "attROutWhen"]) assert.deepEqual(Array.from($("#" + id).options, (o) => o.textContent), ["Same day morning", "Same day night", "Next day morning", "Next day night"]); assert.equal($("#attRIn").value, ""); assert.equal($("#attRInWhen").value, "same-night"); assert.equal($("#attROut").value, ""); assert.equal($("#attROutWhen").value, "next-morning"); assert.equal($("#attRBreak"), null); assert.equal($('[data-att-act="useShiftTimes"]'), null); click('#modalRoot [data-act="closeModal"]'); });

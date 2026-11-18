@@ -1,8 +1,8 @@
 # Hisaab Pro — auto-update system (v2.0)
 
-> **Latest v3.21 — actual hours, Sunday dates aur clear PDF:** koi fixed 8/12-hour day ya unpaid-break deduction nahi. Hours = actual out − in; Half day manual Tap mark, no automatic OT/late/early. Alag Sundays tab me kis-kis date aaye aur count, Day+Night deduplicated. PDF me clear summary + Sunday dates + 6-column ledger; Excel me alag Sunday sheet. Easy 12-hour controls aur existing managers/backup/cloud retained. [Attendance guide](ATTENDANCE.md). Salary aur blank canteen PDF labels unchanged.
+> **Latest v3.22 — next-day long shift fix:** 24 ghante ki limit hata di. 6 November 10:32 Same day morning → 7 November 1:33 Next day night = **27h 01m**; preview, save, clock-out, ledger aur PDF/Excel me poore actual hours. Equal/ulta checkout ab bhi blocked. Easy 12-hour choices, no break/target/automatic OT, Sunday dates/counts aur clear reports retained. [Attendance guide](ATTENDANCE.md).
 >
-> **Existing data:** pehle JSON backup lein. Original clocks/history/archived metadata safe hain, lekin old Attendance totals ab full in→out hours dikhate hain; old printed totals differ kar sakte hain. **Sab devices/tabs v3.21 par update karein.** Same project/account use karein; browser storage clear/reset mat karein. [Safe sync/recovery](CLOUD-SYNC.md).
+> **Existing data:** pehle JSON backup lein. Clocks/history/archived metadata unchanged; long entry ek saved shift/credit hi hai. **Sab devices/tabs v3.22 par update karein**—older clients >24h entry reject kar sakte hain. Browser storage clear/reset mat karein. Salary/canteen aur blank canteen PDF labels unchanged. [Safe sync/recovery](CLOUD-SYNC.md).
 
 ## Ab kaise kaam karta hai
 
@@ -70,6 +70,7 @@ File ka naam me version hona chahiye: **`Hisaab-Pro-v<number>.<number>.html`**
 
 | Version | Date | Kya badla | File |
 |---|---|---|---|
+| v3.22 | 2026-11-14 | **24-hour Attendance cap removed.** Same/next-day positive spans over 24h now preview/save/clock-out/reopen/restore/sync/export correctly, including 10:32 morning → next-day 1:33 night = **27h 01m**. Equal/reversed clocks still rejected, no automatic day/period guessing. Full actual hours, one credit per completed record, Sunday arrival-date rules and 12-hour controls retained. No storage/schema migration or salary/canteen changes. **771 automated checks** (406 canteen + 29 loader + 26 PDF + 100 cloud + 210 Attendance), **64 native browser checks**, plus independent PDF/XLSX validation of the screenshot span. Update all clients; older versions can reject >24h spans. | `Hisaab-Pro-v3.22.html` |
 | v3.21 | 2026-11-14 | **Variable actual hours, Sunday visits aur redesigned Attendance PDF.** No fixed day/half-day threshold, schedule default or break input/deduction; completed valid Time = Present, manual Tap Half day, no auto OT/late/early. Separate manager Sunday dates/count in app/ledger/PDF/4-sheet Excel, actual arrival date + open check-ins + two-shift dedup. PDF uses summary cards, Sunday section, six readable columns, full-date/12-hour captions and atomic totals/signatures. Original records/audit/legacy metadata and backups retained; old Attendance totals now show full actual hours. Salary/canteen/blank PDF labels unchanged. **756 automated checks** (406 canteen + 29 loader + 26 PDF + 99 cloud + 196 Attendance) + **54 native Chromium checks**; independent PDF/XLSX QA. [Guide](ATTENDANCE.md). | `Hisaab-Pro-v3.21.html` |
 | v3.20 | 2026-11-14 | **Attendance Time mode ab easy 12-hour.** 1–12 clock + Same day morning / Same day night / Next day morning / Next day night; mobile/Hindi numeric entry, overnight presets, actual-date timeline, visible noon/midnight reminder, live hours/OT/late/early preview, compact expandable help and scrollable form with visible Save/Close. Shift rules, board, ledger/history and individual PDF/Excel use the same readable format. Existing canonical saved times/day flags/snapshots and cloud schema unchanged; no record migration or salary/canteen changes; v3.18 blank summary labels retained. **730 checks:** 406 canteen + 29 loader + 26 PDF + 99 cloud + 170 Attendance; optional real Chromium **45 checks**. [Use guide](ATTENDANCE.md). | `Hisaab-Pro-v3.20.html` |
 | v3.19 | 2026-11-14 | **Manager Attendance existing panel me integrated.** Dynamic profiles; Day/Night; one-tap Present/Absent/Half/Leave/Week off/Holiday; 24-hour Time mode + overnight check-in/out, breaks, saved rule snapshots, hours/OT/late/early. Daily board, calendar, weekly/monthly/custom ledger, search/filter/sort, bulk skip/explicit overwrite, duplicate prevention, history + dashboard. Real individual custom-range PDF (Hindi shaping) + 3-sheet Excel, persistent ready-file download links. Existing auto-save/JSON/safety copies/account-scoped conditional cloud merge includes Attendance; salary calculations and v3.18 blank canteen summary labels unchanged. **696 checks:** 406 canteen + 29 loader + 26 PDF + 99 cloud + 136 Attendance; optional real Chromium **27 checks**. [Use guide](ATTENDANCE.md). | `Hisaab-Pro-v3.19.html` |
@@ -95,15 +96,15 @@ File ka naam me version hona chahiye: **`Hisaab-Pro-v<number>.<number>.html`**
 | v2.0 | 2026-11-11 | Auto-update loader + fixed working hours/overtime removed. Hourly worker = rate × total hours (naya Hours column). Monthly = ÷30 fixed, Sunday auto-exclude. Version badge. | `Hisaab-Pro-v2.0.html` |
 
 > **File ka rule:** `hisaab_v3.html` = working/source file (yahan change hota hai).
-> `Hisaab-Pro-v3.21.html` = usi ka release copy, taaki upar wala loader apne aap sabse naya version utha le.
+> `Hisaab-Pro-v3.22.html` = usi ka release copy, taaki upar wala loader apne aap sabse naya version utha le.
 > Dono ka content abhi **bilkul same** hai. Purane `Hisaab-Pro-v3.1.html` / `v2.0` repo me pade rehne do.
 
 ---
 
-# Manager Attendance (v3.21) — kaise use karein
+# Manager Attendance (v3.22) — kaise use karein
 
 Sidebar → **Attendance** → **Add manager** → Tap/Time mode. Koi fixed hours ya
-break deduction nahi. Day/Night shifts aur same/next day morning/night controls
+break deduction ya 24-hour cap nahi. Day/Night shifts aur same/next day morning/night controls
 retained; **Sundays** me actual attended dates aur count. Calendar, ledger, bulk,
 custom-range PDF/4-sheet Excel, auto-save aur limits: **[poora guide](ATTENDANCE.md)**.
 Attendance salary calculations ko nahi badalta.
