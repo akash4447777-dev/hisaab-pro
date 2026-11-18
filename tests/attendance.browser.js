@@ -56,6 +56,24 @@ async function exportFile(page, format, name) {
   const bytes = fs.readFileSync(output); check(format === "pdf" ? bytes.subarray(0, 8).toString() === "%PDF-1.4" : bytes.readUInt32LE() === 0x04034b50, name + " is an actual " + format + " file");
   return bytes;
 }
+// Inspect the workbook actually downloaded by Chromium, using the browser's
+// XML parser. This does not call the application's workbook builder again.
+async function downloadedRegister(page, bytes) {
+  const files = {}; let at = 0;
+  while (bytes.readUInt32LE(at) === 0x04034b50) {
+    assert.equal(bytes.readUInt16LE(at + 8), 0, 'stored ZIP entry');
+    const size=bytes.readUInt32LE(at+18),nameSize=bytes.readUInt16LE(at+26),extra=bytes.readUInt16LE(at+28),start=at+30+nameSize+extra;
+    files[bytes.subarray(at+30,at+30+nameSize).toString('utf8')]=bytes.subarray(start,start+size).toString('utf8');at=start+size;
+  }
+  return page.evaluate(files => {
+    const parse=text=>new DOMParser().parseFromString(text,'application/xml'),doc=parse(files['xl/worksheets/sheet5.xml']),sty=parse(files['xl/styles.xml']);
+    const parts=/^A(\d+):I(\d+)$/.exec(doc.querySelector('autoFilter').getAttribute('ref')),header=Number(parts[1]),last=Number(parts[2]),first=header+1;
+    const get=(col,row)=>doc.querySelector('c[r="'+col+row+'"]')?.textContent||'';
+    const metrics={};Array.from(doc.querySelectorAll('row')).filter(row=>Number(row.getAttribute('r'))<header).forEach(row=>Array.from(row.children).forEach((c,i,cells)=>{if(c.textContent&&cells[i+2])metrics[c.textContent]=cells[i+2].textContent;}));
+    const style=sty.querySelector('cellXfs').children[Number(doc.querySelector('c[r="A'+first+'"]').getAttribute('s'))],border=sty.querySelector('borders').children[Number(style.getAttribute('borderId'))];
+    return {header,count:last-header,headers:Array.from(doc.querySelector('row[r="'+header+'"]').children,c=>c.textContent),metrics,blankAdvance:Array.from({length:last-first+1},(_,i)=>get('E',first+i)).every(v=>v==='')&&get('E',last+1)==='',pane:doc.querySelector('pane').getAttribute('topLeftCell'),blackGrid:!!border.querySelector('color[rgb="FF374151"]'),fiveSheets:parse(files['xl/workbook.xml']).querySelectorAll('sheet').length===5};
+  },files);
+}
 (async () => {
   console.log("\n▸ Real browser: native forms, mobile layout, persistence and downloads");
   const b = await browser();
@@ -184,7 +202,11 @@ async function exportFile(page, format, name) {
       A.setDate('2026-12-01'); A.ui().shift='all'; Hisaab.render(); A.openExport(m.id);
     });
     check((await reportPage.locator('#attExportPreview').textContent()).includes('31 date / shift rows') && (await reportPage.locator('#attExportCapacity').textContent()).includes('1 page'), 'native report studio previews all 31 dates in one PDF page');
-    const monthPdf = await exportFile(reportPage, 'pdf', 'Monthly-register'); await exportFile(reportPage, 'xlsx', 'Monthly-register');
+    const monthPdf = await exportFile(reportPage, 'pdf', 'Monthly-register'), monthBook = await exportFile(reportPage, 'xlsx', 'Monthly-register');
+    const monthRegister=await downloadedRegister(reportPage,monthBook);
+    check(monthRegister.header>10&&monthRegister.metrics['Total present days']==='31'&&monthRegister.metrics['Leave days (0 marks)']==='0'&&monthRegister.metrics['Sundays actually attended']==='4','native Excel download has present days, leaves and actual Sunday count ABOVE the date register');
+    check(JSON.stringify(monthRegister.headers.slice(0,5))===JSON.stringify(['Date','Lokesh Verma\nAttendance','Check-in time','Check-out time','Advance'])&&monthRegister.blackGrid&&monthRegister.blankAdvance,'native Excel matches reference column order/black grid and never invents Advance amounts');
+    check(monthRegister.fiveSheets&&monthRegister.count===31,'native reference-format workbook still has every selected date and all five detail sheets');
     check(/\/Type \/Pages[^\n]*\/Count 1\b/.test(monthPdf.toString('latin1')) && monthPdf.toString('latin1').includes('Last report date retained'), 'native one-page month PDF retains its final date and complete note');
     await click(reportPage, '#modalRoot [data-act="closeModal"]');
     const beforeReports = await reportPage.evaluate(() => {
@@ -197,6 +219,7 @@ async function exportFile(page, format, name) {
     const twoPdf=await exportFile(reportPage,'pdf','Two-shift-register'),twoBook=await exportFile(reportPage,'xlsx','Two-shift-register');
     check(/\/Type \/Pages[^\n]*\/Count 2\b/.test(twoPdf.toString('latin1')) && twoPdf.toString('latin1').includes('(556h 27m)'), 'native two-page PDF retains all 62 entries and the full elapsed total');
     check(twoBook.toString('utf8').includes('sheet name="Attendance register"') && twoBook.toString('utf8').includes('[h]:mm'), 'native workbook includes the styled primary register and numeric elapsed-hour formatting');
+    const twoRegister=await downloadedRegister(reportPage,twoBook);check(twoRegister.count===62&&twoRegister.metrics['Total present days']==='31'&&twoRegister.metrics['Present shifts']==='62','native two-shift month preserves all 62 rows without double-counting the 31 present days');
     for(const width of [390,320]){
       await reportPage.setViewportSize({width,height:844});
       check(await reportPage.evaluate(() => {const d=document.querySelector('.att-dialog'),h=d.querySelector('.modal-h').getBoundingClientRect(),f=d.querySelector('.modal-f').getBoundingClientRect();return document.documentElement.scrollWidth<=innerWidth+1&&h.top>=0&&f.bottom<=innerHeight}), width+'px report studio fits without horizontal overflow and keeps both downloads visible');
@@ -208,7 +231,7 @@ async function exportFile(page, format, name) {
     const unexpected=[];reportPage.on('download',d=>unexpected.push(d));
     await reportPage.locator('[name="format"][value="pdf"]').click();await reportPage.waitForFunction(()=>document.querySelector('#attFormError')?.textContent.includes('2 readable PDF pages'));
     check(unexpected.length===0, 'oversized PDF refuses a misleading or third-page download with a clear shorter-range / Excel message');
-    await exportFile(reportPage,'xlsx','Full-year-register');
+    const fullYearBook=await exportFile(reportPage,'xlsx','Full-year-register'),fullYearRegister=await downloadedRegister(reportPage,fullYearBook);check(fullYearRegister.count===396&&fullYearRegister.header>25&&fullYearRegister.pane==='C4','native full-year workbook keeps its complete summary/396 rows without freezing the long summary over the table');
     check(await reportPage.locator('#attFormError').textContent()==='' && await reportPage.evaluate((before)=>JSON.stringify({data:Hisaab.Store.data,disk:Object.fromEntries(Object.keys(localStorage).map(k=>[k,localStorage.getItem(k)])),dirty:Hisaab.Cloud.dirty})===before,beforeReports), 'previews, successful PDF/XLSX and oversized-PDF failure leave the full saved JSON/history/storage and cloud dirty flag unchanged');
     // User-requested extension, exercised through real forms. The shell/CSS is unchanged.
     const featurePage=await pageFor(b);
@@ -224,7 +247,8 @@ async function exportFile(page, format, name) {
     check(await featurePage.evaluate(()=>{const A=Hisaab.attendance,b=A.bonus(A.data().managers[0].id,'2026-11-01','2026-11-30')[0];return b.count===5&&b.percent===2;}),'five qualifying OUTs earn 2%; exactly 11:45 PM remains excluded');
     const beforeFeatureReports=await featurePage.evaluate(()=>{const A=Hisaab.attendance;A.openExport(A.data().managers[0].id);return JSON.stringify({data:Hisaab.Store.data,disk:Object.fromEntries(Object.keys(localStorage).map(k=>[k,localStorage.getItem(k)])),dirty:Hisaab.Cloud.dirty});});
     await featurePage.fill('#attEFrom','2026-11-14');await featurePage.fill('#attETo','2026-11-18');
-    const fourPdf=await exportFile(featurePage,'pdf','Four-shift-manager');await exportFile(featurePage,'xlsx','Four-shift-manager');
+    const fourPdf=await exportFile(featurePage,'pdf','Four-shift-manager'),fourBook=await exportFile(featurePage,'xlsx','Four-shift-manager');
+    const fourRegister=await downloadedRegister(featurePage,fourBook);check(fourRegister.metrics['2026-11 · qualifying OUTs']==='5'&&fourRegister.metrics['2026-11 · extra bonus']==='0.02'&&fourRegister.metrics['Total present days']==='5','native Excel places five qualifying OUTs / genuine numeric 2% and five present days above all eight shift rows');
     check(['Morning','Afternoon','Evening','Night','EXTRA BONUS','5 qualifying OUTs','2% extra','11:45 PM'].every(t=>fourPdf.toString('latin1').includes(t)),'reference-style PDF contains every shift, qualifying OUT count, exact rule and 2% bonus');
     await featurePage.selectOption('#attEShift','morning');
     check(await featurePage.evaluate(()=>{const A=Hisaab.attendance,r=A.report(A.data().managers[0].id,'2026-11-14','2026-11-14','morning');return r.rows.length===1&&r.bonus[0].count===5&&r.bonus[0].percent===2;}),'partial/shift-filtered report retains the correct full-month all-shift bonus basis');
