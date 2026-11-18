@@ -1,4 +1,4 @@
-# HISAAB v3.24 — safe login, device sync aur recovery
+# HISAAB v3.25 — safe login, device sync aur recovery
 
 v3.17’s data-safety protocol remains in place. v3.19 extends the same protection
 to the integrated manager Attendance tab; no new Supabase table/project is needed.
@@ -26,14 +26,22 @@ backend table is introduced. **Update every client to v3.24 before using new shi
 keys**: v3.23 and earlier reject Morning/Afternoon/Evening, so they can stop loading
 or syncing. The v3.23 raw-storage regression confirms saving is blocked, not
 silently rewritten into Day; do not keep editing with older clients.
+v3.25 corrects **both Check-in / Check-out period dropdowns** to eight Same/Next
+day × Morning/Afternoon/Evening/Night choices. Saved canonical clocks/day flags,
+history, storage keys, normalization, recovery, merge and financial functions
+are unchanged; no migration or server change. Only clock labels/entry validation
+change: saved 13:33 becomes 1:33 afternoon, **not** 01:33 or a different duration.
+Night 1–4 is after midnight; the explicit day flag is never guessed. Use **v3.25
+on every device/tab** for matching labels; the v3.24 minimum for new shift keys
+still applies. Opening the new build does not rewrite the raw v3.24 payload.
 [Attendance guide, Sunday date rules and backup advice](ATTENDANCE.md).
 
 ## Pehle ye karein (existing users)
 
 1. **Jis phone/laptop par asli data abhi dikh raha hai, uska Settings → Backup (JSON) download karein.** Salary, canteen aur saved Attendance sab isi backup me aate hain. Doosre device par bhi bacha data ho to uska alag backup rakhein.
-2. **Dono devices aur saare purane tabs par v3.24 kholein:**
-   [Hisaab-Pro-v3.24.html](https://akash4447777-dev.github.io/hisaab-pro/Hisaab-Pro-v3.24.html).
-   Sidebar me **Panel v3.24** confirm karein. Browser/site storage clear, uninstall, “Erase all data” ya “Sample data” mat karein.
+2. **Dono devices aur saare purane tabs par v3.25 kholein:**
+   [Hisaab-Pro-v3.25.html](https://akash4447777-dev.github.io/hisaab-pro/Hisaab-Pro-v3.25.html).
+   Sidebar me **Panel v3.25** confirm karein. Browser/site storage clear, uninstall, “Erase all data” ya “Sample data” mat karein.
 3. Pehle bache-data wale device par **usi Supabase Project URL aur usi email/account** se sign in karein. Existing setup ko reset ya naya project/account banane ki zaroorat nahi.
 4. Settings → **Sync now**. `Cloud synced` aane par doosre updated device par bhi same project/account se sign in karein. Pehli login par cloud read hota hai; naya khaali/demo device populated cloud ko replace nahi karta.
 5. `Sync paused · data protected` aaye to neeche wali conflict/recovery choice dekhein. `Local saved · sync pending` ya `Offline · sync pending` ko cloud backup ki confirmation **na** maanein.

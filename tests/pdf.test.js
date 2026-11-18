@@ -90,7 +90,7 @@ function closing(pdf) {
   const words = find(page, "Amount in words:");
   const prepared = find(page, "Prepared by"), owner = page.texts.find((t) => t.text === "Proprietor");
   assert.ok(owner, "signature owner, not the address header");
-  const footer = find(page, "Hisaab v3.24"), note = find(page, "This is a computer-generated");
+  const footer = find(page, "Hisaab v3.25"), note = find(page, "This is a computer-generated");
   const value = page.texts.find((t) => t.font === 3 && t.y < label.y && t.y > words.y);
   assert.ok(value, "16.5pt Black net value");
   close(label.size, 8.25); close(label.spacing, .825);
@@ -259,7 +259,7 @@ function bodyBounds(pdf) {
   check("multipage: earlier sheets have page markers, final footer is reference-style", () => {
     const ps = pages(multiMonth);
     ps.slice(0, -1).forEach((pg, i) => find(pg, "Page " + (i + 1) + " of " + ps.length));
-    assert.ok(!find(ps.at(-1), "Hisaab v3.24").text.includes("Page"));
+    assert.ok(!find(ps.at(-1), "Hisaab v3.25").text.includes("Page"));
   });
   check("entries table contains no products; item-wise summary still has them", () => {
     const text = pages(multiDay).map((pg) => pg.texts.map((t) => t.text).join("\n")).join("\n");
@@ -283,7 +283,7 @@ function bodyBounds(pdf) {
     const words = find(pg, "Amount in words:"), prepared = find(pg, "Prepared by");
     const wordsLast = pg.texts.filter((t) => t.font === 2 && t.size === 8.625).at(-1);
     assert.ok(words.y >= wordsLast.y && wordsLast.y - prepared.y >= 64.4);
-    const foot = find(pg, "Hisaab v3.24");
+    const foot = find(pg, "Hisaab v3.25");
     assert.ok(prepared.y - foot.y >= 38.25);
     assert.ok(pg.texts.filter((t) => t.size === 7.5).length > 2);
     artifact("wrapped-closing.pdf", pdf);
