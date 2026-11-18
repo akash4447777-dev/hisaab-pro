@@ -122,7 +122,7 @@ async function exportFile(page, format, name) {
     await page.evaluate(() => { const A = Hisaab.attendance; A.openExport(A.data().managers.find((m) => m.code === 'M-001').id); });
     await page.fill('#attEFrom', '2026-11-06'); await page.fill('#attETo', '2026-11-07');
     const longShift = await exportFile(page, 'pdf', 'Long-shift-manager'); await exportFile(page, 'xlsx', 'Long-shift-manager');
-    check(['(27h 01m)', '(10:32)', '(1:33)', '(Next day night)'].every((text) => longShift.toString('latin1').includes(text)), "native long-shift PDF includes full actual hours and the chosen next-day period");
+    check(['(27h 01m)', '(10:32 morning)', '(1:33 night +1d)'].every((text) => longShift.toString('latin1').includes(text)), "native long-shift PDF includes full actual hours and the chosen next-day period");
     check(await page.evaluate((before) => JSON.stringify({ workers: Hisaab.Store.data.workers, records: Hisaab.Store.data.records, canteen: Hisaab.Store.data.canteen }) === before, financeBeforeLongShift), "long shift, re-edit and report downloads leave salary/canteen data unchanged");
     await click(page, '#modalRoot [data-act="closeModal"]');
     // A short actual Sunday shift is Present without an hours threshold.
@@ -152,11 +152,11 @@ async function exportFile(page, format, name) {
     await click(page, '[data-att-act="tab"][data-value="records"]'); await click(page, '[data-att-act="period"][data-value="custom"]'); await page.fill("#attFrom", "2026-11-14"); await page.locator("#attFrom").dispatchEvent("change"); await page.fill("#attTo", "2026-11-16"); await page.locator("#attTo").dispatchEvent("change");
     await click(page, '[data-att-act="export"]'); await page.fill("#attEManager", "Aarav Sharma · M-001"); await page.locator("#attEManager").press("Tab"); await page.fill("#attEFrom", "2026-11-14"); await page.fill("#attETo", "2026-11-16");
     const latin = await exportFile(page, "pdf", "Latin-manager"); await exportFile(page, "xlsx", "Latin-manager");
-    check(latin.toString("latin1").includes("(16 Nov 2026)"), "custom final report date is present in the actual PDF");
+    check(latin.toString("latin1").includes("16 Nov 2026"), "custom final report date is present in the actual PDF");
     await page.fill("#attEManager", "Priya Mehta · M-002"); await page.locator("#attEManager").press("Tab");
     const overnight = await exportFile(page, "pdf", "Overnight-manager"); await exportFile(page, "xlsx", "Overnight-manager");
-    check(['(9:30)', '(7:30)', '(Same day night)', '(Next day morning)'].every((text) => overnight.toString('latin1').includes(text)) && !overnight.toString('latin1').includes('(21:30)'), "downloaded overnight PDF shows 12-hour clocks with complete morning/night day labels");
-    check(overnight.toString('latin1').includes('(Sun, 15 Nov 2026)') && overnight.toString('latin1').includes('(13h 45m)'), "downloaded PDF separately lists Sunday 15 November and the full 13h 45m total");
+    check(['(9:30 night)', '(7:30 morning +1d)', '+1d = next day'].every((text) => overnight.toString('latin1').includes(text)) && !overnight.toString('latin1').includes('(21:30)'), "downloaded overnight PDF shows compact 12-hour clocks with full morning/night and explicit next-day markers");
+    check(overnight.toString('latin1').includes('Sun, 15 Nov 2026') && overnight.toString('latin1').includes('(13h 45m)'), "downloaded PDF separately lists Sunday 15 November and the full 13h 45m total");
     await click(page, '#modalRoot [data-act="closeModal"]');
     // Extra profiles here are disposable QA fixtures, never production samples.
     await page.evaluate(() => { const A = Hisaab.attendance; ["Kabir Singh", "Neha Gupta", "Vikram Patel", "Riya Kapoor", "Arjun Verma", "Meera Nair"].forEach((name, i) => A.saveManager({ name, code: "QA-" + i, department: "Operations", defaultShift: i % 3 ? "day" : "night", joinedOn: "2026-11-01" })); A.ui().tab = "board"; A.ui().shift = "all"; A.ui().manager = "all"; A.ui().q = ""; A.setDate("2026-11-14"); Hisaab.render(); });
@@ -176,6 +176,40 @@ async function exportFile(page, format, name) {
     await click(page, '[data-att-act="tab"][data-value="calendar"]'); await screenshot(page, "06-calendar-mobile.png"); check(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth + 1), "mobile calendar fits all seven weekdays");
     await page.setViewportSize({ width: 1440, height: 1000 }); await click(page, '[data-att-act="tab"][data-value="board"]'); await click(page, '[data-act="toggleThemeIcon"]'); await screenshot(page, "07-board-dark.png");
     const before = await page.evaluate(() => JSON.stringify(Hisaab.sync.view(Hisaab.Store.data).attendance)); await page.reload(); await page.waitForFunction(() => !!window.Hisaab); await page.evaluate(() => Hisaab.go("attendance")); check(await page.evaluate((value) => JSON.stringify(Hisaab.sync.view(Hisaab.Store.data).attendance) === value, before), "profiles, snapshots, records and history survive a real page reload");
+    // Report-only redesign: real monthly inputs, downloads, capacity warning and data invariance.
+    const reportPage = await pageFor(b);
+    await reportPage.evaluate(() => {
+      const A = Hisaab.attendance, m = A.saveManager({name:'Lokesh Verma',code:'REG-01',department:'Operations',phone:'9876543210',defaultShift:'day',joinedOn:'2026-11-01'});
+      for (let d = 1; d <= 31; d++) A.saveRecord({managerId:m.id,date:'2026-12-'+String(d).padStart(2,'0'),shift:'day',mode:'time',checkIn:'09:17',checkOut:'18:42',note:d===31?'Last report date retained':''});
+      A.setDate('2026-12-01'); A.ui().shift='all'; Hisaab.render(); A.openExport(m.id);
+    });
+    check((await reportPage.locator('#attExportPreview').textContent()).includes('31 date / shift rows') && (await reportPage.locator('#attExportCapacity').textContent()).includes('1 page'), 'native report studio previews all 31 dates in one PDF page');
+    const monthPdf = await exportFile(reportPage, 'pdf', 'Monthly-register'); await exportFile(reportPage, 'xlsx', 'Monthly-register');
+    check(/\/Type \/Pages[^\n]*\/Count 1\b/.test(monthPdf.toString('latin1')) && monthPdf.toString('latin1').includes('Last report date retained'), 'native one-page month PDF retains its final date and complete note');
+    await click(reportPage, '#modalRoot [data-act="closeModal"]');
+    const beforeReports = await reportPage.evaluate(() => {
+      const A=Hisaab.attendance,m=A.data().managers[0];
+      for(let d=1;d<=31;d++) A.saveRecord({managerId:m.id,date:'2026-12-'+String(d).padStart(2,'0'),shift:'night',mode:'time',checkIn:'21:15',checkOut:'05:47',outNextDay:true});
+      A.openExport(m.id);
+      return JSON.stringify({data:Hisaab.Store.data,disk:Object.fromEntries(Object.keys(localStorage).map(k=>[k,localStorage.getItem(k)])),dirty:Hisaab.Cloud.dirty});
+    });
+    check((await reportPage.locator('#attExportPreview').textContent()).includes('62 date / shift rows') && (await reportPage.locator('#attExportCapacity').textContent()).includes('2 pages'), 'native report studio updates to two pages for 62 Day/Night shifts');
+    const twoPdf=await exportFile(reportPage,'pdf','Two-shift-register'),twoBook=await exportFile(reportPage,'xlsx','Two-shift-register');
+    check(/\/Type \/Pages[^\n]*\/Count 2\b/.test(twoPdf.toString('latin1')) && twoPdf.toString('latin1').includes('(556h 27m)'), 'native two-page PDF retains all 62 entries and the full elapsed total');
+    check(twoBook.toString('utf8').includes('sheet name="Attendance register"') && twoBook.toString('utf8').includes('[h]:mm'), 'native workbook includes the styled primary register and numeric elapsed-hour formatting');
+    for(const width of [390,320]){
+      await reportPage.setViewportSize({width,height:844});
+      check(await reportPage.evaluate(() => {const d=document.querySelector('.att-dialog'),h=d.querySelector('.modal-h').getBoundingClientRect(),f=d.querySelector('.modal-f').getBoundingClientRect();return document.documentElement.scrollWidth<=innerWidth+1&&h.top>=0&&f.bottom<=innerHeight}), width+'px report studio fits without horizontal overflow and keeps both downloads visible');
+      if(width===390)await screenshot(reportPage,'12-report-studio-mobile.png');
+    }
+    await reportPage.setViewportSize({width:1440,height:1000});await screenshot(reportPage,'13-report-studio-desktop.png');
+    await reportPage.fill('#attEFrom','2026-01-01');await reportPage.locator('#attEFrom').dispatchEvent('change');await reportPage.fill('#attETo','2026-12-31');await reportPage.locator('#attETo').dispatchEvent('change');
+    check(await reportPage.locator('#attExportPreview').getAttribute('data-state')==='too-large' && (await reportPage.locator('#attExportCapacity').textContent()).includes('Excel includes the complete selection'), 'large date range gives an honest two-page-capacity warning without hiding any details');
+    const unexpected=[];reportPage.on('download',d=>unexpected.push(d));
+    await reportPage.locator('[name="format"][value="pdf"]').click();await reportPage.waitForFunction(()=>document.querySelector('#attFormError')?.textContent.includes('2 readable PDF pages'));
+    check(unexpected.length===0, 'oversized PDF refuses a misleading or third-page download with a clear shorter-range / Excel message');
+    await exportFile(reportPage,'xlsx','Full-year-register');
+    check(await reportPage.locator('#attFormError').textContent()==='' && await reportPage.evaluate((before)=>JSON.stringify({data:Hisaab.Store.data,disk:Object.fromEntries(Object.keys(localStorage).map(k=>[k,localStorage.getItem(k)])),dirty:Hisaab.Cloud.dirty})===before,beforeReports), 'previews, successful PDF/XLSX and oversized-PDF failure leave the full saved JSON/history/storage and cloud dirty flag unchanged');
   } finally { await b.close(); }
   // Separate browser process, not just another context: serverless Chromium's
   // single-process mode can share browser state between nominal contexts.
@@ -188,7 +222,8 @@ async function exportFile(page, format, name) {
     const nameHex = Buffer.from("अजय कुमार", "utf16le").swap16().toString("hex");
     check(pdf.toString("latin1").includes("/ActualText <FEFF" + nameHex + ">") && pdf.toString("latin1").includes("/Subtype /Image"), "Hindi PDF keeps shaped text images and the original Unicode name metadata");
     check(await page.evaluate(() => document.fonts.check('400 16px "Hisaab Indic"') && document.fonts.check('700 16px "Hisaab Indic"')), "both bundled Hindi font weights load without a font CDN");
-    check(pdf.toString('latin1').includes('(Sun, 08 Nov 2026)') && pdf.toString('latin1').includes('(9h 00m)'), "Hindi report includes its Sunday and ignores the archived sixty-minute deduction");
+    check(pdf.toString('latin1').includes('Sun, 08 Nov 2026') && pdf.toString('latin1').includes('(9h 00m)'), "Hindi report includes its Sunday and ignores the archived sixty-minute deduction");
+    check(/\/Type \/Pages[^\n]*\/Count 1\b/.test(pdf.toString("latin1")), "native Hindi monthly report fits one page without losing shaped names or notes");
     await screenshot(page, "08-ready-report-links.png");
   } finally { await hindiBrowser.close(); }
   check(errors.length === 0, "no uncaught JavaScript errors in either real browser");
