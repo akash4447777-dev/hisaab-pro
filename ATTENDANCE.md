@@ -1,9 +1,35 @@
-# HISAAB v3.22 — manager Attendance
+# HISAAB v3.23 — manager Attendance
 
 **Attendance is a tab inside the existing Hisaab Panel**, not a separate app.
 Manager profiles, attendance, credit settings and history share the panel’s
 existing local save, JSON backup and configured cloud sync. **Attendance never
 changes worker salaries, wages, advances, deductions or payments.**
+
+## v3.23 — compact PDF and a styled Excel register (export-only)
+
+**No saved entries, canonical clocks/day flags, notes, IDs, policy snapshots,
+history, salary/canteen data or calculations are rewritten.** No migration,
+reset, import or new cloud table is required. Back up JSON before updating as usual.
+
+- A compact **A4 portrait PDF, 1 page where practical and never more than 2**:
+  quiet manager header, small totals strip, seven-column date-wise register,
+  gold calendar-Sunday rows, separately dated Sunday visits, full notes and a
+  single final totals/verification block. The body stays at least **8.5 pt**.
+- A tested 31-day single-shift month fits **1 page**; 62 Day/Night entries fit
+  **2 pages**. More notes can require the second page.
+- **No silent truncation, missing rows/notes or microscopic third-page squeeze.**
+  If all selected attendance details cannot fit two readable pages, PDF gives a
+  clear **shorter date range / complete Excel** message and does not download
+  a partial file. Large custom ranges remain available in full in Excel.
+- Excel opens on the new **Attendance register**: merged manager headings,
+  bordered date-wise rows, gold Sundays, status colours, full clock/context
+  labels, wrapped notes, numeric elapsed time and credits, a totals row,
+  frozen date columns/header bands, filters and landscape print setup.
+- The original **Summary, Daily attendance, Change history and Sundays attended**
+  sheets remain: **five sheets in total**, no invented advance/payroll column.
+- **Report studio** shows live hours, visits, Sundays, open shifts, row count and
+  actual PDF page/capacity preview. Changing a selection removes outdated
+  ready-file links so a previous range is not accidentally downloaded.
 
 ## v3.22 — next-day checkout can exceed 24 hours
 
@@ -18,7 +44,7 @@ The full duration is retained in reload/JSON/cloud/ledger/PDF/Excel. One complet
 entry still earns **one credit/arrival**, not extra payroll days for crossing midnight.
 Controls continue to cover the attendance date and following date; arbitrary
 later checkout dates are not introduced by this update. **Update all devices to
-v3.22** before syncing long entries: earlier clients can reject spans over 24 hours.
+v3.22 or later** before syncing long entries: clients older than v3.22 can reject spans over 24 hours.
 
 ## Retained v3.21 improvements
 
@@ -28,8 +54,8 @@ v3.22** before syncing long entries: earlier clients can reject spans over 24 ho
   Half day. **Half day is a manual Tap mark.**
 - A separate **Sundays** tab lists **which Sundays each manager attended**, with
   dates/counts. The individual ledger, PDF and Excel include these visits too.
-- The PDF now has clear summary cards, a dated Sunday section and a readable
-  six-column daily ledger, instead of the crowded old calculation table.
+- Dated Sunday visits, actual hours and manual credits are retained in the
+  new compact PDF and styled workbook.
 
 **Existing users: take a JSON backup first.** Original clocks, day offsets,
 record IDs and history are not rewritten. Older break/target/schedule metadata
@@ -37,11 +63,11 @@ remains in JSON/history for compatibility and validation, **not arithmetic**.
 Consequently, old timed entries now display their **full in → out hours** and
 completed valid Time entries display Present, rather than the old target-based
 classification. Previous printed totals can differ; keep previous reports if needed.
-Update all devices/tabs to v3.22 for consistent calculations; do not clear storage.
+Use v3.23 on all devices/tabs for the new report layout; do not clear storage.
 
 ## Start here
 
-1. Settings → **Backup (JSON)**. Open the latest panel and confirm **Panel v3.22**.
+1. Settings → **Backup (JSON)**. Open the latest panel and confirm **Panel v3.23**.
    See [safe device sync](CLOUD-SYNC.md).
 2. Sidebar → **Attendance** → **Add manager**. Enter a name and unique code,
    choose **Day / Night**, and optionally add role, phone, employment dates and notes.
@@ -154,20 +180,47 @@ The selected manager’s **Ledger & reports** also shows the Sunday list.
 3. **Download PDF** / **Download Excel**. If an automatic download is blocked,
    tap the generated **Save PDF / Save Excel workbook** link before closing the dialog.
 
-**PDF:** manager/range at the top; Actual hours, Days attended, Sundays attended
-and Open shifts cards; separately dated Sundays; then six columns — Date/day,
-Shift, Attendance, Check-in, Check-out, Actual hours. Clocks include full same/next-day
-morning/night captions. Notes span the row; totals and verification lines stay
-together, with continuation headers/page numbers. No break/target/OT columns.
+**PDF:** compact manager/range/profile header; Actual hours, Arrival dates,
+Sundays attended and Open shifts strip; separately dated Sunday attendance;
+seven columns — Date/day, Shift, Attendance, Check-in, Check-out, Actual hours,
+Credit. Notes use numbered references and are included **in full**, followed by
+atomic totals/verification lines and page numbers. No break/target/OT columns.
+
+Clock example: `9:30 night` → `7:30 morning +1d`. **`+1d` means next day;
+otherwise the clock is on the attendance date.** The report includes the
+noon/midnight legend. Entry controls and saved canonical clocks are unchanged.
+Gold rows indicate **calendar Sundays**, not automatic presence or Sunday pay;
+the separate dated Sunday list uses actual arrival dates, as before.
+
+**Every produced PDF has at most 2 pages.** If the range or notes need more,
+choose a shorter range or Excel: the app refuses a partial/cut-down PDF. There
+is no universal way to fit unlimited records/notes legibly on two sheets.
 Hindi uses bundled offline shaping with Unicode `ActualText`; copy/search support
 for that image-backed text varies by PDF viewer/parser. Excel/JSON retain literal
 Unicode. See [fonts and notices](PDF-FONTS.md).
 
-**Excel:** a genuine offline `.xlsx`, not renamed CSV. Four sheets: **Summary**,
-**Daily attendance**, **Change history**, **Sundays attended**. Actual hours and
-credits are numeric. Clock/context columns and history use readable 12-hour text;
-Sunday dates are independently listed. Daily/history/Sunday headers are frozen and
-filterable. User names/notes are literal strings, never spreadsheet formulas.
+**Excel:** a genuine offline `.xlsx`, not renamed CSV. Five sheets:
+
+1. **Attendance register** — opens first. Date, Day, Shift, Attendance,
+   Check-in, Check-out, Actual hours, Credit, Notes. Real sortable Excel dates,
+   status colours, gold calendar-Sunday rows and full wrapped notes. Full
+   same/next-day morning/night captions stay beside each clock. Frozen first
+   two columns / first seven rows, filters, repeated print headers, landscape
+   A4 fit-to-width and page footers. Body dates are not merged, so filters work.
+2. **Summary** — original manager/profile, numeric decimal-hour totals, arrival
+   dates, Sunday count, statuses, credits, explanations and profile note.
+3. **Daily attendance** — complete selected rows with original IDs, readable
+   clocks/context, numeric decimal hours, notes and update time.
+4. **Change history** — retained before/after readable values and actors.
+5. **Sundays attended** — independent dated/deduplicated actual Sunday visits.
+
+Register durations/totals are **numeric Excel time fractions formatted `[h]:mm`**,
+so e.g. 27h 01m displays as **27:01**, not a wrapped 3:01 or rounded decimal.
+Summary/Daily attendance retain their numeric **decimal hours** for compatibility.
+Credits are numeric. Names/notes are **literal strings, never spreadsheet formulas**;
+no macros or external workbook links are added. Totals are the exported snapshot,
+not a new payroll calculation or a write-back into the app. Advance/salary/canteen
+records are not added to, modified by or inferred from this attendance register.
 
 Unmarked is **not** Absent. Dates outside employment are shown separately. Reports
 include only the selected manager/range/shifts; history follows attendance dates.
