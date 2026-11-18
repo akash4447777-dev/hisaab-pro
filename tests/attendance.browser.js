@@ -122,7 +122,7 @@ async function exportFile(page, format, name) {
     await page.evaluate(() => { const A = Hisaab.attendance; A.openExport(A.data().managers.find((m) => m.code === 'M-001').id); });
     await page.fill('#attEFrom', '2026-11-06'); await page.fill('#attETo', '2026-11-07');
     const longShift = await exportFile(page, 'pdf', 'Long-shift-manager'); await exportFile(page, 'xlsx', 'Long-shift-manager');
-    check(['(27h 01m)', '(10:32 morning)', '(1:33 night +1d)'].every((text) => longShift.toString('latin1').includes(text)), "native long-shift PDF includes full actual hours and the chosen next-day period");
+    check(['(27h 01m)', '(10:32 morning)', '(1:33 night +1d *)'].every((text) => longShift.toString('latin1').includes(text)), "native long-shift PDF includes full actual hours and the chosen next-day period");
     check(await page.evaluate((before) => JSON.stringify({ workers: Hisaab.Store.data.workers, records: Hisaab.Store.data.records, canteen: Hisaab.Store.data.canteen }) === before, financeBeforeLongShift), "long shift, re-edit and report downloads leave salary/canteen data unchanged");
     await click(page, '#modalRoot [data-act="closeModal"]');
     // A short actual Sunday shift is Present without an hours threshold.
@@ -155,7 +155,7 @@ async function exportFile(page, format, name) {
     check(latin.toString("latin1").includes("16 Nov 2026"), "custom final report date is present in the actual PDF");
     await page.fill("#attEManager", "Priya Mehta · M-002"); await page.locator("#attEManager").press("Tab");
     const overnight = await exportFile(page, "pdf", "Overnight-manager"); await exportFile(page, "xlsx", "Overnight-manager");
-    check(['(9:30 night)', '(7:30 morning +1d)', '+1d = next day'].every((text) => overnight.toString('latin1').includes(text)) && !overnight.toString('latin1').includes('(21:30)'), "downloaded overnight PDF shows compact 12-hour clocks with full morning/night and explicit next-day markers");
+    check(['(9:30 night)', '(7:30 morning +1d *)', '+1d = next day'].every((text) => overnight.toString('latin1').includes(text)) && !overnight.toString('latin1').includes('(21:30)'), "downloaded overnight PDF shows compact 12-hour clocks with full morning/night and explicit next-day markers");
     check(overnight.toString('latin1').includes('Sun, 15 Nov 2026') && overnight.toString('latin1').includes('(13h 45m)'), "downloaded PDF separately lists Sunday 15 November and the full 13h 45m total");
     await click(page, '#modalRoot [data-act="closeModal"]');
     // Extra profiles here are disposable QA fixtures, never production samples.
@@ -210,6 +210,39 @@ async function exportFile(page, format, name) {
     check(unexpected.length===0, 'oversized PDF refuses a misleading or third-page download with a clear shorter-range / Excel message');
     await exportFile(reportPage,'xlsx','Full-year-register');
     check(await reportPage.locator('#attFormError').textContent()==='' && await reportPage.evaluate((before)=>JSON.stringify({data:Hisaab.Store.data,disk:Object.fromEntries(Object.keys(localStorage).map(k=>[k,localStorage.getItem(k)])),dirty:Hisaab.Cloud.dirty})===before,beforeReports), 'previews, successful PDF/XLSX and oversized-PDF failure leave the full saved JSON/history/storage and cloud dirty flag unchanged');
+    // User-requested extension, exercised through real forms. The shell/CSS is unchanged.
+    const featurePage=await pageFor(b);
+    await addManager(featurePage,'Shift Manager','FOUR-01','morning');
+    check(await featurePage.evaluate(()=>Hisaab.attendance.data().managers[0].defaultShift==='morning'),'Morning profile is saved with its own shift key');
+    const clocks=[['morning','6','same-morning','10','same-morning'],['afternoon','12','same-night','4','same-night'],['evening','5','same-night','11:46','same-night'],['night','9','same-night','6','next-morning']];
+    async function saveShift(day,shift,ins,iw,outs,ow){await featurePage.evaluate(({day,shift})=>{const A=Hisaab.attendance;A.openRecord(null,A.data().managers[0].id,'2026-11-'+day,shift);},{day,shift});await click(featurePage,'[data-att-act="recordMode"][data-value="time"]');await featurePage.fill('#attRIn',ins);await featurePage.selectOption('#attRInWhen',iw);await featurePage.fill('#attROut',outs);await featurePage.selectOption('#attROutWhen',ow);await saveForm(featurePage,'attRecordForm');}
+    for(const [shift,ins,iw,outs,ow]of clocks){await saveShift('14',shift,ins,iw,outs,ow);check(await featurePage.evaluate(shift=>Hisaab.attendance.data().records.some(r=>r.shift===shift),shift),'real '+shift+' time form preserves its shift');}
+    check(await featurePage.evaluate(()=>{const A=Hisaab.attendance;return A.data().records.length===4&&A.bonus(A.data().managers[0].id,'2026-11-01','2026-11-30')[0].count===2;}),'Evening 11:46 PM and next-morning Night OUT count; Morning/Afternoon OUTs do not');
+    await saveShift('15','evening','5','same-night','11:46','same-night');
+    check(await featurePage.evaluate(()=>{const A=Hisaab.attendance;return A.bonus(A.data().managers[0].id,'2026-11-01','2026-11-30')[0].percent===1;}),'third qualifying OUT automatically earns the first 1%');
+    await saveShift('16','evening','5','same-night','11:46','same-night');await saveShift('17','evening','5','same-night','11:46','same-night');await saveShift('18','evening','5','same-night','11:45','same-night');
+    check(await featurePage.evaluate(()=>{const A=Hisaab.attendance,b=A.bonus(A.data().managers[0].id,'2026-11-01','2026-11-30')[0];return b.count===5&&b.percent===2;}),'five qualifying OUTs earn 2%; exactly 11:45 PM remains excluded');
+    const beforeFeatureReports=await featurePage.evaluate(()=>{const A=Hisaab.attendance;A.openExport(A.data().managers[0].id);return JSON.stringify({data:Hisaab.Store.data,disk:Object.fromEntries(Object.keys(localStorage).map(k=>[k,localStorage.getItem(k)])),dirty:Hisaab.Cloud.dirty});});
+    await featurePage.fill('#attEFrom','2026-11-14');await featurePage.fill('#attETo','2026-11-18');
+    const fourPdf=await exportFile(featurePage,'pdf','Four-shift-manager');await exportFile(featurePage,'xlsx','Four-shift-manager');
+    check(['Morning','Afternoon','Evening','Night','EXTRA BONUS','5 qualifying OUTs','2% extra','11:45 PM'].every(t=>fourPdf.toString('latin1').includes(t)),'reference-style PDF contains every shift, qualifying OUT count, exact rule and 2% bonus');
+    await featurePage.selectOption('#attEShift','morning');
+    check(await featurePage.evaluate(()=>{const A=Hisaab.attendance,r=A.report(A.data().managers[0].id,'2026-11-14','2026-11-14','morning');return r.rows.length===1&&r.bonus[0].count===5&&r.bonus[0].percent===2;}),'partial/shift-filtered report retains the correct full-month all-shift bonus basis');
+    await featurePage.selectOption('#attEShift','all');
+    await featurePage.evaluate(()=>{window.__shared=[];Object.defineProperty(navigator,'canShare',{configurable:true,value:({files})=>files.length===1});Object.defineProperty(navigator,'share',{configurable:true,value:async payload=>{const f=payload.files[0];window.__shared.push({name:f.name,type:f.type,bytes:Array.from(new Uint8Array(await f.arrayBuffer()))});}});window.__opened=[];window.open=(...args)=>{window.__opened.push(args);return null;};});
+    await featurePage.locator('[name="format"][value="whatsapp"]').click();await featurePage.waitForFunction(()=>window.__shared.length===1);
+    const shared=await featurePage.evaluate(()=>window.__shared[0]);fs.writeFileSync(path.join(OUT,'WhatsApp-native.pdf'),Buffer.from(shared.bytes));
+    check(shared.type==='application/pdf'&&shared.name.includes('Shift_Manager')&&Buffer.from(shared.bytes).subarray(0,8).toString()==='%PDF-1.4','WhatsApp action gives the native share API a real named manager PDF File, not a text URL');
+    check(Buffer.from(shared.bytes).includes(Buffer.from('2% extra'))&&await featurePage.evaluate(()=>window.__opened.length===0),'native PDF sharing keeps the same calculated bonus and does not open a duplicate WhatsApp popup');
+    await featurePage.evaluate(()=>Object.defineProperty(navigator,'share',{configurable:true,value:async()=>{throw new DOMException('Cancelled','AbortError');}}));
+    await featurePage.locator('[name="format"][value="whatsapp"]').click();await featurePage.waitForFunction(()=>document.querySelector('#toast').textContent.includes('cancelled'));
+    check(await featurePage.evaluate(()=>window.__opened.length===0),'native share cancellation does not pretend the PDF was sent or fall through to WhatsApp');
+    await featurePage.evaluate(()=>Object.defineProperty(navigator,'canShare',{configurable:true,value:()=>false}));
+    const fallbackDownload=featurePage.waitForEvent('download');await featurePage.locator('[name="format"][value="whatsapp"]').click();const downloaded=await fallbackDownload;await downloaded.saveAs(path.join(OUT,'WhatsApp-fallback.pdf'));
+    check((await featurePage.locator('#attShareHint').textContent()).includes('not automatically attached or sent')&&await featurePage.locator('#attWhatsAppLink').getAttribute('href').then(v=>v.startsWith('https://wa.me/?text=')),'unsupported browser downloads the real PDF and clearly explains manual WhatsApp Document attachment');
+    check(await featurePage.evaluate(before=>JSON.stringify({data:Hisaab.Store.data,disk:Object.fromEntries(Object.keys(localStorage).map(k=>[k,localStorage.getItem(k)])),dirty:Hisaab.Cloud.dirty})===before,beforeFeatureReports),'native/fallback/cancelled sharing and all bonus reports leave the complete stored JSON/history/financial data unchanged');
+    await click(featurePage,'#modalRoot [data-act="closeModal"]');await featurePage.reload();await featurePage.waitForFunction(()=>!!window.Hisaab);
+    check(await featurePage.evaluate(()=>{const A=Hisaab.attendance,b=A.bonus(A.data().managers[0].id,'2026-11-01','2026-11-30')[0];return A.data().records.length===8&&new Set(A.data().records.map(r=>r.shift)).size===4&&b.count===5&&b.percent===2;}),'real reload retains all four shift keys, eight original records and the derived 2% bonus');
   } finally { await b.close(); }
   // Separate browser process, not just another context: serverless Chromium's
   // single-process mode can share browser state between nominal contexts.
