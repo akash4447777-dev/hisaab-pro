@@ -98,7 +98,7 @@ const wait = (ms) => new Promise((r) => setTimeout(r, ms));
     dom.window.close();
   }
 
-  console.log("\n\u25b8 boot: purane + v3.23 sab ho \u2192 v3.23 khule");
+  console.log("\n\u25b8 boot: purane + v3.24 sab ho \u2192 v3.24 khule");
   {
     const files = [
       { name: "index.html", type: "file", size: 9000 },
@@ -124,14 +124,15 @@ const wait = (ms) => new Promise((r) => setTimeout(r, ms));
       { name: "Hisaab-Pro-v3.20.html", type: "file", size: 955984 },
       { name: "Hisaab-Pro-v3.21.html", type: "file", size: 957430 },
       { name: "Hisaab-Pro-v3.22.html", type: "file", size: 957993 },
-      { name: "Hisaab-Pro-v3.23.html", type: "file", size: 959000 },
+      { name: "Hisaab-Pro-v3.23.html", type: "file", size: 975634 },
+      { name: "Hisaab-Pro-v3.24.html", type: "file", size: 985726 },
       { name: "Hisaab-Pro-v2.0.html", type: "file", size: 143224 }
     ];
     const dom = makeDom({ files });
     await wait(200);
-    ok(dom.window.__getRedirect() === "/hisaab-pro/Hisaab-Pro-v3.23.html",
-       "sabse naya version v3.23 chuna", dom.window.__getRedirect());
-    ok(dom.window.localStorage.getItem("hisaabPro.loader.v1") === "Hisaab-Pro-v3.23.html", "v3.23 cache hua");
+    ok(dom.window.__getRedirect() === "/hisaab-pro/Hisaab-Pro-v3.24.html",
+       "sabse naya version v3.24 chuna", dom.window.__getRedirect());
+    ok(dom.window.localStorage.getItem("hisaabPro.loader.v1") === "Hisaab-Pro-v3.24.html", "v3.24 cache hua");
     await wait(80);
     dom.window.close();
   }
@@ -152,18 +153,18 @@ const wait = (ms) => new Promise((r) => setTimeout(r, ms));
 
   console.log("\n▸ API fail: cached old release cannot outrank the data-safety fix");
   {
-    const files = [{ name: "Hisaab-Pro-v3.16.html", type: "file" }, { name: "Hisaab-Pro-v3.17.html", type: "file" }, { name: "Hisaab-Pro-v3.23.html", type: "file" }];
+    const files = [{ name: "Hisaab-Pro-v3.16.html", type: "file" }, { name: "Hisaab-Pro-v3.17.html", type: "file" }, { name: "Hisaab-Pro-v3.24.html", type: "file" }];
     const dom = makeDom({ files, apiStatus: 403, cache: "Hisaab-Pro-v3.16.html" });
     await wait(200);
-    ok(dom.window.__getRedirect() === "/hisaab-pro/Hisaab-Pro-v3.23.html", "cached v3.16 ke badle latest v3.23 (cloud safety included)");
-    ok(dom.window.__calls.find((c) => c.endsWith(" HEAD")).includes("v3.23"), "HEAD probe bhi naya release pehle");
+    ok(dom.window.__getRedirect() === "/hisaab-pro/Hisaab-Pro-v3.24.html", "cached v3.16 ke badle latest v3.24 (cloud safety included)");
+    ok(dom.window.__calls.find((c) => c.endsWith(" HEAD")).includes("v3.24"), "HEAD probe bhi naya release pehle");
     dom.window.close();
   }
   {
-    const files = [{ name: "Hisaab-Pro-v3.24.html", type: "file" }, { name: "Hisaab-Pro-v3.23.html", type: "file" }];
-    const dom = makeDom({ files, apiStatus: 403, cache: "Hisaab-Pro-v3.24.html" });
+    const files = [{ name: "Hisaab-Pro-v3.25.html", type: "file" }, { name: "Hisaab-Pro-v3.24.html", type: "file" }];
+    const dom = makeDom({ files, apiStatus: 403, cache: "Hisaab-Pro-v3.25.html" });
     await wait(200);
-    ok(dom.window.__getRedirect() === "/hisaab-pro/Hisaab-Pro-v3.24.html", "future cached version known candidates se naya ho to wahi");
+    ok(dom.window.__getRedirect() === "/hisaab-pro/Hisaab-Pro-v3.25.html", "future cached version known candidates se naya ho to wahi");
     dom.window.close();
   }
   {
@@ -202,8 +203,8 @@ const wait = (ms) => new Promise((r) => setTimeout(r, ms));
     await wait(100);
     ok(dom.window.document.getElementById("err").hidden === false, "file mode me chooser dikha");
     const btns = dom.window.document.getElementById("errBtns").textContent;
-    ok(btns.indexOf("Hisaab-Pro-v3.23.html") >= 0, "file mode me v3.23 link bhi hai");
-    ok(btns.indexOf("Hisaab-Pro-v3.23.html") < btns.indexOf("Hisaab-Pro-v3.22.html") &&
+    ok(btns.indexOf("Hisaab-Pro-v3.24.html") >= 0, "file mode me v3.24 link bhi hai");
+    ok(btns.indexOf("Hisaab-Pro-v3.24.html") < btns.indexOf("Hisaab-Pro-v3.22.html") &&
        btns.indexOf("Hisaab-Pro-v3.22.html") < btns.indexOf("Hisaab-Pro-v3.21.html") &&
        btns.indexOf("Hisaab-Pro-v3.21.html") < btns.indexOf("Hisaab-Pro-v3.20.html") &&
        btns.indexOf("Hisaab-Pro-v3.20.html") < btns.indexOf("Hisaab-Pro-v3.19.html") &&

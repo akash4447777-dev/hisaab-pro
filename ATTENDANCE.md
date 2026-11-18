@@ -1,9 +1,76 @@
-# HISAAB v3.23 — manager Attendance
+# HISAAB v3.24 — manager Attendance
 
 **Attendance is a tab inside the existing Hisaab Panel**, not a separate app.
 Manager profiles, attendance, credit settings and history share the panel’s
 existing local save, JSON backup and configured cloud sync. **Attendance never
 changes worker salaries, wages, advances, deductions or payments.**
+
+## v3.24 — reference ledger PDF, four shifts, automatic bonus and WhatsApp
+
+**The existing panel layout and stylesheet are unchanged.** This update adds
+shift choices and a WhatsApp PDF action to existing controls, and replaces only
+the Attendance PDF design with the supplied reference's ledger style: split shop /
+report header, ruled summary pairs, light bordered table, full remarks, clear total,
+outlined bonus explanation and verification lines. The reference is **design only**;
+no canteen amounts, employee values or accounting rules are imported from it.
+
+- **Morning, Afternoon, Evening and Night** are distinct shift choices throughout
+  profiles, forms, bulk marking, filters, calendar, ledger, Sundays and reports.
+  **Day (existing)** remains available. Existing `day` / `night` values are never
+  renamed, combined or migrated. There can be one record per manager/date/shift.
+- The PDF still includes every selected row and remark within **1 or maximum 2
+  readable pages**; overlarge selections get a shorter-range/full-Excel message,
+  never a partial report. A 31-day single-shift month fits one page; a two-shift
+  month or a month of full remarks can use two.
+- Automatic late-OUT **count and extra percentage** appear in the PDF, including
+  a monthly breakdown and the next threshold. Excel Summary includes genuine
+  numeric count/percentage/remaining cells without moving the old total cells.
+- **WhatsApp PDF** prepares the selected individual's real PDF file. Where file
+  sharing is supported, choose WhatsApp and the recipient in the device share
+  sheet. Otherwise download the PDF and attach it manually as a **Document**.
+  A text-only WhatsApp link cannot attach a PDF or confirm delivery.
+- Existing timings, day flags, entries, retained history and salary/canteen records
+  are not rewritten. Bonus is derived from the same saved Attendance records,
+  not stored as a salary/payment change. No schema migration or new table.
+
+### Automatic extra bonus — exact rule and current defaults
+
+| Qualifying completed OUTs in a calendar month | Extra bonus |
+|---|---|
+| 0–2 | 0% |
+| 3–4 | 1% |
+| 5–6 | 2% |
+| 7–8 | 3% |
+| Each further 2 | another +1% |
+
+A valid, completed **Time-mode** OUT qualifies when it is **strictly after
+11:45 PM on the actual arrival day**. Exactly 11:45 PM is excluded. An evening
+arrival followed by an OUT at next-day midnight / morning qualifies. An arrival
+itself at next-day 1 AM followed by 6 AM on that same arrival day does **not**
+yet pass that day's 11:45 PM. Tap marks, open shifts and invalid spans do not count.
+No break, target-hour or salary arithmetic is used for this test.
+
+**Implementation defaults:** reset the count each calendar month; assign the
+occasion to the record's saved **Attendance date**, not the checkout date; include
+next-morning OUTs as described above. Count each saved completed OUT once, not
+its edits/history. Two qualifying shift records on one date are two occasions.
+The defaults were used pending a different workplace policy; no salary base was
+provided, so the output is **percentage only**, not a fabricated rupee amount.
+
+Bonus always uses the individual's **whole calendar month across all shifts**,
+even if the exported dates or shift filter show only part of that month. The
+summary distinguishes qualifying OUTs **in the selection** from the full-month
+bonus box. For example, five qualifying OUTs in December still show **2%** in a
+December 3 Evening-only report with one selected row. Multiple months have
+separate rates; percentages are not added together. An asterisk beside a PDF OUT
+marks a qualifying selected row. Intentional saved edits/deletions automatically
+recalculate the derived count; merely opening/exporting/sharing does not save data.
+
+**Update every device/tab to v3.24 before using the new shifts.** v3.23 and earlier
+do not understand Morning/Afternoon/Evening keys and can refuse to load/sync them.
+In the regression test v3.23 blocks saving rather than silently converting the
+new raw storage into Day. Do not use old clients to edit the account. Take JSON
+backups on surviving devices and keep the same browser/site; do not clear storage.
 
 ## v3.23 — compact PDF and a styled Excel register (export-only)
 
@@ -63,14 +130,15 @@ remains in JSON/history for compatibility and validation, **not arithmetic**.
 Consequently, old timed entries now display their **full in → out hours** and
 completed valid Time entries display Present, rather than the old target-based
 classification. Previous printed totals can differ; keep previous reports if needed.
-Use v3.23 on all devices/tabs for the new report layout; do not clear storage.
+Use v3.24 on all devices/tabs for compatible shift/report support; do not clear storage.
 
 ## Start here
 
-1. Settings → **Backup (JSON)**. Open the latest panel and confirm **Panel v3.23**.
+1. Settings → **Backup (JSON)**. Open the latest panel and confirm **Panel v3.24**.
    See [safe device sync](CLOUD-SYNC.md).
 2. Sidebar → **Attendance** → **Add manager**. Enter a name and unique code,
-   choose **Day / Night**, and optionally add role, phone, employment dates and notes.
+   choose **Morning / Afternoon / Evening / Night** (or **Day (existing)**),
+   and optionally add role, phone, employment dates and notes.
    No real managers or sample attendance are preloaded.
 3. Pick the date, manager and shift. Use **Tap mode** for a status, or **Time mode**
    for actual check-in/out. Saves immediately update the board, calendar and ledger.
@@ -92,14 +160,18 @@ Use v3.23 on all devices/tabs for the new report layout; do not clear storage.
 
 ## Time mode — actual, variable hours
 
-New records have **blank clocks**, not fixed shift timings. Day/Night only suggests
-which morning/night and same/next-day choices to start with; verify each choice.
+New records have **blank clocks**, not fixed shift timings. The chosen shift only
+suggests morning/night and same/next-day choices to start with; verify each choice.
+Morning suggests a same-day morning arrival, Afternoon/Evening a same-day night
+arrival, and Night a same-day night arrival / next-day morning departure. No clock
+value or fixed working duration is filled in.
 
 - Use a **1–12 clock**: `9`, `9:30`, `12:15`. Numeric entry supports `930` / `0930`
   → `9:30`, `9` → `9:00` on leaving the field, and Hindi digits such as `९३०`.
   A 24-hour input such as `21:30` is rejected, not silently converted.
 - Each clock has **Same day morning**, **Same day night**, **Next day morning**,
-  **Next day night**. Shift names remain **Day / Night**.
+  **Next day night**. These clock-period labels are separate from the new
+  **Morning / Afternoon / Evening / Night** shift names; Day remains a legacy shift.
 - **Same day** means the selected **Attendance date**. **Next day** means the
   following date. The live timeline shows the actual two dates.
 - Morning = midnight to before noon; Night = noon, afternoon, evening and night.
@@ -127,8 +199,9 @@ Tap Half day                → manual 0.5 credit, no invented hours
 
 There is no fixed daily target, break deduction or automatic OT/late/early
 classification. Minutes use local wall-clock times, not timezone-tracked punch
-hardware. **Credits are per saved shift, not payroll days:** Day + Night can earn
-two credits while representing one attended date.
+hardware. **Credits are per saved shift, not payroll days:** multiple shifts can earn
+multiple credits while representing one attended date. The late-OUT bonus is the
+separate derived rule above; it does not reclassify hours or write salary amounts.
 
 ## Sundays — kis-kis Sunday ko aaye
 
@@ -141,7 +214,7 @@ The selected manager’s **Ledger & reports** also shows the Sunday list.
   An after-midnight Sunday check-in saved under Saturday **is** a Sunday visit.
 - **Tap:** only Present / Half day counts. Absent, Leave, Holiday, Week off and
   Unmarked are **not** visits, regardless of any paid-credit setting.
-- Day + Night on the same Sunday counts **once per manager**; both shifts are listed.
+- All shifts on the same Sunday count **once per manager**; their shift names are listed.
 - Open valid Sunday check-ins are included and labelled **Checked in**.
 - Range boundaries use the **actual arrival date** for visits. The daily ledger
   and actual-hours total use the saved **Attendance date**. Thus a prior-month
@@ -175,16 +248,18 @@ The selected manager’s **Ledger & reports** also shows the Sunday list.
 ## Individual PDF and Excel
 
 1. **Individual report** / a manager’s **Report** button.
-2. Choose **one manager**, inclusive **From / To**, and **All shifts / Day / Night**.
+2. Choose **one manager**, inclusive **From / To**, and **All shifts** or one saved shift
+   (**Morning / Afternoon / Evening / Night / Day (existing)**).
    Split ranges longer than 3,660 days.
-3. **Download PDF** / **Download Excel**. If an automatic download is blocked,
+3. **Download PDF** / **Download Excel** / **WhatsApp PDF**. If an automatic download is blocked,
    tap the generated **Save PDF / Save Excel workbook** link before closing the dialog.
 
 **PDF:** compact manager/range/profile header; Actual hours, Arrival dates,
 Sundays attended and Open shifts strip; separately dated Sunday attendance;
 seven columns — Date/day, Shift, Attendance, Check-in, Check-out, Actual hours,
 Credit. Notes use numbered references and are included **in full**, followed by
-atomic totals/verification lines and page numbers. No break/target/OT columns.
+atomic totals, the monthly **extra-bonus count/rate/rule**, verification lines and
+page numbers. No break/target/OT columns.
 
 Clock example: `9:30 night` → `7:30 morning +1d`. **`+1d` means next day;
 otherwise the clock is on the attendance date.** The report includes the
@@ -208,7 +283,9 @@ Unicode. See [fonts and notices](PDF-FONTS.md).
    two columns / first seven rows, filters, repeated print headers, landscape
    A4 fit-to-width and page footers. Body dates are not merged, so filters work.
 2. **Summary** — original manager/profile, numeric decimal-hour totals, arrival
-   dates, Sunday count, statuses, credits, explanations and profile note.
+   dates, Sunday count, statuses, credits, explanations and profile note. Includes
+   the full-month all-shift qualifying OUT count, extra bonus (%) and remaining
+   OUTs for the next +1%, plus the percentage-only/no-payment disclaimer.
 3. **Daily attendance** — complete selected rows with original IDs, readable
    clocks/context, numeric decimal hours, notes and update time.
 4. **Change history** — retained before/after readable values and actors.
@@ -224,6 +301,25 @@ records are not added to, modified by or inferred from this attendance register.
 
 Unmarked is **not** Absent. Dates outside employment are shown separately. Reports
 include only the selected manager/range/shifts; history follows attendance dates.
+**Exception explicitly labelled:** bonus uses the full months/all shifts described above.
+
+### Share an individual's PDF to WhatsApp
+
+1. Open **Individual report**, choose one manager, dates and shift selection.
+2. Tap **WhatsApp PDF**. If PDF preparation outlasts the browser's user gesture,
+   tap the new **Share PDF · choose WhatsApp** button when the PDF is ready.
+3. In a supported device share sheet, select WhatsApp, then the recipient and Send.
+   The app cannot select a private chat or verify that the recipient received it.
+4. If file sharing is unsupported/rejected, use **Save PDF**, then **Open WhatsApp**
+   and **Attach → Document** to select the downloaded PDF. A blocked popup still
+   leaves the link visible. The PDF is **not automatically attached or sent**.
+
+Cancelling the share chooser does not trigger an automatic download or claim a
+send. Changing manager/dates/shift or closing the report removes stale prepared
+links. The two-page guard applies to shared PDFs too; a partial PDF is never sent.
+Web Share support depends on the browser/OS and a secure context; real WhatsApp
+chooser/recipient behavior needs a physical-device check. Automated sharing QA
+stubs the native API while verifying real PDF `File` bytes and fallback downloads.
 
 ## Saving, backup and sync safety
 

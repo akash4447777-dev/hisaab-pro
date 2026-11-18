@@ -1965,7 +1965,7 @@ const rRate = (n) => { const x = Math.max(0, num(n)); return x >= 1 ? r2(x) : Ma
 /* rate dikhane ka format: <₹1 ho to 0.075 jaisa khula number, warna moneyS */
 const rateS = (n) => { const x = num(n); if (x > 0 && x < 1) return "₹" + String(Math.round((x + Number.EPSILON) * 10000) / 10000); return moneyS(x); };
 const clamp = (n, lo, hi) => Math.min(hi, Math.max(lo, n));
-const APP_VERSION = "3.23";
+const APP_VERSION = "3.24";
 const esc = (s) => String(s == null ? "" : s).replace(/[&<>"']/g, (m) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[m]));
 
 const MONTHS = ["January","February","March","April","May","June","July","August","September","October","November","December"];
@@ -2303,7 +2303,7 @@ const VIEW_META = {
   hisaab:    ["Monthly Hisaab", "Attendance, advances and final payable for every worker"],
   workers:   ["Workers", "Add, edit, search and manage your workforce"],
   ledger:    ["Ledger", "Is mahine ke saare advances aur deductions ek jagah"],
-  attendance:["Attendance", "Manager attendance · Day / Night shifts · hours, calendars & individual reports"],
+  attendance:["Attendance", "Manager attendance · Morning / Afternoon / Evening / Night · individual reports"],
   canteen:   ["Canteen", "Saman entry (rate-wise ya ek-saath total) · din aur mahine ka ledger · poori activity"],
   records:   ["Records & History", "Month-wise salary records with payment status"],
   settings:  ["Settings", "Shop details, salary rules and your data"]
@@ -3290,6 +3290,7 @@ function viewSettings(){
 
     '<div style="text-align:center;font-size:11.5px;color:var(--muted);margin-top:18px;line-height:1.7">'+
       'Panel <b style="color:var(--ink)">v<span data-ver></span></b> · Auto-update enabled<br>'+
+      'v3.24 — <b style="color:var(--ink)">Reference-style Attendance PDF + automatic bonus</b>: ruled ledger header/summary, bordered date-wise table, full remarks, dated Sundays, totals/signatures aur maximum 2 readable pages. Morning / Afternoon / Evening / Night added; saved Day/Night unchanged. Full calendar month/all shifts: arrival-day 11:45 PM ke baad completed OUT, 3 baar = 1%, phir har 2 par +1%; exact 11:45 PM excluded, next-morning OUT included. PDF/Excel me count + percentage, salary/payment amount unchanged. Individual report me WhatsApp PDF: device share sheet, ya download + manual Document attachment. Panel styling, saved clocks/history aur financial data unchanged; sab devices update karein<br>'+
       'v3.23 — <b style="color:var(--ink)">Compact reports + styled register</b>: Attendance PDF ab chhote header, clear 7-column date-wise table, dated Sundays, full notes aur totals ke saath 1 page / maximum 2 readable pages. Bahut lambe range/notes par shorter-range warning, koi detail cut nahi. Excel me naya bordered Attendance register, gold Sunday rows, status colours, numeric elapsed hours, totals, frozen headers, filters aur print setup; pehle ki 4 detail sheets bhi retained. Report studio me live totals/page preview. Saved entries, clocks, history, calculations, salary/canteen, JSON/cloud aur fonts unchanged<br>'+
       'v3.22 — <b style="color:var(--ink)">Next-day long shift fix</b>: 24 ghante ki entry limit hata di. 10:32 Same day morning se 1:33 Next day night = poore 27h 01m, bina deduction/cap. Preview, save, clock-out, ledger, JSON/cloud aur PDF/Excel me actual hours; ulta/equal checkout ab bhi blocked. Easy 12-hour choices, Sunday counts, salary/canteen aur saved data unchanged<br>'+
       'v3.21 — <b style="color:var(--ink)">Actual hours + Sundays + clear reports</b>: ab working hours fixed nahi; check-out minus check-in, koi break deduction ya automatic OT/late/half-day target nahi. Sunday ko kis-kis date aaye, alag tab aur manager report me dates/count; dono shifts par ek Sunday ek baar. PDF me readable summary cards, Sunday dates aur simple 6-column daily ledger; Excel me alag Sunday sheet. Purane clocks/history/backups safe; old Attendance totals ab full in→out hours dikhate hain. Salary/canteen aur blank PDF labels unchanged<br>'+
@@ -4996,7 +4997,7 @@ function conflictRows(pending) {
     const attMatch = /^attendance\.records\[([^\]]+)\]/.exec(detail.path);
     const attRow = attMatch && [...((Store.data.attendance || {}).records || []), ...((remote.attendance || {}).records || [])].find((r) => attKey(r) === attMatch[1] || r.id === attMatch[1]);
     const attPerson = attRow && (attManager(attRow.managerId) || ((remote.attendance || {}).managers || []).find((m) => m.id === attRow.managerId));
-    const title = attPerson ? attPerson.name + " · " + attRow.date + " · " + (attRow.shift === "night" ? "Night" : "Day") + " · " + detail.path.split(".").pop() : entry ? (entry.party || "Canteen entry") + " · " + entry.date + " · " + detail.path.split(".").pop() : detail.path;
+    const title = attPerson ? attPerson.name + " · " + attRow.date + " · " + attShiftLabel(attRow.shift) + " · " + detail.path.split(".").pop() : entry ? (entry.party || "Canteen entry") + " · " + entry.date + " · " + detail.path.split(".").pop() : detail.path;
     return '<tr><td style="overflow-wrap:anywhere"><b>' + esc(title) + '</b></td><td>' + esc(text(detail.local)) + '</td><td>' + esc(text(detail.remote)) + '</td></tr>';
   }).join("");
 }
@@ -8151,6 +8152,11 @@ const ATT_STATUS = {
   pending: { label: "Checked in", short: "IN", credit: 0 },
   unmarked: { label: "Unmarked", short: "—", credit: 0 }, notscheduled: { label: "Not scheduled", short: "—", credit: 0 }
 };
+// New shift keys extend the existing enum. Never remap saved Day/Night records.
+const ATT_SHIFTS = Object.freeze({ day: "Day", morning: "Morning", afternoon: "Afternoon", evening: "Evening", night: "Night" });
+const ATT_SHIFT_KEYS = Object.keys(ATT_SHIFTS);
+function attValidShift(shift) { return ATT_SHIFT_KEYS.includes(shift); }
+function attShiftLabel(shift) { return shift === "all" ? "All shifts" : attValidShift(shift) ? ATT_SHIFTS[shift] : "Unknown shift"; }
 const ATT_TAP = ["present", "absent", "half", "leave", "weekoff", "holiday"];
 const ATT_HISTORY_LIMIT = 2000;
 function attDate(value) {
@@ -8208,13 +8214,13 @@ function attLabel(m) { return m.name + " · " + m.code; }
 function attNormManager(m) {
   return { id: String(m.id || ""), name: String(m.name || "").trim().slice(0, 90), code: String(m.code || "").trim().toUpperCase().slice(0, 30),
     department: String(m.department || "").trim().slice(0, 70), phone: String(m.phone || "").trim().slice(0, 35),
-    defaultShift: m.defaultShift === "night" ? "night" : "day", active: m.active !== false,
+    defaultShift: attValidShift(m.defaultShift) ? m.defaultShift : "day", active: m.active !== false,
     joinedOn: String(m.joinedOn || ""), endedOn: String(m.endedOn || ""), note: String(m.note || "").slice(0, 600),
     createdAt: num(m.createdAt), updatedAt: num(m.updatedAt) };
 }
 function attNormRecord(r) {
   return { id: String(r.id || ""), managerId: String(r.managerId || ""), date: String(r.date || ""),
-    shift: r.shift === "night" ? "night" : "day", mode: r.mode === "time" ? "time" : "tap",
+    shift: attValidShift(r.shift) ? r.shift : "day", mode: r.mode === "time" ? "time" : "tap",
     status: r.mode === "time" ? "auto" : String(r.status || "present"), checkIn: String(r.checkIn || ""), checkOut: String(r.checkOut || ""),
     inNextDay: !!r.inNextDay, outNextDay: !!r.outNextDay, breakMinutes: num(r.breakMinutes),
     policy: { ...attDefaults(), ...(r.policy || {}) }, note: String(r.note || "").slice(0, 600),
@@ -8286,7 +8292,7 @@ function attVisits(records, from, to) {
     const key = r.managerId + "|" + date;
     if (!visits.has(key)) visits.set(key, { managerId: r.managerId, date, shifts: [], recordIds: [], open: false });
     const visit = visits.get(key);
-    if (!visit.shifts.includes(r.shift)) { visit.shifts.push(r.shift); visit.shifts.sort(); }
+    if (!visit.shifts.includes(r.shift)) { visit.shifts.push(r.shift); visit.shifts.sort((a, b) => ATT_SHIFT_KEYS.indexOf(a) - ATT_SHIFT_KEYS.indexOf(b)); }
     visit.recordIds.push(r.id); visit.open = visit.open || c.open;
   });
   return Array.from(visits.values()).sort((a, b) => a.date.localeCompare(b.date) || a.managerId.localeCompare(b.managerId));
@@ -8310,7 +8316,7 @@ function attSundayHTML(visits, compact) {
   const pager = !compact ? attPager(groups.length, 24) : "";
   const visible = compact ? groups : groups.slice(attUI().page * 24, (attUI().page + 1) * 24);
   return '<section class="att-panel att-sundays" aria-label="Sundays attended"><div class="att-panel-head"><div><h4>Sundays attended <span class="att-sunday-count">' + visits.length + '</span></h4><p>Only Sundays they came · one count per manager per Sunday</p></div>' + attIcon("calendar") + '</div><div class="att-panel-body">' +
-    (grouped.size ? visible.map(([id, list]) => { const m = attManager(id); return '<div class="att-sunday-person"><b>' + esc(m ? attLabel(m) : "Manager") + '</b><span class="att-mini">' + list.length + ' Sunday' + (list.length === 1 ? '' : 's') + '</span><div class="att-sunday-dates">' + list.map((v) => '<span class="att-sunday-date">' + esc(attNiceDate(v.date, true)) + '<small>' + v.shifts.map((s) => s === "night" ? "Night" : "Day").join(" + ") + (v.open ? ' · Checked in' : '') + '</small></span>').join('') + '</div></div>'; }).join('') : '<p class="att-mini">No Sunday attendance recorded in this period.</p>') +
+    (grouped.size ? visible.map(([id, list]) => { const m = attManager(id); return '<div class="att-sunday-person"><b>' + esc(m ? attLabel(m) : "Manager") + '</b><span class="att-mini">' + list.length + ' Sunday' + (list.length === 1 ? '' : 's') + '</span><div class="att-sunday-dates">' + list.map((v) => '<span class="att-sunday-date">' + esc(attNiceDate(v.date, true)) + '<small>' + v.shifts.map((s) => attShiftLabel(s)).join(" + ") + (v.open ? ' · Checked in' : '') + '</small></span>').join('') + '</div></div>'; }).join('') : '<p class="att-mini">No Sunday attendance recorded in this period.</p>') +
     '<p class="att-mini" style="margin-top:12px">Time mode uses the actual check-in date. Tap mode counts Present / Half day only. Leave, holiday, week off and absent marks are not visits.</p></div>' + (!compact && groups.length > 24 ? pager : "") + '</section>';
 }
 function attSundaysView() {
@@ -8332,11 +8338,11 @@ function attValidate(a, partial) {
     const code = String(m.code).trim().toUpperCase();
     if (managerIds.has(String(m.id)) || codes.has(code)) throw new Error("Duplicate manager ID/code. Give each manager a unique code before syncing.");
     managerIds.add(String(m.id)); codes.add(code);
-    if (m.defaultShift !== "day" && m.defaultShift !== "night") throw new Error("Manager shift must be Day or Night.");
+    if (!attValidShift(m.defaultShift)) throw new Error("Choose Morning, Afternoon, Evening or Night (saved Day is also supported).");
     if (m.joinedOn && !attDate(m.joinedOn) || m.endedOn && !attDate(m.endedOn) || m.joinedOn && m.endedOn && m.endedOn < m.joinedOn) throw new Error("Invalid manager employment dates.");
   });
   (a.records || []).forEach((r) => {
-    if (!r || !r.id || !r.managerId || !attDate(r.date) || !["day", "night"].includes(r.shift) || !["tap", "time"].includes(r.mode)) throw new Error("Invalid attendance record — ID, date, shift and mode are required.");
+    if (!r || !r.id || !r.managerId || !attDate(r.date) || !attValidShift(r.shift) || !["tap", "time"].includes(r.mode)) throw new Error("Invalid attendance record — ID, date, shift and mode are required.");
     if (typeof r.id !== "string" || r.id.length > 160 || typeof r.managerId !== "string" || r.inNextDay !== undefined && typeof r.inNextDay !== "boolean" || r.outNextDay !== undefined && typeof r.outNextDay !== "boolean" || r.policy !== undefined && (!r.policy || typeof r.policy !== "object" || Array.isArray(r.policy))) throw new Error("Invalid attendance record fields or rule snapshot.");
     if (r.mode === "tap" && (r.checkIn || r.checkOut || r.inNextDay || r.outNextDay || r.breakMinutes)) throw new Error("Tap marks cannot carry hidden clock times or breaks.");
     if (!partial && !managerIds.has(String(r.managerId))) throw new Error("Attendance refers to a missing manager. Restore the profile before syncing.");
@@ -8369,6 +8375,7 @@ function attTransaction(fn, checkpoint) {
   } catch (error) { Store.data = before; throw error; }
 }
 function attSaveManager(input) {
+  if (input.defaultShift !== undefined && !attValidShift(input.defaultShift)) throw new Error("Choose a valid manager shift.");
   const previous = input.id ? attManager(input.id) : null;
   if (input.id && !previous) throw new Error("This manager was removed. Reload the manager list.");
   const next = attNormManager({ ...previous, ...input, id: previous ? previous.id : uid(),
@@ -8392,6 +8399,7 @@ function attDeleteManager(id) {
   }, true);
 }
 function attPrepareRecord(input) {
+  if (input.shift !== undefined && !attValidShift(input.shift)) throw new Error("Choose a valid attendance shift.");
   const old = input.id ? attRecord(input.id) : null;
   if (input.id && !old) throw new Error("This attendance record was removed. Open the current ledger.");
   const m = attManager(input.managerId || old && old.managerId); if (!m) throw new Error("Choose a manager from the list.");
@@ -8414,7 +8422,7 @@ function attSaveRecord(input) {
     const i = att().records.findIndex((r) => r.id === next.id);
     if (i < 0) att().records.push(next); else att().records[i] = next;
     const c = attCalculate(next);
-    attAudit(old ? "record-edit" : "record-add", next, old, (old ? "Attendance edited" : "Attendance marked") + " · " + ATT_STATUS[c.status].label + " · " + (next.shift === "night" ? "Night" : "Day"));
+    attAudit(old ? "record-edit" : "record-add", next, old, (old ? "Attendance edited" : "Attendance marked") + " · " + ATT_STATUS[c.status].label + " · " + attShiftLabel(next.shift));
     return next;
   }, !!old);
 }
@@ -8422,12 +8430,12 @@ function attDeleteRecord(id) {
   const r = attRecord(id); if (!r) throw new Error("Attendance record not found.");
   return attTransaction(() => {
     att().records = att().records.filter((x) => x.id !== id);
-    attAudit("record-delete", r, r, "Attendance deleted · " + (r.shift === "night" ? "Night" : "Day"));
+    attAudit("record-delete", r, r, "Attendance deleted · " + attShiftLabel(r.shift));
     return r;
   }, true);
 }
 function attBulkMark(managerIds, date, shift, status, overwrite) {
-  if (!attDate(date) || !["day", "night"].includes(shift) || !ATT_TAP.includes(status)) throw new Error("Choose a valid date, shift and tap status.");
+  if (!attDate(date) || !attValidShift(shift) || !ATT_TAP.includes(status)) throw new Error("Choose a valid date, shift and tap status.");
   const ids = Array.from(new Set(managerIds)), changes = []; let skipped = 0;
   if (!ids.length) throw new Error("Select at least one manager.");
   ids.forEach((id) => {
@@ -8441,7 +8449,7 @@ function attBulkMark(managerIds, date, shift, status, overwrite) {
   return attTransaction(() => {
     changes.forEach(({ next, old }) => {
       const i = att().records.findIndex((r) => r.id === next.id); if (i < 0) att().records.push(next); else att().records[i] = next;
-      attAudit("bulk-mark", next, old, "Bulk marked · " + ATT_STATUS[status].label + " · " + (shift === "night" ? "Night" : "Day"));
+      attAudit("bulk-mark", next, old, "Bulk marked · " + ATT_STATUS[status].label + " · " + attShiftLabel(shift));
     });
     return { saved: changes.length, skipped };
   }, !!overwrite);
@@ -8484,11 +8492,45 @@ function attRange(kind, date, from, to) {
   if (kind === "month") { const p = ctParts(date); return { from: monthFirst(p.y, p.m), to: monthLast(p.y, p.m) }; }
   return { from: date, to: date };
 }
+/* Extra bonus is derived, never persisted into records or salary payments.
+   Each completed saved OUT is one occasion. Month = recorded attendance date,
+   across ALL shifts, even for a partial/shift-filtered report. Midnight and
+   next-morning checkouts qualify only if the actual arrival-day 23:45 was passed. */
+function attLateOut(record) {
+  if (!record || record.mode !== "time" || !record.checkOut) return false;
+  const c = attCalculate(record); if (!c.valid || c.open) return false;
+  const end = attMinutes(record.checkOut) + (record.outNextDay ? 1440 : 0);
+  return end > 1425 + (record.inNextDay ? 1440 : 0);
+}
+function attBonusPercent(count) { const n = Math.max(0, Math.floor(num(count))); return n < 3 ? 0 : 1 + Math.floor((n - 3) / 2); }
+function attBonusMonths(records, from, to) {
+  if (!attDate(from) || !attDate(to) || from > to || attDateDiff(from, to) > 3660) throw new Error("Choose a valid bonus date range (at most 10 years).");
+  const months = new Map();
+  for (let first = from.slice(0, 7) + "-01"; first.slice(0, 7) <= to.slice(0, 7);) {
+    const p = ctParts(first), end = monthLast(p.y, p.m), month = first.slice(0, 7);
+    months.set(month, { month, from: first, to: end, count: 0, percent: 0, nextAt: 3, remaining: 3, recordIds: [] });
+    if (month === to.slice(0, 7)) break;
+    first = ctShiftDate(end, 1);
+  }
+  const seen = new Set();
+  records.forEach((r) => { const row = months.get(String(r.date).slice(0, 7)), key = r.id || attKey(r);
+    if (row && !seen.has(key) && attLateOut(r)) { seen.add(key); row.count++; row.recordIds.push(r.id); }
+  });
+  return Array.from(months.values(), (row) => { row.percent = attBonusPercent(row.count); row.nextAt = row.count < 3 ? 3 : 3 + row.percent * 2; row.remaining = row.nextAt - row.count; return row; });
+}
+function attBonus(managerId, from, to) {
+  if (!attManager(managerId)) throw new Error("Choose one saved manager for a bonus summary.");
+  return attBonusMonths(att().records.filter((r) => r.managerId === managerId), from, to);
+}
+function attReportBonus(report) {
+  // Export snapshots keep their original monthly basis even after another edit.
+  return report.bonus || attBonusMonths(report.rows.filter((row) => row.record).map((row) => row.record), report.from, report.to);
+}
 function attReport(managerId, from, to, shift) {
   const manager = attManager(managerId); if (!manager) throw new Error("Choose one manager for an individual report.");
   if (!attDate(from) || !attDate(to) || from > to) throw new Error("Choose a valid report date range.");
   if (attDateDiff(from, to) > 3660) throw new Error("Export at most 10 years at a time; split larger ranges.");
-  if (!["all", "day", "night"].includes(shift)) throw new Error("Choose All shifts, Day or Night.");
+  if (shift !== "all" && !attValidShift(shift)) throw new Error("Choose All shifts or a valid attendance shift.");
   const records = att().records.filter((r) => r.managerId === managerId && r.date >= from && r.date <= to && (shift === "all" || r.shift === shift));
   const indexed = new Map(); records.forEach((r) => { if (!indexed.has(r.date)) indexed.set(r.date, []); indexed.get(r.date).push(r); });
   const rows = []; let unmarked = 0, notScheduled = 0;
@@ -8497,10 +8539,10 @@ function attReport(managerId, from, to, shift) {
     if (!list.length) {
       const scheduled = attEligible(manager, date); if (scheduled) unmarked++; else notScheduled++;
       rows.push({ date, shift: shift === "all" ? manager.defaultShift : shift, status: scheduled ? "unmarked" : "notscheduled", record: null, calc: null });
-    } else list.sort((a, b) => a.shift.localeCompare(b.shift)).forEach((r) => rows.push({ date, shift: r.shift, status: attCalculate(r).status, record: r, calc: attCalculate(r) }));
+    } else list.sort((a, b) => ATT_SHIFT_KEYS.indexOf(a.shift) - ATT_SHIFT_KEYS.indexOf(b.shift)).forEach((r) => rows.push({ date, shift: r.shift, status: attCalculate(r).status, record: r, calc: attCalculate(r) }));
   }
   const sundays = attSundayVisits(att().records.filter((r) => r.managerId === managerId && (shift === "all" || r.shift === shift)), from, to);
-  return { manager: syncClone(manager), from, to, shift, rows, sundays, summary: { ...attSummary(records), sundayCount: sundays.length, attendedDays: attVisits(att().records.filter((r) => r.managerId === managerId && (shift === "all" || r.shift === shift)), from, to).length, unmarked, notScheduled, calendarDays: attDateDiff(from, to) + 1 },
+  return { manager: syncClone(manager), from, to, shift, rows, sundays, bonus: attBonus(managerId, from, to), summary: { ...attSummary(records), sundayCount: sundays.length, attendedDays: attVisits(att().records.filter((r) => r.managerId === managerId && (shift === "all" || r.shift === shift)), from, to).length, unmarked, notScheduled, calendarDays: attDateDiff(from, to) + 1 },
     history: att().history.filter((h) => h.managerId === managerId && h.date >= from && h.date <= to).slice().sort((a, b) => a.at - b.at) };
 }
 
@@ -8616,7 +8658,7 @@ function attFilteredRecords(ignoreStatus) {
   return rows;
 }
 function attStatusHTML(status) { const s = ATT_STATUS[status] || ATT_STATUS.unmarked; return '<span class="att-status ' + esc(status) + '">' + esc(s.label) + '</span>'; }
-function attShiftHTML(shift) { return '<span class="att-shift ' + shift + '">' + attIcon(shift) + (shift === "night" ? "Night" : "Day") + '</span>'; }
+function attShiftHTML(shift) { const style = shift === "night" ? "night" : "day"; return '<span class="att-shift ' + style + '">' + attIcon(style) + esc(attShiftLabel(shift)) + '</span>'; }
 function attInitials(name) { return String(name || "M").trim().split(/\s+/).slice(0, 2).map((p) => Array.from(p)[0]).join("").toUpperCase(); }
 function attBtn(label, action, attrs, cls) { return '<button type="button" class="btn ' + (cls || "") + '" data-att-act="' + action + '" ' + (attrs || "") + '>' + label + '</button>'; }
 function attEmpty(title, description, action, label, icon) {
@@ -8642,7 +8684,7 @@ function attFilterHTML() {
       f(board ? "Attendance date" : "Reference date", '<input type="date" class="inp" id="attDate" aria-label="Attendance date" value="' + u.date + '">')) : "") +
     (!managers ? f("Manager", '<select class="inp" id="attManagerFilter" aria-label="Filter manager"><option value="all">All managers</option>' + attManagersSorted().map((m) => '<option value="' + esc(m.id) + '"' + (u.manager === m.id ? " selected" : "") + '>' + esc(attLabel(m) + (!m.active ? " (inactive)" : "")) + '</option>').join("") + '</select>') :
       f("Profiles", '<select class="inp" id="attManagerState" aria-label="Manager profile status">' + options([["active", "Active managers"], ["inactive", "Inactive managers"], ["all", "All profiles"]], u.managerState) + '</select>')) +
-    (!managers ? f("Shift", '<select class="inp" id="attShiftFilter" aria-label="Filter shift">' + options([["all", "All shifts"], ["day", "Day shift"], ["night", "Night shift"]], u.shift) + '</select>') : "") +
+    (!managers ? f("Shift", '<select class="inp" id="attShiftFilter" aria-label="Filter shift">' + options([["all", "All shifts"], ...ATT_SHIFT_KEYS.map((key) => [key, attShiftLabel(key) + (key === "day" ? " (existing)" : " shift")])], u.shift) + '</select>') : "") +
     (!managers && !history && u.tab !== "sundays" ? f("Status", '<select class="inp" id="attStatusFilter" aria-label="Filter attendance status">' + options([["all", "All statuses"], ...Object.entries(ATT_STATUS).filter(([k]) => k !== "notscheduled").map(([k, v]) => [k, v.label])], u.status) + '</select>') : "") +
     f("Search", '<input class="inp" type="search" id="attSearch" placeholder="' + (managers ? "Name, code, department…" : "Manager, code, note…") + '" aria-label="Search attendance" value="' + esc(u.q) + '">', "att-search") +
     (!board && !calendar && !history && u.tab !== "sundays" ? f("Sort", '<select class="inp" id="attSort" aria-label="Sort attendance">' + options(managers ? [["name", "Name A–Z"], ["newest", "Recently added"]] : [["newest", "Newest first"], ["oldest", "Oldest first"], ["name", "Manager name"], ["hours", "Most hours"]], u.sort) + '</select>', "att-sort-field") : "") +
@@ -8653,7 +8695,7 @@ function viewAttendance() {
   if (u.manager !== "all" && !attManager(u.manager)) u.manager = "all";
   const range = attSelectedRange();
   return '<section class="att-page" aria-label="Manager attendance workspace">' +
-    '<div class="att-hero"><div><div class="att-eyebrow">' + attIcon("calendar") + ' PEOPLE &amp; OPERATIONS</div><h3>A little tap. A clear record.</h3><p>Manager attendance, Day &amp; Night shifts, and hours that add up. All in your Hisaab panel.</p></div><div class="att-actions">' +
+    '<div class="att-hero"><div><div class="att-eyebrow">' + attIcon("calendar") + ' PEOPLE &amp; OPERATIONS</div><h3>A little tap. A clear record.</h3><p>Manager attendance, flexible shifts, and hours that add up. All in your Hisaab panel.</p></div><div class="att-actions">' +
     attBtn(attIcon("download") + " Individual report", "export", "", "") + attBtn("+ Add manager", "managerAdd", "", "primary") + '</div></div>' +
     attKpis() +
     '<div class="att-navline"><div class="att-tabs" role="tablist" aria-label="Attendance sections">' + [["board", "Daily board"], ["calendar", "Calendar"], ["records", "Ledger & reports"], ["sundays", "Sundays"], ["managers", "Managers"], ["history", "History"]].map(([v, t]) => '<button type="button" role="tab" aria-selected="' + (u.tab === v) + '" data-att-act="tab" data-value="' + v + '">' + t + '</button>').join("") + '</div>' +
@@ -8669,7 +8711,7 @@ function attBoardCards() {
   const records = new Map(att().records.filter((r) => r.date === date).map((r) => [r.managerId + "|" + r.shift, r]));
   attManagersSorted().forEach((m) => {
     if (u.manager !== "all" && u.manager !== m.id || q && !(m.name + " " + m.code + " " + m.department).toLowerCase().includes(q)) return;
-    const shifts = u.shift === "all" ? ["day", "night"].filter((shift) => shift === m.defaultShift || records.has(m.id + "|" + shift)) : [u.shift];
+    const shifts = u.shift === "all" ? ATT_SHIFT_KEYS.filter((shift) => shift === m.defaultShift || records.has(m.id + "|" + shift)) : [u.shift];
     shifts.forEach((shift) => {
       const r = records.get(m.id + "|" + shift), c = r && attCalculate(r), status = c ? c.status : "unmarked";
       if (!r && (!m.active || !attEligible(m, date) || shift !== m.defaultShift)) return;
@@ -8693,7 +8735,7 @@ function attBoardHTML() {
           '<div class="att-actions" style="margin-top:12px">' + (!r ? (u.date === isoDate(new Date()) ? attBtn(attIcon("clock") + " Check in now", "clockIn", attrs, "sm primary") : "") + attBtn("Enter times", "recordFor", attrs, "sm") : r.mode === "time" && !r.checkOut ? attBtn("Check out now", "clockOut", 'data-id="' + esc(r.id) + '"', "sm primary") + attBtn("Edit times", "recordEdit", 'data-id="' + esc(r.id) + '"', "sm") : attBtn("Edit record", "recordEdit", 'data-id="' + esc(r.id) + '"', "sm")) + '</div>') +
         '<div class="att-person-meta"><span>' + (c ? (r.mode === "tap" ? c.credit + " credit · tap mode" : c.open ? "Clock-out pending" : c.credit + " attendance credit") : "Ready to mark") + '</span><div class="att-actions">' +
         attBtn(r ? "Edit" : "More", r ? "recordEdit" : "recordFor", r ? 'data-id="' + esc(r.id) + '"' : attrs, "ghost sm") + attBtn("Ledger →", "managerLedger", 'data-mid="' + esc(m.id) + '"', "ghost sm") + '</div></div></article>';
-    }).join("") + '</div>' + (cards.length > 24 ? pager : "") : attEmpty(att().managers.length ? "No managers in this view" : "Your team starts here", att().managers.length ? "Try another shift, manager or date. Use Mark attendance to record a substitute shift; an unmarked day is never counted as absent." : "Add your managers, choose their Day or Night shift, and mark attendance with a tap or precise check-in and check-out times.", att().managers.length ? "recordAdd" : "managerAdd", att().managers.length ? "+ Mark attendance" : "+ Add your first manager", "people")) + '</div>' + attSideHTML() + '</div>';
+    }).join("") + '</div>' + (cards.length > 24 ? pager : "") : attEmpty(att().managers.length ? "No managers in this view" : "Your team starts here", att().managers.length ? "Try another shift, manager or date. Use Mark attendance to record a substitute shift; an unmarked day is never counted as absent." : "Add your managers, choose their shift, and mark attendance with a tap or precise check-in and check-out times.", att().managers.length ? "recordAdd" : "managerAdd", att().managers.length ? "+ Mark attendance" : "+ Add your first manager", "people")) + '</div>' + attSideHTML() + '</div>';
 }
 function attSideHTML() {
   const u = attUI(), cards = attBoardCards(), s = attSummary(cards.filter((c) => c.r).map((c) => c.r)), marked = cards.filter((c) => !!c.r).length;
@@ -8711,7 +8753,7 @@ function attCalendarHTML() {
   const cells = Array.from({ length: Math.ceil((start + days) / 7) * 7 }, (_, i) => {
     const date = ctShiftDate(from, i - start), inMonth = date >= from && date <= monthLast(UI.year, UI.month), list = indexed.get(date) || [], s = attSummary(list);
     const marks = Object.keys(ATT_STATUS).filter((k) => s[k] > 0).map((k) => '<span class="att-status ' + k + '" title="' + ATT_STATUS[k].label + '">' + ATT_STATUS[k].short + ' ' + s[k] + '</span>').join("");
-    const title = date + " · " + (list.length ? list.map((r) => (attManager(r.managerId) || {}).name + " / " + (r.shift === "night" ? "Night" : "Day") + ": " + ATT_STATUS[attCalculate(r).status].label).join("; ") : "Unmarked");
+    const title = date + " · " + (list.length ? list.map((r) => (attManager(r.managerId) || {}).name + " / " + attShiftLabel(r.shift) + ": " + ATT_STATUS[attCalculate(r).status].label).join("; ") : "Unmarked");
     return '<button type="button" class="att-cal-cell' + (inMonth ? "" : " out") + (date === isoDate(new Date()) ? " today" : "") + '" data-att-act="calendarDay" data-date="' + date + '" aria-label="' + esc(title) + '" title="' + esc(title) + '"><span class="att-cal-day">' + ctParts(date).d + '</span><span class="att-cal-marks">' + (marks || '<span>—</span>') + '</span><span class="att-cal-credit">' + (list.length ? s.credit + ' credits' + (s.workedMinutes ? ' · ' + Math.floor(s.workedMinutes / 60) + 'h' : '') : 'Not marked') + '</span></button>';
   });
   return '<div class="att-panel"><div class="att-panel-head"><div><h4>' + monthLabel(UI.year, UI.month) + '</h4><p>Monthly attendance · tap a day to mark or edit · unmarked does not mean absent</p></div><div class="att-actions">' + attBtn("‹", "monthShift", 'data-value="-1" aria-label="Previous calendar month"', "sm") + attBtn("This month", "calendarToday", "", "sm") + attBtn("›", "monthShift", 'data-value="1" aria-label="Next calendar month"', "sm") + '</div></div><div class="att-calendar">' + ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"].map((d) => '<div class="att-cal-dow">' + d + '</div>').join("") + cells.join("") + '</div><div class="att-cal-legend">' + Object.entries(ATT_STATUS).filter(([k]) => !["unmarked", "notscheduled"].includes(k)).map(([k, v]) => '<span class="att-status ' + k + '">' + v.short + ' · ' + v.label + '</span>').join("") + '</div></div>';
@@ -8761,7 +8803,7 @@ function attHistoryHTML() {
 }
 function attDashboardCard(y, m) {
   const records = att().records.filter((r) => r.date >= monthFirst(y, m) && r.date <= monthLast(y, m)), s = attSummary(records), active = att().managers.filter((m) => m.active).length;
-  return '<div class="card att-dashboard"><div class="card-h"><div><h3>' + attIcon("calendar") + ' Manager attendance</h3><div class="sub">' + monthLabel(y, m) + ' · Day &amp; Night · separate from worker salaries</div></div>' + attBtn("Open Attendance →", "open", "", "sm") + '</div><div class="strip"><div><small>Managers</small><b>' + active + '</b><div class="sub">active profiles</div></div><div><small>Attendance credits</small><b>' + s.credit + '</b><div class="sub">' + s.marks + ' shift records</div></div><div><small>Worked</small><b style="font-size:18px">' + attDuration(s.workedMinutes) + '</b><div class="sub">time-mode entries</div></div><div><small>Open shifts</small><b style="font-size:18px">' + s.pending + '</b><div class="sub">no fixed daily hours</div></div></div></div>';
+  return '<div class="card att-dashboard"><div class="card-h"><div><h3>' + attIcon("calendar") + ' Manager attendance</h3><div class="sub">' + monthLabel(y, m) + ' · flexible shifts · separate from worker salaries</div></div>' + attBtn("Open Attendance →", "open", "", "sm") + '</div><div class="strip"><div><small>Managers</small><b>' + active + '</b><div class="sub">active profiles</div></div><div><small>Attendance credits</small><b>' + s.credit + '</b><div class="sub">' + s.marks + ' shift records</div></div><div><small>Worked</small><b style="font-size:18px">' + attDuration(s.workedMinutes) + '</b><div class="sub">time-mode entries</div></div><div><small>Open shifts</small><b style="font-size:18px">' + s.pending + '</b><div class="sub">no fixed daily hours</div></div></div></div>';
 }
 function attSettingsCard() {
   return '<div class="card" style="margin-top:14px"><div class="card-h"><div><h3>' + attIcon("calendar") + ' Manager attendance</h3><div class="sub">Flexible actual hours, Sunday visits &amp; manual attendance credits</div></div>' + attBtn("Attendance settings", "rules", "", "sm") + '</div><div class="card-b"><div class="att-note">Included in the same automatic save, cloud sync, JSON backups and safety copies as your other records. Attendance does not update salary calculations. Individual PDF and genuine Excel workbooks are available inside Attendance.</div></div></div>';
@@ -8778,7 +8820,7 @@ function attDialog(id, title, subtitle, body, footer, width) {
 function attFormError(error) { const el = $("#attFormError"); if (el) { el.textContent = error.message || String(error); el.scrollIntoView({ block: "nearest" }); } else toast(error.message || String(error), "bad"); }
 function attManagerPickHTML(id, selectedId, includeInactive) {
   const selected = attManager(selectedId), managers = attManagersSorted().filter((m) => m.active || includeInactive || m.id === selectedId);
-  return '<input class="inp" id="' + id + '" list="' + id + 'List" value="' + esc(selected ? attLabel(selected) : "") + '" placeholder="Search name or unique manager code" autocomplete="off" required><datalist id="' + id + 'List">' + managers.map((m) => '<option value="' + esc(attLabel(m)) + '">' + esc((m.defaultShift === "night" ? "Night" : "Day") + (m.department ? " · " + m.department : "") + (!m.active ? " · Inactive" : "")) + '</option>').join("") + '</datalist>';
+  return '<input class="inp" id="' + id + '" list="' + id + 'List" value="' + esc(selected ? attLabel(selected) : "") + '" placeholder="Search name or unique manager code" autocomplete="off" required><datalist id="' + id + 'List">' + managers.map((m) => '<option value="' + esc(attLabel(m)) + '">' + esc(attShiftLabel(m.defaultShift) + (m.department ? " · " + m.department : "") + (!m.active ? " · Inactive" : "")) + '</option>').join("") + '</datalist>';
 }
 function attResolveManager(value, includeInactive) {
   const q = String(value || "").trim().toLowerCase();
@@ -8789,7 +8831,7 @@ function attResolveManager(value, includeInactive) {
   throw new Error(named.length > 1 ? "More than one manager has that name. Choose their unique code from the list." : "Select a saved manager by name and code. Add their profile in Managers first.");
 }
 function attShiftSelect(id, shift, all) {
-  return '<select class="inp" id="' + id + '">' + (all ? '<option value="all"' + (shift === "all" ? " selected" : "") + '>All shifts</option>' : "") + '<option value="day"' + (shift === "day" ? " selected" : "") + '>Day shift</option><option value="night"' + (shift === "night" ? " selected" : "") + '>Night shift</option></select>';
+  return '<select class="inp" id="' + id + '">' + (all ? '<option value="all"' + (shift === "all" ? " selected" : "") + '>All shifts</option>' : "") + ATT_SHIFT_KEYS.map((key) => '<option value="' + key + '"' + (shift === key ? " selected" : "") + '>' + attShiftLabel(key) + (key === "day" ? " (existing)" : " shift") + '</option>').join("") + '</select>';
 }
 function attOpenManager(id) {
   const m = id ? attManager(id) : null; if (id && !m) return toast("Manager not found", "bad");
@@ -8825,8 +8867,8 @@ function attSetTimeControl(id, value, nextDay) {
 }
 function attSuggestPeriods() {
   if (!attEditor || attEditor.kind !== "record") return;
-  const night = $("#attRShift").value === "night";
-  $("#attRInWhen").value = night ? "same-night" : "same-morning";
+  const shift = $("#attRShift").value, night = shift === "night";
+  $("#attRInWhen").value = ["afternoon", "evening", "night"].includes(shift) ? "same-night" : "same-morning";
   $("#attROutWhen").value = night ? "next-morning" : "same-night";
 }
 function attTimeJourney() {
@@ -8843,7 +8885,7 @@ function attOpenRecord(id, managerId, date, shift) {
   const u = attUI(), r = id ? attRecord(id) : null; if (id && !r) return toast("Attendance record not found", "bad");
   const m = attManager(r ? r.managerId : managerId || (u.manager !== "all" ? u.manager : ""));
   if (!r && !att().managers.some((x) => x.active)) { toast("Add an active manager first", "bad"); attOpenManager(); return; }
-  shift = r ? r.shift : shift || (m ? m.defaultShift : u.shift === "night" ? "night" : "day"); date = r ? r.date : date || u.date;
+  shift = r ? r.shift : shift || (m ? m.defaultShift : attValidShift(u.shift) ? u.shift : "day"); date = r ? r.date : date || u.date;
   const p = r ? r.policy : attPolicy(shift), mode = r ? r.mode : u.mode, status = r && r.mode === "tap" ? r.status : "present";
   attDialog("attRecordForm", r ? "Edit attendance" : "Mark attendance", "Use a 1–12 clock. Choose same/next day morning or night for each time — no conversion needed.",
     '<div class="att-form-grid">' + attField("Manager", attManagerPickHTML("attRManager", m && m.id, !!r), "wide", "Search by name or code; choose the matching profile.") +
@@ -8906,7 +8948,7 @@ function attBulkList() {
   const shift = $("#attBShift").value, date = $("#attBDate").value;
   $("#attBulkManagers").innerHTML = attManagersSorted().filter((m) => m.active).map((m) => {
     const eligible = attDate(date) && attEligible(m, date), old = att().records.find((r) => r.managerId === m.id && r.date === date && r.shift === shift);
-    return '<label><input type="checkbox" name="attBulkManager" value="' + esc(m.id) + '"' + (eligible && m.defaultShift === shift ? " checked" : "") + (!eligible ? " disabled" : "") + '><span style="flex:1">' + esc(attLabel(m)) + '<small class="muted" style="display:block;font-size:10px">' + (m.defaultShift === "night" ? "Night" : "Day") + ' default' + (!eligible ? " · outside working dates" : old ? " · " + ATT_STATUS[attCalculate(old).status].label + " already marked" : " · not marked") + '</small></span></label>';
+    return '<label><input type="checkbox" name="attBulkManager" value="' + esc(m.id) + '"' + (eligible && m.defaultShift === shift ? " checked" : "") + (!eligible ? " disabled" : "") + '><span style="flex:1">' + esc(attLabel(m)) + '<small class="muted" style="display:block;font-size:10px">' + attShiftLabel(m.defaultShift) + ' default' + (!eligible ? " · outside working dates" : old ? " · " + ATT_STATUS[attCalculate(old).status].label + " already marked" : " · not marked") + '</small></span></label>';
   }).join("") || '<div class="att-note">No active managers.</div>';
   attBulkCount();
 }
@@ -8915,7 +8957,7 @@ function attOpenBulk() {
   const u = attUI();
   if (!att().managers.some((m) => m.active)) return attOpenManager();
   attDialog("attBulkForm", "Bulk mark attendance", "One save for the selected team. Existing records are skipped by default; no duplicates are created.",
-    '<div class="att-form-grid">' + attField("Date", attInput("attBDate", u.date, 'type="date" required')) + attField("Shift", attShiftSelect("attBShift", u.shift === "night" ? "night" : "day")) + attField("Mark selected managers as", attStatusSelect("attBStatus", "present"), "wide") +
+    '<div class="att-form-grid">' + attField("Date", attInput("attBDate", u.date, 'type="date" required')) + attField("Shift", attShiftSelect("attBShift", attValidShift(u.shift) ? u.shift : "day")) + attField("Mark selected managers as", attStatusSelect("attBStatus", "present"), "wide") +
     '<div class="wide"><div class="att-actions" style="justify-content:space-between;margin-bottom:8px"><b class="att-mini" id="attBulkCount"></b><div class="att-actions">' + attBtn("Select all", "bulkSelect", 'data-value="all"', "sm ghost") + attBtn("Clear", "bulkSelect", 'data-value="none"', "sm ghost") + '</div></div><div class="att-bulk-list" id="attBulkManagers"></div></div>' +
     '<label class="wide att-note" style="display:flex;gap:9px;align-items:flex-start"><input type="checkbox" id="attBOverwrite" style="margin-top:3px"><span><b>Replace existing attendance too</b><br>Only enable intentionally. This can replace time-mode records with tap marks. Before/after values and a safety copy are kept.</span></label></div>',
     '<button type="button" class="btn" data-act="closeModal">Cancel</button><button type="submit" class="btn primary">Save selected attendance</button>', 620);
@@ -8930,11 +8972,11 @@ function attOpenExport(managerId) {
     attField("From date", attInput("attEFrom", range.from, 'type="date" required')) + attField("To date", attInput("attETo", range.to, 'type="date" required')) + attField("Shift selection", attShiftSelect("attEShift", u.shift, true), "wide") +
     '<div class="wide att-actions">' + attBtn("This month", "exportRange", 'data-value="month"', "sm") + attBtn("Last 7 days", "exportRange", 'data-value="week"', "sm") + attBtn("This year", "exportRange", 'data-value="year"', "sm") + '</div>' +
     '<div class="wide att-export-preview" id="attExportPreview" role="status" aria-live="polite"></div>' +
-    '<div class="wide att-export-formats"><article><small>PDF · A4 PORTRAIT</small><h4>1 page. Maximum 2 pages.</h4><p>Every selected date, Day/Night shift, status, time, credit, note and attended Sunday — without oversized headings or cut-off details.</p><p class="att-export-caption">If all details cannot fit on 2 readable pages, choose a shorter range or the complete Excel workbook. Nothing is silently omitted.</p></article>' +
+    '<div class="wide att-export-formats"><article><small>PDF · A4 PORTRAIT</small><h4>1 page. Maximum 2 pages.</h4><p>Every selected date, shift, status, time, credit, note and attended Sunday — without oversized headings or cut-off details.</p><p class="att-export-caption">If all details cannot fit on 2 readable pages, choose a shorter range or the complete Excel workbook. Nothing is silently omitted.</p></article>' +
     '<article><small>EXCEL · 5 SHEETS</small><h4>Attendance register</h4><p>Date-wise bordered register, gold Sunday rows, clear check-in/out, coloured statuses, numeric elapsed hours and totals.</p><p class="att-export-caption">Plus Summary, Daily attendance, Change history and Sundays attended. Frozen headers, filters and print-ready layout. Notes stay literal text.</p></article></div>' +
     '<div class="wide att-export-safe">' + attIcon("check") + '<span><b>Saved entries, clocks and history are unchanged.</b> Salary, canteen and advances are not edited or invented by these exports. Tap/open shifts have no completed hours; credits are not payroll days.</span></div>' +
     '<div class="wide att-note" id="attDownloadLinks" hidden><b>Your report is ready.</b><br>If your browser blocks the automatic download, use the ready file link below.<div class="att-actions" style="margin-top:9px" id="attReadyFiles"></div></div></div>',
-    '<button type="button" class="btn" data-act="closeModal">Cancel</button><button type="submit" name="format" value="pdf" class="btn" aria-describedby="attExportCapacity">' + attIcon("report") + ' Download PDF</button><button type="submit" name="format" value="xlsx" class="btn primary">' + attIcon("download") + ' Download Excel</button>', 720);
+    '<button type="button" class="btn" data-act="closeModal">Cancel</button><button type="submit" name="format" value="pdf" class="btn" aria-describedby="attExportCapacity">' + attIcon("report") + ' Download PDF</button><button type="submit" name="format" value="whatsapp" class="btn" title="Share this manager PDF; choose WhatsApp on your device">WhatsApp PDF</button><button type="submit" name="format" value="xlsx" class="btn primary">' + attIcon("download") + ' Download Excel</button>', 720);
   attEditor = { kind: "export", scope: Cloud.scope }; attRefreshExportPreview(); $("#attEManager")?.focus();
 }
 function attRefreshExportPreview() {
@@ -9002,7 +9044,7 @@ function attAction(button) {
       else save(); break;
     }
     case "clockIn": {
-      try { const r = attClockIn(mid, shift); attSetDate(r.date); render(); toast("Checked in · " + attTimeLabel(r.checkIn, r.inNextDay) + " · " + (r.shift === "night" ? "Night" : "Day"), "ok"); } catch (e) { toast(e.message, "bad"); } break;
+      try { const r = attClockIn(mid, shift); attSetDate(r.date); render(); toast("Checked in · " + attTimeLabel(r.checkIn, r.inNextDay) + " · " + attShiftLabel(r.shift), "ok"); } catch (e) { toast(e.message, "bad"); } break;
     }
     case "clockOut": {
       try { const r = attClockOut(id); render(); toast("Checked out · worked " + attDuration(attCalculate(r).workedMinutes), "ok"); } catch (e) { attOpenRecord(id); attFormError(e); } break;
@@ -9013,7 +9055,7 @@ function attAction(button) {
     }
     case "recordDelete": {
       const r = attRecord(id); if (!r) break;
-      confirmDialog("Delete attendance record?", "Remove this <b>" + esc(r.date) + " · " + (r.shift === "night" ? "Night" : "Day") + "</b> record? Its prior value remains in history and a safety copy. No absent mark will be created.", "Delete record", () => complete(() => attDeleteRecord(id), "Attendance record deleted"), true); break;
+      confirmDialog("Delete attendance record?", "Remove this <b>" + esc(r.date) + " · " + attShiftLabel(r.shift) + "</b> record? Its prior value remains in history and a safety copy. No absent mark will be created.", "Delete record", () => complete(() => attDeleteRecord(id), "Attendance record deleted"), true); break;
     }
     case "bulk": attOpenBulk(); break;
     case "bulkSelect": $$("[name=attBulkManager]:not(:disabled)").forEach((el) => { el.checked = value === "all"; }); attBulkCount(); break;
@@ -9023,6 +9065,7 @@ function attAction(button) {
       const date = isoDate(new Date()), now = new Date(); let range = value === "month" ? attRange("month", date) : value === "week" ? { from: ctShiftDate(date, -6), to: date } : { from: now.getFullYear() + "-01-01", to: now.getFullYear() + "-12-31" };
       $("#attEFrom").value = range.from; $("#attETo").value = range.to; attRefreshExportPreview(); break;
     }
+    case "shareReady": attSharePendingPdf().catch(attFormError); break;
     case "historyDetail": attHistoryDetail(id); break;
   }
 }
@@ -9110,108 +9153,107 @@ function attCompactClock(value, nextDay) {
 }
 function attPdfLayout(report) {
   attPdfMeasureCache.clear();
-  const m = report.manager, s = report.summary, visits = report.sundays || [];
-  const ink = [0.10,0.19,0.25], muted = [0.36,0.42,0.47], teal = [0.04,0.43,0.41], line = [0.82,0.86,0.89];
-  const gold = [1,0.95,0.80], soft = [0.94,0.97,0.97], white = [1,1,1];
-  const widths = [90,34,73,104,104,73,CW-478], labels = ["Date / day", "Shift", "Attendance", "Check-in", "Check-out", "Actual hours", "Credit"];
+  const m = report.manager, s = report.summary, visits = report.sundays || [], bonuses = attReportBonus(report);
+  // The supplied reference: Segoe, monochrome split header, ruled key/value
+  // summary, light bordered tables, a quiet total and dashed explanatory box.
+  const ink = [0.07,0.10,0.16], muted = [0.32,0.37,0.44], line = [0.84,0.87,0.90], pale = [0.97,0.98,0.99], gold = [1,0.96,0.84];
+  const widths = [83,52,68,98,98,66,CW-465], labels = ["Date / day", "Shift", "Attendance", "Check-in", "Check-out *", "Actual hours", "Credit"];
   const pages = [[]], notes = [], font = 8.5;
-  // Tighten spacing, not type size: a normal month and brief notes fit one page.
-  const rowHeight = Math.max(13.5, Math.min(19, 400 / Math.max(1, report.rows.length)));
+  const rowHeight = Math.max(12.5, Math.min(19, 380 / Math.max(1, report.rows.length)));
   let ops = pages[0], y = 800;
   const put = (kind, ...args) => ops.push({ kind, args });
   const text = (x, yy, size, value, options) => put("text", x, yy, size, String(value == null ? "" : value), { color: ink, ...(options || {}) });
   const rule = (x1, y1, x2, y2, color = line, weight = .4) => put("line", x1, y1, x2, y2, color, weight);
   const rect = (x, yy, w, h, color) => put("rect", x, yy, w, h, color);
-  const wrap = (value, size = font, width = CW, bold = false) => String(value == null ? "" : value).split(/\r?\n/).flatMap((part) => {
-    const lines = attPdfWrap(part, size, width, bold); return lines.length ? lines : [""];
-  });
+  const wrap = (value, size = font, width = CW, bold = false) => String(value == null ? "" : value).split(/\r?\n/).flatMap((part) => { const lines = attPdfWrap(part, size, width, bold); return lines.length ? lines : [""]; });
   function nextPage(table) {
     if (pages.length === 2) throw new Error("All details will not fit on 2 readable PDF pages. Choose a shorter date range or download the complete Excel workbook. Saved data is unchanged.");
     ops = []; pages.push(ops); y = 800;
-    wrap(m.name + " · " + m.code, 10, CW - 140, true).forEach((value) => { text(M, y, 10, value, { bold: true }); y -= 13; });
-    text(RIGHT, 800, 8, "ATTENDANCE / CONTINUED", { align: "right", bold: true, color: teal });
-    text(M, y - 1, 8.5, attNiceDate(report.from) + " — " + attNiceDate(report.to)); y -= 13;
-    rule(M, y, RIGHT, y, teal, 1); y -= 8;
+    wrap(m.name + " · " + m.code, 10, CW - 150, true).forEach((value) => { text(M, y, 10, value, { bold: true }); y -= 13; });
+    text(RIGHT, 800, 8.5, "ATTENDANCE / CONTINUED", { align: "right", bold: true });
+    text(M, y - 1, 8.5, attNiceDate(report.from) + " — " + attNiceDate(report.to)); y -= 9;
+    rule(M, y, RIGHT, y, ink, 1); y -= 4;
     if (table) tableHead();
   }
-  function ensure(height, table = false) { if (y - height < 80) nextPage(table); }
+  function ensure(height, table = false) { if (y - height < 80) nextPage(table); if (y - height < 80) throw new Error("All details will not fit on 2 readable PDF pages. Choose a shorter date range or download the complete Excel workbook. Saved data is unchanged."); }
   function paragraph(value, size = font, bold = false, color = muted, leading = 11) {
     wrap(value, size, CW, bold).forEach((value) => { ensure(leading); text(M, y - size, size, value, { bold, color }); y -= leading; });
   }
+  function section(value) { ensure(27); text(M, y - 9, 9, value, { bold: true, color: muted }); rule(M, y - 13, RIGHT, y - 13); y -= 17; }
   function tableHead() {
-    rect(M, y - 21, CW, 21, ink); let x = M;
-    labels.forEach((value, i) => { text(x + 5, y - 14, 8.5, value, { bold: true, color: white, maxWidth: widths[i] - 9 }); x += widths[i]; }); y -= 21;
+    rect(M, y - 21, CW, 21, pale); let x = M;
+    labels.forEach((value, i) => { text(x + 5, y - 14, 8.5, value, { bold: true, color: muted }); rule(x, y, x, y - 21); x += widths[i]; });
+    rule(RIGHT, y, RIGHT, y - 21); rule(M, y, RIGHT, y); rule(M, y - 21, RIGHT, y - 21); y -= 21;
   }
-  // Quiet branding, full profile and a short KPI strip replace the old cover-page-sized header.
-  wrap(Store.data.settings.shopName || "Hisaab", 10, CW - 130, true).forEach((value) => { text(M, y, 10, value, { bold: true }); y -= 13; });
-  text(RIGHT, 800, 8.5, "HISAAB / ATTENDANCE", { align: "right", color: teal, bold: true });
-  rule(M, y + 3, RIGHT, y + 3, teal, 1.5); y -= 17;
-  const nameLines = wrap(m.name, 17, CW, true);
-  nameLines.forEach((value, index) => { ensure(22); text(M, y, 17, value, { bold: true }); y -= index === nameLines.length - 1 ? 13 : 21; });
-  paragraph([m.code, m.department, m.phone, m.joinedOn ? "Joined " + attNiceDate(m.joinedOn) : "", m.endedOn ? "Last working " + attNiceDate(m.endedOn) : "", m.active === false ? "Inactive" : ""].filter(Boolean).join(" · "), 8.5);
-  paragraph(attNiceDate(report.from) + " — " + attNiceDate(report.to) + "  /  " + (report.shift === "all" ? "Day + Night shifts" : report.shift === "night" ? "Night shift" : "Day shift"), 9, true, ink, 13);
-  y -= 5; ensure(40);
-  const metrics = [["ACTUAL HOURS", attDuration(s.workedMinutes)], ["ARRIVAL DATES", s.attendedDays || 0], ["SUNDAYS ATTENDED", visits.length], ["OPEN SHIFTS", s.pending]];
-  const w = CW / 4;
-  rect(M, y - 36, CW, 36, soft);
-  metrics.forEach(([label, value], i) => { const x = M + i * w; if (i) rule(x, y - 29, x, y - 7); text(x + 8, y - 11, 7.5, label, { color: muted, bold: true }); text(x + 8, y - 28, 14, value, { color: teal, bold: true, maxWidth: w - 16 }); }); y -= 41;
-  paragraph("Present " + s.present + " · Half day " + s.half + " · Absent " + s.absent + " · Leave " + s.leave + " · Holiday " + s.holiday + " · Week off " + s.weekoff + " · Unmarked " + s.unmarked + (s.notScheduled ? " · Outside employment " + s.notScheduled : ""), 8.5, false, ink);
-  // Sunday attendance is explicit and dated, not inferred from yellow calendar rows.
+  const headerTop = y, brand = wrap(Store.data.settings.shopName || "Hisaab", 13, CW - 205, "black");
+  brand.forEach((value) => { text(M, y, 13, value, { bold: true, black: true }); y -= 16; });
+  const address = [Store.data.settings.address, Store.data.settings.ownerName].filter(Boolean).join(" · ");
+  if (address) wrap(address, 8, CW - 205).forEach((value) => { text(M, y, 8, value, { color: muted }); y -= 10; });
+  const fullMonth = attRange("month", report.from);
+  text(RIGHT, headerTop, 10, report.from === fullMonth.from && report.to === fullMonth.to ? "ATTENDANCE MONTHLY LEDGER" : "ATTENDANCE PERIOD LEDGER", { align: "right", bold: true, black: true });
+  text(RIGHT, headerTop - 14, 8.5, attNiceDate(report.from) + " — " + attNiceDate(report.to), { align: "right", color: muted });
+  text(RIGHT, headerTop - 27, 8, "Generated " + attStamp(Date.now()), { align: "right", color: muted });
+  y = Math.min(y, headerTop - 31); rule(M, y, RIGHT, y, ink, 1.2); y -= 12;
+  const nameLines = wrap(m.name, 13, CW, true);
+  nameLines.forEach((value,index) => { ensure(18); text(M, y, 13, value, { bold: true }); y -= index === nameLines.length - 1 ? 12 : 17; });
+  paragraph([m.code, m.department, m.phone, m.joinedOn ? "Joined " + attNiceDate(m.joinedOn) : "", m.endedOn ? "Last working " + attNiceDate(m.endedOn) : "", m.active === false ? "Inactive" : "", attShiftLabel(report.shift)].filter(Boolean).join(" · "), 8.5, false, muted, 10);
   y -= 4;
-  const sundayLines = wrap(visits.length ? "Sundays attended (" + visits.length + "): " + visits.map((v) => attNiceDate(v.date, true) + " / " + v.shifts.map((shift) => shift === "night" ? "Night" : "Day").join(" + ") + (v.open ? " (open)" : "")).join(";  ") : "Sundays attended: No Sunday attendance recorded in this period.", font, CW - 10);
-  sundayLines.forEach((value) => { ensure(14); rect(M, y - 13, CW, 13, gold); text(M + 5, y - 9, 8.5, value, { color: ink, maxWidth: CW - 10 }); y -= 13; });
-  paragraph("Visits / Sundays use arrival dates; rows / hours use attendance dates. Unmarked is not Absent.", 8, false, muted, 11);
-  y -= 5; ensure(42); tableHead();
-  const closingHeight = 69;
-  report.rows.forEach((row, index) => {
-    const r = row.record, c = row.calc, timed = r && r.mode === "time", sunday = ctDateObj(row.date).getDay() === 0;
-    let reference = "";
-    if (r && r.note) { notes.push({ label: "[" + (notes.length + 1) + "] " + attNiceDate(row.date) + " / " + (row.shift === "night" ? "Night" : "Day"), value: r.note }); reference = " [" + notes.length + "]"; }
-    const lastWithoutNotes = index === report.rows.length - 1 && !notes.length && !m.note;
-    ensure(rowHeight + (lastWithoutNotes ? closingHeight : 0), true);
-    rect(M, y - rowHeight, CW, rowHeight, sunday ? gold : index % 2 === 0 ? [0.97,0.98,0.99] : white);
-    if (sunday) rect(M, y - rowHeight, 2, rowHeight, [0.88,0.66,0.12]);
-    const cells = [attNiceDate(row.date) + " " + DAYS[ctDateObj(row.date).getDay()].slice(0, 3), row.shift === "night" ? "Night" : "Day", ATT_STATUS[row.status].label + reference,
-      timed ? attCompactClock(r.checkIn, r.inNextDay) : "—", timed ? attCompactClock(r.checkOut, r.outNextDay) : "—", timed && !c.open ? attDuration(c.workedMinutes) : "—", c ? c.credit : ""];
-    let x = M;
-    cells.forEach((value, i) => {
-      const right = i >= 5, color = i === 2 && row.status === "present" ? teal : i === 2 && row.status === "absent" ? [0.65,0.19,0.19] : !r ? muted : ink;
-      text(right ? x + widths[i] - 5 : x + 5, y - rowHeight / 2 - 3, font, value, { color, bold: i === 5 && timed && !c.open, align: right ? "right" : "left", maxWidth: widths[i] - 9 });
-      if (i) rule(x, y, x, y - rowHeight, line, .25); x += widths[i];
-    });
-    y -= rowHeight; rule(M, y, RIGHT, y, line, .3);
+  const selectedLate = report.rows.filter((row) => attLateOut(row.record)).length;
+  const pairs = [["Actual working hours",attDuration(s.workedMinutes),"Saved shifts / open",s.marks + " / " + s.pending],
+    ["Arrival dates / Sundays attended",(s.attendedDays || 0) + " / " + visits.length,"Qualifying OUTs in this selection",selectedLate],
+    ["Attendance credits",s.credit,"Extra bonus (full month, all shifts)",bonuses.length === 1 ? bonuses[0].percent + "%" : "See monthly breakdown"]];
+  pairs.forEach(([a,b,c,d]) => { ensure(14); text(M,y-10,8.5,a); text(M+CW/2-12,y-10,8.5,b,{bold:true,align:"right"}); text(M+CW/2+8,y-10,8.5,c); text(RIGHT,y-10,8.5,d,{bold:true,align:"right"}); rule(M,y-14, M+CW/2-12,y-14); rule(M+CW/2+8,y-14,RIGHT,y-14); y-=14; });
+  y -= 4;
+  paragraph("Present " + s.present + " · Half day " + s.half + " · Absent " + s.absent + " · Leave " + s.leave + " · Holiday " + s.holiday + " · Week off " + s.weekoff + " · Unmarked " + s.unmarked + (s.notScheduled ? " · Outside employment " + s.notScheduled : ""), 8.5, false, ink);
+  const sundayLines = wrap(visits.length ? "Sundays attended (" + visits.length + "): " + visits.map((v) => attNiceDate(v.date, true) + " / " + v.shifts.map(attShiftLabel).join(" + ") + (v.open ? " (open)" : "")).join(";  ") : "Sundays attended: No Sunday attendance recorded in this period.",font,CW-10);
+  sundayLines.forEach((value) => { ensure(13); rect(M,y-13,CW,13,gold); text(M+5,y-9,8.5,value); y-=13; });
+  paragraph("Visits / Sundays use arrival dates; rows, hours and bonus months use attendance dates. Unmarked is not Absent.",8,false,muted,10);
+  y -= 5; section("DATE-WISE ATTENDANCE REGISTER"); tableHead();
+  // The closing stays atomic; reserve it alongside the final short note.
+  const bonusLines = bonuses.flatMap((row) => wrap(row.month + ": " + row.count + " qualifying OUTs → " + row.percent + "% extra · " + row.remaining + " more for next +1%",8.5,CW-18,true));
+  const ruleLines = wrap("3 completed OUTs = 1%; each further 2 = +1%. * OUT after arrival-day 11:45 PM incl. next morning; exactly 11:45 PM excluded. Full calendar month/all shifts, even for partial reports; month uses attendance date. One per saved OUT. Rate only; no salary/payment changed.",8,CW-18);
+  const closingHeight = 27 + 21 + (bonusLines.length + ruleLines.length)*10 + 8 + 11;
+  report.rows.forEach((row,index) => {
+    const r=row.record,c=row.calc,timed=r&&r.mode==="time",sunday=ctDateObj(row.date).getDay()===0;
+    let reference="";
+    if(r&&r.note){notes.push({label:"["+(notes.length+1)+"] "+attNiceDate(row.date)+" / "+attShiftLabel(row.shift),value:r.note});reference=" ["+notes.length+"]";}
+    const lastWithoutNotes=index===report.rows.length-1&&!notes.length&&!m.note;
+    ensure(rowHeight+(lastWithoutNotes?closingHeight+7:0),true);
+    if(sunday)rect(M,y-rowHeight,CW,rowHeight,gold);
+    const cells=[attNiceDate(row.date)+" "+DAYS[ctDateObj(row.date).getDay()].slice(0,3),attShiftLabel(row.shift),ATT_STATUS[row.status].label+reference,
+      timed?attCompactClock(r.checkIn,r.inNextDay):"—",timed?attCompactClock(r.checkOut,r.outNextDay)+(attLateOut(r)?" *":""):"—",timed&&!c.open?attDuration(c.workedMinutes):"—",c?c.credit:""];
+    let x=M;
+    cells.forEach((value,i)=>{const right=i>=5; text(right?x+widths[i]-5:x+5,y-rowHeight/2-3,font,value,{bold:i===5&&timed&&!c.open,align:right?"right":"left",color:!r?muted:ink,maxWidth:widths[i]-9});rule(x,y,x,y-rowHeight);x+=widths[i];});
+    rule(RIGHT,y,RIGHT,y-rowHeight);y-=rowHeight;rule(M,y,RIGHT,y);
   });
-  if (m.note) notes.push({ label: "Profile note", value: m.note });
-  if (notes.length) {
-    y -= 5; ensure(26 + (notes.length === 1 ? closingHeight + 7 : 0));
-    text(M, y - 9, 9, "NOTES / REMARKS", { color: teal, bold: true }); y -= 15;
-    notes.forEach((note, ni) => {
-      const lines = wrap(note.label + ": " + note.value, 8.5, CW - 10);
-      // Keep short remarks intact. Splitting a two-line note adds a needless
-      // continuation label and can otherwise waste enough space for a third page.
-      if (lines.length <= 6 && y - lines.length * 11 - (ni === notes.length - 1 ? closingHeight + 7 : 0) < 80) {
-        nextPage(false); text(M, y - 9, 9, "NOTES / REMARKS — CONTINUED", { bold: true, color: teal }); y -= 16;
-      }
-      lines.forEach((value, li) => {
-        const last = ni === notes.length - 1 && li === lines.length - 1;
-        if (y - 11 - (last ? closingHeight + 7 : 0) < 80) { nextPage(false); text(M, y - 9, 9, "NOTES / REMARKS — CONTINUED", { bold: true, color: teal }); y -= 16; if (li) { text(M, y - 8.5, 8.5, note.label + " (continued)", { bold: true }); y -= 12; } }
-        text(M + 5, y - 9, 8.5, value, { color: muted }); y -= 11;
+  if(m.note)notes.push({label:"Profile note",value:m.note});
+  if(notes.length){
+    y-=5;ensure(26+(notes.length===1?closingHeight+7:0));section("NOTES / REMARKS");
+    notes.forEach((note,ni)=>{
+      const lines=wrap(note.label+": "+note.value,8.5,CW-10);
+      if(lines.length<=6&&y-lines.length*11-(ni===notes.length-1?closingHeight+7:0)<80){nextPage(false);section("NOTES / REMARKS — CONTINUED");}
+      lines.forEach((value,li)=>{const last=ni===notes.length-1&&li===lines.length-1;
+        if(y-11-(last?closingHeight+7:0)<80){nextPage(false);section("NOTES / REMARKS — CONTINUED");if(li){text(M,y-8.5,8.5,note.label+" (continued)",{bold:true});y-=12;}}
+        text(M+5,y-9,8.5,value,{color:muted});y-=11;
       });
     });
   }
-  y -= 7; ensure(closingHeight);
-  rect(M, y - 25, CW, 25, ink);
-  text(M + 8, y - 16, 9, "TOTAL ACTUAL HOURS", { bold: true, color: white });
-  text(M + 148, y - 17, 13, attDuration(s.workedMinutes), { bold: true, color: white });
-  text(RIGHT - 8, y - 16, 8.5, s.marks + " saved shifts  /  " + s.credit + " credits", { align: "right", color: white }); y -= 30;
-  paragraph("Hours = out − in; no deductions. Tap/open = no measured hours. Credits are per shift, not payroll days.", 8, false, muted, 10);
-  paragraph("+1d = next day; otherwise same day. 12 morning = midnight; 12 night = noon. Yellow = calendar Sunday.", 8, false, muted, 10);
-  y -= 9;
-  text(M, y, 8.5, "Prepared by: ____________________", { color: muted });
-  text(RIGHT, y, 8.5, "Manager / verified by: ____________________", { align: "right", color: muted });
-  const stamp = attStamp(Date.now());
-  pages.forEach((page, i) => { ops = page; rule(M, 66, RIGHT, 66); text(M, 52, 8, "Hisaab v" + APP_VERSION + " · Attendance only · " + stamp, { color: muted, maxWidth: CW - 90 }); text(RIGHT, 52, 8, "Page " + (i + 1) + " / " + pages.length, { color: muted, align: "right" }); });
-  return { pages, rowCount: report.rows.length, noteCount: notes.length, bodyFontSize: font };
+  y-=7;ensure(closingHeight);
+  // A quiet, ruled total like the reference, not the rejected coloured banner.
+  rect(M,y-22,CW,22,pale);rule(M,y,RIGHT,y);
+  text(M+6,y-15,9,"TOTAL ACTUAL HOURS",{bold:true});text(M+152,y-15,11,attDuration(s.workedMinutes),{bold:true});
+  text(RIGHT-6,y-15,8.5,s.marks+" saved shifts / "+s.credit+" credits",{bold:true,align:"right"});y-=27;
+  const boxHeight=21+(bonusLines.length+ruleLines.length)*10;
+  put("roundBox",M,y-boxHeight,CW,boxHeight,5,line,[1,1,1]);
+  text(M+9,y-12,8.5,"EXTRA BONUS · MONTHLY CALCULATION",{bold:true});let by=y-25;
+  bonusLines.forEach((value)=>{text(M+9,by,8.5,value,{bold:true});by-=10;});
+  ruleLines.forEach((value)=>{text(M+9,by,8,value,{color:muted});by-=10;});y-=boxHeight+8;
+  // Signatures and compact clock legend travel with total + bonus, never alone.
+  rule(M,y,M+155,y,muted);rule(RIGHT-155,y,RIGHT,y,muted);
+  text(M,y-11,8,"Prepared by:",{color:muted});text(RIGHT,y-11,8,"Manager / verified by:",{color:muted,align:"right"});
+  const stamp=attStamp(Date.now());
+  pages.forEach((page,i)=>{ops=page;rule(M,66,RIGHT,66);text(M,55,7.5,"Hours = out − in; no deductions. Tap/open = no measured hours. Credits are per shift, not payroll days.",{color:muted});text(M,44,7.5,"+1d = next day; otherwise same day. 12 morning = midnight; 12 night = noon. Yellow = calendar Sunday.",{color:muted});text(M,32,7.5,"Hisaab v"+APP_VERSION+" · "+stamp,{color:muted});text(RIGHT,32,7.5,"Page "+(i+1)+" / "+pages.length,{color:muted,align:"right"});});
+  return {pages,rowCount:report.rows.length,noteCount:notes.length,bodyFontSize:font};
 }
 function attPdfString(report) {
   const layout = attPdfLayout(report), p = new PdfDoc();
@@ -9357,7 +9399,7 @@ function attRegisterSheet(report, ids) {
   const m = report.manager, s = report.summary, cell = (v, name) => ({ v, s: ids[name] });
   const band = (value, style) => [cell(value, style), ...Array.from({ length: 8 }, () => cell('', style))];
   const rows = [band('HISAAB / ATTENDANCE REGISTER', 'banner'), band(m.name + ' · ' + m.code, 'manager'),
-    band([attNiceDate(report.from) + ' — ' + attNiceDate(report.to), report.shift === 'all' ? 'Day + Night' : report.shift === 'night' ? 'Night' : 'Day', Store.data.settings.shopName, m.department, m.phone].filter(Boolean).join('  /  '), 'meta'),
+    band([attNiceDate(report.from) + ' — ' + attNiceDate(report.to), attShiftLabel(report.shift), Store.data.settings.shopName, m.department, m.phone].filter(Boolean).join('  /  '), 'meta'),
     band('', 'metric'), band('Present ' + s.present + '  ·  Half day ' + s.half + '  ·  Absent ' + s.absent + '  ·  Leave ' + s.leave + '  ·  Holiday ' + s.holiday + '  ·  Week off ' + s.weekoff + '  ·  Unmarked ' + s.unmarked, 'meta'),
     band('', 'group'), ['Date', 'Day', 'Shift', 'Attendance', 'Check-in', 'Check-out', 'Actual hours', 'Credit', 'Notes / remarks'].map((value) => cell(value, 'header'))];
   rows[3][0].v = 'ACTUAL HOURS\n' + attDuration(s.workedMinutes); rows[3][3].v = 'ARRIVAL DATES  ' + s.attendedDays + '   /   SUNDAYS  ' + (report.sundays || []).length; rows[3][6].v = 'CREDITS  ' + s.credit + '   /   OPEN SHIFTS  ' + s.pending;
@@ -9366,7 +9408,7 @@ function attRegisterSheet(report, ids) {
   report.rows.forEach((row, index) => {
     const r = row.record, c = row.calc, timed = r && r.mode === 'time', base = ctDateObj(row.date).getDay() === 0 ? 'sunday' : index % 2 ? 'plain' : 'stripe';
     const clock = (value, next) => value ? attClockParts(value).time + '\n' + attWhenLabel(value, next) : 'Still open';
-    rows.push([cell(attExcelDate(row.date), base + 'Date'), cell(DAYS[ctDateObj(row.date).getDay()], base + 'Center'), cell(row.shift === 'night' ? 'Night' : 'Day', base + 'Center'),
+    rows.push([cell(attExcelDate(row.date), base + 'Date'), cell(DAYS[ctDateObj(row.date).getDay()], base + 'Center'), cell(attShiftLabel(row.shift), base + 'Center'),
       cell(ATT_STATUS[row.status].label, base + (row.status === 'present' ? 'Present' : row.status === 'absent' ? 'Absent' : !r ? 'Muted' : 'Center')),
       cell(timed ? clock(r.checkIn, r.inNextDay) : '', base + 'Center'), cell(timed ? clock(r.checkOut, r.outNextDay) : '', base + 'Center'),
       cell(timed && !c.open ? c.workedMinutes / 1440 : '', base + 'Duration'), cell(c ? c.credit : '', base + 'Credit'), cell(r && r.note || '', base)]);
@@ -9386,18 +9428,21 @@ function attXlsxBytes(report) {
     ["Hours explained", "Actual hours = check-out minus check-in. No fixed daily target or deductions. Tap marks / open shifts add no completed hours. Half day is manual; no automatic overtime or late/early classification."],
     ["Sundays explained", "Only actual check-in dates on Sunday, or Tap Present / Half day dates. One Sunday per manager, even with both shifts. Leave / absent / holiday / week off do not count. See Sundays attended sheet."],
     ["Time format", "1–12 clock. Same day = attendance date; next day = following date. 12 morning = midnight; 12 night = noon."], ["History", "Retained change history only; not a tamper-proof audit. Original legacy fields remain in JSON backups, but are not used for hours."], ["Manager note", m.note], ["Date basis", "Daily rows / hours use the attendance date. Visit and Sunday counts use actual check-in dates, including open check-ins; Tap Present / Half day uses the marked date. Both shifts on one arrival date count once."]];
-  summary.forEach((row, i) => { if (i) row[0] = { v: row[0], s: 3 }; if (i >= 23) row[1] = { v: row[1], s: 5 }; });
+  summary.push(["Extra bonus rule", "Per calendar month/all shifts: after actual arrival-day 11:45 PM, first 3 completed OUTs = 1%; every additional 2 = +1%. Exactly 11:45 PM excluded; next-morning OUT included. One occasion per saved completed OUT; attendance date determines the month."],
+    ["Bonus basis", "Full calendar month across all shifts, even for a partial/filtered report. Stored entries/history unchanged."], ["Bonus amount", "Percentage only; salary base not configured. No automatic salary/payment changes."]);
+  attReportBonus(report).forEach((b) => summary.push([b.month + " qualifying OUTs", b.count], [b.month + " extra bonus (%)", b.percent], [b.month + " more OUTs for next +1%", b.remaining]));
+  summary.forEach((row, i) => { if (i) row[0] = { v: row[0], s: 3 }; if (i >= 23 && typeof row[1] !== "number") row[1] = { v: row[1], s: 5 }; });
   const daily = [["Attendance date", "Weekday", "Shift", "Mode", "Attendance", "Check-in (12-hour)", "Check-in day / period", "Check-out (12-hour)", "Check-out day / period", "Actual hours", "Sunday arrival date", "Note", "Record ID", "Updated (device clock)"]];
   report.rows.forEach((row) => {
     const r = row.record, c = row.calc, timed = r && r.mode === "time", arrival = r && attArrivalDate(r);
     const sunday = r && (timed || ["present", "half"].includes(r.status)) && ctDateObj(arrival).getDay() === 0;
-    daily.push([row.date, DAYS[ctDateObj(row.date).getDay()], row.shift === "night" ? "Night" : "Day", r ? timed ? "Time" : "Tap" : "", ATT_STATUS[row.status].label,
+    daily.push([row.date, DAYS[ctDateObj(row.date).getDay()], attShiftLabel(row.shift), r ? timed ? "Time" : "Tap" : "", ATT_STATUS[row.status].label,
       timed ? attClockParts(r.checkIn).time : "", timed ? attWhenLabel(r.checkIn, r.inNextDay) : "", timed ? attClockParts(r.checkOut).time : "", timed && r.checkOut ? attWhenLabel(r.checkOut, r.outNextDay) : "", timed && !c.open ? c.workedMinutes / 60 : "", sunday ? arrival : "", { v: r && r.note || "", s: 5 }, r ? r.id : "", r ? attStamp(r.updatedAt) : ""]);
   });
   const history = [["Changed at (device clock)", "Attendance date", "Action", "Details", "Actor", "Record ID", "Before (readable)", "After (readable)"]];
   report.history.forEach((h) => history.push([attStamp(h.at), h.date, h.action, h.text, h.actor, h.recordId, h.before ? JSON.stringify(attReadableValue(h.before)) : "", h.after ? JSON.stringify(attReadableValue(h.after)) : ""]));
   const sundayRows = [["Sunday attended", "Weekday", "Shifts (counted once)", "Arrival status"]];
-  sundays.forEach((v) => sundayRows.push([v.date, "Sunday", v.shifts.map((shift) => shift === "night" ? "Night" : "Day").join(" + "), v.open ? "Checked in / open shift" : "Attended"]));
+  sundays.forEach((v) => sundayRows.push([v.date, "Sunday", v.shifts.map((shift) => attShiftLabel(shift)).join(" + "), v.open ? "Checked in / open shift" : "Attended"]));
   const styling = attXlsxStyles(), register = attRegisterSheet(report, styling.ids);
   const sheets = [{ id: 5, name: "Attendance register", xml: register.xml, last: register.rows, cols: 9, title: 7 },
     { id: 1, name: "Summary", xml: attSheet(summary, [37, 110], false, { heights: summary.map((row, i) => i === 0 ? 32 : i >= 23 ? 52 : 24) }), last: summary.length, cols: 2, title: 0 },
@@ -9414,9 +9459,9 @@ function attXlsxBytes(report) {
   sheets.forEach((sheet) => { files['xl/worksheets/sheet' + sheet.id + '.xml'] = sheet.xml; });
   return attZip(files);
 }
-let attDownloadUrls = [];
-function attRevokeDownloads() { attDownloadUrls.forEach((url) => URL.revokeObjectURL(url)); attDownloadUrls = []; }
-function attSaveDownload(blob, filename) {
+let attDownloadUrls = [], attPendingShare = null;
+function attRevokeDownloads() { attDownloadUrls.forEach((url) => URL.revokeObjectURL(url)); attDownloadUrls = []; attPendingShare = null; }
+function attSaveDownload(blob, filename, options) {
   const url = URL.createObjectURL(blob), a = document.createElement("a"), root = $("#attReadyFiles"), format = filename.endsWith(".pdf") ? "pdf" : "xlsx";
   a.href = url; a.download = filename;
   if (root) {
@@ -9424,28 +9469,81 @@ function attSaveDownload(blob, filename) {
     if (old) { URL.revokeObjectURL(old.href); attDownloadUrls = attDownloadUrls.filter((value) => value !== old.href); old.remove(); }
     a.className = "btn sm"; a.dataset.attFile = format; a.textContent = format === "pdf" ? "Save PDF" : "Save Excel workbook";
     root.appendChild(a); $("#attDownloadLinks").hidden = false; attDownloadUrls.push(url);
-    const started = !navigator.userActivation || navigator.userActivation.isActive; if (started) a.click(); return started;
+    const started = !(options && options.manual) && (!navigator.userActivation || navigator.userActivation.isActive); if (started) a.click(); return started;
   } else {
     a.style.display = "none"; document.body.appendChild(a);
     try { a.click(); return true; } finally { setTimeout(() => { URL.revokeObjectURL(url); a.remove(); }, 30000); }
   }
 }
+function attReportFilename(report) {
+  return "Attendance_" + (safeName(report.manager.name) || safeName(report.manager.code) || "Manager") + "_" + safeName(report.manager.code) + "_" + report.from + "_to_" + report.to;
+}
+function attExportCurrent(context) {
+  return context.scope === Cloud.scope && (!context.editor || context.editor === attEditor && context.selection === $("#attExportPreview")?.dataset.selection);
+}
+function attShareHint(message) {
+  const root = $("#attReadyFiles"); if (!root) { toast(message); return; }
+  let hint = $("#attShareHint"); if (!hint) { hint = document.createElement("span"); hint.id = "attShareHint"; hint.className = "att-mini"; root.appendChild(hint); }
+  hint.textContent = message; $("#attDownloadLinks").hidden = false;
+}
+function attShareFallback(pending) {
+  if (!attExportCurrent(pending.context)) return false;
+  const started = attSaveDownload(pending.blob, pending.filename);
+  const note = (Store.data.settings.shopName || "Hisaab") + " — Attendance: " + pending.manager + " · " + pending.from + " to " + pending.to;
+  const url = "https://wa.me/?text=" + encodeURIComponent(note + "\nPDF is not automatically attached. Attach the downloaded PDF as a Document before sending.");
+  const root = $("#attReadyFiles");
+  if (root) {
+    let link = $("#attWhatsAppLink"); if (!link) { link = document.createElement("a"); link.id = "attWhatsAppLink"; link.className = "btn sm"; root.appendChild(link); }
+    link.href = url; link.target = "_blank"; link.rel = "noopener noreferrer"; link.textContent = "Open WhatsApp";
+  }
+  if (!navigator.userActivation || navigator.userActivation.isActive) { try { window.open(url, "_blank", "noopener,noreferrer"); } catch (e) { /* the visible link remains usable */ } }
+  attShareHint((started ? "PDF download started. " : "Tap Save PDF first. ") + "Open WhatsApp, choose Attach → Document and select this PDF. It is not automatically attached or sent.");
+  toast("PDF ready · attach it in WhatsApp as a Document", "ok"); return true;
+}
+async function attSharePendingPdf() {
+  const pending = attPendingShare;
+  if (!pending || !attExportCurrent(pending.context)) { attFormError(new Error("This report or account changed. Prepare the current PDF again.")); return false; }
+  let file, supported = false;
+  try { file = typeof File === "function" ? new File([pending.blob], pending.filename, { type: "application/pdf" }) : null;
+    supported = !!(file && navigator.share && navigator.canShare && navigator.canShare({ files: [file] }));
+  } catch (e) { /* file sharing unsupported: honest download/manual attachment fallback */ }
+  if (!supported) return attShareFallback(pending);
+  if (navigator.userActivation && !navigator.userActivation.isActive) {
+    attSaveDownload(pending.blob, pending.filename, { manual: true });
+    const root = $("#attReadyFiles");
+    if (root && !$("#attShareReady")) { const button = document.createElement("button"); button.type = "button"; button.id = "attShareReady"; button.className = "btn sm"; button.dataset.attAct = "shareReady"; button.textContent = "Share PDF · choose WhatsApp"; root.appendChild(button); }
+    attShareHint("PDF prepared. Tap Share PDF and choose WhatsApp in your device's share sheet; then select the recipient.");
+    toast("PDF ready · tap Share PDF to choose WhatsApp", "ok"); return true;
+  }
+  try {
+    await navigator.share({ files: [file], title: "Attendance · " + pending.manager, text: "Attendance report · " + pending.from + " to " + pending.to });
+    if (!attExportCurrent(pending.context)) return false;
+    toast("Share sheet completed · check WhatsApp to confirm sending", "ok"); return true;
+  } catch (error) {
+    if (!attExportCurrent(pending.context)) return false;
+    if (error && error.name === "AbortError") { toast("Sharing cancelled · no automatic send or download"); return false; }
+    return attShareFallback(pending);
+  }
+}
 async function attDownloadReport(report, format) {
-  const name = "Attendance_" + (safeName(report.manager.name) || safeName(report.manager.code) || "Manager") + "_" + safeName(report.manager.code) + "_" + report.from + "_to_" + report.to;
-  const scope = Cloud.scope, editor = attEditor && attEditor.kind === "export" ? attEditor : null;
-  const exportSelection = editor && $("#attExportPreview")?.dataset.selection;
+  const name = attReportFilename(report), editor = attEditor && attEditor.kind === "export" ? attEditor : null;
+  const context = { scope: Cloud.scope, editor, selection: editor && $("#attExportPreview")?.dataset.selection };
   try {
     const error = $("#attExportForm #attFormError"); if (error) error.textContent = "";
-    if (format === "pdf") {
+    if (format === "pdf" || format === "whatsapp") {
       if (document.fonts && document.fonts.load && (!document.fonts.check('400 16px "Hisaab Indic"') || !document.fonts.check('700 16px "Hisaab Indic"'))) await Promise.all([document.fonts.load('400 16px "Hisaab Indic"'), document.fonts.load('700 16px "Hisaab Indic"')]);
-      if (scope !== Cloud.scope) throw new Error("Account changed. Reopen this report before exporting.");
-      if (editor && (editor !== attEditor || exportSelection !== $("#attExportPreview")?.dataset.selection)) return false;
-      const started = attSaveDownload(pdfBlob(attPdfString(report)), name + ".pdf");
-      toast(started ? "PDF ready · download started" : "PDF ready · tap Save PDF", "ok");
+      if (context.scope !== Cloud.scope) throw new Error("Account changed. Reopen this report before exporting.");
+      if (!attExportCurrent(context)) return false;
+      const blob = pdfBlob(attPdfString(report));
+      if (format === "whatsapp") {
+        attPendingShare = { blob, filename: name + ".pdf", manager: report.manager.name, from: report.from, to: report.to, context };
+        return await attSharePendingPdf();
+      }
+      const started = attSaveDownload(blob, name + ".pdf"); toast(started ? "PDF ready · download started" : "PDF ready · tap Save PDF", "ok");
     } else if (format === "xlsx") {
       const blob = new Blob([attXlsxBytes(report)], { type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" });
       const started = attSaveDownload(blob, name + ".xlsx"); toast(started ? "Excel ready · download started" : "Excel ready · tap Save Excel workbook", "ok");
-    } else throw new Error("Choose PDF or Excel format.");
+    } else throw new Error("Choose PDF, Excel or WhatsApp PDF.");
     return true;
   } catch (e) { attFormError(e); return false; }
 }
@@ -9960,9 +10058,10 @@ window.Hisaab = { Store, calc, monthMeta, PdfDoc, inWords, UI, render, go, Cloud
   attendance: { data: att, blank: blankAttendance, defaults: attDefaults, validate: attValidate, calculate: attCalculate, summary: attSummary,
     saveManager: attSaveManager, deleteManager: attDeleteManager, manager: attManager, saveRecord: attSaveRecord, deleteRecord: attDeleteRecord, record: attRecord, bulk: attBulkMark,
     clockIn: attClockIn, clockOut: attClockOut, report: attReport, sundays: attSundayVisits, range: attRange, dateValid: attDate, duration: attDuration, key: attKey,
+    shifts: ATT_SHIFTS, lateOut: attLateOut, bonusPercent: attBonusPercent, bonus: attBonus, bonusMonths: attBonusMonths,
     clockParts: attClockParts, clockFrom12: attClockFrom12, timeLabel: attTimeLabel, scheduleLabel: attScheduleLabel,
     ui: attUI, openManager: attOpenManager, openRecord: attOpenRecord, openRules: attOpenRules, openBulk: attOpenBulk, openExport: attOpenExport,
-    pdfString: attPdfString, pdfLayout: attPdfLayout, xlsxBytes: attXlsxBytes, download: attDownloadReport, setDate: attSetDate, resolveManager: attResolveManager },
+    pdfString: attPdfString, pdfLayout: attPdfLayout, sharePdf: (report) => attDownloadReport(report, "whatsapp"), xlsxBytes: attXlsxBytes, download: attDownloadReport, setDate: attSetDate, resolveManager: attResolveManager },
   /* canteen module API */
   canteen: { data: ct, totals: ctTotals, entries: ctAll, onDate: ctOnDate, inMonth: ctInMonth,
              dayLedger: ctDayLedger, monthLedger: ctMonthLedger, openModal: openCtModal, save: ctSave,
