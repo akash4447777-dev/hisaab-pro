@@ -1,6 +1,6 @@
 # Hisaab Pro — tests (developer only)
 
-Ye folder **app ke liye zaroori nahi**. `hisaab_v3.html` / `Hisaab-Pro-v3.21.html` akeli file me chalti hai —
+Ye folder **app ke liye zaroori nahi**. `hisaab_v3.html` / `Hisaab-Pro-v3.22.html` akeli file me chalti hai —
 kisi install ki zaroorat nahi. Ye tests sirf tab chalao jab code me change kiya ho aur check karna ho
 ki **Attendance**, **Canteen**, salary, PDF, loader aur **cross-device cloud sync** toot to nahi gaye.
 Attendance use/rule details: [`ATTENDANCE.md`](../ATTENDANCE.md).
@@ -10,13 +10,13 @@ Attendance use/rule details: [`ATTENDANCE.md`](../ATTENDANCE.md).
 ```bash
 cd tests
 npm ci               # lockfile se jsdom install hota hai
-npm test             # 756: canteen 406 + loader 29 + PDF 26 + cloud 99 + Attendance 196
-node canteen.test.js ../Hisaab-Pro-v3.21.html   # kisi aur file par chalana ho
+npm test             # 771: canteen 406 + loader 29 + PDF 26 + cloud 100 + Attendance 210
+node canteen.test.js ../Hisaab-Pro-v3.22.html   # kisi aur file par chalana ho
 node loader.test.js  # sirf index.html loader ke tests
 node pdf.test.js     # fonts + bottom geometry + multi-page
-node cloud.test.js   # fake backend + independent browser stores, 99 sync checks
-node attendance.test.js # calculation, forms, backup, exports: 196 checks
-HISAAB_HTML=../Hisaab-Pro-v3.21.html npm test  # exact release, all 756 checks
+node cloud.test.js   # fake backend + independent browser stores, 100 sync checks
+node attendance.test.js # calculation, forms, backup, exports: 210 checks
+HISAAB_HTML=../Hisaab-Pro-v3.22.html npm test  # exact release, all 771 checks
 node attendance.test.js --artifacts ../.cache/attendance-qa # real fixture PDF + .xlsx
 node pdf.test.js --artifacts ../.cache/pdf-qa # optional local sample PDFs
 ```
@@ -27,10 +27,10 @@ Sab theek ho to aakhri line aati hai: `✅ SAB CHECKS PASS` / `✅ LOADER SAB TE
 
 | Area | Checks |
 |---|---|
-| Attendance (v3.21), 196 | dynamic profiles/unique codes/same-name resolution, active/employment rules, Tap/Time + Day/Night, 12-hour morning/night clocks, exhaustive 1,440-minute round-trips, all four same/next-day choices, noon/midnight, invalid 24-hour input rejection, old record reopening, blank clocks/period suggestions, mobile numeric/Hindi entry, variable actual durations up to 24h, no deductions/automatic target classification, manual half-day/credit snapshots, open check-ins, Sunday status/date/shift dedup, month/year boundaries, filters/search/pagination, duplicate prevention, bulk skip/overwrite, actual forms, calendar/ledger/day/week/month/custom/search/sort, dashboard/settings/keyboard, escaped text, history/actor/before-after, stale editor/account/disk guards, quota rollback, local reload, old JSON/demo/reset/recovery preservation, 250 managers + 750 records pagination and 2,000-history limit |
+| Attendance (v3.22), 210 | dynamic profiles/unique codes/same-name resolution, active/employment rules, Tap/Time + Day/Night, 12-hour morning/night clocks, exhaustive 1,440-minute round-trips, all four same/next-day choices, noon/midnight, invalid 24-hour input rejection, old record reopening, blank clocks/period suggestions, mobile numeric/Hindi entry, actual durations including 24h 01m / screenshot 27h 01m / 36h / 47h 59m, exact same/next-day combinations, reversed/equal rejection, no deductions/automatic target classification, manual half-day/credit snapshots, open check-ins, Sunday status/date/shift dedup, month/year boundaries, filters/search/pagination, duplicate prevention, bulk skip/overwrite, actual forms, calendar/ledger/day/week/month/custom/search/sort, dashboard/settings/keyboard, escaped text, history/actor/before-after, stale editor/account/disk guards, quota rollback, local reload, old JSON/demo/reset/recovery preservation, 250 managers + 750 records pagination and 2,000-history limit |
 | Attendance exports (included above) | genuine individual PDF + 4-sheet OOXML XLSX; chosen manager/shift/custom dates, unmarked vs absent, xrefs/stream lengths/paper bounds/100-row pagination, bundled Hindi font + complete OFL notice, ZIP/CRC/XML/numeric hours, Unicode/emoji/formula-safe literal text, readable 6-column ledger + separate Sunday dates, atomic totals/signatures, original history/legacy metadata, actual Blob MIME/filenames/ready-file links/no-gesture fallback/failure reporting and salary/canteen non-mutation |
-| Attendance cloud (23 of the 99 cloud checks) | independent records, same-natural-key dedup/conflict, note+clock merges vs atomic competing clock spans, profile/record deletion dependencies, duplicate code/moved-key collisions, full and partial legacy payloads, proven deletion vs unproven empties, durable offline reload, open-editor/account reset, invalid-cloud/quota rollback/recovery and rule conflicts |
-| Optional native Chromium (54, not in npm test) | real profile/record/bulk forms, exact 12-hour options/blank clocks/validation, actual overnight hours/reopening, Sunday tab/count/dedup/filters, noon/midnight conversion, duplicate UI error, calendar day, custom-range Latin/overnight/Hindi PDF/XLSX native downloads/headers, 320/390px mobile controls/no-overflow/navigation, visible dialog title/Save buttons, real reload persistence, bundled Hindi fonts/ActualText and no uncaught JS errors; optional desktop/mobile/modal/calendar/dark screenshots |
+| Attendance cloud (24 of the 100 cloud checks) | long-shift upload/adoption/re-edit, independent records, same-natural-key dedup/conflict, note+clock merges vs atomic competing clock spans, profile/record deletion dependencies, duplicate code/moved-key collisions, full and partial legacy payloads, proven deletion vs unproven empties, durable offline reload, open-editor/account reset, invalid-cloud/quota rollback/recovery and rule conflicts |
+| Optional native Chromium (64, not in npm test) | real profile/record/bulk forms, exact 12-hour options/blank clocks/validation, actual overnight hours/reopening, screenshot long-shift save/re-edit/download and financial non-mutation, Sunday tab/count/dedup/filters, noon/midnight conversion, duplicate UI error, calendar day, custom-range Latin/overnight/Hindi PDF/XLSX native downloads/headers, 320/390px mobile controls/no-overflow/navigation, visible dialog title/Save buttons, real reload persistence, bundled Hindi fonts/ActualText and no uncaught JS errors; optional desktop/mobile/modal/calendar/dark screenshots |
 | PDF summary labels (v3.18) | screenshot ke Bikri/Kharcha labels blank, zero aur nonzero amounts same right-aligned positions par; saare 6 templates ke day/month drawing ops v3.17 se identical (sirf 2 labels/version differ); print + WhatsApp PDF bhi same; app labels/data unchanged |
 | Safe cloud sync (v3.17) | canteen-only/records/rates/log/settings-only login, demo suppression, stale demo flags, no echo, independent changes + first-insert/CAS races, financial/worker-delete-v-salary/payment conflicts, exact-value re-approval, in-flight edits/save failures, offline reload + online retry, legacy missing/empty snapshots, RLS/read/write failures, null stamp, account/project/logout/late-session guards, cross-tab stale writes, corrupt JSON/cache, quota rollback, photo dedup, scoped recovery, no fake success, modal baseline guard |
 | Loader safety (v3.17) | API list + latest release, API failure par cached older build se pehle known data-safety fix, future cached release aur missing-cache fallback, file chooser |
@@ -83,7 +83,7 @@ npx playwright install chromium
 # python3 -m http.server 8000 --bind 0.0.0.0
 HISAAB_URL=http://127.0.0.1:8000/hisaab_v3.html npm run test:attendance:browser
 # Exact release and screenshots:
-HISAAB_URL=http://127.0.0.1:8000/Hisaab-Pro-v3.21.html HISAAB_SCREENSHOTS=1 npm run test:attendance:browser
+HISAAB_URL=http://127.0.0.1:8000/Hisaab-Pro-v3.22.html HISAAB_SCREENSHOTS=1 npm run test:attendance:browser
 ```
 
 `127.0.0.1` here is only the **local test runner**, never a browser-facing app API.
@@ -98,8 +98,8 @@ stable captures; serverless SwiftShader/single-process flags were omitted.
 
 Review native form inputs/download events as well as API fixtures. Inspect PDFs
 with PyMuPDF and workbooks with openpyxl if export code changes. Hindi image-backed
-ActualText is checked separately: copy/search support varies by PDF parser/viewer. v3.21 QA opened
-native Latin/overnight/Hindi reports plus the unit artifacts independently: valid unrepaired
+ActualText is checked separately: copy/search support varies by PDF parser/viewer. v3.22 QA opened
+native long-shift/Latin/overnight/Hindi reports plus the unit artifacts independently: valid unrepaired
 PDFs, rendered Hindi + Unicode ActualText, four sheets including Sundays, expected actual-hour numeric totals, frozen/filterable
 headers and no formula cells. All generated data/screenshots stay out of Git.
 This is desktop/mobile-viewport Chromium testing, **not physical-phone, Safari,

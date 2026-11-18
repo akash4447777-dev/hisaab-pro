@@ -1964,7 +1964,7 @@ const rRate = (n) => { const x = Math.max(0, num(n)); return x >= 1 ? r2(x) : Ma
 /* rate dikhane ka format: <₹1 ho to 0.075 jaisa khula number, warna moneyS */
 const rateS = (n) => { const x = num(n); if (x > 0 && x < 1) return "₹" + String(Math.round((x + Number.EPSILON) * 10000) / 10000); return moneyS(x); };
 const clamp = (n, lo, hi) => Math.min(hi, Math.max(lo, n));
-const APP_VERSION = "3.21";
+const APP_VERSION = "3.22";
 const esc = (s) => String(s == null ? "" : s).replace(/[&<>"']/g, (m) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[m]));
 
 const MONTHS = ["January","February","March","April","May","June","July","August","September","October","November","December"];
@@ -3289,6 +3289,7 @@ function viewSettings(){
 
     '<div style="text-align:center;font-size:11.5px;color:var(--muted);margin-top:18px;line-height:1.7">'+
       'Panel <b style="color:var(--ink)">v<span data-ver></span></b> · Auto-update enabled<br>'+
+      'v3.22 — <b style="color:var(--ink)">Next-day long shift fix</b>: 24 ghante ki entry limit hata di. 10:32 Same day morning se 1:33 Next day night = poore 27h 01m, bina deduction/cap. Preview, save, clock-out, ledger, JSON/cloud aur PDF/Excel me actual hours; ulta/equal checkout ab bhi blocked. Easy 12-hour choices, Sunday counts, salary/canteen aur saved data unchanged<br>'+
       'v3.21 — <b style="color:var(--ink)">Actual hours + Sundays + clear reports</b>: ab working hours fixed nahi; check-out minus check-in, koi break deduction ya automatic OT/late/half-day target nahi. Sunday ko kis-kis date aaye, alag tab aur manager report me dates/count; dono shifts par ek Sunday ek baar. PDF me readable summary cards, Sunday dates aur simple 6-column daily ledger; Excel me alag Sunday sheet. Purane clocks/history/backups safe; old Attendance totals ab full in→out hours dikhate hain. Salary/canteen aur blank PDF labels unchanged<br>'+
       'v3.20 — <b style="color:var(--ink)">Easy 12-hour Attendance</b>: ab 9 / 9:30 jaisa time; Same day morning, Same day night, Next day morning, Next day night ke clear choices. Night defaults, actual-date timeline, live hours/OT preview, Use shift timings aur mobile-friendly form. Rules, board, ledger/history aur PDF/Excel bhi readable 12-hour me; purane records, saved rules, auto-save/cloud aur salary/canteen unchanged<br>'+
       'v3.19 — <b style="color:var(--ink)">Manager Attendance</b>: naya integrated tab — Tap/Time modes, Day/Night shifts, manager profiles, bulk marking, calendar, late/early/overtime, searchable ledger/history, individual PDF + real Excel reports, configurable rule snapshots, automatic saves/backups aur safe cloud merge. Salary aur canteen calculations unchanged<br>'+
@@ -8264,7 +8265,9 @@ function attCalculate(record) {
     if (!attTime(r.checkOut)) throw new Error("Enter check-out using 1–12 and morning/night.");
     const start = attMinutes(r.checkIn) + (r.inNextDay ? 1440 : 0), end = attMinutes(r.checkOut) + (r.outNextDay ? 1440 : 0);
     const duration = end - start;
-    if (duration <= 0 || duration > 1440) throw new Error("Check-out must be after check-in and within one day. Check both morning/night and same/next day choices.");
+    // Same/next-day choices already supply the dates. A next-day checkout can
+    // legitimately be over 24 hours; reject reversed/equal times, never cap hours.
+    if (duration <= 0) throw new Error("Check-out must be after check-in. Check both morning/night and same/next day choices.");
     result.durationMinutes = duration; result.workedMinutes = duration;
     result.status = "present"; result.credit = 1;
   } catch (error) { result.valid = false; result.error = error.message; }
@@ -8846,7 +8849,7 @@ function attOpenRecord(id, managerId, date, shift) {
     '<div class="wide att-form-rule"><div class="att-mode" role="group" aria-label="Record entry mode"><button type="button" data-att-act="recordMode" data-value="tap" aria-pressed="' + (mode === "tap") + '">Tap mode</button><button type="button" data-att-act="recordMode" data-value="time" aria-pressed="' + (mode === "time") + '">Time mode</button></div><span class="att-mini">Tap = status &amp; credits · Time = actual hours</span></div>' +
     '<div class="wide" id="attTapFields"' + (mode === "time" ? ' hidden' : '') + '>' + attField("Attendance status", attStatusSelect("attRStatus", status)) + '</div>' +
     '<div class="wide" id="attTimeFields"' + (mode === "tap" ? ' hidden' : '') + '><div class="att-form-grid">' +
-      '<div class="wide att-time-guide"><span><b>No fixed working hours.</b> Enter actual arrival and departure. Hours = out − in, with no deductions.</span></div>' +
+      '<div class="wide att-time-guide"><span><b>No fixed working hours.</b> Enter actual arrival and departure. Hours = out − in, with no deductions. Next-day check-out can be more than 24 hours later.</span></div>' +
       attField("Check-in", attTimeControl("attRIn", r && r.mode === "time" ? r.checkIn : "", r && r.inNextDay), "wide-mobile att-clock-field") +
       attField("Check-out", attTimeControl("attROut", r && r.mode === "time" ? r.checkOut : "", r && r.mode === "time" ? r.outNextDay : shift === "night"), "wide-mobile att-clock-field", "Leave blank if the manager has not checked out yet.") +
       '<div class="wide att-time-journey" id="attTimeJourney" aria-live="polite"></div>' +

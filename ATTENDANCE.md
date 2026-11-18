@@ -1,11 +1,26 @@
-# HISAAB v3.21 — manager Attendance
+# HISAAB v3.22 — manager Attendance
 
 **Attendance is a tab inside the existing Hisaab Panel**, not a separate app.
 Manager profiles, attendance, credit settings and history share the panel’s
 existing local save, JSON backup and configured cloud sync. **Attendance never
 changes worker salaries, wages, advances, deductions or payments.**
 
-## What changed in v3.21
+## v3.22 — next-day checkout can exceed 24 hours
+
+The old 24-hour span restriction is removed. The screenshot’s **6 November,
+10:32 Same day morning → 7 November, 1:33 Next day night** now previews/saves
+**27h 01m**, not an error or a clamped 24 hours. Here Night includes afternoon:
+`1:33 night` is 1:33 in the afternoon; `1:33 morning` is after midnight.
+
+Only a checkout **equal to or before** arrival is rejected. Keep the correct
+same/next-day choices; the app does not silently guess another day or period.
+The full duration is retained in reload/JSON/cloud/ledger/PDF/Excel. One completed
+entry still earns **one credit/arrival**, not extra payroll days for crossing midnight.
+Controls continue to cover the attendance date and following date; arbitrary
+later checkout dates are not introduced by this update. **Update all devices to
+v3.22** before syncing long entries: earlier clients can reject spans over 24 hours.
+
+## Retained v3.21 improvements
 
 - **Working hours are not fixed at 8 or 12 hours.** Enter actual arrival and departure.
 - **No Unpaid break minutes input and no break deduction**, including old records.
@@ -22,11 +37,11 @@ remains in JSON/history for compatibility and validation, **not arithmetic**.
 Consequently, old timed entries now display their **full in → out hours** and
 completed valid Time entries display Present, rather than the old target-based
 classification. Previous printed totals can differ; keep previous reports if needed.
-Update all devices/tabs to v3.21 for consistent calculations; do not clear storage.
+Update all devices/tabs to v3.22 for consistent calculations; do not clear storage.
 
 ## Start here
 
-1. Settings → **Backup (JSON)**. Open the latest panel and confirm **Panel v3.21**.
+1. Settings → **Backup (JSON)**. Open the latest panel and confirm **Panel v3.22**.
    See [safe device sync](CLOUD-SYNC.md).
 2. Sidebar → **Attendance** → **Add manager**. Enter a name and unique code,
    choose **Day / Night**, and optionally add role, phone, employment dates and notes.
@@ -66,9 +81,9 @@ which morning/night and same/next-day choices to start with; verify each choice.
 - A Night entry of `9:30` + **Same day night** → `7:30` + **Next day morning** is
   **10h 00m**, with no deduction. A `9` → `11:30` morning entry is **2h 30m**;
   it does not automatically become Half day, Short hours or Absent.
-- A completed span must be positive and at most **24 hours** (an input-safety
-  limit, not a daily working-hours target). Correct the day/period if departure
-  is before arrival.
+- A completed span must be **positive**. There is **no 24-hour cap**: a
+  following-day checkout can be more than 24 hours after arrival. Correct the
+  day/period if departure is equal to or before arrival.
 - Leave check-out blank for an **open shift**. A valid check-in counts as a visit,
   but there are **zero completed hours/credits** until checkout is saved.
 - **Check in now / Check out now** uses the device’s local clock. Night check-in

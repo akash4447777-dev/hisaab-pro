@@ -606,6 +606,16 @@ function closedDialog(d) { d.w.document.getElementById("modalRoot").innerHTML = 
     const db = new Server(ap([ar()])), d = await device(db); assert.equal(await d.login(), true);
     assert.equal(d.S.data.workers.length, 0); assert.equal(d.S.data.canteen.entries.length, 0); assert.equal(api(d).data().managers.length, 1); assert.equal(api(d).data().records.length, 1); assert.equal(db.writes.length, 0); noOverwrite(db);
   });
+  await test("27h 01m next-day attendance uploads, adopts and re-edits across devices without truncation", async () => {
+    const payload = ap(); payload.canteen.entries.push(ctEntry("long-shift-bill")); payload.workers.push(worker()); payload.records.push(record());
+    const db = new Server(payload), a = await device(db); assert.equal(await a.login(), true);
+    const saved = api(a).saveRecord(ar({ id: undefined, date: "2026-11-06", mode: "time", status: "auto", checkIn: "10:32", checkOut: "13:33", outNextDay: true, breakMinutes: 60 }));
+    assert.equal(await a.C.pushNow(), true); const b = await device(db); assert.equal(await b.login(), true);
+    const adopted = api(b).record(saved.id); assert.equal(adopted.date, "2026-11-06"); assert.equal(adopted.checkOut, "13:33"); assert.equal(adopted.outNextDay, true); assert.equal(api(b).calculate(adopted).workedMinutes, 1621); assert.equal(api(b).calculate(adopted).credit, 1);
+    api(b).saveRecord({ ...adopted, note: "Long shift verified" }); assert.equal(await b.C.pushNow(), true); assert.equal(await a.C.maybePull(), true);
+    assert.equal(api(a).calculate(api(a).record(saved.id)).workedMinutes, 1621); assert.equal(api(a).record(saved.id).note, "Long shift verified");
+    assert.equal(db.get().payload.attendance.records.length, 1); assert.deepEqual(rowIds(db), ["long-shift-bill"]); assert.equal(db.get().payload.records[0].presentDays, 24); assert.equal(db.get().payload.workers.length, 1); noOverwrite(db);
+  });
   await test("attendance rules-only account is real data even without managers or rows", async () => {
     const payload = ap([], []); payload.attendance.settings.lateGraceMinutes = 17;
     const db = new Server(payload), d = await device(db); await d.login(); assert.equal(api(d).data().settings.lateGraceMinutes, 17); assert.equal(db.writes.length, 0);

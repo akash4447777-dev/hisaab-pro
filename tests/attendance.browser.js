@@ -106,6 +106,25 @@ async function exportFile(page, format, name) {
     check(await page.locator(".att-cal-cell").count() === 42, "calendar renders the complete monthly grid");
     await screenshot(page, "02-calendar-desktop.png"); await click(page, '.att-cal-cell[data-date="2026-11-14"]');
     check(await page.locator(".att-person").count() === 2, "calendar day opens the editable daily board");
+    // Reproduce the user's screenshot through native inputs, Save and downloads.
+    const financeBeforeLongShift = await page.evaluate(() => JSON.stringify({ workers: Hisaab.Store.data.workers, records: Hisaab.Store.data.records, canteen: Hisaab.Store.data.canteen }));
+    await page.evaluate(() => { const A = Hisaab.attendance; A.openRecord(null, A.data().managers.find((m) => m.code === 'M-001').id, '2026-11-06', 'day'); });
+    await click(page, '[data-att-act="recordMode"][data-value="time"]');
+    await page.fill('#attRIn', '10:32'); await page.selectOption('#attRInWhen', 'same-morning'); await page.fill('#attROut', '1:33'); await page.selectOption('#attROutWhen', 'next-night');
+    check((await page.locator('#attCalcPreview').textContent()).includes('27h 01m') && (await page.locator('#attTimeJourney').textContent()).includes('6 Nov 2026 → 7 Nov 2026'), "screenshot's 6th morning → 7th afternoon correctly previews 27h 01m");
+    await screenshot(page, '11-long-shift-form.png'); await saveForm(page, 'attRecordForm');
+    check(await page.evaluate(() => { const A = Hisaab.attendance, r = A.data().records.find((r) => r.date === '2026-11-06'); return r && r.checkIn === '10:32' && r.checkOut === '13:33' && !r.inNextDay && r.outNextDay && r.breakMinutes === 0 && A.calculate(r).workedMinutes === 1621 && A.calculate(r).credit === 1 && A.calculate(r).overtimeMinutes === 0; }), "native Save persists the full 27h 01m with canonical clocks and no new target/deduction");
+    await page.evaluate(() => { const A = Hisaab.attendance; A.openRecord(A.data().records.find((r) => r.date === '2026-11-06').id); });
+    check(await page.evaluate(() => document.querySelector('#attRDate').value === '2026-11-06' && document.querySelector('#attRIn').value === '10:32' && document.querySelector('#attROut').value === '1:33' && document.querySelector('#attROutWhen').value === 'next-night'), "long saved shift reopens with its original next-day night choice");
+    await page.selectOption('#attROutWhen', 'same-morning'); await page.locator('#attRecordForm button[type="submit"]').click();
+    check((await page.locator('#attFormError').textContent()).includes('after check-in') && await page.evaluate(() => { const A = Hisaab.attendance; return A.calculate(A.data().records.find((r) => r.date === '2026-11-06')).workedMinutes === 1621; }), "removing the 24-hour cap does not allow a reversed edit to overwrite the saved entry");
+    await page.selectOption('#attROutWhen', 'next-night'); await saveForm(page, 'attRecordForm');
+    await page.evaluate(() => { const A = Hisaab.attendance; A.openExport(A.data().managers.find((m) => m.code === 'M-001').id); });
+    await page.fill('#attEFrom', '2026-11-06'); await page.fill('#attETo', '2026-11-07');
+    const longShift = await exportFile(page, 'pdf', 'Long-shift-manager'); await exportFile(page, 'xlsx', 'Long-shift-manager');
+    check(['(27h 01m)', '(10:32)', '(1:33)', '(Next day night)'].every((text) => longShift.toString('latin1').includes(text)), "native long-shift PDF includes full actual hours and the chosen next-day period");
+    check(await page.evaluate((before) => JSON.stringify({ workers: Hisaab.Store.data.workers, records: Hisaab.Store.data.records, canteen: Hisaab.Store.data.canteen }) === before, financeBeforeLongShift), "long shift, re-edit and report downloads leave salary/canteen data unchanged");
+    await click(page, '#modalRoot [data-act="closeModal"]');
     // A short actual Sunday shift is Present without an hours threshold.
     await page.evaluate(() => { const A = Hisaab.attendance; A.openRecord(null, A.data().managers.find((m) => m.code === 'M-002').id, '2026-11-15', 'night'); });
     await click(page, '[data-att-act="recordMode"][data-value="time"]');
