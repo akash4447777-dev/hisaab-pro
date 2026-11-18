@@ -1,9 +1,60 @@
-# HISAAB v3.25 — manager Attendance
+# HISAAB v3.26 — manager Attendance
 
 **Attendance is a tab inside the existing Hisaab Panel**, not a separate app.
 Manager profiles, attendance, credit settings and history share the panel’s
 existing local save, JSON backup and configured cloud sync. **Attendance never
 changes worker salaries, wages, advances, deductions or payments.**
+
+## v3.26 — Excel summary above the photo-style date register
+
+**Only Excel presentation changes.** The existing panel stylesheet, entry clocks,
+Attendance PDF design, bonus arithmetic, storage/cloud schema and all original
+salary/canteen/Attendance records and history stay unchanged. The photo is a
+**format reference**, not data to import or a new advance/payroll policy.
+
+The **Attendance register** opens first, with all requested information **above**
+the lower date table:
+
+- **Total present days** — distinct selected **Attendance dates** with a completed
+  Time entry or a Tap Present mark; five shifts on one date still count as one
+  present day. **Present shifts** is shown separately, not mislabeled as days.
+- Leave, absent, half-day, holiday and week-off **distinct dates**, with the saved
+  **mark counts** beside their labels. Different statuses across shifts on one
+  date can overlap; do not add these categories as mutually exclusive payroll days.
+- Actual arrival-date count, **Sundays actually attended and every attended Sunday
+  date**, actual working hours, credits, open/saved shifts, unmarked/outside-employment
+  dates, calendar days and Tap/Time counts. Open / Half day can be actual visits
+  without being a full Present day. Sunday and arrival rules have not changed.
+- **Extra bonus** — a separate row per calendar month, full-month/all-shift
+  qualifying OUT count, genuine numeric Excel **percentage** and OUTs remaining
+  for the next +1%. Partial/shift-filtered exports retain the existing full-month
+  bonus basis, explicitly labeled; rates across months are never added together.
+
+**Below the summary**, the photo-style black-grid register has white rows,
+yellow calendar Sundays, a header and a totals row:
+
+| Date | Manager name / Attendance | Check-in time | Check-out time | Advance | Shift | Actual hours | Credit | Notes / remarks |
+|---|---|---|---|---|---|---|---|---|
+
+The reference's time columns show the **actual check-in / check-out**, including
+Morning / Afternoon / Evening / Night and explicit Same day / Next day captions;
+there is no forced morning arrival or night departure. Every selected date/shift
+and full note remains; multiple saved shifts on one date remain separate rows.
+
+**Advance is intentionally blank**, including its total: it is optional manual
+space in the exported file. Attendance has no linked manager advance field, so
+no salary-worker match by name, guessed zero/amount or salary/payment update is
+introduced. Editing the downloaded workbook does **not** write back into the app.
+
+The original **Summary, Daily attendance, Change history and Sundays attended**
+sheets remain unchanged: **five sheets**, with their IDs/detail columns and
+original numeric Summary total cells retained. Real dates, numeric `[h]:mm`
+elapsed times, literal notes and numeric credits/percentages are preserved.
+Only the first three identity rows and first two date/status columns are frozen
+and identity rows repeat for printing; a long Sunday/monthly summary cannot
+freeze the whole register out of view. Filters start at the actual table header,
+not at the top summary. Large Excel selections remain complete, even where the
+unchanged two-page PDF guard honestly refuses an oversized selection.
 
 ## v3.25 — four periods in both Check-in / Check-out dropdowns
 
@@ -165,11 +216,11 @@ remains in JSON/history for compatibility and validation, **not arithmetic**.
 Consequently, old timed entries now display their **full in → out hours** and
 completed valid Time entries display Present, rather than the old target-based
 classification. Previous printed totals can differ; keep previous reports if needed.
-Use v3.25 on all devices/tabs for consistent clock labels and shift/report support; do not clear storage.
+Use v3.26 on all devices/tabs for the latest Excel format and consistent clock labels; do not clear storage.
 
 ## Start here
 
-1. Settings → **Backup (JSON)**. Open the latest panel and confirm **Panel v3.25**.
+1. Settings → **Backup (JSON)**. Open the latest panel and confirm **Panel v3.26**.
    See [safe device sync](CLOUD-SYNC.md).
 2. Sidebar → **Attendance** → **Add manager**. Enter a name and unique code,
    choose **Morning / Afternoon / Evening / Night** (or **Day (existing)**),
@@ -316,12 +367,13 @@ Unicode. See [fonts and notices](PDF-FONTS.md).
 
 **Excel:** a genuine offline `.xlsx`, not renamed CSV. Five sheets:
 
-1. **Attendance register** — opens first. Date, Day, Shift, Attendance,
-   Check-in, Check-out, Actual hours, Credit, Notes. Real sortable Excel dates,
-   status colours, gold calendar-Sunday rows and full wrapped notes. Full
-   same/next-day Morning/Afternoon/Evening/Night captions stay beside each clock. Frozen first
-   two columns / first seven rows, filters, repeated print headers, landscape
-   A4 fit-to-width and page footers. Body dates are not merged, so filters work.
+1. **Attendance register** — opens first. **Summary and monthly bonus above**;
+   below, Date, manager/status, Check-in, Check-out, blank Advance, Shift, Actual
+   hours, Credit, full Notes. Photo-style black borders, white rows and yellow
+   calendar Sundays; full actual period/day captions stay beside each clock.
+   Frozen identity rows 1–3 / date-status columns A–B, real table filters,
+   repeated identity print rows, landscape A4 fit-to-width and page footers.
+   Body dates are not merged, so filters work.
 2. **Summary** — original manager/profile, numeric decimal-hour totals, arrival
    dates, Sunday count, statuses, credits, explanations and profile note. Includes
    the full-month all-shift qualifying OUT count, extra bonus (%) and remaining
@@ -336,7 +388,8 @@ so e.g. 27h 01m displays as **27:01**, not a wrapped 3:01 or rounded decimal.
 Summary/Daily attendance retain their numeric **decimal hours** for compatibility.
 Credits are numeric. Names/notes are **literal strings, never spreadsheet formulas**;
 no macros or external workbook links are added. Totals are the exported snapshot,
-not a new payroll calculation or a write-back into the app. Advance/salary/canteen
+not a new payroll calculation or a write-back into the app. The first-sheet Advance
+column is blank manual space, not a linked financial record; advance/salary/canteen
 records are not added to, modified by or inferred from this attendance register.
 
 Unmarked is **not** Absent. Dates outside employment are shown separately. Reports

@@ -1965,7 +1965,7 @@ const rRate = (n) => { const x = Math.max(0, num(n)); return x >= 1 ? r2(x) : Ma
 /* rate dikhane ka format: <₹1 ho to 0.075 jaisa khula number, warna moneyS */
 const rateS = (n) => { const x = num(n); if (x > 0 && x < 1) return "₹" + String(Math.round((x + Number.EPSILON) * 10000) / 10000); return moneyS(x); };
 const clamp = (n, lo, hi) => Math.min(hi, Math.max(lo, n));
-const APP_VERSION = "3.25";
+const APP_VERSION = "3.26";
 const esc = (s) => String(s == null ? "" : s).replace(/[&<>"']/g, (m) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[m]));
 
 const MONTHS = ["January","February","March","April","May","June","July","August","September","October","November","December"];
@@ -3290,6 +3290,7 @@ function viewSettings(){
 
     '<div style="text-align:center;font-size:11.5px;color:var(--muted);margin-top:18px;line-height:1.7">'+
       'Panel <b style="color:var(--ink)">v<span data-ver></span></b> · Auto-update enabled<br>'+
+      'v3.26 — <b style="color:var(--ink)">Excel: upar full summary, neeche photo-style register</b>: first sheet me total present days, leaves/half/absent, actual attended Sunday dates/count, working hours, credits aur monthly extra bonus % upar. Neeche Date / manager attendance / actual check-in / actual check-out / blank Advance / shift / hours / credit / full remarks: black borders, white rows aur yellow Sundays. Present days distinct dates hain; multiple shifts se days double-count nahi. Advance sirf blank manual space, salary data se koi naam-based link ya amount/total guess nahi. Five sheets, raw details/history aur all selected rows retained. Sirf Excel presentation; saved data, clock controls, PDF design, bonus arithmetic, panel layout, salary/canteen aur sync unchanged<br>'+
       'v3.25 — <b style="color:var(--ink)">Check-in / Check-out ke four time periods</b>: dono clock dropdowns me Same day / Next day ke saath Morning, Afternoon, Evening aur Night, sirf alag Shift selector me nahi. 12 afternoon = noon, 12 night = midnight; Night 1–4 after midnight. Same/next day khud select karein; automatic date guessing nahi. Purana 13:33 ab 1:33 afternoon dikhata hai, saved time/27h 01m unchanged. Galat clock/period par clear error. Shift/profile change typed clock periods ko nahi badalta. PDF/Excel/history me matching labels; panel styling, saved data, bonus aur salary/canteen unchanged<br>'+
       'v3.24 — <b style="color:var(--ink)">Reference-style Attendance PDF + automatic bonus</b>: ruled ledger header/summary, bordered date-wise table, full remarks, dated Sundays, totals/signatures aur maximum 2 readable pages. Morning / Afternoon / Evening / Night added; saved Day/Night unchanged. Full calendar month/all shifts: arrival-day 11:45 PM ke baad completed OUT, 3 baar = 1%, phir har 2 par +1%; exact 11:45 PM excluded, next-morning OUT included. PDF/Excel me count + percentage, salary/payment amount unchanged. Individual report me WhatsApp PDF: device share sheet, ya download + manual Document attachment. Panel styling, saved clocks/history aur financial data unchanged; sab devices update karein<br>'+
       'v3.23 — <b style="color:var(--ink)">Compact reports + styled register</b>: Attendance PDF ab chhote header, clear 7-column date-wise table, dated Sundays, full notes aur totals ke saath 1 page / maximum 2 readable pages. Bahut lambe range/notes par shorter-range warning, koi detail cut nahi. Excel me naya bordered Attendance register, gold Sunday rows, status colours, numeric elapsed hours, totals, frozen headers, filters aur print setup; pehle ki 4 detail sheets bhi retained. Report studio me live totals/page preview. Saved entries, clocks, history, calculations, salary/canteen, JSON/cloud aur fonts unchanged<br>'+
@@ -8985,7 +8986,7 @@ function attOpenExport(managerId) {
     '<div class="wide att-actions">' + attBtn("This month", "exportRange", 'data-value="month"', "sm") + attBtn("Last 7 days", "exportRange", 'data-value="week"', "sm") + attBtn("This year", "exportRange", 'data-value="year"', "sm") + '</div>' +
     '<div class="wide att-export-preview" id="attExportPreview" role="status" aria-live="polite"></div>' +
     '<div class="wide att-export-formats"><article><small>PDF · A4 PORTRAIT</small><h4>1 page. Maximum 2 pages.</h4><p>Every selected date, shift, status, time, credit, note and attended Sunday — without oversized headings or cut-off details.</p><p class="att-export-caption">If all details cannot fit on 2 readable pages, choose a shorter range or the complete Excel workbook. Nothing is silently omitted.</p></article>' +
-    '<article><small>EXCEL · 5 SHEETS</small><h4>Attendance register</h4><p>Date-wise bordered register, gold Sunday rows, clear check-in/out, coloured statuses, numeric elapsed hours and totals.</p><p class="att-export-caption">Plus Summary, Daily attendance, Change history and Sundays attended. Frozen headers, filters and print-ready layout. Notes stay literal text.</p></article></div>' +
+    '<article><small>EXCEL · 5 SHEETS</small><h4>Attendance register</h4><p>Summary first: present days, leaves, attended Sunday dates and monthly bonus. Below: photo-style black-grid register, yellow Sundays, check-in/out, blank Advance space and full details.</p><p class="att-export-caption">Plus Summary, Daily attendance, Change history and Sundays attended. Frozen headers, filters and print-ready layout. Notes stay literal text.</p></article></div>' +
     '<div class="wide att-export-safe">' + attIcon("check") + '<span><b>Saved entries, clocks and history are unchanged.</b> Salary, canteen and advances are not edited or invented by these exports. Tap/open shifts have no completed hours; credits are not payroll days.</span></div>' +
     '<div class="wide att-note" id="attDownloadLinks" hidden><b>Your report is ready.</b><br>If your browser blocks the automatic download, use the ready file link below.<div class="att-actions" style="margin-top:9px" id="attReadyFiles"></div></div></div>',
     '<button type="button" class="btn" data-act="closeModal">Cancel</button><button type="submit" name="format" value="pdf" class="btn" aria-describedby="attExportCapacity">' + attIcon("report") + ' Download PDF</button><button type="submit" name="format" value="whatsapp" class="btn" title="Share this manager PDF; choose WhatsApp on your device">WhatsApp PDF</button><button type="submit" name="format" value="xlsx" class="btn primary">' + attIcon("download") + ' Download Excel</button>', 720);
@@ -9376,11 +9377,16 @@ function attXlsxStyles() {
     '<font><sz val="9"/><color rgb="FF607584"/><name val="Calibri"/></font>',
     '<font><b/><sz val="12"/><color rgb="FF10756F"/><name val="Calibri"/></font>',
     '<font><b/><sz val="10"/><color rgb="FF18704B"/><name val="Calibri"/></font>',
-    '<font><b/><sz val="10"/><color rgb="FFB54139"/><name val="Calibri"/></font>'
+    '<font><b/><sz val="10"/><color rgb="FFB54139"/><name val="Calibri"/></font>',
+    '<font><b/><sz val="15"/><color rgb="FF111827"/><name val="Calibri"/></font>',
+    '<font><b/><sz val="10"/><color rgb="FF111827"/><name val="Calibri"/></font>'
   ];
   const colors = ['183447','10756F','EAF5F3','F5F8FB','FFF2CC','FCE9E7','E4F3E9','FFFFFF'];
   const fills = ['<fill><patternFill patternType="none"/></fill>', '<fill><patternFill patternType="gray125"/></fill>', ...colors.map((c) => '<fill><patternFill patternType="solid"><fgColor rgb="FF' + c + '"/><bgColor indexed="64"/></patternFill></fill>')];
   const borders = ['<border><left/><right/><top/><bottom/><diagonal/></border>', '<border>' + ['left','right','top','bottom'].map((side) => '<' + side + ' style="thin"><color rgb="FFD6E0E7"/></' + side + '>').join('') + '<diagonal/></border>'];
+  // Black paper-register grid, appended so the four detail sheets retain
+  // their original border/style indices and literal data conventions.
+  for (const top of ['thin', 'medium']) borders.push('<border>' + ['left','right','top','bottom'].map((side) => '<' + side + ' style="' + (side === 'top' ? top : 'thin') + '"><color rgb="FF374151"/></' + side + '>').join('') + '<diagonal/></border>');
   const styles = [], ids = {};
   function style(name, font = 0, fill = 0, border = 1, format = 0, alignment = 'left', wrap = true) {
     ids[name] = styles.length;
@@ -9395,6 +9401,16 @@ function attXlsxStyles() {
     style(name + 'Present', 6, fill, 1, 0, 'center'); style(name + 'Absent', 7, fill, 1, 0, 'center'); style(name + 'Muted', 4, fill, 1, 0, 'center');
   }
   style('total', 2, 2, 1); style('totalDuration', 2, 2, 1, 166, 'right'); style('totalCredit', 2, 2, 1, 167, 'center');
+  style('paperTitle', 8, 9, 0); style('paperManager', 8, 9, 0); style('paperMeta', 4, 9, 0);
+  style('paperSection', 9, 5, 2); style('paperLabel', 0, 9, 2); style('paperValue', 9, 9, 2, 167, 'center');
+  style('paperValueDuration', 9, 9, 2, 166, 'center'); style('paperValuePercent', 9, 9, 2, 9, 'center');
+  style('paperSundayNote', 3, 6, 2); style('paperHeader', 9, 9, 2, 0, 'center');
+  for (const [name, fill] of [['paper', 9], ['paperSunday', 6]]) {
+    style(name, 0, fill, 2); style(name + 'Center', 0, fill, 2, 0, 'center'); style(name + 'Date', 0, fill, 2, 165, 'center');
+    style(name + 'Duration', 3, fill, 2, 166, 'right'); style(name + 'Credit', 0, fill, 2, 167, 'center'); style(name + 'Amount', 0, fill, 2, 164, 'right');
+    style(name + 'Present', 6, fill, 2, 0, 'center'); style(name + 'Absent', 7, fill, 2, 0, 'center'); style(name + 'Muted', 4, fill, 2, 0, 'center');
+  }
+  style('paperTotal', 9, 9, 3); style('paperTotalDuration', 9, 9, 3, 166, 'right'); style('paperTotalCredit', 9, 9, 3, 167, 'center');
   return { ids, xml: '<?xml version="1.0" encoding="UTF-8"?><styleSheet xmlns="' + ns + '"><numFmts count="4"><numFmt numFmtId="164" formatCode="0.00"/><numFmt numFmtId="165" formatCode="dd-mm-yy"/><numFmt numFmtId="166" formatCode="[h]:mm"/><numFmt numFmtId="167" formatCode="0.##"/></numFmts><fonts count="' + fonts.length + '">' + fonts.join('') + '</fonts><fills count="' + fills.length + '">' + fills.join('') + '</fills><borders count="' + borders.length + '">' + borders.join('') + '</borders><cellStyleXfs count="1"><xf numFmtId="0" fontId="0" fillId="0" borderId="0"/></cellStyleXfs><cellXfs count="' + styles.length + '">' + styles.join('') + '</cellXfs><cellStyles count="1"><cellStyle name="Normal" xfId="0" builtinId="0"/></cellStyles></styleSheet>' };
 }
 function attSheet(rows, widths, filter, options) {
@@ -9404,33 +9420,82 @@ function attSheet(rows, widths, filter, options) {
     return '<c r="' + attCol(ci) + (ri + 1) + '" s="' + style + '"' + (numeric ? '><v>' + cell.v + '</v>' : ' t="inlineStr"><is><t xml:space="preserve">' + attXml(cell.v) + '</t></is>') + '</c>';
   }).join('') + '</row>').join('');
   const lastDataRow = o.lastDataRow || rows.length, merges = o.merges || [];
-  const pane = !filter ? '' : o.register ? '<pane xSplit="2" ySplit="7" topLeftCell="C8" activePane="bottomRight" state="frozen"/>' : '<pane ySplit="1" topLeftCell="A2" activePane="bottomLeft" state="frozen"/>';
+  const freezeRows = o.freezeRows || headerRow;
+  const pane = !filter ? '' : o.register ? '<pane xSplit="2" ySplit="' + freezeRows + '" topLeftCell="C' + (freezeRows + 1) + '" activePane="bottomRight" state="frozen"/>' : '<pane ySplit="1" topLeftCell="A2" activePane="bottomLeft" state="frozen"/>';
   return '<?xml version="1.0" encoding="UTF-8" standalone="yes"?><worksheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main"><sheetPr><tabColor rgb="' + (o.register ? 'FF10756F' : 'FF183447') + '"/><pageSetUpPr fitToPage="1"/></sheetPr><dimension ref="A1:' + lastColumn + rows.length + '"/><sheetViews><sheetView workbookViewId="0" showGridLines="0">' + pane + '</sheetView></sheetViews><sheetFormatPr defaultRowHeight="22"/><cols>' + widths.map((width, i) => '<col min="' + (i + 1) + '" max="' + (i + 1) + '" width="' + width + '" customWidth="1"/>').join('') + '</cols><sheetData>' + data + '</sheetData>' + (filter ? '<autoFilter ref="A' + headerRow + ':' + lastColumn + lastDataRow + '"/>' : '') + (merges.length ? '<mergeCells count="' + merges.length + '">' + merges.map((ref) => '<mergeCell ref="' + ref + '"/>').join('') + '</mergeCells>' : '') + '<printOptions horizontalCentered="1"/><pageMargins left="0.25" right="0.25" top="0.35" bottom="0.35" header="0.15" footer="0.15"/><pageSetup paperSize="9" orientation="landscape" fitToWidth="1" fitToHeight="0"/><headerFooter><oddFooter>&amp;LHisaab · Attendance&amp;RPage &amp;P of &amp;N</oddFooter></headerFooter></worksheet>';
 }
 function attRegisterSheet(report, ids) {
-  const m = report.manager, s = report.summary, cell = (v, name) => ({ v, s: ids[name] });
-  const band = (value, style) => [cell(value, style), ...Array.from({ length: 8 }, () => cell('', style))];
-  const rows = [band('HISAAB / ATTENDANCE REGISTER', 'banner'), band(m.name + ' · ' + m.code, 'manager'),
-    band([attNiceDate(report.from) + ' — ' + attNiceDate(report.to), attShiftLabel(report.shift), Store.data.settings.shopName, m.department, m.phone].filter(Boolean).join('  /  '), 'meta'),
-    band('', 'metric'), band('Present ' + s.present + '  ·  Half day ' + s.half + '  ·  Absent ' + s.absent + '  ·  Leave ' + s.leave + '  ·  Holiday ' + s.holiday + '  ·  Week off ' + s.weekoff + '  ·  Unmarked ' + s.unmarked, 'meta'),
-    band('', 'group'), ['Date', 'Day', 'Shift', 'Attendance', 'Check-in', 'Check-out', 'Actual hours', 'Credit', 'Notes / remarks'].map((value) => cell(value, 'header'))];
-  rows[3][0].v = 'ACTUAL HOURS\n' + attDuration(s.workedMinutes); rows[3][3].v = 'ARRIVAL DATES  ' + s.attendedDays + '   /   SUNDAYS  ' + (report.sundays || []).length; rows[3][6].v = 'CREDITS  ' + s.credit + '   /   OPEN SHIFTS  ' + s.pending;
-  rows[5][0].v = 'ATTENDANCE DATE'; rows[5][2].v = 'SHIFT / STATUS'; rows[5][4].v = 'ACTUAL CLOCKS · 12-HOUR'; rows[5][6].v = 'TIME / CREDIT'; rows[5][8].v = 'REMARKS';
-  const heights = [30, m.name.length + m.code.length > 75 ? 44 : 32, 30, 40, 26, 22, 28];
-  report.rows.forEach((row, index) => {
-    const r = row.record, c = row.calc, timed = r && r.mode === 'time', base = ctDateObj(row.date).getDay() === 0 ? 'sunday' : index % 2 ? 'plain' : 'stripe';
+  // Export-only: a summary above the user's paper-style date register. The
+  // reference's Morning/Night columns are actual IN/OUT, never fixed schedules.
+  const m = report.manager, s = report.summary, sundays = report.sundays || [], bonuses = attReportBonus(report);
+  const cell = (v, name) => ({ v, s: ids[name] }), rows = [], heights = [], merges = [];
+  const widths = [13,18,24,24,13,12,16,11,48];
+  const weight = (value) => Array.from(String(value || '')).reduce((n, ch) => n + (ch.codePointAt(0) > 255 ? 1.5 : 1), 0);
+  const lineCount = (value, width) => String(value == null ? '' : value).split(/\r?\n/).reduce((n, line) => n + Math.max(1, Math.ceil(weight(line) / width)), 0);
+  const band = (value, style = 'paperMeta', minimum = 22) => {
+    // Split newline-heavy profile/summary text into complete cells instead of
+    // clipping it at Excel's maximum row height. All four detail sheets remain.
+    const groups = []; let group = [], used = 0;
+    String(value).split(/\r?\n/).forEach((line) => {
+      const lines = lineCount(line, 153);
+      if (group.length && used + lines > 24) { groups.push(group); group = []; used = 0; }
+      group.push(line); used += lines;
+    });
+    groups.push(group);
+    groups.forEach((lines) => {
+      const text = lines.join('\n'); rows.push([cell(text, style), ...Array.from({ length: 8 }, () => cell('', style))]);
+      merges.push('A' + rows.length + ':I' + rows.length);
+      heights.push(Math.min(409, Math.max(minimum, lineCount(text, 153) * 13 + 8)));
+    });
+  };
+  const metrics = (items) => {
+    const row = Array.from({ length: 9 }, () => cell('', 'paperLabel'));
+    items.forEach(([label, value, style], i) => {
+      const col = i * 3; row[col] = cell(label, 'paperLabel'); row[col + 2] = cell(value, style || 'paperValue');
+      merges.push(attCol(col) + (rows.length + 1) + ':' + attCol(col + 1) + (rows.length + 1));
+    });
+    rows.push(row); heights.push(Math.max(26, ...items.map(([label], i) => lineCount(label, widths[i * 3] + widths[i * 3 + 1] - 3) * 12 + 8)));
+  };
+  const days = (status) => new Set(report.rows.filter((row) => row.record && row.status === status).map((row) => row.date)).size;
+  const marked = (label, count) => label + ' (' + count + (count === 1 ? ' mark)' : ' marks)');
+  band('HISAAB / INDIVIDUAL ATTENDANCE', 'paperTitle', 27);
+  band(m.name + '  ·  ' + m.code, 'paperManager', m.name.length + m.code.length > 90 ? 43 : 30);
+  band([attNiceDate(report.from) + ' — ' + attNiceDate(report.to), attShiftLabel(report.shift), Store.data.settings.shopName, m.department, m.phone,
+    m.joinedOn ? 'Joined ' + attNiceDate(m.joinedOn) : '', m.endedOn ? 'Last working ' + attNiceDate(m.endedOn) : '', m.active === false ? 'Inactive' : ''].filter(Boolean).join('  /  '), 'paperMeta', 28);
+  band('ATTENDANCE SUMMARY · SELECTED RANGE', 'paperSection');
+  metrics([['Total present days', days('present')], ['Days attended · arrival dates', num(s.attendedDays)], ['Actual working hours', s.workedMinutes / 1440, 'paperValueDuration']]);
+  metrics([[marked('Leave days', s.leave), days('leave')], [marked('Absent days', s.absent), days('absent')], [marked('Half-day dates', s.half), days('half')]]);
+  metrics([['Sundays actually attended', sundays.length], [marked('Holiday dates', s.holiday), days('holiday')], [marked('Week-off dates', s.weekoff), days('weekoff')]]);
+  metrics([['Present shifts', s.present], ['Open shifts', s.pending], ['Saved shifts', s.marks]]);
+  metrics([['Attendance credits · not payroll days', s.credit], ['Unmarked dates', num(s.unmarked)], ['Outside employment · dates', num(s.notScheduled)]]);
+  metrics([['Calendar days in range', s.calendarDays], ['Tap marks', s.tapRecords], ['Time entries', s.timeRecords]]);
+  if (!sundays.length) band('Sundays actually attended: None in this selection.', 'paperSundayNote');
+  else for (let i = 0; i < sundays.length; i += 12) band((i ? 'Sunday dates continued: ' : 'Sundays actually attended (' + sundays.length + '): ') + sundays.slice(i, i + 12).map((v) => attNiceDate(v.date, true)).join('  ·  '), 'paperSundayNote');
+  band('EXTRA BONUS · FULL CALENDAR MONTH / ALL SHIFTS', 'paperSection');
+  bonuses.forEach((b) => metrics([[b.month + ' · qualifying OUTs', b.count], [b.month + ' · extra bonus', b.percent / 100, 'paperValuePercent'], ['More OUTs for next +1%', b.remaining]]));
+  band('Bonus: first 3 qualifying OUTs = 1%; each additional 2 = +1%. Completed OUT strictly after actual arrival-day 11:45 PM, including next morning; exactly 11:45 PM excluded. Month = attendance date. Full month / all shifts even for a partial or filtered report. Percentage only; no salary/payment change.', 'paperMeta');
+  band('Present / leave / other status days are distinct attendance dates in this selection; mixed-shift categories can overlap. Arrival / Sunday dates use actual check-ins. Credits and mark counts are per saved shift, not payroll days. Unmarked is not Absent.', 'paperMeta');
+  band('Advance column: intentionally blank for optional manual use in the exported file; no linked manager advance data or automatic advance total. Salary advances are not imported, matched by name or changed.', 'paperMeta');
+  if (m.note) band('Manager note: ' + m.note, 'paperMeta');
+  const headerRow = rows.length + 1;
+  const labels = ['Date', m.name + '\nAttendance', 'Check-in time', 'Check-out time', 'Advance', 'Shift', 'Actual hours', 'Credit', 'Notes / remarks'];
+  rows.push(labels.map((value) => cell(value, 'paperHeader')));
+  heights.push(Math.max(42, ...labels.map((value, i) => lineCount(value, widths[i] - 6) * 13 + 8)));
+  report.rows.forEach((row) => {
+    const r = row.record, c = row.calc, timed = r && r.mode === 'time', base = ctDateObj(row.date).getDay() === 0 ? 'paperSunday' : 'paper';
     const clock = (value, next) => value ? attClockParts(value).time + '\n' + attWhenLabel(value, next) : 'Still open';
-    rows.push([cell(attExcelDate(row.date), base + 'Date'), cell(DAYS[ctDateObj(row.date).getDay()], base + 'Center'), cell(attShiftLabel(row.shift), base + 'Center'),
-      cell(ATT_STATUS[row.status].label, base + (row.status === 'present' ? 'Present' : row.status === 'absent' ? 'Absent' : !r ? 'Muted' : 'Center')),
+    rows.push([cell(attExcelDate(row.date), base + 'Date'), cell(ATT_STATUS[row.status].label, base + (row.status === 'present' ? 'Present' : row.status === 'absent' ? 'Absent' : !r ? 'Muted' : 'Center')),
       cell(timed ? clock(r.checkIn, r.inNextDay) : '', base + 'Center'), cell(timed ? clock(r.checkOut, r.outNextDay) : '', base + 'Center'),
-      cell(timed && !c.open ? c.workedMinutes / 1440 : '', base + 'Duration'), cell(c ? c.credit : '', base + 'Credit'), cell(r && r.note || '', base)]);
-    const lines = String(r && r.note || '').split(/\r?\n/).reduce((count, line) => count + Math.max(1, Math.ceil(Array.from(line).reduce((n, ch) => n + (ch.codePointAt(0) > 255 ? 1.5 : 1), 0) / 43)), 0);
-    heights.push(Math.min(409, Math.max(34, lines * 13 + 10)));
+      cell('', base + 'Amount'), cell(attShiftLabel(row.shift), base + 'Center'), cell(timed && !c.open ? c.workedMinutes / 1440 : '', base + 'Duration'), cell(c ? c.credit : '', base + 'Credit'), cell(r && r.note || '', base)]);
+    heights.push(Math.min(409, Math.max(34, lineCount(r && r.note || '', widths[8] - 3) * 13 + 10)));
   });
-  const totalRow = rows.length + 1, total = band('', 'total'); total[0].v = 'TOTAL'; total[4].v = s.marks + ' saved shifts'; total[6] = cell(s.workedMinutes / 1440, 'totalDuration'); total[7] = cell(s.credit, 'totalCredit'); total[8].v = s.attendedDays + ' arrival dates · ' + (report.sundays || []).length + ' Sundays attended'; rows.push(total); heights.push(30);
-  rows.push(band('Yellow = calendar Sunday, not an automatic attendance mark. Actual Sunday visits and dates are on Sundays attended. Hours = out − in; no deductions. Tap/open shifts have no completed hours. Credits are per shift, not payroll days. Full clocks, notes, IDs and retained history remain on the detail sheets; saved data is unchanged.', 'meta')); heights.push(45);
-  const merges = ['A1:I1','A2:I2','A3:I3','A4:C4','D4:F4','G4:I4','A5:I5','A6:B6','C6:D6','E6:F6','G6:H6','A' + totalRow + ':D' + totalRow,'E' + totalRow + ':F' + totalRow,'A' + rows.length + ':I' + rows.length];
-  return { xml: attSheet(rows, [13,10,10,17,23,23,15,10,46], true, { register: true, headerRow: 7, lastDataRow: totalRow - 1, merges, heights }), rows: rows.length };
+  const totalRow = rows.length + 1, total = Array.from({ length: 9 }, () => cell('', 'paperTotal'));
+  total[0].v = 'TOTAL'; total[5].v = s.marks + ' saved shifts'; total[6] = cell(s.workedMinutes / 1440, 'paperTotalDuration'); total[7] = cell(s.credit, 'paperTotalCredit');
+  total[8].v = num(s.attendedDays) + ' arrival dates · ' + sundays.length + ' Sundays attended'; rows.push(total); heights.push(34); merges.push('A' + totalRow + ':D' + totalRow);
+  band('Yellow rows = calendar Sundays, not automatic attendance or Sunday pay. The actual attended Sunday dates are listed above and on Sundays attended. All saved shifts remain separate; hours = OUT − IN, with no deduction. Same / next day and the actual Morning / Afternoon / Evening / Night period stay beside each clock. Tap / open shifts have no completed hours. Full IDs, notes and retained history remain on the detail sheets; exported changes do not update the app.', 'paperMeta');
+  // Pin only identity rows: a long range can have many Sunday/bonus rows above
+  // the table. Freezing that entire summary would hide the scrollable register.
+  return { xml: attSheet(rows, widths, true, { register: true, headerRow, lastDataRow: totalRow - 1, freezeRows: 3, merges, heights }), rows: rows.length, headerRow };
 }
 function attXlsxBytes(report) {
   const m = report.manager, s = report.summary, sundays = report.sundays || [];
@@ -9456,7 +9521,7 @@ function attXlsxBytes(report) {
   const sundayRows = [["Sunday attended", "Weekday", "Shifts (counted once)", "Arrival status"]];
   sundays.forEach((v) => sundayRows.push([v.date, "Sunday", v.shifts.map((shift) => attShiftLabel(shift)).join(" + "), v.open ? "Checked in / open shift" : "Attended"]));
   const styling = attXlsxStyles(), register = attRegisterSheet(report, styling.ids);
-  const sheets = [{ id: 5, name: "Attendance register", xml: register.xml, last: register.rows, cols: 9, title: 7 },
+  const sheets = [{ id: 5, name: "Attendance register", xml: register.xml, last: register.rows, cols: 9, title: 3 },
     { id: 1, name: "Summary", xml: attSheet(summary, [37, 110], false, { heights: summary.map((row, i) => i === 0 ? 32 : i >= 23 ? 52 : 24) }), last: summary.length, cols: 2, title: 0 },
     { id: 2, name: "Daily attendance", xml: attSheet(daily, [19, 15, 10, 10, 18, 19, 24, 19, 24, 16, 20, 60, 30, 30], true), last: daily.length, cols: 14, title: 1 },
     { id: 3, name: "Change history", xml: attSheet(history, [27, 17, 22, 65, 30, 30, 85, 85], true), last: history.length, cols: 8, title: 1 },
