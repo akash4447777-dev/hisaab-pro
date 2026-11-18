@@ -1965,7 +1965,7 @@ const rRate = (n) => { const x = Math.max(0, num(n)); return x >= 1 ? r2(x) : Ma
 /* rate dikhane ka format: <₹1 ho to 0.075 jaisa khula number, warna moneyS */
 const rateS = (n) => { const x = num(n); if (x > 0 && x < 1) return "₹" + String(Math.round((x + Number.EPSILON) * 10000) / 10000); return moneyS(x); };
 const clamp = (n, lo, hi) => Math.min(hi, Math.max(lo, n));
-const APP_VERSION = "3.24";
+const APP_VERSION = "3.25";
 const esc = (s) => String(s == null ? "" : s).replace(/[&<>"']/g, (m) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[m]));
 
 const MONTHS = ["January","February","March","April","May","June","July","August","September","October","November","December"];
@@ -3290,6 +3290,7 @@ function viewSettings(){
 
     '<div style="text-align:center;font-size:11.5px;color:var(--muted);margin-top:18px;line-height:1.7">'+
       'Panel <b style="color:var(--ink)">v<span data-ver></span></b> · Auto-update enabled<br>'+
+      'v3.25 — <b style="color:var(--ink)">Check-in / Check-out ke four time periods</b>: dono clock dropdowns me Same day / Next day ke saath Morning, Afternoon, Evening aur Night, sirf alag Shift selector me nahi. 12 afternoon = noon, 12 night = midnight; Night 1–4 after midnight. Same/next day khud select karein; automatic date guessing nahi. Purana 13:33 ab 1:33 afternoon dikhata hai, saved time/27h 01m unchanged. Galat clock/period par clear error. Shift/profile change typed clock periods ko nahi badalta. PDF/Excel/history me matching labels; panel styling, saved data, bonus aur salary/canteen unchanged<br>'+
       'v3.24 — <b style="color:var(--ink)">Reference-style Attendance PDF + automatic bonus</b>: ruled ledger header/summary, bordered date-wise table, full remarks, dated Sundays, totals/signatures aur maximum 2 readable pages. Morning / Afternoon / Evening / Night added; saved Day/Night unchanged. Full calendar month/all shifts: arrival-day 11:45 PM ke baad completed OUT, 3 baar = 1%, phir har 2 par +1%; exact 11:45 PM excluded, next-morning OUT included. PDF/Excel me count + percentage, salary/payment amount unchanged. Individual report me WhatsApp PDF: device share sheet, ya download + manual Document attachment. Panel styling, saved clocks/history aur financial data unchanged; sab devices update karein<br>'+
       'v3.23 — <b style="color:var(--ink)">Compact reports + styled register</b>: Attendance PDF ab chhote header, clear 7-column date-wise table, dated Sundays, full notes aur totals ke saath 1 page / maximum 2 readable pages. Bahut lambe range/notes par shorter-range warning, koi detail cut nahi. Excel me naya bordered Attendance register, gold Sunday rows, status colours, numeric elapsed hours, totals, frozen headers, filters aur print setup; pehle ki 4 detail sheets bhi retained. Report studio me live totals/page preview. Saved entries, clocks, history, calculations, salary/canteen, JSON/cloud aur fonts unchanged<br>'+
       'v3.22 — <b style="color:var(--ink)">Next-day long shift fix</b>: 24 ghante ki entry limit hata di. 10:32 Same day morning se 1:33 Next day night = poore 27h 01m, bina deduction/cap. Preview, save, clock-out, ledger, JSON/cloud aur PDF/Excel me actual hours; ulta/equal checkout ab bhi blocked. Easy 12-hour choices, Sunday counts, salary/canteen aur saved data unchanged<br>'+
@@ -8167,25 +8168,32 @@ function attDateDiff(a, b) { return Math.round((Date.parse(b + "T12:00:00Z") - D
 function attTime(value) { return typeof value === "string" && /^(?:[01]\d|2[0-3]):[0-5]\d$/.test(value); }
 function attMinutes(value) { if (!attTime(value)) return NaN; const [h, m] = value.split(":").map(Number); return h * 60 + m; }
 function attClock(now) { return String(now.getHours()).padStart(2, "0") + ":" + String(now.getMinutes()).padStart(2, "0"); }
-/* Only the stored clock stays canonical HH:MM for v3.19 backup/cloud compatibility.
-   Every Attendance input and human-readable output uses 1–12 + morning/night.
-   Morning is midnight–before noon; night is noon–before midnight (includes evening). */
+/* Presentation only: saved HH:MM and same/next-day flags stay canonical.
+   These are clock periods, not shift schedules or fixed working hours.
+   Night spans midnight, but NEVER changes the chosen calendar-day flag. */
+const ATT_CLOCK_PERIODS = Object.freeze({ morning: "Morning", afternoon: "Afternoon", evening: "Evening", night: "Night" });
+const ATT_CLOCK_RANGES = Object.freeze({ morning: "5:00 AM–11:59 AM", afternoon: "12:00 noon–4:59 PM", evening: "5:00 PM–8:59 PM", night: "9:00 PM–4:59 AM (12 night = midnight)" });
 function attClockParts(value) {
   if (!attTime(value)) return { time: "", period: "morning" };
   const hour = Number(value.slice(0, 2));
-  return { time: (hour % 12 || 12) + value.slice(2), period: hour < 12 ? "morning" : "night" };
+  const period = hour < 5 || hour >= 21 ? "night" : hour < 12 ? "morning" : hour < 17 ? "afternoon" : "evening";
+  return { time: (hour % 12 || 12) + value.slice(2), period };
 }
 function attParseClock(value) {
   let text = String(value == null ? "" : value).replace(/[०-९]/g, (ch) => String(ch.charCodeAt(0) - 0x966)).trim().replace(".", ":");
   if (/^\d{3,4}$/.test(text)) text = text.slice(0, -2) + ":" + text.slice(-2);
   const match = /^(0?[1-9]|1[0-2])(?::([0-5]\d))?$/.exec(text);
-  if (!match) throw new Error("Enter a time from 1 to 12, e.g. 9:30, and choose morning or night.");
+  if (!match) throw new Error("Enter a time from 1 to 12, e.g. 9:30, and choose Morning, Afternoon, Evening or Night.");
   return { hour: Number(match[1]), minutes: match[2] || "00", time: Number(match[1]) + ":" + (match[2] || "00") };
 }
 function attClockFrom12(value, choice) {
-  if (!["morning", "night", "same-morning", "same-night", "next-morning", "next-night"].includes(choice)) throw new Error("Choose morning or night for the time.");
-  const part = attParseClock(value), hour = part.hour % 12 + (choice.endsWith("night") ? 12 : 0);
-  return String(hour).padStart(2, "0") + ":" + part.minutes;
+  const match = /^(?:(?:same|next)-)?(morning|afternoon|evening|night)$/.exec(String(choice || ""));
+  if (!match) throw new Error("Choose Morning, Afternoon, Evening or Night for the time.");
+  const part = attParseClock(value), period = match[1];
+  const pm = period === "afternoon" || period === "evening" || period === "night" && part.hour >= 9 && part.hour <= 11;
+  const clock = String(part.hour % 12 + (pm ? 12 : 0)).padStart(2, "0") + ":" + part.minutes;
+  if (attClockParts(clock).period !== period) throw new Error(part.time + " does not match " + ATT_CLOCK_PERIODS[period] + ". " + ATT_CLOCK_PERIODS[period] + " is " + ATT_CLOCK_RANGES[period] + ". Choose the correct time period; no day or time is guessed.");
+  return clock;
 }
 function attWhenLabel(value, nextDay) { return (nextDay ? "Next day " : "Same day ") + attClockParts(value).period; }
 function attClockLabel(value) { const p = attClockParts(value); return p.time ? p.time + " " + p.period : "—"; }
@@ -8239,7 +8247,7 @@ function attEligible(m, date) { return (!m.joinedOn || date >= m.joinedOn) && (!
 function attPolicy(shift) { return { ...att().settings }; }
 function attCheckRules(p) {
   if (!p || typeof p !== "object" || Array.isArray(p)) throw new Error("Attendance shift rules are missing.");
-  ["dayStart", "dayEnd", "nightStart", "nightEnd"].forEach((k) => { if (!attTime(p[k])) throw new Error("Saved shift time is invalid (" + k + "). Re-enter it using 1–12 and morning/night."); });
+  ["dayStart", "dayEnd", "nightStart", "nightEnd"].forEach((k) => { if (!attTime(p[k])) throw new Error("Saved shift time is invalid (" + k + "). Re-enter it using 1–12 and the correct time period."); });
   ["standardMinutes", "halfDayMinutes", "breakMinutes", "lateGraceMinutes", "earlyGraceMinutes"].forEach((k) => {
     if (!Number.isInteger(p[k]) || p[k] < 0 || p[k] > 1440) throw new Error("Invalid attendance rule: " + k);
   });
@@ -8268,14 +8276,14 @@ function attCalculate(record) {
       return result;
     }
     if (r.breakMinutes !== undefined && (!Number.isInteger(r.breakMinutes) || r.breakMinutes < 0 || r.breakMinutes > 1439)) throw new Error("Invalid legacy time metadata. Restore a valid JSON backup.");
-    if (!attTime(r.checkIn)) throw new Error("Enter check-in using 1–12 and morning/night.");
+    if (!attTime(r.checkIn)) throw new Error("Enter check-in using 1–12 and the correct time period.");
     if (!r.checkOut) { result.status = "pending"; result.open = true; return result; }
-    if (!attTime(r.checkOut)) throw new Error("Enter check-out using 1–12 and morning/night.");
+    if (!attTime(r.checkOut)) throw new Error("Enter check-out using 1–12 and the correct time period.");
     const start = attMinutes(r.checkIn) + (r.inNextDay ? 1440 : 0), end = attMinutes(r.checkOut) + (r.outNextDay ? 1440 : 0);
     const duration = end - start;
     // Same/next-day choices already supply the dates. A next-day checkout can
     // legitimately be over 24 hours; reject reversed/equal times, never cap hours.
-    if (duration <= 0) throw new Error("Check-out must be after check-in. Check both morning/night and same/next day choices.");
+    if (duration <= 0) throw new Error("Check-out must be after check-in. Check the time period and same/next day choices.");
     result.durationMinutes = duration; result.workedMinutes = duration;
     result.status = "present"; result.credit = 1;
   } catch (error) { result.valid = false; result.error = error.message; }
@@ -8744,7 +8752,7 @@ function attSideHTML() {
   const recent = att().history.slice().sort((a, b) => b.at - a.at).slice(0, 3);
   return '<aside class="att-side"><div class="att-panel" style="margin-bottom:14px"><div class="att-panel-head"><h4>Shift pulse</h4>' + attIcon("clock") + '</div><div class="att-panel-body"><div class="att-pulse-row"><div class="att-pulse-top"><span>Roster marked</span><b>' + percent + '%</b></div><div class="att-progress"><i style="width:' + percent + '%"></i></div><div class="att-pulse-legend">' + marked + ' marked / ' + cards.length + ' visible shifts</div></div>' +
     item("Present", s.present, "var(--ok)") + item("Absent", s.absent, "var(--bad)") + item("Half day / leave", s.half + s.leave, "var(--warn)") +
-    '<div class="att-note"><b>Simple 1–12 time.</b><br>Choose same day morning/night or next day morning/night. Same day is the selected attendance date. Tap mode tracks credits, not worked hours.</div><div style="margin-top:12px">' + attBtn(attIcon("settings") + " Attendance settings", "rules", "", "sm") + '</div></div></div>' +
+    '<div class="att-note"><b>Simple 1–12 time.</b><br>Choose Morning, Afternoon, Evening or Night for each check-in/out, with Same day or Next day. Same day is the selected attendance date. Tap mode tracks credits, not worked hours.</div><div style="margin-top:12px">' + attBtn(attIcon("settings") + " Attendance settings", "rules", "", "sm") + '</div></div></div>' +
     '<div class="att-panel"><div class="att-panel-head"><h4>Recent activity</h4>' + attIcon("history") + '</div><div class="att-panel-body"><div class="att-mini-list">' + (recent.length ? recent.map((h) => '<div class="att-mini-item"><div>' + esc(h.text) + '<small>' + esc(attStamp(h.at)) + '</small></div></div>').join("") : '<span class="att-mini">Your first saved action will appear here.</span>') + '</div><div style="margin-top:16px">' + attBtn("View history →", "tab", 'data-value="history"', "ghost sm") + '</div></div></div></aside>';
 }
 function attCalendarHTML() {
@@ -8853,8 +8861,9 @@ function attTimeControl(id, value, nextDay, label) {
   const record = id === "attRIn" || id === "attROut", part = attClockParts(value);
   label = label || (id === "attRIn" ? "Check-in" : "Check-out");
   const choice = record ? (nextDay ? "next-" : "same-") + part.period : part.period;
-  const choices = record ? [["same-morning", "Same day morning"], ["same-night", "Same day night"], ["next-morning", "Next day morning"], ["next-night", "Next day night"]] : [["morning", "Morning"], ["night", "Night"]];
-  return '<div class="att-time-input' + (record ? '' : ' att-rule-clock') + '">' + attInput(id, part.time, 'type="text" inputmode="numeric" placeholder="9:00" maxlength="5" pattern="(0?[1-9]|1[0-2])([:.][0-5][0-9]|[0-5][0-9])?" title="Time 1–12, e.g. 9 or 9:30" aria-label="' + esc(label) + ' time, 12-hour"') + '<select class="inp" id="' + id + 'When" aria-label="' + esc(label) + (record ? ' day and morning or night' : ' morning or night') + '">' + choices.map(([key, text]) => '<option value="' + key + '"' + (choice === key ? ' selected' : '') + '>' + text + '</option>').join('') + '</select></div>';
+  const periods = Object.keys(ATT_CLOCK_PERIODS);
+  const choices = record ? ["same", "next"].flatMap((day) => periods.map((period) => [day + "-" + period, (day === "same" ? "Same day " : "Next day ") + period])) : periods.map((period) => [period, ATT_CLOCK_PERIODS[period]]);
+  return '<div class="att-time-input' + (record ? '' : ' att-rule-clock') + '">' + attInput(id, part.time, 'type="text" inputmode="numeric" placeholder="9:00" maxlength="5" pattern="(0?[1-9]|1[0-2])([:.][0-5][0-9]|[0-5][0-9])?" title="Time 1–12, e.g. 9 or 9:30" aria-label="' + esc(label) + ' time, 12-hour"') + '<select class="inp" id="' + id + 'When" aria-label="' + esc(label) + (record ? ' day and time period' : ' time period') + '">' + choices.map(([key, text]) => '<option value="' + key + '"' + (choice === key ? ' selected' : '') + '>' + text + '</option>').join('') + '</select></div>';
 }
 function attReadTimeControl(id, optional) {
   const value = $('#' + id).value.trim(), choice = $('#' + id + 'When').value;
@@ -8865,11 +8874,14 @@ function attSetTimeControl(id, value, nextDay) {
   $('#' + id).value = part.time;
   $('#' + id + 'When').value = record ? (nextDay ? "next-" : "same-") + part.period : part.period;
 }
+function attSuggestedPeriods(shift) {
+  return shift === "night" ? ["same-night", "next-morning"] : shift === "evening" ? ["same-evening", "same-night"] : shift === "afternoon" ? ["same-afternoon", "same-evening"] : shift === "morning" ? ["same-morning", "same-afternoon"] : ["same-morning", "same-evening"];
+}
 function attSuggestPeriods() {
   if (!attEditor || attEditor.kind !== "record") return;
-  const shift = $("#attRShift").value, night = shift === "night";
-  $("#attRInWhen").value = ["afternoon", "evening", "night"].includes(shift) ? "same-night" : "same-morning";
-  $("#attROutWhen").value = night ? "next-morning" : "same-night";
+  const choices = attSuggestedPeriods($("#attRShift").value);
+  // A shift/profile change must not reinterpret clocks already typed by the user.
+  ["attRIn", "attROut"].forEach((id, i) => { if (!$('#' + id).value.trim()) $('#' + id + 'When').value = choices[i]; });
 }
 function attTimeJourney() {
   const node = $("#attTimeJourney"); if (!node) return;
@@ -8877,7 +8889,7 @@ function attTimeJourney() {
     const start = attReadTimeControl("attRIn"), end = attReadTimeControl("attROut", true), date = $("#attRDate").value;
     const day = (next) => attDate(date) ? ctDateObj(ctShiftDate(date, next ? 1 : 0)).toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric" }) : "Choose a date";
     const atTwelve = [start.time, end.time].some((time) => /^(00|12):/.test(time));
-    node.innerHTML = '<b>' + esc(attTimeLabel(start.time, start.nextDay)) + ' → ' + esc(end.time ? attTimeLabel(end.time, end.nextDay) : "Check-out pending") + '</b><small>' + esc(day(start.nextDay) + (end.time ? " → " + day(end.nextDay) : " · shift stays open")) + '</small>' + (atTwelve ? '<small><b>12 morning = midnight · 12 night = noon.</b></small>' : '');
+    node.innerHTML = '<b>' + esc(attTimeLabel(start.time, start.nextDay)) + ' → ' + esc(end.time ? attTimeLabel(end.time, end.nextDay) : "Check-out pending") + '</b><small>' + esc(day(start.nextDay) + (end.time ? " → " + day(end.nextDay) : " · shift stays open")) + '</small>' + (atTwelve ? '<small><b>12 night = midnight · 12 afternoon = noon.</b></small>' : '');
     node.classList.remove("invalid");
   } catch (error) { node.textContent = error.message; node.classList.add("invalid"); }
 }
@@ -8887,7 +8899,7 @@ function attOpenRecord(id, managerId, date, shift) {
   if (!r && !att().managers.some((x) => x.active)) { toast("Add an active manager first", "bad"); attOpenManager(); return; }
   shift = r ? r.shift : shift || (m ? m.defaultShift : attValidShift(u.shift) ? u.shift : "day"); date = r ? r.date : date || u.date;
   const p = r ? r.policy : attPolicy(shift), mode = r ? r.mode : u.mode, status = r && r.mode === "tap" ? r.status : "present";
-  attDialog("attRecordForm", r ? "Edit attendance" : "Mark attendance", "Use a 1–12 clock. Choose same/next day morning or night for each time — no conversion needed.",
+  attDialog("attRecordForm", r ? "Edit attendance" : "Mark attendance", "Use a 1–12 clock. Choose same/next day Morning, Afternoon, Evening or Night for each time.",
     '<div class="att-form-grid">' + attField("Manager", attManagerPickHTML("attRManager", m && m.id, !!r), "wide", "Search by name or code; choose the matching profile.") +
     attField("Attendance date · same day", attInput("attRDate", date, 'type="date" required')) + attField("Shift", attShiftSelect("attRShift", shift)) +
     '<div class="wide att-form-rule"><div class="att-mode" role="group" aria-label="Record entry mode"><button type="button" data-att-act="recordMode" data-value="tap" aria-pressed="' + (mode === "tap") + '">Tap mode</button><button type="button" data-att-act="recordMode" data-value="time" aria-pressed="' + (mode === "time") + '">Time mode</button></div><span class="att-mini">Tap = status &amp; credits · Time = actual hours</span></div>' +
@@ -8897,7 +8909,7 @@ function attOpenRecord(id, managerId, date, shift) {
       attField("Check-in", attTimeControl("attRIn", r && r.mode === "time" ? r.checkIn : "", r && r.inNextDay), "wide-mobile att-clock-field") +
       attField("Check-out", attTimeControl("attROut", r && r.mode === "time" ? r.checkOut : "", r && r.mode === "time" ? r.outNextDay : shift === "night"), "wide-mobile att-clock-field", "Leave blank if the manager has not checked out yet.") +
       '<div class="wide att-time-journey" id="attTimeJourney" aria-live="polite"></div>' +
-      '<details class="att-note att-time-help"><summary>Morning / night &amp; 12 o’clock</summary><p>Morning = midnight to before noon. Night = noon, afternoon, evening and night.<br><b>12 morning = midnight · 12 night = noon.</b><br>Same day = the selected attendance date; next day = the date after it.</p></details></div></div>' +
+      '<details class="att-note att-time-help"><summary>Morning / afternoon / evening / night &amp; 12 o’clock</summary><p>Morning: 5:00 AM–11:59 AM · Afternoon: 12 noon–4:59 PM.<br>Evening: 5:00 PM–8:59 PM · Night: 9:00 PM–4:59 AM.<br><b>12 night = midnight · 12 afternoon = noon.</b><br>Night 1–4 is after midnight; Night 9–11 is before midnight. Night does not change the date.<br>Same day = the selected attendance date; next day = the date after it. These are time labels, not fixed working hours. Saved clocks are unchanged.</p></details></div></div>' +
     '<div class="wide"><div id="attCalcPreview" class="att-calc-preview" aria-live="polite"></div></div>' +
     attField("Note (optional)", '<textarea class="inp" id="attRNote" maxlength="600" rows="2" placeholder="Reason, adjustment or handover note">' + esc(r && r.note || "") + '</textarea>', "wide") +
     '<div class="wide att-note" id="attRuleNote">No fixed daily target. Half day is a manual Tap mark; no automatic overtime or late/early classification.</div>' +
@@ -8905,7 +8917,7 @@ function attOpenRecord(id, managerId, date, shift) {
     (r ? '<div class="left">' + attBtn("Delete record…", "recordDelete", 'data-id="' + esc(r.id) + '"', "danger sm") + '</div>' : '') + '<button type="button" class="btn" data-act="closeModal">Cancel</button><button type="submit" class="btn primary">Save attendance</button>', 700);
   attEditor = { kind: "record", id: r && r.id || "", original: r && syncStable(r), scope: Cloud.scope, mode, policy: syncClone(p), savedPolicy: syncClone(p) };
   if (!r || r.mode !== "time") attSuggestPeriods();
-  else if (!r.checkOut) $("#attROutWhen").value = (r.outNextDay ? "next-" : "same-") + (shift === "night" ? "morning" : "night");
+  else if (!r.checkOut) $("#attROutWhen").value = (r.outNextDay ? "next-" : "same-") + attSuggestedPeriods(shift)[1].split("-")[1];
   attSetRecordMode(mode); attPreviewRecord(); $("#attRManager")?.focus();
 }
 function attReadRecord() {
@@ -9252,7 +9264,7 @@ function attPdfLayout(report) {
   rule(M,y,M+155,y,muted);rule(RIGHT-155,y,RIGHT,y,muted);
   text(M,y-11,8,"Prepared by:",{color:muted});text(RIGHT,y-11,8,"Manager / verified by:",{color:muted,align:"right"});
   const stamp=attStamp(Date.now());
-  pages.forEach((page,i)=>{ops=page;rule(M,66,RIGHT,66);text(M,55,7.5,"Hours = out − in; no deductions. Tap/open = no measured hours. Credits are per shift, not payroll days.",{color:muted});text(M,44,7.5,"+1d = next day; otherwise same day. 12 morning = midnight; 12 night = noon. Yellow = calendar Sunday.",{color:muted});text(M,32,7.5,"Hisaab v"+APP_VERSION+" · "+stamp,{color:muted});text(RIGHT,32,7.5,"Page "+(i+1)+" / "+pages.length,{color:muted,align:"right"});});
+  pages.forEach((page,i)=>{ops=page;rule(M,66,RIGHT,66);text(M,55,7.5,"Hours = out − in; no deductions. Tap/open = no measured hours. Credits are per shift, not payroll days.",{color:muted});text(M,44,7.5,"+1d = next day; otherwise same day. 12 night = midnight; 12 afternoon = noon. Yellow = calendar Sunday.",{color:muted});text(M,32,7.5,"Hisaab v"+APP_VERSION+" · "+stamp,{color:muted});text(RIGHT,32,7.5,"Page "+(i+1)+" / "+pages.length,{color:muted,align:"right"});});
   return {pages,rowCount:report.rows.length,noteCount:notes.length,bodyFontSize:font};
 }
 function attPdfString(report) {
@@ -9427,7 +9439,7 @@ function attXlsxBytes(report) {
     ["Actual hours worked", s.workedMinutes / 60], ["Days attended (arrival dates)", s.attendedDays], ["Sundays attended", sundays.length], ["Present shifts", s.present], ["Half-day marks (manual)", s.half], ["Absent marks", s.absent], ["Leave", s.leave], ["Holiday", s.holiday], ["Week off", s.weekoff], ["Open shifts", s.pending], ["Unmarked dates", s.unmarked], ["Saved shifts", s.marks], ["Attendance credits", s.credit],
     ["Hours explained", "Actual hours = check-out minus check-in. No fixed daily target or deductions. Tap marks / open shifts add no completed hours. Half day is manual; no automatic overtime or late/early classification."],
     ["Sundays explained", "Only actual check-in dates on Sunday, or Tap Present / Half day dates. One Sunday per manager, even with both shifts. Leave / absent / holiday / week off do not count. See Sundays attended sheet."],
-    ["Time format", "1–12 clock. Same day = attendance date; next day = following date. 12 morning = midnight; 12 night = noon."], ["History", "Retained change history only; not a tamper-proof audit. Original legacy fields remain in JSON backups, but are not used for hours."], ["Manager note", m.note], ["Date basis", "Daily rows / hours use the attendance date. Visit and Sunday counts use actual check-in dates, including open check-ins; Tap Present / Half day uses the marked date. Both shifts on one arrival date count once."]];
+    ["Time format", "1–12 clock. Same day = attendance date; next day = following date. Morning 5–11:59 AM; Afternoon 12–4:59 PM; Evening 5–8:59 PM; Night 9 PM–4:59 AM. 12 night = midnight; 12 afternoon = noon. Saved clocks/day flags unchanged."], ["History", "Retained change history only; not a tamper-proof audit. Original legacy fields remain in JSON backups, but are not used for hours."], ["Manager note", m.note], ["Date basis", "Daily rows / hours use the attendance date. Visit and Sunday counts use actual check-in dates, including open check-ins; Tap Present / Half day uses the marked date. Both shifts on one arrival date count once."]];
   summary.push(["Extra bonus rule", "Per calendar month/all shifts: after actual arrival-day 11:45 PM, first 3 completed OUTs = 1%; every additional 2 = +1%. Exactly 11:45 PM excluded; next-morning OUT included. One occasion per saved completed OUT; attendance date determines the month."],
     ["Bonus basis", "Full calendar month across all shifts, even for a partial/filtered report. Stored entries/history unchanged."], ["Bonus amount", "Percentage only; salary base not configured. No automatic salary/payment changes."]);
   attReportBonus(report).forEach((b) => summary.push([b.month + " qualifying OUTs", b.count], [b.month + " extra bonus (%)", b.percent], [b.month + " more OUTs for next +1%", b.remaining]));
@@ -10059,7 +10071,7 @@ window.Hisaab = { Store, calc, monthMeta, PdfDoc, inWords, UI, render, go, Cloud
     saveManager: attSaveManager, deleteManager: attDeleteManager, manager: attManager, saveRecord: attSaveRecord, deleteRecord: attDeleteRecord, record: attRecord, bulk: attBulkMark,
     clockIn: attClockIn, clockOut: attClockOut, report: attReport, sundays: attSundayVisits, range: attRange, dateValid: attDate, duration: attDuration, key: attKey,
     shifts: ATT_SHIFTS, lateOut: attLateOut, bonusPercent: attBonusPercent, bonus: attBonus, bonusMonths: attBonusMonths,
-    clockParts: attClockParts, clockFrom12: attClockFrom12, timeLabel: attTimeLabel, scheduleLabel: attScheduleLabel,
+    clockParts: attClockParts, clockFrom12: attClockFrom12, clockPeriods: ATT_CLOCK_PERIODS, timeLabel: attTimeLabel, scheduleLabel: attScheduleLabel,
     ui: attUI, openManager: attOpenManager, openRecord: attOpenRecord, openRules: attOpenRules, openBulk: attOpenBulk, openExport: attOpenExport,
     pdfString: attPdfString, pdfLayout: attPdfLayout, sharePdf: (report) => attDownloadReport(report, "whatsapp"), xlsxBytes: attXlsxBytes, download: attDownloadReport, setDate: attSetDate, resolveManager: attResolveManager },
   /* canteen module API */

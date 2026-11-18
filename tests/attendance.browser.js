@@ -70,8 +70,8 @@ async function exportFile(page, format, name) {
     check(await page.evaluate(() => Hisaab.attendance.data().records.length === 1), "native tap form saves exactly one record");
     await click(page, '[data-att-act="recordAdd"]'); await page.fill("#attRManager", "Priya Mehta · M-002"); await page.locator("#attRManager").press("Tab"); await page.fill("#attRDate", "2026-11-14"); await page.selectOption("#attRShift", "night"); await click(page, '[data-att-act="recordMode"][data-value="time"]');
     check(await page.evaluate(() => document.querySelector('#attRIn').value === '' && document.querySelector('#attRInWhen').value === 'same-night' && document.querySelector('#attROut').value === '' && document.querySelector('#attROutWhen').value === 'next-morning'), "new Night records suggest periods but never invent fixed working clocks");
-    const choices = ["Same day morning", "Same day night", "Next day morning", "Next day night"];
-    for (const id of ["attRInWhen", "attROutWhen"]) check(JSON.stringify(await page.locator('#' + id + ' option').allTextContents()) === JSON.stringify(choices), id + " offers the four exact morning/night day choices");
+    const choices = ["Same day morning", "Same day afternoon", "Same day evening", "Same day night", "Next day morning", "Next day afternoon", "Next day evening", "Next day night"];
+    for (const id of ["attRInWhen", "attROutWhen"]) check(JSON.stringify(await page.locator('#' + id + ' option').allTextContents()) === JSON.stringify(choices), id + " offers all eight same/next-day Morning/Afternoon/Evening/Night choices");
     await page.fill("#attRIn", "13:00"); await page.locator('#attRecordForm button[type="submit"]').click();
     check(await page.evaluate(() => !document.querySelector('#attRIn').checkValidity() && Hisaab.attendance.data().records.length === 1), "native validation blocks 13:00 instead of guessing a 12-hour time");
     await page.fill("#attRIn", "0930"); await page.selectOption("#attRInWhen", "same-night"); await page.fill("#attROut", "0730"); await page.selectOption("#attROutWhen", "next-morning");
@@ -85,7 +85,7 @@ async function exportFile(page, format, name) {
     await page.evaluate(() => { const A = Hisaab.attendance; A.openRecord(A.data().records.find((r) => r.shift === 'night').id); });
     check(await page.evaluate(() => document.querySelector('#attRIn').value === '9:30' && document.querySelector('#attRInWhen').value === 'same-night' && document.querySelector('#attROut').value === '7:30' && document.querySelector('#attROutWhen').value === 'next-morning'), "saved overnight entry reopens with its correct 12-hour values and day/period choices");
     await page.selectOption('#attROutWhen', 'same-morning'); await page.locator('#attRecordForm button[type="submit"]').click();
-    check((await page.locator('#attFormError').textContent()).includes('morning/night'), "checkout before arrival stays open with a helpful day/period error");
+    check((await page.locator('#attFormError').textContent()).includes('time period'), "checkout before arrival stays open with a helpful day/period error");
     await page.selectOption('#attROutWhen', 'next-morning'); await saveForm(page, 'attRecordForm');
     // Prevent a duplicate through the real form, not just the public API.
     await click(page, '[data-att-act="recordAdd"]'); await page.fill("#attRManager", "Priya Mehta · M-002"); await page.locator("#attRManager").press("Tab"); await page.fill("#attRDate", "2026-11-14"); await page.selectOption("#attRShift", "night"); await page.locator('#attRecordForm button[type="submit"]').click();
@@ -96,10 +96,10 @@ async function exportFile(page, format, name) {
     check(await page.evaluate(() => Hisaab.attendance.data().records.length === 3), "native bulk selection saves only the checked roster");
     // Exercise noon/midnight through native validation and saving, not just helpers.
     await page.evaluate(() => { const A = Hisaab.attendance; A.openRecord(null, A.data().managers.find((m) => m.code === 'M-002').id, '2026-11-16', 'night'); });
-    await click(page, '[data-att-act="recordMode"][data-value="time"]'); await page.fill('#attRIn', '12'); await page.selectOption('#attRInWhen', 'same-night'); await page.fill('#attROut', '12'); await page.selectOption('#attROutWhen', 'next-morning');
-    check((await page.locator('#attTimeJourney').textContent()).includes('12 morning = midnight · 12 night = noon'), "12 o’clock displays a visible noon/midnight explanation");
+    await click(page, '[data-att-act="recordMode"][data-value="time"]'); await page.fill('#attRIn', '12'); await page.selectOption('#attRInWhen', 'same-afternoon'); await page.fill('#attROut', '12'); await page.selectOption('#attROutWhen', 'next-night');
+    check((await page.locator('#attTimeJourney').textContent()).includes('12 night = midnight · 12 afternoon = noon'), "12 o’clock displays a visible noon/midnight explanation");
     await saveForm(page, 'attRecordForm');
-    check(await page.evaluate(() => { const A = Hisaab.attendance, r = A.data().records.find((r) => r.date === '2026-11-16'); return r.checkIn === '12:00' && r.checkOut === '00:00' && r.outNextDay && A.calculate(r).workedMinutes === 720; }), "12 night to next-day 12 morning saves noon-to-midnight, exactly 12 hours");
+    check(await page.evaluate(() => { const A = Hisaab.attendance, r = A.data().records.find((r) => r.date === '2026-11-16'); return r.checkIn === '12:00' && r.checkOut === '00:00' && r.outNextDay && A.calculate(r).workedMinutes === 720; }), "12 afternoon to next-day 12 night saves noon-to-midnight, exactly 12 hours");
     await page.evaluate(() => { const A = Hisaab.attendance; A.deleteRecord(A.data().records.find((r) => r.date === '2026-11-16').id); A.setDate('2026-11-15'); Hisaab.render(); });
     await page.selectOption("#attShiftFilter", "all");
     await click(page, '[data-att-act="tab"][data-value="calendar"]');
@@ -110,26 +110,26 @@ async function exportFile(page, format, name) {
     const financeBeforeLongShift = await page.evaluate(() => JSON.stringify({ workers: Hisaab.Store.data.workers, records: Hisaab.Store.data.records, canteen: Hisaab.Store.data.canteen }));
     await page.evaluate(() => { const A = Hisaab.attendance; A.openRecord(null, A.data().managers.find((m) => m.code === 'M-001').id, '2026-11-06', 'day'); });
     await click(page, '[data-att-act="recordMode"][data-value="time"]');
-    await page.fill('#attRIn', '10:32'); await page.selectOption('#attRInWhen', 'same-morning'); await page.fill('#attROut', '1:33'); await page.selectOption('#attROutWhen', 'next-night');
+    await page.fill('#attRIn', '10:32'); await page.selectOption('#attRInWhen', 'same-morning'); await page.fill('#attROut', '1:33'); await page.selectOption('#attROutWhen', 'next-afternoon');
     check((await page.locator('#attCalcPreview').textContent()).includes('27h 01m') && (await page.locator('#attTimeJourney').textContent()).includes('6 Nov 2026 → 7 Nov 2026'), "screenshot's 6th morning → 7th afternoon correctly previews 27h 01m");
     await screenshot(page, '11-long-shift-form.png'); await saveForm(page, 'attRecordForm');
     check(await page.evaluate(() => { const A = Hisaab.attendance, r = A.data().records.find((r) => r.date === '2026-11-06'); return r && r.checkIn === '10:32' && r.checkOut === '13:33' && !r.inNextDay && r.outNextDay && r.breakMinutes === 0 && A.calculate(r).workedMinutes === 1621 && A.calculate(r).credit === 1 && A.calculate(r).overtimeMinutes === 0; }), "native Save persists the full 27h 01m with canonical clocks and no new target/deduction");
     await page.evaluate(() => { const A = Hisaab.attendance; A.openRecord(A.data().records.find((r) => r.date === '2026-11-06').id); });
-    check(await page.evaluate(() => document.querySelector('#attRDate').value === '2026-11-06' && document.querySelector('#attRIn').value === '10:32' && document.querySelector('#attROut').value === '1:33' && document.querySelector('#attROutWhen').value === 'next-night'), "long saved shift reopens with its original next-day night choice");
-    await page.selectOption('#attROutWhen', 'same-morning'); await page.locator('#attRecordForm button[type="submit"]').click();
+    check(await page.evaluate(() => document.querySelector('#attRDate').value === '2026-11-06' && document.querySelector('#attRIn').value === '10:32' && document.querySelector('#attROut').value === '1:33' && document.querySelector('#attROutWhen').value === 'next-afternoon'), "long saved shift reopens with its correct next-day afternoon label without changing its saved time");
+    await page.selectOption('#attROutWhen', 'same-night'); await page.locator('#attRecordForm button[type="submit"]').click();
     check((await page.locator('#attFormError').textContent()).includes('after check-in') && await page.evaluate(() => { const A = Hisaab.attendance; return A.calculate(A.data().records.find((r) => r.date === '2026-11-06')).workedMinutes === 1621; }), "removing the 24-hour cap does not allow a reversed edit to overwrite the saved entry");
-    await page.selectOption('#attROutWhen', 'next-night'); await saveForm(page, 'attRecordForm');
+    await page.selectOption('#attROutWhen', 'next-afternoon'); await saveForm(page, 'attRecordForm');
     await page.evaluate(() => { const A = Hisaab.attendance; A.openExport(A.data().managers.find((m) => m.code === 'M-001').id); });
     await page.fill('#attEFrom', '2026-11-06'); await page.fill('#attETo', '2026-11-07');
     const longShift = await exportFile(page, 'pdf', 'Long-shift-manager'); await exportFile(page, 'xlsx', 'Long-shift-manager');
-    check(['(27h 01m)', '(10:32 morning)', '(1:33 night +1d *)'].every((text) => longShift.toString('latin1').includes(text)), "native long-shift PDF includes full actual hours and the chosen next-day period");
+    check(['(27h 01m)', '(10:32 morning)', '(1:33 afternoon +1d *)'].every((text) => longShift.toString('latin1').includes(text)), "native long-shift PDF includes full actual hours and the chosen next-day period");
     check(await page.evaluate((before) => JSON.stringify({ workers: Hisaab.Store.data.workers, records: Hisaab.Store.data.records, canteen: Hisaab.Store.data.canteen }) === before, financeBeforeLongShift), "long shift, re-edit and report downloads leave salary/canteen data unchanged");
     await click(page, '#modalRoot [data-act="closeModal"]');
     // A short actual Sunday shift is Present without an hours threshold.
     await page.evaluate(() => { const A = Hisaab.attendance; A.openRecord(null, A.data().managers.find((m) => m.code === 'M-002').id, '2026-11-15', 'night'); });
     await click(page, '[data-att-act="recordMode"][data-value="time"]');
     check(await page.locator('#attRBreak, #attRStandard, #attRHalf, [data-att-act="recordDefaults"]').count() === 0, "time editor has no break/target inputs or fixed-clock preset");
-    await page.fill('#attRIn', '1:15'); await page.selectOption('#attRInWhen', 'same-night'); await page.fill('#attROut', '5'); await page.selectOption('#attROutWhen', 'same-night');
+    await page.fill('#attRIn', '1:15'); await page.selectOption('#attRInWhen', 'same-afternoon'); await page.fill('#attROut', '5'); await page.selectOption('#attROutWhen', 'same-evening');
     check((await page.locator('#attCalcPreview').textContent()).includes('3h 45m') && (await page.locator('#attCalcPreview').textContent()).includes('Present'), "a 3h 45m Sunday shift is actual hours, not auto Half day");
     await saveForm(page, 'attRecordForm');
     await page.evaluate(() => { const A = Hisaab.attendance; A.openRecord(null, A.data().managers.find((m) => m.code === 'M-002').id, '2026-11-15', 'day'); });
@@ -214,13 +214,13 @@ async function exportFile(page, format, name) {
     const featurePage=await pageFor(b);
     await addManager(featurePage,'Shift Manager','FOUR-01','morning');
     check(await featurePage.evaluate(()=>Hisaab.attendance.data().managers[0].defaultShift==='morning'),'Morning profile is saved with its own shift key');
-    const clocks=[['morning','6','same-morning','10','same-morning'],['afternoon','12','same-night','4','same-night'],['evening','5','same-night','11:46','same-night'],['night','9','same-night','6','next-morning']];
+    const clocks=[['morning','6','same-morning','10','same-morning'],['afternoon','12','same-afternoon','4','same-afternoon'],['evening','5','same-evening','11:46','same-night'],['night','9','same-night','6','next-morning']];
     async function saveShift(day,shift,ins,iw,outs,ow){await featurePage.evaluate(({day,shift})=>{const A=Hisaab.attendance;A.openRecord(null,A.data().managers[0].id,'2026-11-'+day,shift);},{day,shift});await click(featurePage,'[data-att-act="recordMode"][data-value="time"]');await featurePage.fill('#attRIn',ins);await featurePage.selectOption('#attRInWhen',iw);await featurePage.fill('#attROut',outs);await featurePage.selectOption('#attROutWhen',ow);await saveForm(featurePage,'attRecordForm');}
     for(const [shift,ins,iw,outs,ow]of clocks){await saveShift('14',shift,ins,iw,outs,ow);check(await featurePage.evaluate(shift=>Hisaab.attendance.data().records.some(r=>r.shift===shift),shift),'real '+shift+' time form preserves its shift');}
     check(await featurePage.evaluate(()=>{const A=Hisaab.attendance;return A.data().records.length===4&&A.bonus(A.data().managers[0].id,'2026-11-01','2026-11-30')[0].count===2;}),'Evening 11:46 PM and next-morning Night OUT count; Morning/Afternoon OUTs do not');
-    await saveShift('15','evening','5','same-night','11:46','same-night');
+    await saveShift('15','evening','5','same-evening','11:46','same-night');
     check(await featurePage.evaluate(()=>{const A=Hisaab.attendance;return A.bonus(A.data().managers[0].id,'2026-11-01','2026-11-30')[0].percent===1;}),'third qualifying OUT automatically earns the first 1%');
-    await saveShift('16','evening','5','same-night','11:46','same-night');await saveShift('17','evening','5','same-night','11:46','same-night');await saveShift('18','evening','5','same-night','11:45','same-night');
+    await saveShift('16','evening','5','same-evening','11:46','same-night');await saveShift('17','evening','5','same-evening','11:46','same-night');await saveShift('18','evening','5','same-evening','11:45','same-night');
     check(await featurePage.evaluate(()=>{const A=Hisaab.attendance,b=A.bonus(A.data().managers[0].id,'2026-11-01','2026-11-30')[0];return b.count===5&&b.percent===2;}),'five qualifying OUTs earn 2%; exactly 11:45 PM remains excluded');
     const beforeFeatureReports=await featurePage.evaluate(()=>{const A=Hisaab.attendance;A.openExport(A.data().managers[0].id);return JSON.stringify({data:Hisaab.Store.data,disk:Object.fromEntries(Object.keys(localStorage).map(k=>[k,localStorage.getItem(k)])),dirty:Hisaab.Cloud.dirty});});
     await featurePage.fill('#attEFrom','2026-11-14');await featurePage.fill('#attETo','2026-11-18');
@@ -243,6 +243,54 @@ async function exportFile(page, format, name) {
     check(await featurePage.evaluate(before=>JSON.stringify({data:Hisaab.Store.data,disk:Object.fromEntries(Object.keys(localStorage).map(k=>[k,localStorage.getItem(k)])),dirty:Hisaab.Cloud.dirty})===before,beforeFeatureReports),'native/fallback/cancelled sharing and all bonus reports leave the complete stored JSON/history/financial data unchanged');
     await click(featurePage,'#modalRoot [data-act="closeModal"]');await featurePage.reload();await featurePage.waitForFunction(()=>!!window.Hisaab);
     check(await featurePage.evaluate(()=>{const A=Hisaab.attendance,b=A.bonus(A.data().managers[0].id,'2026-11-01','2026-11-30')[0];return A.data().records.length===8&&new Set(A.data().records.map(r=>r.shift)).size===4&&b.count===5&&b.percent===2;}),'real reload retains all four shift keys, eight original records and the derived 2% bonus');
+    // Regression for the user's screenshot: these are the TWO CLOCK dropdowns,
+    // not the independent shift selector. Use all eight actual day/period values.
+    const periodPage=await pageFor(b);await addManager(periodPage,'Clock Period QA','CLK-01','day');
+    const periodCases=[
+      ['10:18','same-morning','1:33','same-afternoon','10:18','13:33',195],
+      ['1:15','same-afternoon','6:30','same-evening','13:15','18:30',315],
+      ['6:30','same-evening','11:46','same-night','18:30','23:46',316],
+      ['11:30','same-night','1:33','next-night','23:30','01:33',123],
+      ['1:33','next-night','6:30','next-morning','01:33','06:30',297],
+      ['1:15','next-afternoon','6:30','next-evening','13:15','18:30',315]
+    ];
+    for(const [i,[ins,iw,outs,ow,canonicalIn,canonicalOut,minutes]]of periodCases.entries()){
+      await periodPage.evaluate(day=>{const A=Hisaab.attendance;A.ui().mode='time';A.openRecord(null,A.data().managers[0].id,'2026-11-'+day,'day');},18+i);
+      if(i===0){
+        for(const id of ['attRInWhen','attROutWhen'])check(JSON.stringify(await periodPage.locator('#'+id+' option').allTextContents())===JSON.stringify(choices),'screenshot '+id+' includes Same/Next day Morning, Afternoon, Evening and Night');
+      }
+      await periodPage.fill('#attRIn',ins);await periodPage.selectOption('#attRInWhen',iw);await periodPage.fill('#attROut',outs);await periodPage.selectOption('#attROutWhen',ow);
+      if(i===0&&CAPTURE){
+        await periodPage.evaluate(()=>document.documentElement.setAttribute('data-theme','dark'));
+        await screenshot(periodPage,'14-four-period-form-desktop.png');
+        await periodPage.locator('#attROutWhen').click();await periodPage.screenshot({path:path.join(OUT,'15-four-period-dropdown-desktop.png')});await periodPage.keyboard.press('Escape');
+      }
+      await saveForm(periodPage,'attRecordForm');
+      check(await periodPage.evaluate(({i,canonicalIn,canonicalOut,iw,ow,minutes})=>{const A=Hisaab.attendance,r=A.data().records.find(r=>r.date==='2026-11-'+(18+i));return r.checkIn===canonicalIn&&r.checkOut===canonicalOut&&r.inNextDay===iw.startsWith('next-')&&r.outNextDay===ow.startsWith('next-')&&A.calculate(r).workedMinutes===minutes;},{i,canonicalIn,canonicalOut,iw,ow,minutes}),'native '+ins+' '+iw+' → '+outs+' '+ow+' saves exact clocks, days and '+minutes+' minutes');
+    }
+    await periodPage.evaluate(()=>{const A=Hisaab.attendance;A.openRecord(A.data().records[0].id);});
+    check(await periodPage.inputValue('#attROutWhen')==='same-afternoon'&&await periodPage.inputValue('#attROut')==='1:33','saved 13:33 reopens as 1:33 afternoon, never as early-morning Night');
+    const beforeBadPeriod=await periodPage.evaluate(()=>JSON.stringify({data:Hisaab.Store.data,disk:Object.fromEntries(Object.keys(localStorage).map(k=>[k,localStorage.getItem(k)])),dirty:Hisaab.Cloud.dirty}));
+    await periodPage.fill('#attROut','6');await periodPage.selectOption('#attROutWhen','same-night');await periodPage.locator('#attRecordForm button[type="submit"]').click();
+    check((await periodPage.locator('#attFormError').textContent()).includes('does not match Night')&&await periodPage.evaluate(before=>JSON.stringify({data:Hisaab.Store.data,disk:Object.fromEntries(Object.keys(localStorage).map(k=>[k,localStorage.getItem(k)])),dirty:Hisaab.Cloud.dirty})===before,beforeBadPeriod),'native incompatible clock/period is refused without changing one byte of saved JSON/history/storage');
+    await click(periodPage,'#modalRoot [data-act="closeModal"]');
+    await periodPage.evaluate(()=>{const A=Hisaab.attendance;A.openRecord(null,A.data().managers[0].id,'2026-11-24','day');});
+    await periodPage.fill('#attRIn','1:15');await periodPage.selectOption('#attRInWhen','same-afternoon');await periodPage.fill('#attROut','6:30');await periodPage.selectOption('#attROutWhen','same-evening');await periodPage.selectOption('#attRShift','night');
+    check(await periodPage.inputValue('#attRInWhen')==='same-afternoon'&&await periodPage.inputValue('#attROutWhen')==='same-evening','changing the independent Shift selector never reinterprets either typed clock period');
+    for(const width of [390,320]){
+      await periodPage.setViewportSize({width,height:844});
+      check(await periodPage.evaluate(()=>{const d=document.querySelector('.att-dialog'),h=d.querySelector('.modal-h').getBoundingClientRect(),f=d.querySelector('.modal-f').getBoundingClientRect();return document.documentElement.scrollWidth<=innerWidth+1&&h.top>=0&&f.bottom<=innerHeight&&[...document.querySelectorAll('#attRInWhen,#attROutWhen')].every(s=>s.options.length===8)}),width+'px form retains all eight clock choices without overflow; title and Save stay visible');
+      if(width===390)await screenshot(periodPage,'16-four-period-form-mobile.png');
+    }
+    // A real navigation from the historical release retains same-origin raw
+    // storage. Never "fix" 13:33 into 01:33 when old labels become four periods.
+    const legacyPage=await b.newPage({viewport:{width:1440,height:1000},locale:'en-IN',timezoneId:'Asia/Kolkata'});legacyPage.on('pageerror',e=>errors.push(e.stack));
+    await legacyPage.goto(new globalThis.URL('Hisaab-Pro-v3.24.html',URL).href);await legacyPage.waitForFunction(()=>!!window.Hisaab);
+    const legacySnapshot=await legacyPage.evaluate(()=>{const A=Hisaab.attendance,m=A.saveManager({name:'Original saved manager',code:'OLD-01',defaultShift:'day',joinedOn:'2026-11-01'});A.saveRecord({managerId:m.id,date:'2026-11-06',shift:'day',mode:'time',checkIn:'10:32',checkOut:'13:33',outNextDay:true,breakMinutes:60,note:'Do not reinterpret'});return JSON.stringify({data:Hisaab.Store.data,disk:Object.fromEntries(Object.keys(localStorage).map(k=>[k,localStorage.getItem(k)]))});});
+    await legacyPage.goto(URL);await legacyPage.waitForFunction(()=>!!window.Hisaab);
+    check(await legacyPage.evaluate(before=>JSON.stringify({data:Hisaab.Store.data,disk:Object.fromEntries(Object.keys(localStorage).map(k=>[k,localStorage.getItem(k)]))})===before,legacySnapshot),'real v3.24 → updated-page navigation preserves the complete original storage/history/financial payload byte-for-byte');
+    await legacyPage.evaluate(()=>{const A=Hisaab.attendance;A.openRecord(A.data().records[0].id);});
+    check(await legacyPage.inputValue('#attROutWhen')==='next-afternoon'&&(await legacyPage.locator('#attCalcPreview').textContent()).includes('27h 01m'),'legacy next-day 13:33 displays Afternoon with its original 27h 01m, not a silently changed 15h 01m');
   } finally { await b.close(); }
   // Separate browser process, not just another context: serverless Chromium's
   // single-process mode can share browser state between nominal contexts.

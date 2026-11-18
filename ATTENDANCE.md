@@ -1,9 +1,42 @@
-# HISAAB v3.24 — manager Attendance
+# HISAAB v3.25 — manager Attendance
 
 **Attendance is a tab inside the existing Hisaab Panel**, not a separate app.
 Manager profiles, attendance, credit settings and history share the panel’s
 existing local save, JSON backup and configured cloud sync. **Attendance never
 changes worker salaries, wages, advances, deductions or payments.**
+
+## v3.25 — four periods in both Check-in / Check-out dropdowns
+
+The screenshot correction is in **both clock dropdowns**, not just the separate
+Shift selector. Each now has **eight options**: Same day / Next day × **Morning,
+Afternoon, Evening, Night**. The existing form, panel layout and stylesheet stay
+unchanged; Tap mode and the separate shift choices remain available.
+
+| Clock period | Display/entry meaning |
+|---|---|
+| Morning | 5:00 AM–11:59 AM |
+| Afternoon | 12:00 noon–4:59 PM |
+| Evening | 5:00 PM–8:59 PM |
+| Night | 9:00 PM–4:59 AM; 12 night = midnight |
+
+These are **clock-label boundaries, not workplace schedules or fixed hours**.
+**12 afternoon = noon; 12 night = midnight.** Night 9–11 is before midnight,
+Night 1–4 is after midnight. **Night never automatically advances the date**:
+choose Same day / Next day explicitly. Incompatible clock/period combinations
+show a clear error, not a guessed time or date.
+
+Saved canonical `HH:MM`, both day flags, IDs, notes, history, salary and canteen
+data are **not rewritten**. Only the old human-readable labels change: stored
+`13:33` now opens as **1:33 afternoon**, while `01:33` is **1:33 night**. Thus
+10:32 morning → next-day 13:33 still means **27h 01m**, while next-day 01:33
+means **15h 01m**. Opening an old record does not change either span.
+
+Shift/profile changes suggest periods only for blank fields, never reinterpret
+an already typed clock. Board, ledger/history, PDF and Excel use the same four
+period labels. The reference PDF design/two-page guard, Sunday rules, monthly
+bonus and WhatsApp file-sharing behavior from v3.24 are retained. No storage,
+cloud-schema, duration-arithmetic or financial migration is introduced. Update
+all devices/tabs to **v3.25** for consistent clock labels; do not clear storage.
 
 ## v3.24 — reference ledger PDF, four shifts, automatic bonus and WhatsApp
 
@@ -103,7 +136,9 @@ reset, import or new cloud table is required. Back up JSON before updating as us
 The old 24-hour span restriction is removed. The screenshot’s **6 November,
 10:32 Same day morning → 7 November, 1:33 Next day night** now previews/saves
 **27h 01m**, not an error or a clamped 24 hours. Here Night includes afternoon:
-`1:33 night` is 1:33 in the afternoon; `1:33 morning` is after midnight.
+`1:33 night` was the old label for 13:33. **In v3.25 the same saved 13:33 is
+1:33 afternoon**; 01:33 displays as 1:33 night. The original clocks/day flags and
+27h 01m duration are unchanged.
 
 Only a checkout **equal to or before** arrival is rejected. Keep the correct
 same/next-day choices; the app does not silently guess another day or period.
@@ -130,11 +165,11 @@ remains in JSON/history for compatibility and validation, **not arithmetic**.
 Consequently, old timed entries now display their **full in → out hours** and
 completed valid Time entries display Present, rather than the old target-based
 classification. Previous printed totals can differ; keep previous reports if needed.
-Use v3.24 on all devices/tabs for compatible shift/report support; do not clear storage.
+Use v3.25 on all devices/tabs for consistent clock labels and shift/report support; do not clear storage.
 
 ## Start here
 
-1. Settings → **Backup (JSON)**. Open the latest panel and confirm **Panel v3.24**.
+1. Settings → **Backup (JSON)**. Open the latest panel and confirm **Panel v3.25**.
    See [safe device sync](CLOUD-SYNC.md).
 2. Sidebar → **Attendance** → **Add manager**. Enter a name and unique code,
    choose **Morning / Afternoon / Evening / Night** (or **Day (existing)**),
@@ -161,21 +196,25 @@ Use v3.24 on all devices/tabs for compatible shift/report support; do not clear 
 ## Time mode — actual, variable hours
 
 New records have **blank clocks**, not fixed shift timings. The chosen shift only
-suggests morning/night and same/next-day choices to start with; verify each choice.
-Morning suggests a same-day morning arrival, Afternoon/Evening a same-day night
-arrival, and Night a same-day night arrival / next-day morning departure. No clock
-value or fixed working duration is filled in.
+suggests periods for blank fields; verify each choice. Morning suggests same-day
+morning / afternoon; Afternoon suggests afternoon / evening; Evening suggests
+evening / night; Night suggests same-day night / next-day morning. Legacy Day
+suggests morning / evening. No clock or fixed working duration is filled in,
+and changing shift/profile does not change already typed clocks or their periods.
 
 - Use a **1–12 clock**: `9`, `9:30`, `12:15`. Numeric entry supports `930` / `0930`
   → `9:30`, `9` → `9:00` on leaving the field, and Hindi digits such as `९३०`.
   A 24-hour input such as `21:30` is rejected, not silently converted.
-- Each clock has **Same day morning**, **Same day night**, **Next day morning**,
-  **Next day night**. These clock-period labels are separate from the new
-  **Morning / Afternoon / Evening / Night** shift names; Day remains a legacy shift.
+- Each clock has **Same day morning / afternoon / evening / night** and
+  **Next day morning / afternoon / evening / night** — eight choices in both
+  Check-in and Check-out. These are separate from the Shift selector; Day
+  remains a legacy shift, and actual clocks need not match a shift name.
 - **Same day** means the selected **Attendance date**. **Next day** means the
   following date. The live timeline shows the actual two dates.
-- Morning = midnight to before noon; Night = noon, afternoon, evening and night.
-  **12 morning = midnight; 12 night = noon.** A reminder appears for 12 o’clock.
+- Morning 5–11:59 AM; Afternoon 12–4:59 PM; Evening 5–8:59 PM; Night 9 PM–4:59 AM.
+  **12 night = midnight; 12 afternoon = noon.** A reminder appears for 12 o’clock.
+  Night does not change the chosen date. A clock outside the selected period
+  gives an error; choose the correct period instead of guessing another day.
 - A Night entry of `9:30` + **Same day night** → `7:30` + **Next day morning** is
   **10h 00m**, with no deduction. A `9` → `11:30` morning entry is **2h 30m**;
   it does not automatically become Half day, Short hours or Absent.
@@ -263,7 +302,8 @@ page numbers. No break/target/OT columns.
 
 Clock example: `9:30 night` → `7:30 morning +1d`. **`+1d` means next day;
 otherwise the clock is on the attendance date.** The report includes the
-noon/midnight legend. Entry controls and saved canonical clocks are unchanged.
+noon/midnight legend. The v3.25 controls add the four periods; saved canonical
+clocks/day flags and the existing report design are unchanged.
 Gold rows indicate **calendar Sundays**, not automatic presence or Sunday pay;
 the separate dated Sunday list uses actual arrival dates, as before.
 
@@ -279,7 +319,7 @@ Unicode. See [fonts and notices](PDF-FONTS.md).
 1. **Attendance register** — opens first. Date, Day, Shift, Attendance,
    Check-in, Check-out, Actual hours, Credit, Notes. Real sortable Excel dates,
    status colours, gold calendar-Sunday rows and full wrapped notes. Full
-   same/next-day morning/night captions stay beside each clock. Frozen first
+   same/next-day Morning/Afternoon/Evening/Night captions stay beside each clock. Frozen first
    two columns / first seven rows, filters, repeated print headers, landscape
    A4 fit-to-width and page footers. Body dates are not merged, so filters work.
 2. **Summary** — original manager/profile, numeric decimal-hour totals, arrival
