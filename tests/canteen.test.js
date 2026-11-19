@@ -66,7 +66,7 @@ const iso = (d) => d.getFullYear() + "-" + String(d.getMonth() + 1).padStart(2, 
   ok(H().Store.data.canteen.entries.length > 0, "sample canteen entries load hui (" + H().Store.data.canteen.entries.length + ")");
   ok(H().Store.data.workers.length === 4, "workers safe (4 demo)");
   const verEl = $("[data-ver]");
-  ok(verEl && verEl.textContent === "3.26", "version badge 3.26", verEl && verEl.textContent);
+  ok(verEl && verEl.textContent === "3.27", "version badge 3.27", verEl && verEl.textContent);
   ok(root().innerHTML.indexOf("Canteen") >= 0, "dashboard par canteen card dikha");
   ok(root().innerHTML.indexOf("Saman aaya") >= 0, "dashboard canteen strip me 'Saman aaya'");
 
@@ -83,7 +83,7 @@ const iso = (d) => d.getFullYear() + "-" + String(d.getMonth() + 1).padStart(2, 
   });
   H().go("hisaab");
   await wait(10);
-  ok($(".topbar-actions .btn.primary").textContent.indexOf("Add Worker") >= 0, "wapis jaane par topbar button 'Add Worker'");
+  ok($(".topbar-actions .btn.primary").textContent.indexOf("Add Employee") >= 0, "wapis jaane par topbar button 'Add Employee'");
   H().go("canteen");
 
   section("Din ka ledger \u2014 math");

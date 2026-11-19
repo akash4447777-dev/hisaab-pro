@@ -851,7 +851,7 @@ select.ct-pm option{font-size:11.5px;font-weight:700}
     <nav class="nav" id="nav">
       <button data-view="dashboard" class="active"><span class="ico">◧</span>Dashboard</button>
       <button data-view="hisaab"><span class="ico">₹</span>Monthly Hisaab<span class="nav-badge" id="navPend" style="display:none">0</span></button>
-      <button data-view="workers"><span class="ico">☰</span>Workers</button>
+      <button data-view="workers"><span class="ico">☰</span>Employees</button>
       <button data-view="ledger"><span class="ico">⇄</span>Ledger</button>
       <button data-view="attendance"><span class="ico">▦</span>Attendance<span class="nav-badge" id="navAttCount" style="display:none">0</span></button>
       <button data-view="canteen"><span class="ico">🍽</span>Canteen<span class="nav-badge" id="navCtBal" style="display:none">0</span></button>
@@ -885,7 +885,7 @@ select.ct-pm option{font-size:11.5px;font-weight:700}
           <button data-act="nextMonth" title="Next month">›</button>
         </div>
         <button class="iconbtn" data-act="toggleThemeIcon" title="Light / Dark mode">🌗</button>
-        <button class="btn primary" data-act="addWorker">+ Add Worker</button>
+        <button class="btn primary" data-act="addWorker">+ Add Employee</button>
       </div>
     </div>
     <div id="syncAlert" role="status" aria-live="polite" hidden></div>
@@ -1965,7 +1965,7 @@ const rRate = (n) => { const x = Math.max(0, num(n)); return x >= 1 ? r2(x) : Ma
 /* rate dikhane ka format: <₹1 ho to 0.075 jaisa khula number, warna moneyS */
 const rateS = (n) => { const x = num(n); if (x > 0 && x < 1) return "₹" + String(Math.round((x + Number.EPSILON) * 10000) / 10000); return moneyS(x); };
 const clamp = (n, lo, hi) => Math.min(hi, Math.max(lo, n));
-const APP_VERSION = "3.26";
+const APP_VERSION = "3.27";
 const esc = (s) => String(s == null ? "" : s).replace(/[&<>"']/g, (m) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[m]));
 
 const MONTHS = ["January","February","March","April","May","June","July","August","September","October","November","December"];
@@ -2277,7 +2277,7 @@ function updateSideStats() {
   const el = $("#sideStats");
   const act = Store.activeWorkers().length;
   const ctCount = ((Store.data.canteen && Store.data.canteen.entries) || []).length;
-  if (el) el.textContent = act + " active worker" + (act === 1 ? "" : "s") + " · " + Store.data.records.length + " records" +
+  if (el) el.textContent = act + " active employee" + (act === 1 ? "" : "s") + " · " + Store.data.records.length + " records" +
     (ctCount ? " · " + ctCount + " canteen" : "") + (att().managers.length ? " · " + att().managers.length + " managers" : "");
   const attBadge = $("#navAttCount");
   if (attBadge) { const count = att().managers.filter((m) => m.active).length; attBadge.textContent = count; attBadge.style.display = count ? "inline-block" : "none"; }
@@ -2300,8 +2300,8 @@ function updateSideStats() {
 /* ------------------------------ 6. ROUTER ------------------------------- */
 const VIEW_META = {
   dashboard: ["Dashboard", "Monthly overview of wages, advances & payments"],
-  hisaab:    ["Monthly Hisaab", "Attendance, advances and final payable for every worker"],
-  workers:   ["Workers", "Add, edit, search and manage your workforce"],
+  hisaab:    ["Monthly Hisaab", "Attendance, advances and final payable for every employee"],
+  workers:   ["Employees", "Add, edit, search and manage your workforce"],
   ledger:    ["Ledger", "Is mahine ke saare advances aur deductions ek jagah"],
   attendance:["Attendance", "Manager attendance · Morning / Afternoon / Evening / Night · individual reports"],
   canteen:   ["Canteen", "Saman entry (rate-wise ya ek-saath total) · din aur mahine ka ledger · poori activity"],
@@ -2338,7 +2338,7 @@ function render() {
   if (topAdd) {
     if (UI.view === "attendance") { topAdd.dataset.act = "attAdd"; topAdd.textContent = "+ Mark attendance"; }
     else if (UI.view === "canteen") { topAdd.dataset.act = "ctAdd"; topAdd.textContent = "＋ Canteen entry"; }
-    else { topAdd.dataset.act = "addWorker"; topAdd.textContent = "+ Add Worker"; }
+    else { topAdd.dataset.act = "addWorker"; topAdd.textContent = "+ Add Employee"; }
   }
   const globalSearch = $("#gSearch");
   if (globalSearch) { globalSearch.placeholder = UI.view === "attendance" ? "Search managers / attendance…" : "Dhoondo…"; globalSearch.value = UI.view === "attendance" ? attUI().q : UI.search; }
@@ -2394,8 +2394,8 @@ function viewDashboard(){
   const sparkVals = trend.map(t=>t.val);
 
   const demoBanner = Store.data.demo
-    ? '<div class="banner info"><span>👋</span><div><b>Demo data loaded</b> — kuch workers already bhare hue hain taki aap sab features dekh sako. '+
-      'Jab ready ho, "Start fresh" dabao aur apne workers add karo.</div>'+
+    ? '<div class="banner info"><span>👋</span><div><b>Demo data loaded</b> — kuch employees already bhare hue hain taki aap sab features dekh sako. '+
+      'Jab ready ho, "Start fresh" dabao aur apne employees add karo.</div>'+
       '<div style="margin-left:auto;display:flex;gap:7px"><button class="btn sm" data-act="loadSample">Keep exploring</button>'+
       '<button class="btn sm primary" data-act="clearDemo">Start fresh</button></div></div>'
     : "";
@@ -2407,7 +2407,7 @@ function viewDashboard(){
     demoBanner +
     '<div class="kpis">' +
       kpiCard({ label:"Net payable — "+MONTHS_S[UI.month], value:money0(net), icon:"₹", tone:"",
-        delta:moneyDelta(net, prevNet), spark:sparkVals, sub:active+" active workers · advances kate hue" }) +
+        delta:moneyDelta(net, prevNet), spark:sparkVals, sub:active+" active employees · advances kate hue" }) +
       kpiCard({ label:"Gross earnings", value:money0(gross), icon:"↑", tone:"k-ok",
         delta:moneyDelta(gross, prevRows.reduce((t,r)=>t+r.c.grossEarnings,0)), sub:"Wages + bonus (no overtime)" }) +
       kpiCard({ label:"Advances + deductions", value:money0(adv+ded), icon:"↓", tone:"k-warn",
@@ -2455,13 +2455,13 @@ function viewDashboard(){
         '<div><small>Salary base</small><b style="font-size:13px">Monthly ÷ 30</b><div class="sub">fixed rule</div></div>'+
       '</div></div>' +
 
-    '<div class="card"><div class="card-h"><div><h3>Worker-wise summary</h3>'+
+    '<div class="card"><div class="card-h"><div><h3>Employee-wise summary</h3>'+
       '<div class="sub">Row par tap karo — poora hisaab khulega</div></div>'+
       '<div class="toolbar">'+
         '<button class="btn sm" data-act="exportCsv">⤓ CSV</button>'+
         '<button class="btn sm primary" data-act="gotoHisaab">Monthly Hisaab</button>'+
       '</div></div>'+
-      (rows.length ? dashboardTable(rows) : emptyState("No workers yet","Add your first worker to start the monthly hisaab.","addWorker","+ Add Worker")) +
+      (rows.length ? dashboardTable(rows) : emptyState("No employees yet","Add your first employee to start the monthly hisaab.","addWorker","+ Add Employee")) +
     '</div>'
   );
 }
@@ -2503,10 +2503,10 @@ function dashboardTable(rows){
       '<td>'+statusTag(rec)+'</td></tr>';
   }).join("");
   return '<div class="twrap"><table class="tbl dashTbl"><thead><tr>'+
-    '<th>Worker</th><th>Type</th><th class="num">Present</th><th class="num">Absent</th><th class="num">Sun</th>'+
+    '<th>Employee</th><th>Type</th><th class="num">Present</th><th class="num">Absent</th><th class="num">Sun</th>'+
     '<th class="num">Rate</th><th class="num">Gross</th><th class="num">Advances</th><th class="num">Net payable</th>'+
     '<th class="num">Attd</th><th>Status</th></tr></thead><tbody>'+body+'</tbody>'+
-    '<tfoot><tr><td>Total ('+rows.length+' workers)</td><td></td><td></td><td></td><td></td><td></td>'+
+    '<tfoot><tr><td>Total ('+rows.length+' employees)</td><td></td><td></td><td></td><td></td><td></td>'+
     '<td class="num">'+money(t.gross)+'</td><td class="num" style="color:var(--bad)">−'+money(t.adv)+'</td>'+
     '<td class="num">'+money(t.net)+'</td><td></td><td></td></tr></tfoot></table></div>';
 }
@@ -2535,7 +2535,7 @@ function viewHisaab(){
 
   return (
     (noHours.length ? '<div class="banner warn"><span>⏱️</span><div><b>Total hours missing:</b> '+esc(noHours.join(", "))+
-      ' — hourly worker ki pay <b>hours × rate</b> se banti hai. Table ke <b>Hours</b> column me hours daalo.</div></div>' : "") +
+      ' — hourly employee ki pay <b>hours × rate</b> se banti hai. Table ke <b>Hours</b> column me hours daalo.</div></div>' : "") +
 
     '<div class="card" style="margin-bottom:14px"><div class="card-h" style="padding:13px 16px">'+
       '<div class="toolbar">'+
@@ -2544,18 +2544,18 @@ function viewHisaab(){
             '<button class="'+(UI.filter===v?"on":"")+'" data-act="setFilter" data-filter="'+v+'">'+l+'</button>').join("")+
         '</div>'+
         '<div class="gsearch" style="min-width:190px"><span>🔍</span>'+
-          '<input id="hisaabSearch" data-role="hisaabSearch" placeholder="Worker dhoondo…" value="'+esc(UI.search)+'">'+
+          '<input id="hisaabSearch" data-role="hisaabSearch" placeholder="Employee dhoondo…" value="'+esc(UI.search)+'">'+
         '</div>'+
       '</div>'+
       '<div class="toolbar">'+
-        '<button class="btn sm" data-act="autoFillAll" title="Har worker ke present days = working days">⚡ Auto-fill</button>'+
+        '<button class="btn sm" data-act="autoFillAll" title="Har employee ke present days = working days">⚡ Auto-fill</button>'+
         '<button class="btn sm" data-act="copyPrev" title="Pichhle mahine ki attendance copy karo">▤ Copy prev</button>'+
         '<button class="btn sm '+(pendCount?"ok":"")+'" data-act="markAllPaid">✔ Mark all paid</button>'+
         '<button class="btn sm" data-act="printAll">🖨 Print</button>'+
         '<button class="btn sm" data-act="pdfAll">⬇ PDFs</button>'+
         '<button class="btn sm" data-act="exportCsv">⤓ CSV</button>'+
       '</div></div>'+
-      (rows.length ? hisaabTable(rows) : emptyState("Koi worker match nahi hua","Search badlo ya naya worker add karo.","addWorker","+ Add Worker")) +
+      (rows.length ? hisaabTable(rows) : emptyState("Koi employee match nahi hua","Search badlo ya naya employee add karo.","addWorker","+ Add Employee")) +
       (rows.length ? '<div class="card-b" style="border-top:1px solid var(--line);display:flex;gap:20px;flex-wrap:wrap;justify-content:flex-end;font-size:12.8px;background:var(--surface-2)">'+
         '<div>Gross: <b id="sumGross">'+moneyS(gross)+'</b></div>'+
         '<div>Advances: <b id="sumAdv" style="color:var(--bad)">'+(adv? "−"+moneyS(adv): moneyS(0))+'</b></div>'+
@@ -2565,7 +2565,7 @@ function viewHisaab(){
 
     '<div class="banner info" style="margin-bottom:0"><span>ℹ️</span><div><b>'+monthLabel(UI.year, UI.month)+':</b> '+
       meta.dim+' days · <b>'+meta.sundays+' Sundays</b> auto-excluded → <b>'+meta.workingDays+' payable days</b>. '+
-      'Monthly salary ÷ <b>30</b> (fixed). Hourly workers: <b>hours × rate</b>.</div></div>'
+      'Monthly salary ÷ <b>30</b> (fixed). Hourly employees: <b>hours × rate</b>.</div></div>'
   );
 }
 
@@ -2599,11 +2599,11 @@ function hisaabTable(rows){
   }).join("");
 
   return '<div class="twrap"><table class="tbl has-actions"><thead><tr>'+
-    '<th>Worker</th><th class="num">Present</th><th class="num">Absent</th><th class="num">Sun</th><th class="num">Days</th>'+
-    '<th class="num" title="Hourly workers ke liye">Hours</th><th class="num">Rate/day</th><th class="num">Gross</th>'+
+    '<th>Employee</th><th class="num">Present</th><th class="num">Absent</th><th class="num">Sun</th><th class="num">Days</th>'+
+    '<th class="num" title="Hourly employees ke liye">Hours</th><th class="num">Rate/day</th><th class="num">Gross</th>'+
     '<th class="num">Adv</th><th class="num">Other</th><th class="num">Net</th><th>Status</th><th></th>'+
     '</tr></thead><tbody>'+body+'</tbody>'+
-    '<tfoot><tr><td colspan="7">Totals ('+rows.length+' workers)</td>'+
+    '<tfoot><tr><td colspan="7">Totals ('+rows.length+' employees)</td>'+
     '<td class="num" id="totGross">'+moneyS(t.gross)+'</td>'+
     '<td class="num" id="totAdv">'+(t.adv? "−"+moneyS(t.adv):"—")+'</td>'+
     '<td class="num" id="totDed">'+(t.ded? "−"+moneyS(t.ded):"—")+'</td>'+
@@ -2619,16 +2619,16 @@ function viewWorkers(){
   });
   return (
     '<div class="card" style="margin-bottom:14px"><div class="card-h">'+
-      '<div><h3>Workers</h3><div class="sub">'+Store.data.workers.length+' total · '+
+      '<div><h3>Employees</h3><div class="sub">'+Store.data.workers.length+' total · '+
         Store.data.workers.filter(w=>w.active!==false).length+' active</div></div>'+
       '<div class="toolbar">'+
         '<div class="gsearch" style="min-width:190px"><span>🔍</span>'+
           '<input id="workerSearch" data-role="workerSearch" placeholder="Naam ya role se dhoondo…" value="'+esc(UI.search)+'"></div>'+
-        '<button class="btn primary" data-act="addWorker">+ Add Worker</button>'+
+        '<button class="btn primary" data-act="addWorker">+ Add Employee</button>'+
       '</div></div></div>'+
     (list.length
       ? '<div class="wcards">'+list.map(workerCard).join("")+'</div>'
-      : emptyState("No workers","Apna pehla worker add karo — monthly salary ya hourly wage.","addWorker","+ Add Worker"))
+      : emptyState("No employees","Apna pehla employee add karo — monthly salary ya hourly wage.","addWorker","+ Add Employee"))
   );
 }
 
@@ -2679,9 +2679,9 @@ function viewRecords(){
     '<div class="card"><div class="card-h"><div><h3>Records &amp; history</h3>'+
       '<div class="sub">Har mahine ka record — row par tap karke kholo</div></div>'+
       '<div class="gsearch" style="min-width:200px"><span>🔍</span>'+
-        '<input id="recordSearch" data-role="recordSearch" placeholder="Worker ya mahina…" value="'+esc(UI.search)+'"></div></div>'+
+        '<input id="recordSearch" data-role="recordSearch" placeholder="Employee ya mahina…" value="'+esc(UI.search)+'"></div></div>'+
       '<div class="twrap"><table class="tbl"><thead><tr>'+
-        '<th>Worker</th><th>Month</th><th class="num">Present</th><th class="num">Absent</th><th class="num">Gross</th>'+
+        '<th>Employee</th><th>Month</th><th class="num">Present</th><th class="num">Absent</th><th class="num">Gross</th>'+
         '<th class="num">Advances</th><th class="num">Net</th><th>Status</th><th></th></tr></thead><tbody>'+
         (list.length ? list.map(({w,rec,c}) => '<tr class="clickable" data-act="openRecAt" data-wid="'+w.id+'" data-y="'+rec.year+'" data-m="'+rec.month+'">'+
           '<td><div class="who">'+av(w.name,"sm")+'<div class="nm">'+esc(w.name)+'</div></div></td>'+
@@ -2721,10 +2721,10 @@ function viewSettings(){
       '<div class="card"><div class="card-h"><div><h3>Salary rules</h3>'+
         '<div class="sub">Har calculation me automatic lagta hai</div></div><span class="k-ico">⚖️</span></div>'+
         '<div class="card-b">'+
-          '<div class="banner info" style="margin:0 0 10px"><span>🔒</span><div><b>Monthly workers:</b> salary hamesha <b>÷ 30</b> '+
+          '<div class="banner info" style="margin:0 0 10px"><span>🔒</span><div><b>Monthly employees:</b> salary hamesha <b>÷ 30</b> '+
             '(mahina 28 ka ho ya 31 ka), aur <b>Sundays auto-exclude</b> payable days se. '+
-            'Kisi ek worker ke hisaab me Sunday kaam allowed kar sakte ho.</div></div>'+
-          '<div class="banner info" style="margin:0 0 14px"><span>⏱️</span><div><b>Hourly workers:</b> koi fixed working hours nahi — '+
+            'Kisi ek employee ke hisaab me Sunday kaam allowed kar sakte ho.</div></div>'+
+          '<div class="banner info" style="margin:0 0 14px"><span>⏱️</span><div><b>Hourly employees:</b> koi fixed working hours nahi — '+
             'pay = <b>hourly rate × total hours</b>. <b>Overtime alag se nahi</b> jodta.</div></div>'+
           '<div class="sec-title" style="margin-top:4px">Appearance</div>'+
           '<div class="seg" id="themeSeg">'+
@@ -2750,7 +2750,7 @@ function viewSettings(){
 
     '<div style="text-align:center;font-size:11.5px;color:var(--muted);margin-top:18px;line-height:1.7">'+
       'Panel <b style="color:var(--ink)">v<span data-ver></span></b> · Auto-update enabled<br>'+
-      'v3 — naya UI, dark mode, ledger, worker profile, CSV &amp; WhatsApp share'+
+      'v3 — naya UI, dark mode, ledger, employee profile, CSV &amp; WhatsApp share'+
     '</div>'
   );
 }
@@ -2848,8 +2848,8 @@ function viewDashboard(){
   const sparkVals = trend.map(t=>t.val);
 
   const demoBanner = Store.data.demo
-    ? '<div class="banner info"><span>👋</span><div><b>Demo data loaded</b> — kuch workers already bhare hue hain taki aap sab features dekh sako. '+
-      'Jab ready ho, "Start fresh" dabao aur apne workers add karo.</div>'+
+    ? '<div class="banner info"><span>👋</span><div><b>Demo data loaded</b> — kuch employees already bhare hue hain taki aap sab features dekh sako. '+
+      'Jab ready ho, "Start fresh" dabao aur apne employees add karo.</div>'+
       '<div style="margin-left:auto;display:flex;gap:7px"><button class="btn sm" data-act="loadSample">Keep exploring</button>'+
       '<button class="btn sm primary" data-act="clearDemo">Start fresh</button></div></div>'
     : "";
@@ -2861,7 +2861,7 @@ function viewDashboard(){
     demoBanner +
     '<div class="kpis">' +
       kpiCard({ label:"Net payable — "+MONTHS_S[UI.month], value:money0(net), icon:"₹", tone:"",
-        delta:moneyDelta(net, prevNet), spark:sparkVals, sub:active+" active workers · advances kate hue" }) +
+        delta:moneyDelta(net, prevNet), spark:sparkVals, sub:active+" active employees · advances kate hue" }) +
       kpiCard({ label:"Gross earnings", value:money0(gross), icon:"↑", tone:"k-ok",
         delta:moneyDelta(gross, prevRows.reduce((t,r)=>t+r.c.grossEarnings,0)), sub:"Wages + bonus (no overtime)" }) +
       kpiCard({ label:"Advances + deductions", value:money0(adv+ded), icon:"↓", tone:"k-warn",
@@ -2911,13 +2911,13 @@ function viewDashboard(){
 
     ctDashCard(UI.year, UI.month) + attDashboardCard(UI.year, UI.month) +
 
-    '<div class="card"><div class="card-h"><div><h3>Worker-wise summary</h3>'+
+    '<div class="card"><div class="card-h"><div><h3>Employee-wise summary</h3>'+
       '<div class="sub">Row par tap karo — poora hisaab khulega</div></div>'+
       '<div class="toolbar">'+
         '<button class="btn sm" data-act="exportCsv">⤓ CSV</button>'+
         '<button class="btn sm primary" data-act="gotoHisaab">Monthly Hisaab</button>'+
       '</div></div>'+
-      (rows.length ? dashboardTable(rows) : emptyState("No workers yet","Add your first worker to start the monthly hisaab.","addWorker","+ Add Worker")) +
+      (rows.length ? dashboardTable(rows) : emptyState("No employees yet","Add your first employee to start the monthly hisaab.","addWorker","+ Add Employee")) +
     '</div>'
   );
 }
@@ -2943,10 +2943,10 @@ function dashboardTable(rows){
       '<td>'+statusTag(rec)+'</td></tr>';
   }).join("");
   return '<div class="twrap"><table class="tbl dashTbl"><thead><tr>'+
-    '<th>Worker</th><th>Type</th><th class="num">Present</th><th class="num">Absent</th><th class="num">Sun</th>'+
+    '<th>Employee</th><th>Type</th><th class="num">Present</th><th class="num">Absent</th><th class="num">Sun</th>'+
     '<th class="num">Rate</th><th class="num">Gross</th><th class="num">Advances</th><th class="num">Net payable</th>'+
     '<th class="num">Attd</th><th>Status</th></tr></thead><tbody>'+body+'</tbody>'+
-    '<tfoot><tr><td>Total ('+rows.length+' workers)</td><td></td><td></td><td></td><td></td><td></td>'+
+    '<tfoot><tr><td>Total ('+rows.length+' employees)</td><td></td><td></td><td></td><td></td><td></td>'+
     '<td class="num">'+money(t.gross)+'</td><td class="num" style="color:var(--bad)">−'+money(t.adv)+'</td>'+
     '<td class="num">'+money(t.net)+'</td><td></td><td></td></tr></tfoot></table></div>';
 }
@@ -2970,7 +2970,7 @@ function viewHisaab(){
 
   return (
     (noHours.length ? '<div class="banner warn"><span>⏱️</span><div><b>Total hours missing:</b> '+esc(noHours.join(", "))+
-      ' — hourly worker ki pay <b>hours × rate</b> se banti hai. Table ke <b>Hours</b> column me hours daalo.</div></div>' : "") +
+      ' — hourly employee ki pay <b>hours × rate</b> se banti hai. Table ke <b>Hours</b> column me hours daalo.</div></div>' : "") +
 
     '<div class="card" style="margin-bottom:14px"><div class="card-h" style="padding:13px 16px">'+
       '<div class="toolbar">'+
@@ -2979,18 +2979,18 @@ function viewHisaab(){
             '<button class="'+(UI.filter===v?"on":"")+'" data-act="setFilter" data-filter="'+v+'">'+l+'</button>').join("")+
         '</div>'+
         '<div class="gsearch" style="min-width:190px"><span>🔍</span>'+
-          '<input id="hisaabSearch" data-role="hisaabSearch" placeholder="Worker dhoondo…" value="'+esc(UI.search)+'">'+
+          '<input id="hisaabSearch" data-role="hisaabSearch" placeholder="Employee dhoondo…" value="'+esc(UI.search)+'">'+
         '</div>'+
       '</div>'+
       '<div class="toolbar">'+
-        '<button class="btn sm" data-act="autoFillAll" title="Har worker ke present days = working days">⚡ Auto-fill</button>'+
+        '<button class="btn sm" data-act="autoFillAll" title="Har employee ke present days = working days">⚡ Auto-fill</button>'+
         '<button class="btn sm" data-act="copyPrev" title="Pichhle mahine ki attendance copy karo">▤ Copy prev</button>'+
         '<button class="btn sm '+(pendCount?"ok":"")+'" data-act="markAllPaid">✔ Mark all paid</button>'+
         '<button class="btn sm" data-act="printAll">🖨 Print</button>'+
         '<button class="btn sm" data-act="pdfAll">⬇ PDFs</button>'+
         '<button class="btn sm" data-act="exportCsv">⤓ CSV</button>'+
       '</div></div>'+
-      (rows.length ? hisaabTable(rows) : emptyState("Koi worker match nahi hua","Search badlo ya naya worker add karo.","addWorker","+ Add Worker")) +
+      (rows.length ? hisaabTable(rows) : emptyState("Koi employee match nahi hua","Search badlo ya naya employee add karo.","addWorker","+ Add Employee")) +
       (rows.length ? '<div class="card-b" style="border-top:1px solid var(--line);display:flex;gap:20px;flex-wrap:wrap;justify-content:flex-end;font-size:12.8px;background:var(--surface-2)">'+
         '<div>Gross: <b id="sumGross">'+moneyS(gross)+'</b></div>'+
         '<div>Advances: <b id="sumAdv" style="color:var(--bad)">'+(adv? "−"+moneyS(adv): moneyS(0))+'</b></div>'+
@@ -3000,7 +3000,7 @@ function viewHisaab(){
 
     '<div class="banner info" style="margin-bottom:0"><span>ℹ️</span><div><b>'+monthLabel(UI.year, UI.month)+':</b> '+
       meta.dim+' days · <b>'+meta.sundays+' Sundays</b> auto-excluded → <b>'+meta.workingDays+' payable days</b>. '+
-      'Monthly salary ÷ <b>30</b> (fixed). Hourly workers: <b>hours × rate</b>.</div></div>'
+      'Monthly salary ÷ <b>30</b> (fixed). Hourly employees: <b>hours × rate</b>.</div></div>'
   );
 }
 
@@ -3034,11 +3034,11 @@ function hisaabTable(rows){
   }).join("");
 
   return '<div class="twrap"><table class="tbl has-actions"><thead><tr>'+
-    '<th>Worker</th><th class="num">Present</th><th class="num">Absent</th><th class="num">Sun</th><th class="num">Days</th>'+
-    '<th class="num" title="Hourly workers ke liye">Hours</th><th class="num">Rate/day</th><th class="num">Gross</th>'+
+    '<th>Employee</th><th class="num">Present</th><th class="num">Absent</th><th class="num">Sun</th><th class="num">Days</th>'+
+    '<th class="num" title="Hourly employees ke liye">Hours</th><th class="num">Rate/day</th><th class="num">Gross</th>'+
     '<th class="num">Adv</th><th class="num">Other</th><th class="num">Net</th><th>Status</th><th></th>'+
     '</tr></thead><tbody>'+body+'</tbody>'+
-    '<tfoot><tr><td colspan="7">Totals ('+rows.length+' workers)</td>'+
+    '<tfoot><tr><td colspan="7">Totals ('+rows.length+' employees)</td>'+
     '<td class="num" id="totGross">'+moneyS(t.gross)+'</td>'+
     '<td class="num" id="totAdv">'+(t.adv? "−"+moneyS(t.adv):"—")+'</td>'+
     '<td class="num" id="totDed">'+(t.ded? "−"+moneyS(t.ded):"—")+'</td>'+
@@ -3054,16 +3054,16 @@ function viewWorkers(){
   });
   return (
     '<div class="card" style="margin-bottom:14px"><div class="card-h">'+
-      '<div><h3>Workers</h3><div class="sub">'+Store.data.workers.length+' total · '+
+      '<div><h3>Employees</h3><div class="sub">'+Store.data.workers.length+' total · '+
         Store.data.workers.filter(w=>w.active!==false).length+' active</div></div>'+
       '<div class="toolbar">'+
         '<div class="gsearch" style="min-width:190px"><span>🔍</span>'+
           '<input id="workerSearch" data-role="workerSearch" placeholder="Naam ya role se dhoondo…" value="'+esc(UI.search)+'"></div>'+
-        '<button class="btn primary" data-act="addWorker">+ Add Worker</button>'+
+        '<button class="btn primary" data-act="addWorker">+ Add Employee</button>'+
       '</div></div></div>'+
     (list.length
       ? '<div class="wcards">'+list.map(workerCard).join("")+'</div>'
-      : emptyState("No workers","Apna pehla worker add karo — monthly salary ya hourly wage.","addWorker","+ Add Worker"))
+      : emptyState("No employees","Apna pehla employee add karo — monthly salary ya hourly wage.","addWorker","+ Add Employee"))
   );
 }
 
@@ -3114,9 +3114,9 @@ function viewRecords(){
     '<div class="card"><div class="card-h"><div><h3>Records &amp; history</h3>'+
       '<div class="sub">Har mahine ka record — row par tap karke kholo</div></div>'+
       '<div class="gsearch" style="min-width:200px"><span>🔍</span>'+
-        '<input id="recordSearch" data-role="recordSearch" placeholder="Worker ya mahina…" value="'+esc(UI.search)+'"></div></div>'+
+        '<input id="recordSearch" data-role="recordSearch" placeholder="Employee ya mahina…" value="'+esc(UI.search)+'"></div></div>'+
       '<div class="twrap"><table class="tbl"><thead><tr>'+
-        '<th>Worker</th><th>Month</th><th class="num">Present</th><th class="num">Absent</th><th class="num">Gross</th>'+
+        '<th>Employee</th><th>Month</th><th class="num">Present</th><th class="num">Absent</th><th class="num">Gross</th>'+
         '<th class="num">Advances</th><th class="num">Net</th><th>Status</th><th></th></tr></thead><tbody>'+
         (list.length ? list.map(({w,rec,c}) => '<tr class="clickable" data-act="openRecAt" data-wid="'+w.id+'" data-y="'+rec.year+'" data-m="'+rec.month+'">'+
           '<td><div class="who">'+av(w.name,"sm")+'<div class="nm">'+esc(w.name)+'</div></div></td>'+
@@ -3162,17 +3162,17 @@ function viewLedger(){
       kpiCard({label:"Advances", value:money0(sumA), icon:"↑", tone:"k-warn", sub:advs.length+" entries this month"})+
       kpiCard({label:"Other deductions", value:money0(sumD), icon:"↓", tone:"k-bad", sub:deds.length+" entries"})+
       kpiCard({label:"Total cut", value:money0(sumA+sumD), icon:"∑", sub:"wages se ghatega"})+
-      kpiCard({label:"Workers affected", value:new Set(advs.map(x=>x.w.id).concat(deds.map(x=>x.w.id))).size, icon:"👥", tone:"k-cyan", sub:"jinke paas entry hai"})+
+      kpiCard({label:"Employees affected", value:new Set(advs.map(x=>x.w.id).concat(deds.map(x=>x.w.id))).size, icon:"👥", tone:"k-cyan", sub:"jinke paas entry hai"})+
     '</div>'+
     '<div class="grid g2">'+
       '<div class="card"><div class="card-h"><div><h3>Advances</h3><div class="sub">'+monthLabel(UI.year, UI.month)+'</div></div>'+
         '<span class="tag warn">'+money0(sumA)+'</span></div>'+
-        '<div class="twrap"><table class="tbl" style="min-width:420px"><thead><tr><th>Date</th><th>Worker</th><th>Note</th><th class="num">Amount</th></tr></thead>'+
+        '<div class="twrap"><table class="tbl" style="min-width:420px"><thead><tr><th>Date</th><th>Employee</th><th>Note</th><th class="num">Amount</th></tr></thead>'+
         '<tbody>'+(advs.length ? advs.map(x=>line(x,"adv")).join("") : '<tr><td colspan="4"><div class="empty" style="padding:28px"><p>Is mahine koi advance nahi.</p></div></td></tr>')+
         '</tbody></table></div></div>'+
       '<div class="card"><div class="card-h"><div><h3>Other deductions</h3><div class="sub">'+monthLabel(UI.year, UI.month)+'</div></div>'+
         '<span class="tag bad">'+money0(sumD)+'</span></div>'+
-        '<div class="twrap"><table class="tbl" style="min-width:420px"><thead><tr><th>Date</th><th>Worker</th><th>Reason</th><th class="num">Amount</th></tr></thead>'+
+        '<div class="twrap"><table class="tbl" style="min-width:420px"><thead><tr><th>Date</th><th>Employee</th><th>Reason</th><th class="num">Amount</th></tr></thead>'+
         '<tbody>'+(deds.length ? deds.map(x=>line(x,"ded")).join("") : '<tr><td colspan="4"><div class="empty" style="padding:28px"><p>Koi extra deduction nahi.</p></div></td></tr>')+
         '</tbody></table></div></div>'+
     '</div>'
@@ -3258,10 +3258,10 @@ function viewSettings(){
       '<div class="card"><div class="card-h"><div><h3>Salary rules</h3>'+
         '<div class="sub">Har calculation me automatic lagta hai</div></div><span class="k-ico">⚖️</span></div>'+
         '<div class="card-b">'+
-          '<div class="banner info" style="margin:0 0 10px"><span>🔒</span><div><b>Monthly workers:</b> salary hamesha <b>÷ 30</b> '+
+          '<div class="banner info" style="margin:0 0 10px"><span>🔒</span><div><b>Monthly employees:</b> salary hamesha <b>÷ 30</b> '+
             '(mahina 28 ka ho ya 31 ka), aur <b>Sundays auto-exclude</b> payable days se. '+
-            'Kisi ek worker ke hisaab me Sunday kaam allowed kar sakte ho.</div></div>'+
-          '<div class="banner info" style="margin:0 0 14px"><span>⏱️</span><div><b>Hourly workers:</b> koi fixed working hours nahi — '+
+            'Kisi ek employee ke hisaab me Sunday kaam allowed kar sakte ho.</div></div>'+
+          '<div class="banner info" style="margin:0 0 14px"><span>⏱️</span><div><b>Hourly employees:</b> koi fixed working hours nahi — '+
             'pay = <b>hourly rate × total hours</b>. <b>Overtime alag se nahi</b> jodta.</div></div>'+
           '<div class="sec-title" style="margin-top:4px">Appearance</div>'+
           '<div class="seg" id="themeSeg">'+
@@ -3290,6 +3290,7 @@ function viewSettings(){
 
     '<div style="text-align:center;font-size:11.5px;color:var(--muted);margin-top:18px;line-height:1.7">'+
       'Panel <b style="color:var(--ink)">v<span data-ver></span></b> · Auto-update enabled<br>'+
+      'v3.27 — <b style="color:var(--ink)">Employee naming throughout the panel</b>: navigation, dashboard, forms, search, messages, CSV, salary PDF/print aur sharing me consistent Employee / Employees labels. Sirf wording change; existing profiles/IDs, salary/canteen/Attendance data, clocks, calculations, Excel format, backups aur cloud sync unchanged. Purana data dobara add karne ki zaroorat nahi<br>'+
       'v3.26 — <b style="color:var(--ink)">Excel: upar full summary, neeche photo-style register</b>: first sheet me total present days, leaves/half/absent, actual attended Sunday dates/count, working hours, credits aur monthly extra bonus % upar. Neeche Date / manager attendance / actual check-in / actual check-out / blank Advance / shift / hours / credit / full remarks: black borders, white rows aur yellow Sundays. Present days distinct dates hain; multiple shifts se days double-count nahi. Advance sirf blank manual space, salary data se koi naam-based link ya amount/total guess nahi. Five sheets, raw details/history aur all selected rows retained. Sirf Excel presentation; saved data, clock controls, PDF design, bonus arithmetic, panel layout, salary/canteen aur sync unchanged<br>'+
       'v3.25 — <b style="color:var(--ink)">Check-in / Check-out ke four time periods</b>: dono clock dropdowns me Same day / Next day ke saath Morning, Afternoon, Evening aur Night, sirf alag Shift selector me nahi. 12 afternoon = noon, 12 night = midnight; Night 1–4 after midnight. Same/next day khud select karein; automatic date guessing nahi. Purana 13:33 ab 1:33 afternoon dikhata hai, saved time/27h 01m unchanged. Galat clock/period par clear error. Shift/profile change typed clock periods ko nahi badalta. PDF/Excel/history me matching labels; panel styling, saved data, bonus aur salary/canteen unchanged<br>'+
       'v3.24 — <b style="color:var(--ink)">Reference-style Attendance PDF + automatic bonus</b>: ruled ledger header/summary, bordered date-wise table, full remarks, dated Sundays, totals/signatures aur maximum 2 readable pages. Morning / Afternoon / Evening / Night added; saved Day/Night unchanged. Full calendar month/all shifts: arrival-day 11:45 PM ke baad completed OUT, 3 baar = 1%, phir har 2 par +1%; exact 11:45 PM excluded, next-morning OUT included. PDF/Excel me count + percentage, salary/payment amount unchanged. Individual report me WhatsApp PDF: device share sheet, ya download + manual Document attachment. Panel styling, saved clocks/history aur financial data unchanged; sab devices update karein<br>'+
@@ -3340,7 +3341,7 @@ function csvCell(v){ const s = String(v == null ? "" : v); return /[",\n]/.test(
 function exportCsv(){
   const rows = rowsForMonth(UI.year, UI.month);
   if (!rows.length) return toast("Koi data nahi hai", "bad");
-  const head = ["Worker","Type","Rate","Present","Absent","Sundays","Working days","Hours","Per day","Gross","Advances","Other deductions","Net payable","Status","Paid on"];
+  const head = ["Employee","Type","Rate","Present","Absent","Sundays","Working days","Hours","Per day","Gross","Advances","Other deductions","Net payable","Status","Paid on"];
   const lines = [head.join(",")];
   rows.forEach(({w, rec, c}) => {
     lines.push([w.name, w.type, w.rate, c.present, c.absent, c.sundays, c.workingDays,
@@ -3364,7 +3365,7 @@ function shareWa(wid, y, m){
   const L = [];
   L.push("*" + shop + " — Salary Statement*");
   L.push(monthLabel(y, m));
-  L.push("Worker: " + w.name + (w.role ? " (" + w.role + ")" : ""));
+  L.push("Employee: " + w.name + (w.role ? " (" + w.role + ")" : ""));
   L.push("");
   L.push("Days: " + c.present + " present · " + c.absent + " absent · " + c.sundays + " Sundays");
   if (c.isHourly) L.push("Rate: " + money(w.rate) + "/hr · Hours: " + c.totalHours);
@@ -3399,7 +3400,7 @@ function cmdkItems(){
   const items = [
     { t:"Dashboard", k:"g d", act:"nav", v:"dashboard", ic:"◧" },
     { t:"Monthly Hisaab", k:"g h", act:"nav", v:"hisaab", ic:"₹" },
-    { t:"Workers", k:"g w", act:"nav", v:"workers", ic:"☰" },
+    { t:"Employees", k:"g w", act:"nav", v:"workers", ic:"☰" },
     { t:"Ledger (advances)", k:"g l", act:"nav", v:"ledger", ic:"⇄" },
     { t:"Attendance — manager daily board", k:"g a", act:"nav", v:"attendance", ic:"▦" },
     { t:"＋ Mark manager attendance", k:"", act:"attAdd", ic:"＋" },
@@ -3412,7 +3413,7 @@ function cmdkItems(){
     { t:"＋ Canteen entry add karo (saman / bikri / kharcha)", k:"", act:"ctAddNew", ic:"＋" },
     { t:"Records & History", k:"g r", act:"nav", v:"records", ic:"◷" },
     { t:"Settings", k:"g s", act:"nav", v:"settings", ic:"⚙" },
-    { t:"+ Naya worker add karo", k:"", act:"addWorker", ic:"＋" },
+    { t:"+ Naya employee add karo", k:"", act:"addWorker", ic:"＋" },
     { t:"⤓ CSV export (is month)", k:"", act:"exportCsv", ic:"⤓" },
     { t:"⬇ Sab PDF download", k:"", act:"pdfAll", ic:"⬇" },
     { t:"🖨 Sab statement print", k:"", act:"printAll", ic:"🖨" },
@@ -3426,7 +3427,7 @@ function openCmdk(){
   if ($("#cmdk")) return;
   const div = document.createElement("div");
   div.className = "cmdk"; div.id = "cmdk";
-  div.innerHTML = '<div class="cmdk-box"><input class="cmdk-inp" id="cmdkInp" placeholder="Kuch bhi dhoondo — worker, page, action…" autocomplete="off"><div class="cmdk-list" id="cmdkList"></div></div>';
+  div.innerHTML = '<div class="cmdk-box"><input class="cmdk-inp" id="cmdkInp" placeholder="Kuch bhi dhoondo — employee, page, action…" autocomplete="off"><div class="cmdk-list" id="cmdkList"></div></div>';
   document.body.appendChild(div);
   const inp = $("#cmdkInp"), list = $("#cmdkList");
   let idx = 0, shown = [];
@@ -3503,12 +3504,12 @@ function openWorkerModal(id) {
   const d = w || { name: "", role: "", phone: "", type: "monthly", rate: "", active: true, note: "" };
   openModal(
     '<div class="modal" style="max-width:560px">' +
-      '<div class="modal-h"><div><h3>' + (isEdit ? "Edit worker" : "Add new worker") + "</h3>" +
+      '<div class="modal-h"><div><h3>' + (isEdit ? "Edit employee" : "Add new employee") + "</h3>" +
         "<p>" + (isEdit ? "Update details — all hisaab recalculates automatically" : "Salary type and rate are enough to start") + "</p></div>" +
         '<button class="x" data-act="closeModal">✕</button></div>' +
       '<div class="modal-b">' +
         '<div class="grid g2">' +
-          field("Worker name *", '<input class="inp" id="wName" value="' + esc(d.name) + '" placeholder="e.g. Ramesh Kumar" autofocus>') +
+          field("Employee name *", '<input class="inp" id="wName" value="' + esc(d.name) + '" placeholder="e.g. Ramesh Kumar" autofocus>') +
           field("Role / designation", '<input class="inp" id="wRole" value="' + esc(d.role || "") + '" placeholder="e.g. Tailor, Helper">') +
         "</div>" +
         '<div class="grid g2" style="margin-top:12px">' +
@@ -3525,11 +3526,11 @@ function openWorkerModal(id) {
           '<div class="hint" id="rateHint" style="margin-top:5px"></div>' +
         "</div>" +
         '<div style="margin-top:12px">' + field("Note (optional)", '<input class="inp" id="wNote" value="' + esc(d.note || "") + '" placeholder="e.g. works 6 days a week">') + "</div>" +
-        '<label class="chk" style="margin-top:14px"><input type="checkbox" id="wActive" ' + (d.active !== false ? "checked" : "") + "> Active worker (include in hisaab &amp; dashboard)</label>" +
+        '<label class="chk" style="margin-top:14px"><input type="checkbox" id="wActive" ' + (d.active !== false ? "checked" : "") + "> Active employee (include in hisaab &amp; dashboard)</label>" +
       "</div>" +
       '<div class="modal-f" style="justify-content:flex-end">' +
         '<button class="btn" data-act="closeModal">Cancel</button>' +
-        '<button class="btn primary" id="wSave">' + (isEdit ? "Save changes" : "Add worker") + "</button>" +
+        '<button class="btn primary" id="wSave">' + (isEdit ? "Save changes" : "Add employee") + "</button>" +
       "</div></div>"
   );
   let type = d.type;
@@ -3539,7 +3540,7 @@ function openWorkerModal(id) {
     const r = num($("#wRate").value);
     $("#rateHint").innerHTML = type === "monthly"
       ? "Per day = " + money(r / 30) + " (monthly salary ÷ 30, fixed)"
-      : "Hourly worker — pay = hours worked × " + money(r) + " (hours roz alag ho sakte hain)";
+      : "Hourly employee — pay = hours worked × " + money(r) + " (hours roz alag ho sakte hain)";
   };
   $$("#typeSeg button").forEach((b) => b.addEventListener("click", () => { type = b.dataset.type; paint(); }));
   $("#wRate").addEventListener("input", paint);
@@ -3547,13 +3548,13 @@ function openWorkerModal(id) {
   $("#wSave").addEventListener("click", () => {
     const name = $("#wName").value.trim();
     const rate = num($("#wRate").value);
-    if (!name) { $("#wName").classList.add("err"); $("#wName").focus(); toast("Please enter the worker's name", "bad"); return; }
+    if (!name) { $("#wName").classList.add("err"); $("#wName").focus(); toast("Please enter the employee's name", "bad"); return; }
     if (rate <= 0) { $("#wRate").classList.add("err"); $("#wRate").focus(); toast("Please enter a valid salary rate", "bad"); return; }
     const payload = { name, role: $("#wRole").value.trim(), phone: $("#wPhone").value.trim(), type, rate, active: $("#wActive").checked, note: $("#wNote").value.trim() };
     if (isEdit) { Object.assign(Store.worker(id), payload); }
     else { Store.data.workers.push({ id: uid(), ...payload }); }
     if (!Store.saveChange()) return;
-    closeModal(); render(); toast(isEdit ? "Worker updated" : "Worker added — hisaab ready", "ok");
+    closeModal(); render(); toast(isEdit ? "Employee updated" : "Employee added — hisaab ready", "ok");
   });
   setTimeout(() => { const n = $("#wName"); if (n) n.focus(); }, 60);
 }
@@ -3751,7 +3752,7 @@ function refreshRecModal() {
   const warn = $("#attWarn");
   if (warn) {
     if (c.overAttendance) warn.innerHTML = '<div class="banner warn" style="margin-top:10px;margin-bottom:0"><span>⚠️</span><div>Present + absent (' + (c.present + c.absent) + ") is more than the " + c.workingDays + " payable working days. Attendance has been auto-adjusted.</div></div>";
-    else if (c.present + c.absent < c.workingDays) warn.innerHTML = '<div class="banner info" style="margin-top:10px;margin-bottom:0"><span>ℹ️</span><div>' + (c.workingDays - c.present - c.absent) + " working day(s) not accounted for — they will <b>not</b> be paid. Increase present days if the worker was on duty.</div></div>";
+    else if (c.present + c.absent < c.workingDays) warn.innerHTML = '<div class="banner info" style="margin-top:10px;margin-bottom:0"><span>ℹ️</span><div>' + (c.workingDays - c.present - c.absent) + " working day(s) not accounted for — they will <b>not</b> be paid. Increase present days if the employee was on duty.</div></div>";
     else warn.innerHTML = "";
   }
 
@@ -3837,7 +3838,7 @@ function statementHTML(w, rec, c) {
       "<div>" + (rec.status === "paid" ? '<span class="watermark">' + esc(s.paidLabel || "PAID") + "</span>" : "PENDING") + "</div></div></div>" +
 
     '<div class="meta"><div>' +
-      mRow("Worker", w.name) + mRow("Role", w.role || "—") + mRow("Phone", w.phone || "—") +
+      mRow("Employee", w.name) + mRow("Role", w.role || "—") + mRow("Phone", w.phone || "—") +
     '</div><div>' +
       mRow("Salary type", w.type === "monthly" ? "Monthly salary" : "Hourly wage") +
       mRow("Rate", w.type === "monthly" ? money(w.rate) + " per month" : money(w.rate) + " per hour") +
@@ -3876,7 +3877,7 @@ function statementHTML(w, rec, c) {
     '<div class="inwords">Amount in words: <b>' + esc(inWords(c.net)) + "</b></div>" +
     (rec.note ? '<div class="inwords">Note: ' + esc(rec.note) + "</div>" : "") +
 
-    '<div class="sign"><div>Worker signature</div><div>' + esc(s.ownerName || "Authorised signatory") + "</div></div>" +
+    '<div class="sign"><div>Employee signature</div><div>' + esc(s.ownerName || "Authorised signatory") + "</div></div>" +
     '<div class="ft"><span>' + esc(s.statementNote || "") + "</span><span>Generated " + new Date().toLocaleDateString("en-IN") + "</span></div>" +
     "</div></div>";
 }
@@ -3891,7 +3892,7 @@ function printStatement(wid, y, m) {
 }
 function printAll() {
   const rows = rowsForMonth(UI.year, UI.month);
-  if (!rows.length) return toast("No workers to print", "bad");
+  if (!rows.length) return toast("No employees to print", "bad");
   $("#print-root").innerHTML = rows.map(({ w, rec, c }) => statementHTML(w, rec, c)).join('<div style="page-break-after:always"></div>');
   setTimeout(pdfPrintWhenReady, 80);
 }
@@ -4203,7 +4204,7 @@ function drawStatement(p, w, rec, c) {
   if (p.y < 150) p.newPage();
   const sy = Math.max(96, Math.min(p.y - 40, 150));
   p.line(M + 10, sy, M + 170, sy, [0.6, 0.62, 0.66], 0.8);
-  p.text(M + 10, sy - 11, 8, "Worker signature", { color: C.muted });
+  p.text(M + 10, sy - 11, 8, "Employee signature", { color: C.muted });
   p.line(RIGHT - 170, sy, RIGHT - 10, sy, [0.6, 0.62, 0.66], 0.8);
   p.text(RIGHT - 170, sy - 11, 8, (d.ownerName || "Authorised signatory") + " / For " + (d.shopName || ""), { color: C.muted });
 
@@ -4218,12 +4219,12 @@ function drawSummaryPage(p, rows, year, month) {
   let g = 0, ad = 0, dd = 0, nt = 0;
   rows.forEach(({ c }) => { g += c.grossEarnings; ad += c.advTotal; dd += c.dedTotal; nt += c.net; });
 
-  p.text(M, p.y, 10.5, "All workers - " + monthLabel(year, month), { bold: true });
+  p.text(M, p.y, 10.5, "All employees - " + monthLabel(year, month), { bold: true });
   p.text(RIGHT, p.y, 9, monthMeta(year, month).dim + " days | " + monthMeta(year, month).sundays + " Sundays excluded | " + monthMeta(year, month).workingDays + " working days", { align: "right", color: C.muted });
   p.y -= 18;
 
   const cols = [
-    { t: "Worker", x: 8, w: 112 },
+    { t: "Employee", x: 8, w: 112 },
     { t: "Type", x: 124, w: 38 },
     { t: "Pres.", x: 166, w: 24, align: "right" },
     { t: "Abs.", x: 194, w: 22, align: "right" },
@@ -4238,7 +4239,7 @@ function drawSummaryPage(p, rows, year, month) {
     pdfRow(p, cols, [w.name, w.type === "monthly" ? "Monthly" : "Hourly", String(c.present), String(c.absent), (c.isHourly ? c.totalHours + " hrs" : money(c.perDay)), money(c.grossEarnings), money(c.advTotal), money(c.net), rec && rec.status === "paid" ? "PAID" : "PENDING"],
       { color: C.ink, bold: false });
   });
-  pdfRow(p, cols, ["TOTAL (" + rows.length + " workers)", "", "", "", "", money(g), money(ad + dd), money(nt), ""], { bold: true, bg: [0.95, 0.96, 0.99] });
+  pdfRow(p, cols, ["TOTAL (" + rows.length + " employees)", "", "", "", "", money(g), money(ad + dd), money(nt), ""], { bold: true, bg: [0.95, 0.96, 0.99] });
 
   p.y -= 12;
   p.rect(M, p.y - 44, CW, 46, C.dark);
@@ -4266,7 +4267,7 @@ function savePdf(filename, str) {
     toast("PDF downloaded: " + filename, "ok");
   } catch (e) { toast("Could not create PDF — open the file in a browser tab and retry", "bad"); }
 }
-function safeName(s) { return String(s || "worker").replace(/[^A-Za-z0-9]+/g, "_").replace(/^_|_$/g, ""); }
+function safeName(s) { return String(s || "employee").replace(/[^A-Za-z0-9]+/g, "_").replace(/^_|_$/g, ""); }
 
 function downloadStatementPdf(wid, y, m) {
   const w = Store.worker(wid); if (!w) return;
@@ -4278,7 +4279,7 @@ function downloadStatementPdf(wid, y, m) {
 }
 function downloadAllPdfs() {
   const rows = rowsForMonth(UI.year, UI.month);
-  if (!rows.length) return toast("No workers to export", "bad");
+  if (!rows.length) return toast("No employees to export", "bad");
   const p = new PdfDoc();
   drawSummaryPage(p, rows, UI.year, UI.month);
   rows.forEach(({ w, rec, c }) => { p.newPage(); drawStatement(p, w, rec, c); });
@@ -4297,7 +4298,7 @@ function togglePaid(wid, y, m) {
 }
 
 function autoFillAll() {
-  confirmDialog("Auto-fill attendance?", "Set <b>present days = all payable working days</b> and absent = 0 for every active worker in " + monthLabel(UI.year, UI.month) + ". Existing values will be overwritten.", "Yes, auto-fill", () => {
+  confirmDialog("Auto-fill attendance?", "Set <b>present days = all payable working days</b> and absent = 0 for every active employee in " + monthLabel(UI.year, UI.month) + ". Existing values will be overwritten.", "Yes, auto-fill", () => {
     Store.activeWorkers().forEach((w) => {
       const rec = Store.ensureRecord(w.id, UI.year, UI.month, true);
       const meta = monthMeta(UI.year, UI.month);
@@ -4321,10 +4322,10 @@ function copyPreviousMonth() {
   });
   render();
   if (Store.unsaved) return;
-  toast(n ? "Copied attendance from " + MONTHS_S[pm.m] + " for " + n + " workers" : "No records found for " + monthLabel(pm.y, pm.m), n ? "ok" : "bad");
+  toast(n ? "Copied attendance from " + MONTHS_S[pm.m] + " for " + n + " employees" : "No records found for " + monthLabel(pm.y, pm.m), n ? "ok" : "bad");
 }
 function markAllPaid() {
-  confirmDialog("Mark all as paid?", "Set every worker’s " + monthLabel(UI.year, UI.month) + " record to <b>PAID</b> with today’s date.", "Mark all paid", () => {
+  confirmDialog("Mark all as paid?", "Set every employee’s " + monthLabel(UI.year, UI.month) + " record to <b>PAID</b> with today’s date.", "Mark all paid", () => {
     Store.activeWorkers().forEach((w) => {
       const rec = Store.ensureRecord(w.id, UI.year, UI.month, true);
       rec.status = "paid";
@@ -4333,7 +4334,7 @@ function markAllPaid() {
       Store.persistRecord(rec);
     });
     if (Store.unsaved) { render(); return; }
-    render(); toast("All workers marked paid", "ok");
+    render(); toast("All employees marked paid", "ok");
   });
 }
 function exportData() {
@@ -4422,7 +4423,7 @@ function hasUserData(d) {
 function ctCountOf(d) { return dataCounts(d).entries; }
 function dataCountText(d) {
   const n = dataCounts(d);
-  return n.workers + " workers · " + n.records + " salary records · " + n.entries + " canteen · " + n.rates + " rates · " + n.managers + " managers · " + n.attendance + " attendance";
+  return n.workers + " employees · " + n.records + " salary records · " + n.entries + " canteen · " + n.rates + " rates · " + n.managers + " managers · " + n.attendance + " attendance";
 }
 function syncEntityKey(item, path) {
   if (!item || typeof item !== "object" || Array.isArray(item)) return null;
@@ -4510,7 +4511,7 @@ function validateRemote(row) {
   const recordKeys = new Set();
   d.records.forEach((r) => {
     const key = syncEntityKey(r, "records");
-    if (recordKeys.has(key)) throw new Error("Cloud me duplicate worker/month records hain — automatic merge roka gaya");
+    if (recordKeys.has(key)) throw new Error("Cloud me duplicate employee/month records hain — automatic merge roka gaya");
     recordKeys.add(key);
   });
   const lists = [d.workers, d.records];
@@ -4999,7 +5000,7 @@ function conflictRows(pending) {
     const attMatch = /^attendance\.records\[([^\]]+)\]/.exec(detail.path);
     const attRow = attMatch && [...((Store.data.attendance || {}).records || []), ...((remote.attendance || {}).records || [])].find((r) => attKey(r) === attMatch[1] || r.id === attMatch[1]);
     const attPerson = attRow && (attManager(attRow.managerId) || ((remote.attendance || {}).managers || []).find((m) => m.id === attRow.managerId));
-    const title = attPerson ? attPerson.name + " · " + attRow.date + " · " + attShiftLabel(attRow.shift) + " · " + detail.path.split(".").pop() : entry ? (entry.party || "Canteen entry") + " · " + entry.date + " · " + detail.path.split(".").pop() : detail.path;
+    const title = attPerson ? attPerson.name + " · " + attRow.date + " · " + attShiftLabel(attRow.shift) + " · " + detail.path.split(".").pop() : entry ? (entry.party || "Canteen entry") + " · " + entry.date + " · " + detail.path.split(".").pop() : detail.path.replace(/^workers(?=\[|\.|$)/, "employees");
     return '<tr><td style="overflow-wrap:anywhere"><b>' + esc(title) + '</b></td><td>' + esc(text(detail.local)) + '</td><td>' + esc(text(detail.remote)) + '</td></tr>';
   }).join("");
 }
@@ -5032,7 +5033,7 @@ function loginScreenHTML() {
   const isUp = Cloud.mode === "up";
   return '<div class="login-wrap"><div class="login-card">' +
     '<div class="lc-head"><div class="logo">₹</div><div><h2>Hisaab</h2>' +
-      "<p>" + esc(Store.data.settings.shopName || "Worker Salary Panel") + "</p></div></div>" +
+      "<p>" + esc(Store.data.settings.shopName || "Employee Salary Panel") + "</p></div></div>" +
     '<div class="seg" style="width:100%;margin:16px 0 14px">' +
       '<button type="button" data-act="lcMode" data-mode="in" style="flex:1" class="' + (!isUp ? "on" : "") + '">Sign in</button>' +
       '<button type="button" data-act="lcMode" data-mode="up" style="flex:1" class="' + (isUp ? "on" : "") + '">Create account</button>' +
@@ -6884,7 +6885,7 @@ function ctWipe() {
   if (!C.entries.length && !C.rates.length && !C.log.length) return toast("Canteen me erase karne ko kuch nahi hai");
   confirmDialog("Sirf canteen data erase karein?",
     "<b>" + C.entries.length + " entries</b>, <b>" + C.rates.length + " rate-list items</b> aur <b>" + C.log.length + " activity events</b> delete ho jayenge.<br>" +
-    "Workers aur salary records <b>safe</b> rahenge. Pehle backup (JSON) ya CSV nikal lo to behtar.",
+    "Employees aur salary records <b>safe</b> rahenge. Pehle backup (JSON) ya CSV nikal lo to behtar.",
     "Canteen data erase", () => {
       const snap = JSON.parse(JSON.stringify(Store.data.canteen));
       Store.data.canteen = blankCanteen();
@@ -8812,7 +8813,7 @@ function attHistoryHTML() {
 }
 function attDashboardCard(y, m) {
   const records = att().records.filter((r) => r.date >= monthFirst(y, m) && r.date <= monthLast(y, m)), s = attSummary(records), active = att().managers.filter((m) => m.active).length;
-  return '<div class="card att-dashboard"><div class="card-h"><div><h3>' + attIcon("calendar") + ' Manager attendance</h3><div class="sub">' + monthLabel(y, m) + ' · flexible shifts · separate from worker salaries</div></div>' + attBtn("Open Attendance →", "open", "", "sm") + '</div><div class="strip"><div><small>Managers</small><b>' + active + '</b><div class="sub">active profiles</div></div><div><small>Attendance credits</small><b>' + s.credit + '</b><div class="sub">' + s.marks + ' shift records</div></div><div><small>Worked</small><b style="font-size:18px">' + attDuration(s.workedMinutes) + '</b><div class="sub">time-mode entries</div></div><div><small>Open shifts</small><b style="font-size:18px">' + s.pending + '</b><div class="sub">no fixed daily hours</div></div></div></div>';
+  return '<div class="card att-dashboard"><div class="card-h"><div><h3>' + attIcon("calendar") + ' Manager attendance</h3><div class="sub">' + monthLabel(y, m) + ' · flexible shifts · separate from employee salaries</div></div>' + attBtn("Open Attendance →", "open", "", "sm") + '</div><div class="strip"><div><small>Managers</small><b>' + active + '</b><div class="sub">active profiles</div></div><div><small>Attendance credits</small><b>' + s.credit + '</b><div class="sub">' + s.marks + ' shift records</div></div><div><small>Worked</small><b style="font-size:18px">' + attDuration(s.workedMinutes) + '</b><div class="sub">time-mode entries</div></div><div><small>Open shifts</small><b style="font-size:18px">' + s.pending + '</b><div class="sub">no fixed daily hours</div></div></div></div>';
 }
 function attSettingsCard() {
   return '<div class="card" style="margin-top:14px"><div class="card-h"><div><h3>' + attIcon("calendar") + ' Manager attendance</h3><div class="sub">Flexible actual hours, Sunday visits &amp; manual attendance credits</div></div>' + attBtn("Attendance settings", "rules", "", "sm") + '</div><div class="card-b"><div class="att-note">Included in the same automatic save, cloud sync, JSON backups and safety copies as your other records. Attendance does not update salary calculations. Individual PDF and genuine Excel workbooks are available inside Attendance.</div></div></div>';
@@ -8845,7 +8846,7 @@ function attShiftSelect(id, shift, all) {
 function attOpenManager(id) {
   const m = id ? attManager(id) : null; if (id && !m) return toast("Manager not found", "bad");
   const value = m || { name: "", code: "M-" + uid().slice(0, 6).toUpperCase(), department: "", phone: "", defaultShift: "day", active: true, joinedOn: isoDate(new Date()), endedOn: "", note: "" };
-  attDialog("attManagerForm", m ? "Edit manager" : "Add a manager", "Profiles are independent of salary workers. A unique code keeps similar names separate.",
+  attDialog("attManagerForm", m ? "Edit manager" : "Add a manager", "Profiles are independent of salary employees. A unique code keeps similar names separate.",
     '<div class="att-form-grid">' + attField('Full name <span aria-hidden="true">*</span>', attInput("attMName", value.name, 'required maxlength="90" autocomplete="name"'), "wide-mobile") +
     attField("Unique manager code", attInput("attMCode", value.code, 'required maxlength="30" autocapitalize="characters"'), "wide-mobile") +
     attField("Department / role", attInput("attMDepartment", value.department, 'maxlength="70" placeholder="e.g. Operations"')) + attField("Phone (optional)", attInput("attMPhone", value.phone, 'type="tel" maxlength="35" autocomplete="tel"')) +
@@ -9648,10 +9649,10 @@ document.addEventListener("click", (e) => {
     case "editWorker": openWorkerModal(wid); break;
     case "delWorker":
       const w = Store.worker(wid);
-      confirmDialog("Delete worker?", "Remove <b>" + esc(w ? w.name : "") + "</b> and all of their salary records? This cannot be undone.", "Delete worker", () => {
+      confirmDialog("Delete employee?", "Remove <b>" + esc(w ? w.name : "") + "</b> and all of their salary records? This cannot be undone.", "Delete employee", () => {
         Store.data.workers = Store.data.workers.filter((x) => x.id !== wid);
         Store.data.records = Store.data.records.filter((r) => r.workerId !== wid);
-        if (!Store.saveChange()) { render(); return; } render(); toast("Worker deleted");
+        if (!Store.saveChange()) { render(); return; } render(); toast("Employee deleted");
       }, true); break;
     case "workerHistory": { const ww = Store.worker(wid); UI.search = ww ? ww.name : ""; UI.filter = "all"; go("records"); break; }
     case "closeModal": closeModal(); break;
@@ -9724,7 +9725,7 @@ document.addEventListener("click", (e) => {
       commitModal(); refreshRecModal(); break;
     }
     case "delRec":
-      confirmDialog("Delete record?", "Delete the " + monthLabel(UI.openRec.y, UI.openRec.m) + " hisaab for this worker?", "Delete", () => {
+      confirmDialog("Delete record?", "Delete the " + monthLabel(UI.openRec.y, UI.openRec.m) + " hisaab for this employee?", "Delete", () => {
         const st = UI.openRec;
         Store.data.records = Store.data.records.filter((r) => !(r.workerId === st.wid && r.year === st.y && r.month === st.m));
         if (!Store.saveChange()) { render(); return; } closeModal(); render(); toast("Record deleted");
@@ -9743,12 +9744,12 @@ document.addEventListener("click", (e) => {
     }
     case "keepDemo": Store.data.settings.demo = false; if (!Store.saveChange()) { render(); return; } render(); break;
     case "clearDemo":
-      confirmDialog("Start fresh?", "Erase the demo workers and records so you can add your own. <b>Your shop details in Settings are kept.</b>" +
+      confirmDialog("Start fresh?", "Erase the demo employees and records so you can add your own. <b>Your shop details in Settings are kept.</b>" +
         (ct().demo ? " Demo canteen entries bhi hat jayengi." : " <b>Aapki canteen entries safe rahengi.</b>"), "Start fresh", () => {
         const keep = { ...Store.data.settings, demo: false };
         const keepCt = ct().demo ? blankCanteen() : ct();
         Store.data = { settings: keep, workers: [], records: [], canteen: keepCt, attendance: Store.data.attendance };
-        if (!Store.saveChange()) { render(); return; } render(); toast("Demo data cleared — add your first worker", "ok");
+        if (!Store.saveChange()) { render(); return; } render(); toast("Demo data cleared — add your first employee", "ok");
       }, true); break;
     /* ------------------------- CANTEEN MODULE ------------------------- */
     case "gotoCanteen": ctUI().tab = ctUI().tab || "day"; go("canteen"); break;
@@ -9925,13 +9926,13 @@ document.addEventListener("click", (e) => {
     case "importData": importData(); break;
     case "loadSample":
       if (Cloud.scope) { toast("Account ke real data par demo load nahi kar sakte. Pehle JSON backup lein.", "bad"); break; }
-      confirmDialog("Load sample data?", "Current workers, salary records aur canteen data demo se replace honge. Manager attendance safe rahegi. Pehle JSON backup lein.", "Load sample", () => {
+      confirmDialog("Load sample data?", "Current employees, salary records aur canteen data demo se replace honge. Manager attendance safe rahegi. Pehle JSON backup lein.", "Load sample", () => {
         const previous = Store.data; Store.data = { ...sampleData(), attendance: previous.attendance };
         if (!Store.save(false, { checkpoint: true })) { Store.data = previous; return; }
         render(); toast("Sample data loaded", "ok");
       }, true); break;
     case "wipeData":
-      confirmDialog("Erase all data?", "Ye <b>saare workers, salary records, canteen aur manager attendance</b> erase karega. Cloud login on hai to doosre devices par bhi deletion sync hogi. Pehle JSON backup lein.", "Erase everything", () => {
+      confirmDialog("Erase all data?", "Ye <b>saare employees, salary records, canteen aur manager attendance</b> erase karega. Cloud login on hai to doosre devices par bhi deletion sync hogi. Pehle JSON backup lein.", "Erase everything", () => {
         const previous = Store.data; Store.data = blankData();
         if (!Store.save(false, { checkpoint: true })) { Store.data = previous; return; }
         render(); toast("Data cleared — safety copy available; cloud status check karein");
