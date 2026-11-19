@@ -1,6 +1,6 @@
 # Hisaab Pro — tests (developer only)
 
-Ye folder **app ke liye zaroori nahi**. `hisaab_v3.html` / `Hisaab-Pro-v3.27.html` akeli file me chalti hai —
+Ye folder **app ke liye zaroori nahi**. `hisaab_v3.html` / `Hisaab-Pro-v3.28.html` akeli file me chalti hai —
 kisi install ki zaroorat nahi. Ye tests sirf tab chalao jab code me change kiya ho aur check karna ho
 ki **Attendance**, **Canteen**, salary, PDF, loader aur **cross-device cloud sync** toot to nahi gaye.
 Attendance use/rule details: [`ATTENDANCE.md`](../ATTENDANCE.md).
@@ -10,14 +10,16 @@ Attendance use/rule details: [`ATTENDANCE.md`](../ATTENDANCE.md).
 ```bash
 cd tests
 npm ci               # lockfile se jsdom install hota hai
-npm test             # 910: canteen 406 + loader 29 + PDF 26 + cloud 103 + Attendance 313 + Employee 33
-node canteen.test.js ../Hisaab-Pro-v3.27.html   # kisi aur file par chalana ho
+npm test             # 961: canteen 406 + lines 51 + loader 29 + PDF 26 + cloud 103 + Attendance 313 + Employee 33
+node canteen.test.js ../Hisaab-Pro-v3.28.html   # kisi aur file par chalana ho
 node loader.test.js  # sirf index.html loader ke tests
 node pdf.test.js     # fonts + bottom geometry + multi-page
 node cloud.test.js   # fake backend + independent browser stores, 103 sync checks
 node attendance.test.js # calculation, forms, backup, exports: 313 checks
 node employees.test.js  # 33 whole-panel labels + legacy data/exports/CRUD checks
-HISAAB_HTML=../Hisaab-Pro-v3.27.html npm test  # exact release, all 910 checks
+node canteen-lines.test.js # 51 original-line, report/data-safety checks
+node canteen-lines.test.js --artifacts ../.cache/canteen-lines-qa # optional real PDFs
+HISAAB_HTML=../Hisaab-Pro-v3.28.html npm test  # exact release, all 961 checks
 node attendance.test.js --artifacts ../.cache/attendance-qa # real fixture PDF + .xlsx
 node pdf.test.js --artifacts ../.cache/pdf-qa # optional local sample PDFs
 ```
@@ -28,6 +30,8 @@ Sab theek ho to aakhri line aati hai: `✅ SAB CHECKS PASS` / `✅ LOADER SAB TE
 
 | Area | Checks |
 |---|---|
+| Canteen item lines (v3.28), 51 | exact two × 500g reproduction against v3.27; every saved line/own rate/amount/source retained, duplicate lines in one entry, dates/case/units/kinds/lump-sum/zero/precision/order/escaping, non-mutating frozen input, daily/monthly UI + full print + all six PDF templates, 100-row continuation, honest 14-/6-line previews, real shared PDF File bytes, preserved cumulative rate analytics/CSV and complete raw storage/data/cloud state; 23 core/report function bodies plus full CSS unchanged |
+| Optional Canteen Chromium (49, not in npm test) | real old-release forms/PDF reproduce merged 1000g, byte-identical v3.27→v3.28 storage navigation, native 500g per-row downloads/print/share Files, same-bill 37.50/50 own rates, correct grand total, 100 repeated rows, reload, cumulative catalog, 320/390px scrolling tables and every original salary/Attendance/canteen entry retained; print/share destinations stubbed |
 | Employee terminology (v3.27), 33 | whole-panel visible text/placeholders/tooltips, Employee navigation/add/edit/validation/statuses, stable g+w route and command search, destructive confirmations cancelled, unchanged monthly/hourly salary math/advances/deductions, salary PDF drawing ops differ only in labels, real CSV/print/share text, cloud display-only alias, old JSON import and raw-data compatibility, customer-entered names/notes/shop names untouched, 20 byte-identical core/report functions plus original CSS/fonts |
 | Attendance (v3.27), 313 | dynamic profiles/unique codes/same-name resolution, active/employment rules, Tap/Time + Morning/Afternoon/Evening/Night and legacy Day, strict post-11:45-PM monthly bonus thresholds/exclusions/full-month all-shift basis/next-morning/attendance-month attribution and duplicate-history exclusion, 12-hour Morning/Afternoon/Evening/Night clocks in both Check-in/Check-out, all eight same/next-day choices, exhaustive 1,440-minute round-trips with bare/same/next-day prefixes, clock-band boundaries/mismatch rejection, 12 afternoon=noon / 12 night=midnight, blank-only suggestions, v3.24 raw-storage reopening without time/history/financial mutation, invalid 24-hour input rejection, old record reopening, blank clocks/period suggestions, mobile numeric/Hindi entry, actual durations including 24h 01m / screenshot 27h 01m / 36h / 47h 59m, exact same/next-day combinations, reversed/equal rejection, no deductions/automatic target classification, manual half-day/credit snapshots, open check-ins, Sunday status/date/shift dedup, month/year boundaries, filters/search/pagination, duplicate prevention, bulk skip/overwrite, actual forms, calendar/ledger/day/week/month/custom/search/sort, dashboard/settings/keyboard, escaped text, history/actor/before-after, stale editor/account/disk guards, quota rollback, local reload, old JSON/demo/reset/recovery preservation, 250 managers + 750 records pagination and 2,000-history limit |
 | Attendance exports (included above) | top first-sheet summary with numeric distinct present/status days, all actual Sunday dates, per-month full-basis numeric bonus rates; photo-style Date / manager-status / IN / OUT / blank Advance / Shift / Hours / Credit / Notes grid; no fabricated advance amounts, totals or salary-employee joins; empty/partial/multi-month/long-summary/profile-newline safety; unchanged four v3.25 detail XMLs and Attendance PDF (except version footer), genuine individual PDF + 5-sheet OOXML XLSX; chosen manager/shift/custom dates, unmarked vs absent, xrefs/stream lengths/paper bounds, one/two-page monthly layouts and explicit oversized-range refusal, bundled Hindi font + complete OFL notice, ZIP/CRC/XML/numeric hours, Unicode/emoji/formula-safe literal text, reference-style ruled 7-column ledger + dated Sunday list + outlined bonus/rule box + numeric Excel bonus Summary, styled primary register (real dates / `[h]:mm`, borders, gold Sundays, status colours, merges, pinned identity/date columns, actual table filters and identity print titles), atomic totals/signatures, original history/legacy metadata, actual Blob MIME/filenames/ready-file links/no-gesture fallback/failure reporting and full Store/localStorage/history/sync-state invariance, nine byte-identical storage/cloud/financial/clock-action core function bodies plus unchanged attCalculate arithmetic (only three error messages updated), byte-identical v3.23 stylesheet/embedded fonts/shared PDF engine, and salary/canteen non-mutation |
@@ -86,8 +90,9 @@ npx playwright install chromium
 # python3 -m http.server 8000 --bind 0.0.0.0
 HISAAB_URL=http://127.0.0.1:8000/hisaab_v3.html npm run test:attendance:browser
 # Exact release and screenshots:
-HISAAB_URL=http://127.0.0.1:8000/Hisaab-Pro-v3.27.html HISAAB_SCREENSHOTS=1 npm run test:attendance:browser
-HISAAB_URL=http://127.0.0.1:8000/Hisaab-Pro-v3.27.html HISAAB_SCREENSHOTS=1 npm run test:employees:browser
+HISAAB_URL=http://127.0.0.1:8000/Hisaab-Pro-v3.28.html HISAAB_SCREENSHOTS=1 npm run test:attendance:browser
+HISAAB_URL=http://127.0.0.1:8000/Hisaab-Pro-v3.28.html HISAAB_SCREENSHOTS=1 npm run test:employees:browser
+HISAAB_URL=http://127.0.0.1:8000/Hisaab-Pro-v3.28.html HISAAB_SCREENSHOTS=1 npm run test:canteen:browser
 ```
 
 `127.0.0.1` here is only the **local test runner**, never a browser-facing app API.
@@ -103,6 +108,21 @@ stable captures; serverless SwiftShader/single-process flags were omitted.
 Review native form inputs/download events as well as API fixtures. Inspect PDFs
 with PyMuPDF and workbooks with openpyxl if export code changes. Hindi image-backed
 ActualText is checked separately: copy/search support varies by PDF parser/viewer.
+v3.28 adds **51 offline + 49 native** repeated-item regressions; the complete suite
+is **961 offline + 201 native** checks. Template selection intentionally saves
+Settings, so its tests use a separate fixture; report read-only/raw-storage
+assertions remain strict. PDF geometry checks account for the existing y=22
+continuation-only footer and y=64..820 body, including measured/aligned widths.
+Fixtures use actual original-line amounts (legacy normalization deliberately
+preserves explicit entry totals; this fix never recalculates saved finances).
+The old-release 1000g PDF and fixed two-500g real downloads are independently
+parsed alongside 100-row documents. PyMuPDF/openpyxl reparse **41 PDFs + eight
+XLSX workbooks** (including that one legacy-PDF reproduction): actual quantity/
+unit/own-rate/own-amount cells, no clipped glyph/image bounds, repeated headers,
+all 100 rows, closing on final page only, Attendance two-page maximum, six-page
+Employee payroll, complete numeric five-sheet workbooks and blank Advances.
+QA screenshots/artifacts remain ignored.
+
 v3.27 QA independently parsed/rendered **10 PDFs + 8 XLSX workbooks** from native
 downloads. PyMuPDF confirms unrepaired A4 output, page/text bounds, the new EMPLOYEE
 payroll column within its original width and all five Employee signature labels

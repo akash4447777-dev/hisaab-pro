@@ -1,8 +1,8 @@
 # Hisaab Pro — auto-update system (v2.0)
 
-> **Latest v3.27 — Employee / Employees throughout:** sidebar, dashboard, tables, add/edit forms, search/tooltips, confirmations/toasts, command palette, CSV, salary PDF/print/signatures, salary sharing and cloud counts now use Employee naming consistently. **Only wording changed**; the v3.26 top-summary/photo-style Excel, Attendance clocks/Sundays/bonus, canteen and existing panel design remain.
+> **Latest v3.28 — Canteen: har saved item line alag.** Do baar `500 gram Hara dhaniya` likha hai to day/month PDF aur print me **do 500 gram rows** aayengi, ek 1000 gram row nahi. Har line ka apna saved rate/amount aur date/type/party/bill reference; grand totals dono amounts ko sahi jodte rahenge. Same bill ke andar matching lines bhi separate rehti hain. Daily/monthly item UI aur monthly text preview bhi matching detail dikhate hain.
 >
-> **Existing data:** saved profile IDs, salary links, rates, records, attendance/history and custom names/notes are not rewritten. Internal `workers` / `workerId` schema keys/routes stay unchanged for old backups and cloud compatibility; no migration or re-entry. Pehle JSON backup lein; same browser/site par **Panel v3.27** confirm karein. Storage clear mat karein. [Attendance guide](ATTENDANCE.md) · [Safe sync/recovery](CLOUD-SYNC.md).
+> **Report-only fix; existing data safe:** entries, paid/baki/net math, JSON/cloud schema/history, Employee wording, Attendance clocks/Sundays/bonus/Excel/PDF aur panel design unchanged. Rate list/history ab bhi jaan-boojhkar cumulative analytics hain. Pehle JSON backup lein; same browser/site par **Panel v3.28** confirm karke PDF **dobara download** karein. Purani entries dobara add ya storage clear na karein. [Attendance guide](ATTENDANCE.md) · [Safe sync/recovery](CLOUD-SYNC.md).
 
 ## Ab kaise kaam karta hai
 
@@ -70,6 +70,7 @@ File ka naam me version hona chahiye: **`Hisaab-Pro-v<number>.<number>.html`**
 
 | Version | Date | Kya badla | File |
 |---|---|---|---|
+| v3.28 | 2026-11-14 | **Canteen repeated item lines no longer merge in daily/monthly PDF, print or item detail.** A read-only original-line query replaces name/unit grouping only in detailed reports; each saved occurrence keeps its quantity, unit, own rate/amount and source date/type/party/bill/reference, including matching lines in the same bill. Date/save order and original within-entry order; lump-sum items are not invented. Grand totals/paid/baki/net, original entries/raw JSON/CSV/history, rate-catalog/history cumulative analytics, storage/cloud/financial/Attendance functions and full stylesheet/fonts are unchanged. Monthly UI remains an explicitly limited 14-line preview; text share an explicit six-line preview; PDF/print include every saved line with continuation headers and one final closing. **961 automated checks** = 406 canteen + 29 loader + 26 PDF + 103 cloud + 313 Attendance + 33 Employee + 51 repeated-item checks; **201 native Chromium checks** = 49 repeated-item + 126 Attendance + 26 Employee. Native v3.27 forms reproduce 1000g before the fix, navigate without any raw-storage rewrite, and download/share two 500g rows after; same-bill own rates, 100 repeated rows, reload and 320/390px tables checked. Independent PyMuPDF/openpyxl validation of **41 PDFs / eight XLSX workbooks** includes the legacy reproduction, actual own-rate/amount cells, all continuation rows/closing, page bounds and unchanged numeric Attendance exports. Historical archives unchanged; no customer backend, physical-phone or WhatsApp-delivery claim. | `Hisaab-Pro-v3.28.html` |
 | v3.27 | 2026-11-14 | **Employee / Employees wording throughout the panel.** Renamed 108 JS UI literals plus static navigation/add labels: dashboard/Hisaab/employee/ledger/history/settings/Attendance explanations, search/help/validation, CRUD/bulk/reset confirmations, toasts, command palette, salary CSV, salary PDF summary/signatures, print and salary sharing. Display-only cloud conflict collection alias; persisted paths, `workers` / `workerId` keys, actions/routes/selectors, custom names/notes and every original data payload remain. No salary/canteen/Attendance arithmetic, clock, bonus, Excel-layout, storage/cloud/merge/recovery or stylesheet/font change; no AI added. Whole-script AST comparison permits only audited labels, version/note and display alias; 20 protected core/report functions and original fonts/CSS compared byte-for-byte. **910 automated checks** = 406 canteen + 29 loader + 26 PDF + 103 cloud + 313 Attendance + 33 Employee; **152 native Chromium checks** = 126 Attendance + 26 Employee, with real v3.26 storage navigation/CRUD/reload/CSV/PDF/print/share and 320/390px labels. Independent **10 PDF / 8 XLSX** validation includes six-page payroll label bounds plus unchanged numeric Attendance exports. Historical archives untouched; no real-device/WhatsApp-delivery/backend testing claim. | `Hisaab-Pro-v3.27.html` |
 | v3.26 | 2026-11-14 | **Excel first-sheet summary above the user's photo-style date register.** Numeric distinct Present days (not shift count), leave/absent/half/holiday/week-off dates with saved mark counts, actual arrival days, every actual attended Sunday date/count, hours/credits/open/saved/unmarked/calendar/Tap/Time counts; separate full-month/all-shift qualifying OUT count, real numeric bonus % and next threshold for each month. Below: Date / manager-status / actual IN / actual OUT / blank Advance / shift / numeric elapsed hours / credit / full remarks; black grid, white rows, yellow calendar Sundays, total row. Advance is optional manual export space, no linked salary-worker join, guessed amount/zero/total or write-back. Every selected row and all five sheets retained; four detail-sheet XMLs and Attendance PDF byte-identical to v3.25 under a fixed timestamp except PDF version footer. Only identity rows 1–3/date-status columns pinned, so long summaries do not obscure the table; real table filters and print settings. Data/history/storage/cloud/clock/bonus/financial functions and panel stylesheet/fonts unchanged. **877 automated checks** (406 canteen + 29 loader + 26 PDF + 103 cloud + 313 Attendance), **126 native Chromium checks**; independent **18 PDF / 18 XLSX** validation including top metrics/percentage/dates, blank Advances, full raw timings/remarks/history, long summaries and Unicode. FileReader QA now waits for real completion rather than a race-prone sleep. No real-device Excel/WhatsApp/Safari/customer-backend test claim. | `Hisaab-Pro-v3.26.html` |
 | v3.25 | 2026-11-14 | **Screenshot correction: Morning / Afternoon / Evening / Night in both Check-in and Check-out clock dropdowns**, each retaining Same day / Next day (8 choices). Natural clock bands with explicit help: Morning 05:00–11:59, Afternoon 12:00–16:59, Evening 17:00–20:59, Night 21:00–04:59; clock labels, not fixed shift schedules. 12 afternoon=noon, 12 night=midnight; day offset is independent. Reject mismatched periods rather than guessing. Shift/profile suggestions affect blank clocks only. Old canonical 13:33 now reopens as 1:33 afternoon with the original 27h 01m; 01:33 remains 15h 01m from 10:32 morning next day. Consistent board/history/PDF/Excel labels; no saved data/history/financial/storage/cloud-schema rewrite. Existing panel stylesheet/fonts, reference report design/two-page guard, automatic bonus and WhatsApp PDF behavior retained. **863 automated checks** (406 canteen + 29 loader + 26 PDF + 103 cloud + 299 Attendance), **120 native Chromium checks**; independent **18 PDF / 17 XLSX** validation including clock boundaries/long labels. Exhaustive 1,440-minute bare/same/next-day round-trips and real v3.24→v3.25 byte-identical storage navigation. No physical-phone or real WhatsApp-delivery claim. | `Hisaab-Pro-v3.25.html` |
@@ -101,12 +102,12 @@ File ka naam me version hona chahiye: **`Hisaab-Pro-v<number>.<number>.html`**
 | v2.0 | 2026-11-11 | Auto-update loader + fixed working hours/overtime removed. Hourly worker = rate × total hours (naya Hours column). Monthly = ÷30 fixed, Sunday auto-exclude. Version badge. | `Hisaab-Pro-v2.0.html` |
 
 > **File ka rule:** `hisaab_v3.html` = working/source file (yahan change hota hai).
-> `Hisaab-Pro-v3.27.html` = usi ka release copy, taaki upar wala loader apne aap sabse naya version utha le.
+> `Hisaab-Pro-v3.28.html` = usi ka release copy, taaki upar wala loader apne aap sabse naya version utha le.
 > Dono ka content abhi **bilkul same** hai. Purane `Hisaab-Pro-v3.1.html` / `v2.0` repo me pade rehne do.
 
 ---
 
-# Manager Attendance (v3.27) — kaise use karein
+# Manager Attendance (v3.28) — kaise use karein
 
 Sidebar → **Attendance** → **Add manager** → Tap/Time mode. Koi fixed hours ya
 break deduction ya 24-hour cap nahi. Morning/Afternoon/Evening/Night shifts + legacy Day,
@@ -120,6 +121,15 @@ Attendance salary calculations ko nahi badalta.
 # 🍽 Canteen module (v3.1+, price-mode fix v3.2) — kaise use karein
 
 Sidebar me **Canteen** dabao (ya keyboard par `g` phir `c`).
+
+## v3.28 — same item do baar? Dono lines report me alag
+
+- `500 gram Hara dhaniya` + `500 gram Hara dhaniya` → **do alag 500 gram rows**, kabhi ek 1000 gram row nahi. Dono ka amount apni line par; grand total dono ko jodta hai.
+- Same entry ke andar bhi ek jaise items separate rehte hain. Different rates, dates, units, suppliers ya purchase/sale/expense lines ko ek average row me nahi milaya jata.
+- Day/month PDF aur Print me **poori detail** hai. Line ke neeche/saath date, type, party aur bill ka reference; `#2.1` = is report ki date/save-order wali doosri entry ki pehli item line. Ye sirf report-local reference hai, saved ID/schema nahi badla.
+- Monthly screen pe pehli 14 item lines ka preview; zyada hon to count + PDF/Print ka hint. Monthly WhatsApp **text** pe pehli six lines + remaining count; full detail **WhatsApp PDF**/download/Print me.
+- **Rate list / rate history** ka total quantity/amount aur average rate ab bhi cumulative hai; woh catalog analytics hai, original-line report nahi.
+- **Purani entries dobara add na karein.** Same site/browser me Panel v3.28 kholkar naya PDF download karein. Existing PDF file apne aap nahi badalti. Grand totals, saved entries, backups, CSV aur cloud ke liye koi migration nahi.
 
 ## 1. Entry add karna — do tarah se
 
@@ -236,6 +246,6 @@ red badge = is mahine kitni entries ka paisa baki hai.
 
 ## 7. Developer tests
 
-`tests/` folder me **730 offline checks** (canteen/salary, loader, PDF, cloud aur
-Attendance) + optional **45 real Chromium checks** hain. App ke liye test dependencies
+`tests/` folder me **961 offline checks** (canteen/salary, repeated item lines, loader,
+PDF, cloud, Attendance aur Employee) + optional **201 real Chromium checks** hain. App ke liye test dependencies
 zaroori nahi. Commands, fixtures aur QA limits: [`tests/README.md`](tests/README.md).
