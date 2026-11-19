@@ -532,7 +532,7 @@ function closedDialog(d) { d.w.document.getElementById("modalRoot").innerHTML = 
     const set = d.w.Storage.prototype.setItem; d.w.Storage.prototype.setItem = () => { throw Error("quota"); };
     d.click('[data-act="delWorker"]'); d.click('#cfmOk');
     assert.equal(d.S.data.workers.length, 1); assert.equal(d.S.data.records.length, 1);
-    assert.ok(!d.w.document.getElementById("toast").textContent.includes("Worker deleted")); d.w.Storage.prototype.setItem = set;
+    assert.ok(!d.w.document.getElementById("toast").textContent.includes("Employee deleted")); d.w.Storage.prototype.setItem = set;
   });
   await test("concurrent worker deletion vs salary edit pauses; keeping salary retains its worker", async () => {
     const payload = data(["bill"], [worker()]); payload.records.push(record()); const db = new Server(payload), a = await device(db), b = await device(db); await a.login(); await b.login();

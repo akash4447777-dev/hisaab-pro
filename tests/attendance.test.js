@@ -1,6 +1,6 @@
-/* v3.26 — real manager attendance, UI forms, storage/backup, PDF and OOXML.
+/* v3.27 — real manager attendance, UI forms, storage/backup, PDF and OOXML.
    Offline, deterministic, no customer data or external services required.
-   HISAAB_HTML=../Hisaab-Pro-v3.26.html node attendance.test.js
+   HISAAB_HTML=../Hisaab-Pro-v3.27.html node attendance.test.js
    Optional --artifacts <ignored-folder> writes a fixture PDF and .xlsx. */
 const assert = require("node:assert/strict");
 const fs = require("node:fs"), path = require("node:path");
@@ -533,7 +533,7 @@ function assertPdf(pdf) {
   await test('export-only change leaves v3.25 four detail sheets and Attendance PDF byte-identical apart from the version footer',()=>{
     reset();const m=manager();mark(m,{mode:'time',checkIn:'10:32',checkOut:'13:33',outNextDay:true,note:'Original note retained'});const payload=copy(S.data),old=boot(payload,fs.readFileSync(path.join(__dirname,'..','Hisaab-Pro-v3.25.html'),'utf8')),OA=old.Hisaab.attendance;
     const now=w.Date.now,oldNow=old.Date.now;w.Date.now=old.Date.now=()=>1794657600000;
-    try{const current=A.report(m.id,'2026-11-01','2026-11-30','all'),previous=OA.report(m.id,'2026-11-01','2026-11-30','all'),newZip=parseZip(A.xlsxBytes(current)),oldZip=parseZip(OA.xlsxBytes(previous));for(let i=1;i<=4;i++)assert.equal(newZip['xl/worksheets/sheet'+i+'.xml'],oldZip['xl/worksheets/sheet'+i+'.xml']);assert.equal(A.pdfString(current).replaceAll('Hisaab v3.26','Hisaab v3.25'),OA.pdfString(previous));}finally{w.Date.now=now;old.Date.now=oldNow;}
+    try{const current=A.report(m.id,'2026-11-01','2026-11-30','all'),previous=OA.report(m.id,'2026-11-01','2026-11-30','all'),newZip=parseZip(A.xlsxBytes(current)),oldZip=parseZip(OA.xlsxBytes(previous));for(let i=1;i<=4;i++)assert.equal(newZip['xl/worksheets/sheet'+i+'.xml'],oldZip['xl/worksheets/sheet'+i+'.xml']);assert.equal(A.pdfString(current).replaceAll('Hisaab v3.27','Hisaab v3.25'),OA.pdfString(previous));}finally{w.Date.now=now;old.Date.now=oldNow;}
     assert.deepEqual(copy(S.data),payload);salaryUnchanged();
   });
   await test('paper-register headers and comments remain literal text with no workbook formulas, macros or external links',()=>{

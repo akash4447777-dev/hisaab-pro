@@ -1,9 +1,20 @@
-# HISAAB v3.26 — manager Attendance
+# HISAAB v3.27 — manager Attendance
 
 **Attendance is a tab inside the existing Hisaab Panel**, not a separate app.
 Manager profiles, attendance, credit settings and history share the panel’s
 existing local save, JSON backup and configured cloud sync. **Attendance never
-changes worker salaries, wages, advances, deductions or payments.**
+changes employee salaries, wages, advances, deductions or payments.**
+
+## v3.27 — Employee naming throughout the panel
+
+The salary module now consistently says **Employee / Employees** in navigation,
+headings, forms, search/help, confirmations, messages, CSV, salary PDF/print and
+sharing. This is **wording only**. Existing profile IDs, salary links, rates,
+advances, records, canteen, Attendance data/history and custom names/notes are
+unchanged. Technical `workers` / `workerId` keys and routes stay compatible with
+old JSON backups and cloud payloads; there is no migration or re-entry required.
+Manager Attendance remains separate. The v3.26 Excel format, clock choices,
+actual-hour/Sunday rules, monthly bonus and Attendance PDF remain unchanged.
 
 ## v3.26 — Excel summary above the photo-style date register
 
@@ -43,7 +54,7 @@ and full note remains; multiple saved shifts on one date remain separate rows.
 
 **Advance is intentionally blank**, including its total: it is optional manual
 space in the exported file. Attendance has no linked manager advance field, so
-no salary-worker match by name, guessed zero/amount or salary/payment update is
+no salary-employee match by name, guessed zero/amount or salary/payment update is
 introduced. Editing the downloaded workbook does **not** write back into the app.
 
 The original **Summary, Daily attendance, Change history and Sundays attended**
@@ -216,11 +227,11 @@ remains in JSON/history for compatibility and validation, **not arithmetic**.
 Consequently, old timed entries now display their **full in → out hours** and
 completed valid Time entries display Present, rather than the old target-based
 classification. Previous printed totals can differ; keep previous reports if needed.
-Use v3.26 on all devices/tabs for the latest Excel format and consistent clock labels; do not clear storage.
+Use v3.27 on all devices/tabs for the latest Excel format and consistent clock labels; do not clear storage.
 
 ## Start here
 
-1. Settings → **Backup (JSON)**. Open the latest panel and confirm **Panel v3.26**.
+1. Settings → **Backup (JSON)**. Open the latest panel and confirm **Panel v3.27**.
    See [safe device sync](CLOUD-SYNC.md).
 2. Sidebar → **Attendance** → **Add manager**. Enter a name and unique code,
    choose **Morning / Afternoon / Evening / Night** (or **Day (existing)**),

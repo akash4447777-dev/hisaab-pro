@@ -1,4 +1,4 @@
-# HISAAB v3.26 — safe login, device sync aur recovery
+# HISAAB v3.27 — safe login, device sync aur recovery
 
 v3.17’s data-safety protocol remains in place. v3.19 extends the same protection
 to the integrated manager Attendance tab; no new Supabase table/project is needed.
@@ -38,17 +38,23 @@ v3.26 changes **only the exported Excel presentation**: summary/actual Sunday
 dates/monthly bonus above a photo-style date register; all five sheets retained.
 Distinct present/status dates are export-only display counts, not new payroll
 rules. Advance is blank manual space in the downloaded workbook, never linked
-to salary workers by name or written back. No original record/history, clock,
+to salary employees by name or written back. No original record/history, clock,
 PDF design, bonus arithmetic, storage key, recovery/merge function or schema
 change. v3.25 data is read without migration; use v3.26 to export the new format.
+v3.27 consistently labels the salary module **Employee / Employees**. Displayed
+cloud counts/conflict collection labels use the same wording; internal
+`workers` / `workerId` paths, merge decisions, recovery snapshots, storage keys
+and cloud payloads stay unchanged. Old JSON backups still import directly.
+Customer-entered names/notes/shop names are never mass-renamed. No new server,
+AI integration, migration or financial/attendance change is introduced.
 [Attendance guide, Sunday date rules and backup advice](ATTENDANCE.md).
 
 ## Pehle ye karein (existing users)
 
 1. **Jis phone/laptop par asli data abhi dikh raha hai, uska Settings → Backup (JSON) download karein.** Salary, canteen aur saved Attendance sab isi backup me aate hain. Doosre device par bhi bacha data ho to uska alag backup rakhein.
-2. **Dono devices aur saare purane tabs par v3.26 kholein:**
-   [Hisaab-Pro-v3.26.html](https://akash4447777-dev.github.io/hisaab-pro/Hisaab-Pro-v3.26.html).
-   Sidebar me **Panel v3.26** confirm karein. Browser/site storage clear, uninstall, “Erase all data” ya “Sample data” mat karein.
+2. **Dono devices aur saare purane tabs par v3.27 kholein:**
+   [Hisaab-Pro-v3.27.html](https://akash4447777-dev.github.io/hisaab-pro/Hisaab-Pro-v3.27.html).
+   Sidebar me **Panel v3.27** confirm karein. Browser/site storage clear, uninstall, “Erase all data” ya “Sample data” mat karein.
 3. Pehle bache-data wale device par **usi Supabase Project URL aur usi email/account** se sign in karein. Existing setup ko reset ya naya project/account banane ki zaroorat nahi.
 4. Settings → **Sync now**. `Cloud synced` aane par doosre updated device par bhi same project/account se sign in karein. Pehli login par cloud read hota hai; naya khaali/demo device populated cloud ko replace nahi karta.
 5. `Sync paused · data protected` aaye to neeche wali conflict/recovery choice dekhein. `Local saved · sync pending` ya `Offline · sync pending` ko cloud backup ki confirmation **na** maanein.
@@ -71,8 +77,8 @@ Network fail hone par successfully saved offline edits aur merge baseline accoun
 ## Conflict aaye to
 
 - Alag devices ki **alag entries** automatically judti hain. Ek entry par non-conflicting field changes bhi jud sakte hain.
-- Same financial field ke alag amounts, salary edit-v-delete, worker delete ke saath nayi salary, ya amount-v-payment inconsistency par sync **rukta hai**. Clock/time ko dekhkar financial winner choose nahi hota.
-- Dialog me **device aur cloud ke conflicting values** dekhein. **Device ki conflicting values** / **Cloud ki conflicting values** ka selection sirf matching conflicts par hai; independent rows ko discard nahi karta. Worker deletion select karna us worker ki dependent salary deletion bhi hai.
+- Same financial field ke alag amounts, salary edit-v-delete, employee delete ke saath nayi salary, ya amount-v-payment inconsistency par sync **rukta hai**. Clock/time ko dekhkar financial winner choose nahi hota.
+- Dialog me **device aur cloud ke conflicting values** dekhein. **Device ki conflicting values** / **Cloud ki conflicting values** ka selection sirf matching conflicts par hai; independent rows ko discard nahi karta. Employee deletion select karna us employee ki dependent salary deletion bhi hai.
 - Choice ke waqt server dobara read hota hai. Conflicting values tab tak badal chuki hon to fresh choice aayegi.
 - Suspicious empty/legacy-missing/demo cloud par **Bacha data safely cloud me jodo** additive recovery hai, blind full replacement nahi. Agar isme actual financial conflict ho to doosra choice dialog aayega.
 - Dialog band karne par sync paused rehta hai. Banner/Settings → **Resolve safely** se wapas kholein. Pehle current JSON download kar sakte hain.
@@ -91,7 +97,7 @@ v3.17 local delete/restore/import, cloud adoption/write aur conflict resolution 
 
 ## Developer note: bug aur fix
 
-Purana login sirf `payload.workers.length` se cloud ko populated maanta tha. Canteen-only account (0 workers, real bills) ko empty samajhkar fresh-device demo data ka unconditional `upsert` ho jata tha. Original device agle pull me replacement adopt kar leta tha. Remote adoption bhi dobara save/push schedule kar sakti thi.
+Purana login sirf `payload.workers.length` se cloud ko populated maanta tha. Canteen-only account (0 employees, real bills) ko empty samajhkar fresh-device demo data ka unconditional `upsert` ho jata tha. Original device agle pull me replacement adopt kar leta tha. Remote adoption bhi dobara save/push schedule kar sakti thi.
 
 v3.17:
 
@@ -108,7 +114,7 @@ No salary/canteen schema reset, existing data-key change, PDF/font/template/What
 ## Attendance sync extension (v3.19)
 
 - `payload.attendance` contains independent `managers`, `records`, `history` and
-  `settings`; salary workers/records are not reused or recalculated. An
+  `settings`; salary employees/records are not reused or recalculated. An
   Attendance-only/rules-only account counts as real populated data, not demo/empty.
 - Stable IDs plus the natural key **manager ID + date + Day/Night shift** prevent
   duplicate marks. Independent records merge. Identical marks created under
