@@ -1,11 +1,13 @@
 {
   "name": "hisaab-pro-tests",
-  "version": "3.27.0",
+  "version": "3.28.0",
   "private": true,
   "description": "Hisaab \u2014 canteen, salary regression, loader, PDF, attendance aur safe cloud sync ke developer-only tests",
   "scripts": {
-    "test": "node canteen.test.js && node loader.test.js && node pdf.test.js && node cloud.test.js && node attendance.test.js && node employees.test.js",
+    "test": "node canteen.test.js && node loader.test.js && node pdf.test.js && node cloud.test.js && node attendance.test.js && node employees.test.js && node canteen-lines.test.js",
     "test:canteen": "node canteen.test.js",
+    "test:canteen:lines": "node canteen-lines.test.js",
+    "test:canteen:browser": "node canteen-lines.browser.js",
     "test:loader": "node loader.test.js",
     "test:pdf": "node pdf.test.js",
     "test:v2.0": "node canteen.test.js ../Hisaab-Pro-v2.0.html",

@@ -1965,7 +1965,7 @@ const rRate = (n) => { const x = Math.max(0, num(n)); return x >= 1 ? r2(x) : Ma
 /* rate dikhane ka format: <₹1 ho to 0.075 jaisa khula number, warna moneyS */
 const rateS = (n) => { const x = num(n); if (x > 0 && x < 1) return "₹" + String(Math.round((x + Number.EPSILON) * 10000) / 10000); return moneyS(x); };
 const clamp = (n, lo, hi) => Math.min(hi, Math.max(lo, n));
-const APP_VERSION = "3.27";
+const APP_VERSION = "3.28";
 const esc = (s) => String(s == null ? "" : s).replace(/[&<>"']/g, (m) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[m]));
 
 const MONTHS = ["January","February","March","April","May","June","July","August","September","October","November","December"];
@@ -3290,6 +3290,7 @@ function viewSettings(){
 
     '<div style="text-align:center;font-size:11.5px;color:var(--muted);margin-top:18px;line-height:1.7">'+
       'Panel <b style="color:var(--ink)">v<span data-ver></span></b> · Auto-update enabled<br>'+
+      'v3.28 — <b style="color:var(--ink)">Canteen: same item ki har entry alag</b>: din / mahina PDF, print aur item detail me ek jaise naam aur quantity wali lines ab merge nahi hoti. 500 gram + 500 gram do alag 500 gram lines rahengi, har line ka apna rate / amount aur source reference. Grand totals wahi sahi jod; original entries, paid/baki, rate catalog/history, Employee naming, Attendance reports, data aur sync unchanged. Purani entries dobara add na karein—naya PDF download karein<br>'+
       'v3.27 — <b style="color:var(--ink)">Employee naming throughout the panel</b>: navigation, dashboard, forms, search, messages, CSV, salary PDF/print aur sharing me consistent Employee / Employees labels. Sirf wording change; existing profiles/IDs, salary/canteen/Attendance data, clocks, calculations, Excel format, backups aur cloud sync unchanged. Purana data dobara add karne ki zaroorat nahi<br>'+
       'v3.26 — <b style="color:var(--ink)">Excel: upar full summary, neeche photo-style register</b>: first sheet me total present days, leaves/half/absent, actual attended Sunday dates/count, working hours, credits aur monthly extra bonus % upar. Neeche Date / manager attendance / actual check-in / actual check-out / blank Advance / shift / hours / credit / full remarks: black borders, white rows aur yellow Sundays. Present days distinct dates hain; multiple shifts se days double-count nahi. Advance sirf blank manual space, salary data se koi naam-based link ya amount/total guess nahi. Five sheets, raw details/history aur all selected rows retained. Sirf Excel presentation; saved data, clock controls, PDF design, bonus arithmetic, panel layout, salary/canteen aur sync unchanged<br>'+
       'v3.25 — <b style="color:var(--ink)">Check-in / Check-out ke four time periods</b>: dono clock dropdowns me Same day / Next day ke saath Morning, Afternoon, Evening aur Night, sirf alag Shift selector me nahi. 12 afternoon = noon, 12 night = midnight; Night 1–4 after midnight. Same/next day khud select karein; automatic date guessing nahi. Purana 13:33 ab 1:33 afternoon dikhata hai, saved time/27h 01m unchanged. Galat clock/period par clear error. Shift/profile change typed clock periods ko nahi badalta. PDF/Excel/history me matching labels; panel styling, saved data, bonus aur salary/canteen unchanged<br>'+
@@ -5460,6 +5461,27 @@ function ctFilteredEntries() {
   }
   return list;
 }
+/* Report detail is one row per saved item line — never group matching names.
+   Keep ctItemAgg separately for the explicitly cumulative rate-list/history. */
+function ctItemLines(list) {
+  const out = [];
+  (list || []).slice().sort((a, b) => String(a.date).localeCompare(String(b.date)) || num(a.createdAt) - num(b.createdAt)).forEach((e, entryIndex) => {
+    if (e.mode !== "itemized") return;
+    (e.items || []).forEach((i, itemIndex) => {
+      const name = String(i.name || "").trim();
+      if (!name) return;
+      out.push({ name, unit: String(i.unit || "kg"), qty: num(i.qty), rate: ctItemUnitRate(i), amt: ctItemAmt(i),
+        entryId: e.id, entryNo: entryIndex + 1, itemIndex, date: e.date, kind: e.kind,
+        party: String(e.party || ""), billNo: String(e.billNo || ""), lineItems: i.priceMode === "line" ? 1 : 0 });
+    });
+  });
+  return out;
+}
+function ctItemLineRef(i) {
+  return ["#" + i.entryNo + "." + (i.itemIndex + 1), ctShort(i.date), ctKindOf(i).en, i.party, i.billNo ? "Bill " + i.billNo : ""].filter(Boolean).join(" · ");
+}
+function ctItemLineHTML(i) { return esc(i.name) + '<div class="ct-ilist">' + esc(ctItemLineRef(i)) + '</div>'; }
+function ctItemLineText(i) { return i.name + " — " + ctItemLineRef(i); }
 function ctItemAgg(list) {
   const map = new Map();
   (list || []).forEach((e) => {
@@ -5701,7 +5723,7 @@ function ctDayLedger() {
   const list = ctOnDate(iso);
   const t = ctTotals(list);
   const mt = ctTotals(ctInMonth(p.y, p.m));
-  const items = ctItemAgg(list);
+  const items = ctItemLines(list);
   const totalMode = list.filter((e) => e.mode === "total" && e.kind === "purchase");
   const baki = ctBakiList(list);
   const isToday = ctIsToday(iso);
@@ -5792,17 +5814,16 @@ function ctDayLedger() {
 
   const totModeSum = r2(totalMode.reduce((s, e) => s + ctAmount(e), 0));
   const itemRows = items.map((i) =>
-    "<tr><td>" + esc(i.name) +
-      (i.lineItems ? ' <span class="ct-modeTag tot" title="' + i.lineItems + ' line poori-line total se likhi gayi — rate yahan se nikla hai">Σ</span>' : "") + "</td>" +
+    "<tr><td>" + ctItemLineHTML(i) +
+      (i.lineItems ? ' <span class="ct-modeTag tot" title="Poori-line total se is line ka per-unit rate nikla hai">Σ</span>' : "") + "</td>" +
     '<td class="num strong">' + num(i.qty) + "</td>" +
     '<td class="muted">' + esc(i.unit) + "</td>" +
-    '<td class="num">' + (i.avgRate ? rateS(i.avgRate) : "—") + "</td>" +
-    '<td class="num">' + (i.lastRate && i.lastRate !== i.avgRate ? '<span class="muted" style="font-size:11px">aakhri ' + rateS(i.lastRate) + "</span>" : "") + "</td>" +
+    '<td class="num">' + rateS(i.rate) + "</td>" +
     '<td class="num strong">' + moneyS(i.amt) + "</td>" +
-    '<td class="num muted">' + i.n + "</td></tr>").join("");
+    '<td class="num muted">' + i.entryNo + "." + (i.itemIndex + 1) + "</td></tr>").join("");
   const itemCard =
     '<div class="card"><div class="card-h"><div><h3>Saman item-wise (rate ke saath)</h3>' +
-      '<div class="sub">Sirf rate-wise entries ka item detail — qty × rate</div></div>' +
+      '<div class="sub">Har saved item line alag — same naam/quantity bhi merge nahi hoti</div></div>' +
       '<span class="tag warn">' + moneyS(t.itemizedAmt) + "</span></div>" +
       (totModeSum > 0
         ? '<div class="banner" style="margin:12px 14px 0;background:var(--cyan-soft);border-color:color-mix(in srgb,var(--cyan) 26%,var(--line))">' +
@@ -5811,10 +5832,10 @@ function ctDayLedger() {
         : "") +
       (items.length
         ? '<div class="twrap"><table class="tbl" style="min-width:520px"><thead><tr>' +
-          "<th>Item</th>" + '<th class="num">Qty</th><th>Unit</th><th class="num">Avg rate</th><th class="num">Aakhri rate</th>' +
-          '<th class="num">Amount</th><th class="num">Entries</th>' +
+          "<th>Item</th>" + '<th class="num">Qty</th><th>Unit</th><th class="num">Rate</th>' +
+          '<th class="num">Amount</th><th class="num">Line</th>' +
           "</tr></thead><tbody>" + itemRows + "</tbody>" +
-          '<tfoot><tr><td colspan="5">Item-wise total</td><td class="num">' + moneyS(t.itemizedAmt) + "</td><td></td></tr></tfoot>" +
+          '<tfoot><tr><td colspan="4">Item-wise total</td><td class="num">' + moneyS(t.itemizedAmt) + "</td><td></td></tr></tfoot>" +
           "</table></div>"
         : '<div class="ct-emptyline">Is din koi rate-wise item nahi.</div>') +
     "</div>";
@@ -5843,7 +5864,7 @@ function ctMonthLedger() {
   const days = ctMonthDays(y, m);
   const active = days.filter((d) => d.list.length);
   const hist = ctLast6(y, m);
-  const items = ctItemAgg(list);
+  const items = ctItemLines(list);
   const parties = ctPartyAgg(list);
   const bakiAll = ctBakiList(ctAll());
 
@@ -5933,25 +5954,25 @@ function ctMonthLedger() {
         : ctEmpty("🗓", "Is mahine koi canteen entry nahi", monthLabel(y, m) + " me saman, bikri ya kharcha add karo.", "ctAdd", "＋ Entry add karo")) +
     "</div>";
 
-  const maxItem = items.length ? items[0].amt || 1 : 1;
+  const maxItem = items.reduce((max, i) => Math.max(max, i.amt), 0) || 1;
   const itemCard =
     '<div class="card"><div class="card-h"><div><h3>Item-wise summary</h3>' +
-      '<div class="sub">Rate-wise entries ke items · sabse zyada pehle</div></div>' +
-      '<span class="tag warn">' + items.length + " items</span></div>" +
+      '<div class="sub">Har item line alag · date / saved order · same item merge nahi hota</div></div>' +
+      '<span class="tag warn">' + items.length + " item lines</span></div>" +
       (items.length
         ? '<div class="twrap"><table class="tbl" style="min-width:460px"><thead><tr>' +
-          "<th>Item</th>" + '<th class="num">Qty</th><th class="num">Avg rate</th><th class="num">Amount</th><th></th>' +
+          "<th>Item</th>" + '<th class="num">Qty</th><th class="num">Rate</th><th class="num">Amount</th><th></th>' +
           "</tr></thead><tbody>" +
           items.slice(0, 14).map((i) =>
-            "<tr><td>" + esc(i.name) +
-              (i.lineItems ? ' <span class="ct-modeTag tot" title="' + i.lineItems + ' line poori-line total se">Σ</span>' : "") +
-              ' <span class="muted" style="font-size:11px">' + esc(i.unit) + " · " + i.n + "×</span></td>" +
+            "<tr><td>" + ctItemLineHTML(i) +
+              (i.lineItems ? ' <span class="ct-modeTag tot" title="Poori-line total se is line ka per-unit rate">Σ</span>' : "") +
+              ' <span class="muted" style="font-size:11px">' + esc(i.unit) + "</span></td>" +
             '<td class="num strong">' + num(i.qty) + "</td>" +
-            '<td class="num">' + rateS(i.avgRate) + "</td>" +
+            '<td class="num">' + rateS(i.rate) + "</td>" +
             '<td class="num strong">' + moneyS(i.amt) + "</td>" +
             '<td style="width:60px"><div class="ct-hbar"><i style="width:' + Math.max(4, Math.round((i.amt / maxItem) * 100)) + '%"></i></div></td></tr>').join("") +
           "</tbody></table></div>" +
-          (items.length > 14 ? '<div class="ct-emptyline">…aur ' + (items.length - 14) + " items. Poori list “Sab entries” → item search me.</div>" : "")
+          (items.length > 14 ? '<div class="ct-emptyline">…aur ' + (items.length - 14) + " item lines. Poori list PDF / Print ya “Sab entries” → item search me.</div>" : "")
         : '<div class="ct-emptyline">Is mahine koi rate-wise item nahi. Entry karte waqt “Item-wise rate” chuno to yahan summary banegi.</div>') +
     "</div>";
 
@@ -6988,7 +7009,7 @@ function ctPrintHTML(kind, arg) {
   if (kind === "day") {
     const list = ctOnDate(arg);
     const t = ctTotals(list);
-    const items = ctItemAgg(list);
+    const items = ctItemLines(list);
     return '<div class="stmt ct-stmt"><div class="pad">' +
       ctStmtHead("CANTEEN DAY LEDGER", ctPretty(arg) + " (" + ctDayName(arg) + ")", "Generated " + new Date().toLocaleString("en-IN")) +
       '<div class="meta"><div>' +
@@ -7010,9 +7031,9 @@ function ctPrintHTML(kind, arg) {
       (items.length
         ? '<h4 class="sec">Saman item-wise (rate ke saath)</h4>' +
           "<table><thead><tr><th>Item</th><th class=\"r\">Qty</th><th>Unit</th>" +
-          '<th class="r">Avg rate</th><th class="r">Amount (₹)</th></tr></thead><tbody>' +
-          items.map((i) => "<tr><td>" + esc(i.name) + '</td><td class="r">' + num(i.qty) + "</td><td>" + esc(i.unit) + "</td>" +
-            '<td class="r">' + (i.avgRate < 1 ? rateS(i.avgRate) : money(i.avgRate)) + '</td><td class="r">' + money(i.amt) + "</td></tr>").join("") +
+          '<th class="r">Rate</th><th class="r">Amount (₹)</th></tr></thead><tbody>' +
+          items.map((i) => "<tr><td>" + ctItemLineHTML(i) + '</td><td class="r">' + num(i.qty) + "</td><td>" + esc(i.unit) + "</td>" +
+            '<td class="r">' + (i.rate < 1 ? rateS(i.rate) : money(i.rate)) + '</td><td class="r">' + money(i.amt) + "</td></tr>").join("") +
           '<tr><td colspan="4"><b>Item-wise total</b></td><td class="r"><b>' + money(t.itemizedAmt) + "</b></td></tr></tbody></table>"
         : "") +
       (t.totalModeCount ? '<div class="inwords">' + t.totalModeCount + " entry me sirf ek-saath total likha hai (item ka alag rate nahi) — " +
@@ -7028,7 +7049,7 @@ function ctPrintHTML(kind, arg) {
   const list = ctInMonth(y, m);
   const t = ctTotals(list);
   const days = ctMonthDays(y, m).filter((d) => d.list.length);
-  const items = ctItemAgg(list);
+  const items = ctItemLines(list);
   const parties = ctPartyAgg(list);
   return '<div class="stmt ct-stmt"><div class="pad">' +
     ctStmtHead("CANTEEN MONTHLY LEDGER", monthLabel(y, m), "Generated " + new Date().toLocaleString("en-IN")) +
@@ -7052,10 +7073,10 @@ function ctPrintHTML(kind, arg) {
       : "<p style='color:#6b7280'>Is mahine koi entry nahi.</p>") +
     (items.length
       ? '<h4 class="sec">Item-wise summary (rate wali entries)</h4>' +
-        "<table><thead><tr><th>Item</th>" + '<th class="r">Qty</th><th>Unit</th><th class="r">Avg rate</th>' +
-        '<th class="r">Amount</th><th class="r">Entries</th></tr></thead><tbody>' +
-        items.map((i) => "<tr><td>" + esc(i.name) + '</td><td class="r">' + num(i.qty) + "</td><td>" + esc(i.unit) + "</td>" +
-          '<td class="r">' + (i.avgRate < 1 ? rateS(i.avgRate) : money(i.avgRate)) + '</td><td class="r">' + money(i.amt) + '</td><td class="r">' + i.n + "</td></tr>").join("") +
+        "<table><thead><tr><th>Item</th>" + '<th class="r">Qty</th><th>Unit</th><th class="r">Rate</th>' +
+        '<th class="r">Amount</th><th class="r">Line</th></tr></thead><tbody>' +
+        items.map((i) => "<tr><td>" + ctItemLineHTML(i) + '</td><td class="r">' + num(i.qty) + "</td><td>" + esc(i.unit) + "</td>" +
+          '<td class="r">' + (i.rate < 1 ? rateS(i.rate) : money(i.rate)) + '</td><td class="r">' + money(i.amt) + '</td><td class="r">' + i.entryNo + "." + (i.itemIndex + 1) + "</td></tr>").join("") +
         "</tbody></table>"
       : "") +
     (parties.length
@@ -7176,10 +7197,10 @@ const CT_COLS_DAY = [
   { l: "Amount (₹)", w: 82, r: 1 }, { l: "Paid", w: 80, r: 1 }, { l: "Baki", w: 79.28, r: 1 }];
 const CT_COLS_DAY_I = [
   { l: "Item", w: 220 }, { l: "Qty", w: 60, r: 1 }, { l: "Unit", w: 55 },
-  { l: "Avg rate", w: 90, r: 1 }, { l: "Amount (₹)", w: 90.28, r: 1 }];
+  { l: "Rate", w: 90, r: 1 }, { l: "Amount (₹)", w: 90.28, r: 1 }];
 const CT_COLS_ITEMS = [
   { l: "Item", w: 185 }, { l: "Qty", w: 60, r: 1 }, { l: "Unit", w: 55 },
-  { l: "Avg rate", w: 85, r: 1 }, { l: "Amount", w: 85, r: 1 }, { l: "Entries", w: 45.28, r: 1 }];
+  { l: "Rate", w: 85, r: 1 }, { l: "Amount", w: 85, r: 1 }, { l: "Line", w: 45.28, r: 1 }];
 const CT_COLS_MONTH = [
   { l: "Date", w: 70 }, { l: "Din", w: 36 }, { l: "Entries", w: 46, r: 1 },
   { l: "Saman", w: 60, r: 1 }, { l: "Bikri", w: 60, r: 1 }, { l: "Kharcha", w: 60, r: 1 },
@@ -7411,11 +7432,11 @@ function ctPdfDayStr(iso) {
     ctKindOf(e).en, e.party || "\u2014", e.billNo || "\u2014",
     e.mode === "total" ? "Lump-sum" : "Item-wise",
     money(ctAmount(e)), money(Math.min(ctPaid(e), ctAmount(e))), money(ctBalance(e))]));
-  const items = ctItemAgg(list);
+  const items = ctItemLines(list);
   if (items.length) {
     y = ctPdfSecTitle(p, y, "SAMAN ITEM-WISE (RATE KE SAATH)");
-    y = ctPdfTable(p, y, CT_COLS_DAY_I, items.map((i) => [i.name, String(num(i.qty)), i.unit,
-      i.avgRate < 1 ? rateS(i.avgRate) : money(i.avgRate), money(i.amt)]),
+    y = ctPdfTable(p, y, CT_COLS_DAY_I, items.map((i) => [ctItemLineText(i), String(num(i.qty)), i.unit,
+      i.rate < 1 ? rateS(i.rate) : money(i.rate), money(i.amt)]),
       ["Item-wise total", "", "", "", money(t.itemizedAmt)]);
   }
   if (t.totalModeCount) {
@@ -7445,11 +7466,11 @@ function ctPdfMonthStr(y, m) {
     d.t.balance > 0.005 ? money0(d.t.balance) : "-"]),
     ["Mahine ka total", "", String(t.count), money0(t.purchase), money0(t.sale), money0(t.expense),
      (t.net < 0 ? "−" : "") + money0(Math.abs(t.net)), money0(t.paid), t.balance > 0.005 ? money0(t.balance) : "-"]);
-  const items = ctItemAgg(list);
+  const items = ctItemLines(list);
   if (items.length) {
     yy = ctPdfSecTitle(p, yy, "ITEM-WISE SUMMARY (RATE WALI ENTRIES)");
-    yy = ctPdfTable(p, yy, CT_COLS_ITEMS, items.map((i) => [i.name, String(num(i.qty)), i.unit,
-      i.avgRate < 1 ? rateS(i.avgRate) : money(i.avgRate), money(i.amt), String(i.n)]));
+    yy = ctPdfTable(p, yy, CT_COLS_ITEMS, items.map((i) => [ctItemLineText(i), String(num(i.qty)), i.unit,
+      i.rate < 1 ? rateS(i.rate) : money(i.rate), money(i.amt), i.entryNo + "." + (i.itemIndex + 1)]));
   }
   const parties = ctPartyAgg(list);
   if (parties.length) {
@@ -8074,12 +8095,13 @@ function ctShareMonth() {
       (d.t.expense ? " · kharcha −" + money(d.t.expense) : "") +
       " · net " + (d.t.net < 0 ? "−" : "") + money(Math.abs(d.t.net)));
   });
-  const items = ctItemAgg(list).slice(0, 6);
+  const itemLines = ctItemLines(list), items = itemLines.slice(0, 6);
   if (items.length) {
     L.push("");
     L.push("*Saman item-wise:*");
-    items.forEach((i) => L.push("   " + i.name + " — " + num(i.qty) + " " + i.unit + " · " + money(i.amt) +
-      " (" + rateS(i.avgRate) + "/" + i.unit + ")"));
+    items.forEach((i) => L.push("   " + ctItemLineText(i) + " — " + num(i.qty) + " " + i.unit + " · " + money(i.amt) +
+      " (" + rateS(i.rate) + "/" + i.unit + ")"));
+    if (itemLines.length > items.length) L.push("   …aur " + (itemLines.length - items.length) + " item lines. Poora detail PDF / Print me.");
   }
   L.push("");
   L.push("Saman: −" + money(t.purchase));
@@ -10141,7 +10163,7 @@ window.Hisaab = { Store, calc, monthMeta, PdfDoc, inWords, UI, render, go, Cloud
     ui: attUI, openManager: attOpenManager, openRecord: attOpenRecord, openRules: attOpenRules, openBulk: attOpenBulk, openExport: attOpenExport,
     pdfString: attPdfString, pdfLayout: attPdfLayout, sharePdf: (report) => attDownloadReport(report, "whatsapp"), xlsxBytes: attXlsxBytes, download: attDownloadReport, setDate: attSetDate, resolveManager: attResolveManager },
   /* canteen module API */
-  canteen: { data: ct, totals: ctTotals, entries: ctAll, onDate: ctOnDate, inMonth: ctInMonth,
+  canteen: { data: ct, totals: ctTotals, itemLines: ctItemLines, entries: ctAll, onDate: ctOnDate, inMonth: ctInMonth,
              dayLedger: ctDayLedger, monthLedger: ctMonthLedger, openModal: openCtModal, save: ctSave,
              csv: ctCsv, printDay: ctPrintDay, printMonth: ctPrintMonth, blank: blankCanteen,
              pdfDay: ctPdfDay, pdfMonth: ctPdfMonth, renderModal: ctRenderModal, photoBox: ctPhotoBoxHTML,

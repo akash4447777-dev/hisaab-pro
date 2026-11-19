@@ -1,4 +1,4 @@
-# HISAAB v3.27 — safe login, device sync aur recovery
+# HISAAB v3.28 — safe login, device sync aur recovery
 
 v3.17’s data-safety protocol remains in place. v3.19 extends the same protection
 to the integrated manager Attendance tab; no new Supabase table/project is needed.
@@ -47,14 +47,20 @@ cloud counts/conflict collection labels use the same wording; internal
 and cloud payloads stay unchanged. Old JSON backups still import directly.
 Customer-entered names/notes/shop names are never mass-renamed. No new server,
 AI integration, migration or financial/attendance change is introduced.
+v3.28 corrects **only Canteen detailed reports**: repeated same-name/unit items
+remain separate saved-line rows, not one combined quantity/amount. Existing
+entries/IDs, financial totals, rate-catalog/history analytics, CSV, storage keys,
+normalization, save/import, recovery/merge functions, cloud payloads and all
+Attendance reports/rules remain unchanged. No migration, server change or
+re-entry. Re-download the PDF; do not duplicate old entries or clear storage.
 [Attendance guide, Sunday date rules and backup advice](ATTENDANCE.md).
 
 ## Pehle ye karein (existing users)
 
 1. **Jis phone/laptop par asli data abhi dikh raha hai, uska Settings → Backup (JSON) download karein.** Salary, canteen aur saved Attendance sab isi backup me aate hain. Doosre device par bhi bacha data ho to uska alag backup rakhein.
-2. **Dono devices aur saare purane tabs par v3.27 kholein:**
-   [Hisaab-Pro-v3.27.html](https://akash4447777-dev.github.io/hisaab-pro/Hisaab-Pro-v3.27.html).
-   Sidebar me **Panel v3.27** confirm karein. Browser/site storage clear, uninstall, “Erase all data” ya “Sample data” mat karein.
+2. **Dono devices aur saare purane tabs par v3.28 kholein:**
+   [Hisaab-Pro-v3.28.html](https://akash4447777-dev.github.io/hisaab-pro/Hisaab-Pro-v3.28.html).
+   Sidebar me **Panel v3.28** confirm karein. Browser/site storage clear, uninstall, “Erase all data” ya “Sample data” mat karein.
 3. Pehle bache-data wale device par **usi Supabase Project URL aur usi email/account** se sign in karein. Existing setup ko reset ya naya project/account banane ki zaroorat nahi.
 4. Settings → **Sync now**. `Cloud synced` aane par doosre updated device par bhi same project/account se sign in karein. Pehli login par cloud read hota hai; naya khaali/demo device populated cloud ko replace nahi karta.
 5. `Sync paused · data protected` aaye to neeche wali conflict/recovery choice dekhein. `Local saved · sync pending` ya `Offline · sync pending` ko cloud backup ki confirmation **na** maanein.
