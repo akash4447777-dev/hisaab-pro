@@ -1,6 +1,6 @@
 # Hisaab Pro — tests (developer only)
 
-Ye folder **app ke liye zaroori nahi**. `hisaab_v3.html` / `Hisaab-Pro-v3.28.html` akeli file me chalti hai —
+Ye folder **app ke liye zaroori nahi**. `hisaab_v3.html` / `Hisaab-Pro-v3.29.html` akeli file me chalti hai —
 kisi install ki zaroorat nahi. Ye tests sirf tab chalao jab code me change kiya ho aur check karna ho
 ki **Attendance**, **Canteen**, salary, PDF, loader aur **cross-device cloud sync** toot to nahi gaye.
 Attendance use/rule details: [`ATTENDANCE.md`](../ATTENDANCE.md).
@@ -10,16 +10,17 @@ Attendance use/rule details: [`ATTENDANCE.md`](../ATTENDANCE.md).
 ```bash
 cd tests
 npm ci               # lockfile se jsdom install hota hai
-npm test             # 961: canteen 406 + lines 51 + loader 29 + PDF 26 + cloud 103 + Attendance 313 + Employee 33
-node canteen.test.js ../Hisaab-Pro-v3.28.html   # kisi aur file par chalana ho
+npm test             # 1030: canteen 406 + lines 51 + loader 29 + PDF 26 + cloud 109 + Attendance 313 + Employee 33 + logo 63
+node canteen.test.js ../Hisaab-Pro-v3.29.html   # kisi aur file par chalana ho
 node loader.test.js  # sirf index.html loader ke tests
 node pdf.test.js     # fonts + bottom geometry + multi-page
-node cloud.test.js   # fake backend + independent browser stores, 103 sync checks
+node cloud.test.js   # fake backend + independent browser stores, 109 sync checks
 node attendance.test.js # calculation, forms, backup, exports: 313 checks
 node employees.test.js  # 33 whole-panel labels + legacy data/exports/CRUD checks
 node canteen-lines.test.js # 51 original-line, report/data-safety checks
+node company-logo.test.js  # 63 upload/persistence/all-PDF/header/data-safety checks
 node canteen-lines.test.js --artifacts ../.cache/canteen-lines-qa # optional real PDFs
-HISAAB_HTML=../Hisaab-Pro-v3.28.html npm test  # exact release, all 961 checks
+HISAAB_HTML=../Hisaab-Pro-v3.29.html npm test  # exact release, all 1030 checks
 node attendance.test.js --artifacts ../.cache/attendance-qa # real fixture PDF + .xlsx
 node pdf.test.js --artifacts ../.cache/pdf-qa # optional local sample PDFs
 ```
@@ -30,12 +31,14 @@ Sab theek ho to aakhri line aati hai: `✅ SAB CHECKS PASS` / `✅ LOADER SAB TE
 
 | Area | Checks |
 |---|---|
+| Company logo (v3.29), 63 + 6 cloud | accessible Settings chooser/preview/auto-save, bounded raster data, metadata validation, PNG/JPG/WebP/white transparency, processing/cancel/error/oversized/stale-account/unsaved/quota guards, no old-data migration, reload/replace/confirmed-remove, all six Canteen day/month templates, separate 500g rows/100-line continuations, salary/payroll and two-page Attendance, one shared image per document/all pages, one XObject dictionary alongside shaped Hindi text, continued name/date slots, wrapped salary signatory, exact no-logo writer/salary/Attendance/Excel compatibility; real JSON backup + atomic cloud conflict/offline reload/confirmed removal |
+| Optional logo Chromium (78, not in npm test) | real native chooser + PNG/JPG/WebP/canvas compression/shape/white background, auto-save without losing typed fields, v3.28 raw-storage navigation/reload, 320/390px controls, every report/template, genuine downloads and shared PDF Files, Hindi/62-shift two-page Attendance, browser print/decode wait, corrupt/SVG/>5 MB refusals, replacement/confirmed removal/reload, 4000×1000→640×160 resize, backup restore in fresh isolated browser, actual localStorage quota rollback, offline PDFs, ordinary Save settings, long business headers, four-page/120-advance salary and six-page/100-line Canteen |
 | Canteen item lines (v3.28), 51 | exact two × 500g reproduction against v3.27; every saved line/own rate/amount/source retained, duplicate lines in one entry, dates/case/units/kinds/lump-sum/zero/precision/order/escaping, non-mutating frozen input, daily/monthly UI + full print + all six PDF templates, 100-row continuation, honest 14-/6-line previews, real shared PDF File bytes, preserved cumulative rate analytics/CSV and complete raw storage/data/cloud state; 23 core/report function bodies plus full CSS unchanged |
-| Optional Canteen Chromium (49, not in npm test) | real old-release forms/PDF reproduce merged 1000g, byte-identical v3.27→v3.28 storage navigation, native 500g per-row downloads/print/share Files, same-bill 37.50/50 own rates, correct grand total, 100 repeated rows, reload, cumulative catalog, 320/390px scrolling tables and every original salary/Attendance/canteen entry retained; print/share destinations stubbed |
+| Optional Canteen Chromium (49, not in npm test) | real old-release forms/PDF reproduce merged 1000g, byte-identical v3.27→current v3.29 storage navigation, native 500g per-row downloads/print/share Files, same-bill 37.50/50 own rates, correct grand total, 100 repeated rows, reload, cumulative catalog, 320/390px scrolling tables and every original salary/Attendance/canteen entry retained; print/share destinations stubbed |
 | Employee terminology (v3.27), 33 | whole-panel visible text/placeholders/tooltips, Employee navigation/add/edit/validation/statuses, stable g+w route and command search, destructive confirmations cancelled, unchanged monthly/hourly salary math/advances/deductions, salary PDF drawing ops differ only in labels, real CSV/print/share text, cloud display-only alias, old JSON import and raw-data compatibility, customer-entered names/notes/shop names untouched, 20 byte-identical core/report functions plus original CSS/fonts |
 | Attendance (v3.27), 313 | dynamic profiles/unique codes/same-name resolution, active/employment rules, Tap/Time + Morning/Afternoon/Evening/Night and legacy Day, strict post-11:45-PM monthly bonus thresholds/exclusions/full-month all-shift basis/next-morning/attendance-month attribution and duplicate-history exclusion, 12-hour Morning/Afternoon/Evening/Night clocks in both Check-in/Check-out, all eight same/next-day choices, exhaustive 1,440-minute round-trips with bare/same/next-day prefixes, clock-band boundaries/mismatch rejection, 12 afternoon=noon / 12 night=midnight, blank-only suggestions, v3.24 raw-storage reopening without time/history/financial mutation, invalid 24-hour input rejection, old record reopening, blank clocks/period suggestions, mobile numeric/Hindi entry, actual durations including 24h 01m / screenshot 27h 01m / 36h / 47h 59m, exact same/next-day combinations, reversed/equal rejection, no deductions/automatic target classification, manual half-day/credit snapshots, open check-ins, Sunday status/date/shift dedup, month/year boundaries, filters/search/pagination, duplicate prevention, bulk skip/overwrite, actual forms, calendar/ledger/day/week/month/custom/search/sort, dashboard/settings/keyboard, escaped text, history/actor/before-after, stale editor/account/disk guards, quota rollback, local reload, old JSON/demo/reset/recovery preservation, 250 managers + 750 records pagination and 2,000-history limit |
-| Attendance exports (included above) | top first-sheet summary with numeric distinct present/status days, all actual Sunday dates, per-month full-basis numeric bonus rates; photo-style Date / manager-status / IN / OUT / blank Advance / Shift / Hours / Credit / Notes grid; no fabricated advance amounts, totals or salary-employee joins; empty/partial/multi-month/long-summary/profile-newline safety; unchanged four v3.25 detail XMLs and Attendance PDF (except version footer), genuine individual PDF + 5-sheet OOXML XLSX; chosen manager/shift/custom dates, unmarked vs absent, xrefs/stream lengths/paper bounds, one/two-page monthly layouts and explicit oversized-range refusal, bundled Hindi font + complete OFL notice, ZIP/CRC/XML/numeric hours, Unicode/emoji/formula-safe literal text, reference-style ruled 7-column ledger + dated Sunday list + outlined bonus/rule box + numeric Excel bonus Summary, styled primary register (real dates / `[h]:mm`, borders, gold Sundays, status colours, merges, pinned identity/date columns, actual table filters and identity print titles), atomic totals/signatures, original history/legacy metadata, actual Blob MIME/filenames/ready-file links/no-gesture fallback/failure reporting and full Store/localStorage/history/sync-state invariance, nine byte-identical storage/cloud/financial/clock-action core function bodies plus unchanged attCalculate arithmetic (only three error messages updated), byte-identical v3.23 stylesheet/embedded fonts/shared PDF engine, and salary/canteen non-mutation |
-| Attendance cloud (27 of the 103 cloud checks) | four-shift cloud adoption/concurrent merge/offline reload with legacy Day/Night intact and no salary bonus writes, long-shift upload/adoption/re-edit, independent records, same-natural-key dedup/conflict, note+clock merges vs atomic competing clock spans, profile/record deletion dependencies, duplicate code/moved-key collisions, full and partial legacy payloads, proven deletion vs unproven empties, durable offline reload, open-editor/account reset, invalid-cloud/quota rollback/recovery and rule conflicts |
+| Attendance exports (included above) | top first-sheet summary with numeric distinct present/status days, all actual Sunday dates, per-month full-basis numeric bonus rates; photo-style Date / manager-status / IN / OUT / blank Advance / Shift / Hours / Credit / Notes grid; no fabricated advance amounts, totals or salary-employee joins; empty/partial/multi-month/long-summary/profile-newline safety; unchanged four v3.25 detail XMLs and Attendance PDF (except version footer), genuine individual PDF + 5-sheet OOXML XLSX; chosen manager/shift/custom dates, unmarked vs absent, xrefs/stream lengths/paper bounds, one/two-page monthly layouts and explicit oversized-range refusal, bundled Hindi font + complete OFL notice, ZIP/CRC/XML/numeric hours, Unicode/emoji/formula-safe literal text, reference-style ruled 7-column ledger + dated Sunday list + outlined bonus/rule box + numeric Excel bonus Summary, styled primary register (real dates / `[h]:mm`, borders, gold Sundays, status colours, merges, pinned identity/date columns, actual table filters and identity print titles), atomic totals/signatures, original history/legacy metadata, actual Blob MIME/filenames/ready-file links/no-gesture fallback/failure reporting and full Store/localStorage/history/sync-state invariance, nine byte-identical storage/cloud/financial/clock-action core function bodies plus unchanged attCalculate arithmetic (only three error messages updated), byte-identical v3.23 stylesheet/embedded fonts/shared PDF engine except three narrowly reversed v3.29 logo hooks, and salary/canteen non-mutation |
+| Attendance cloud (27 of the 109 cloud checks) | four-shift cloud adoption/concurrent merge/offline reload with legacy Day/Night intact and no salary bonus writes, long-shift upload/adoption/re-edit, independent records, same-natural-key dedup/conflict, note+clock merges vs atomic competing clock spans, profile/record deletion dependencies, duplicate code/moved-key collisions, full and partial legacy payloads, proven deletion vs unproven empties, durable offline reload, open-editor/account reset, invalid-cloud/quota rollback/recovery and rule conflicts |
 | Optional Employee Chromium (26, not in npm test) | real v3.26→v3.27 navigation with byte-identical raw data, eight live view label/tooltip audits, command search, add/edit/reload persistence under original keys, real salary CSV/six-page payroll PDF/download/print/share text, cancelled delete, 320/390px view/form bounds, every original employee/salary/canteen/Attendance record retained, no JS errors; print/WhatsApp navigation stubbed, never delivery |
 | Optional Attendance Chromium (126, not in npm test) | six actual downloaded-XLSX checks: top summary, reference column order/black grid/blank Advance, five-sheet completeness, 62 shifts vs 31 distinct days, long-summary visibility and real numeric 2% bonus, eight exact clock-dropdown choices, native afternoon/evening/after-midnight saves and explicit day flags, mismatched clock/period refusal with full storage invariance, blank-only shift/profile suggestions, real v3.24→v3.26 navigation with byte-identical raw storage and original 27h 01m, real four-shift forms/reload, 3→1% / 5→2% bonus and exact 11:45 exclusion, real PDF File payload to stubbed native share API/cancel/manual-fallback download, real profile/record/bulk forms, exact 12-hour options/blank clocks/validation, actual overnight hours/reopening, screenshot long-shift save/re-edit/download, 31-day / 62-shift PDF cap and styled-register downloads, full-year Excel after honest oversized-PDF failure, report-studio 320/390px layout, and full saved-data/history/storage invariance, Sunday tab/count/dedup/filters, noon/midnight conversion, duplicate UI error, calendar day, custom-range Latin/overnight/Hindi PDF/XLSX native downloads/headers, 320/390px mobile controls/no-overflow/navigation, visible dialog title/Save buttons, real reload persistence, bundled Hindi fonts/ActualText and no uncaught JS errors; optional desktop/mobile/modal/calendar/dark screenshots |
 | PDF summary labels (v3.18) | screenshot ke Bikri/Kharcha labels blank, zero aur nonzero amounts same right-aligned positions par; saare 6 templates ke day/month drawing ops v3.17 se identical (sirf 2 labels/version differ); print + WhatsApp PDF bhi same; app labels/data unchanged |
@@ -90,9 +93,10 @@ npx playwright install chromium
 # python3 -m http.server 8000 --bind 0.0.0.0
 HISAAB_URL=http://127.0.0.1:8000/hisaab_v3.html npm run test:attendance:browser
 # Exact release and screenshots:
-HISAAB_URL=http://127.0.0.1:8000/Hisaab-Pro-v3.28.html HISAAB_SCREENSHOTS=1 npm run test:attendance:browser
-HISAAB_URL=http://127.0.0.1:8000/Hisaab-Pro-v3.28.html HISAAB_SCREENSHOTS=1 npm run test:employees:browser
-HISAAB_URL=http://127.0.0.1:8000/Hisaab-Pro-v3.28.html HISAAB_SCREENSHOTS=1 npm run test:canteen:browser
+HISAAB_URL=http://127.0.0.1:8000/Hisaab-Pro-v3.29.html HISAAB_SCREENSHOTS=1 npm run test:attendance:browser
+HISAAB_URL=http://127.0.0.1:8000/Hisaab-Pro-v3.29.html HISAAB_SCREENSHOTS=1 npm run test:employees:browser
+HISAAB_URL=http://127.0.0.1:8000/Hisaab-Pro-v3.29.html HISAAB_SCREENSHOTS=1 npm run test:canteen:browser
+HISAAB_URL=http://127.0.0.1:8000/Hisaab-Pro-v3.29.html HISAAB_SCREENSHOTS=1 npm run test:logo:browser
 ```
 
 `127.0.0.1` here is only the **local test runner**, never a browser-facing app API.
@@ -108,8 +112,28 @@ stable captures; serverless SwiftShader/single-process flags were omitted.
 Review native form inputs/download events as well as API fixtures. Inspect PDFs
 with PyMuPDF and workbooks with openpyxl if export code changes. Hindi image-backed
 ActualText is checked separately: copy/search support varies by PDF parser/viewer.
-v3.28 adds **51 offline + 49 native** repeated-item regressions; the complete suite
-is **961 offline + 201 native** checks. Template selection intentionally saves
+v3.29 adds **63 logo + six cloud offline checks** and **78 native logo checks**.
+The current complete suite is **1,030 offline + 279 native**. Full-script AST audit
+against v3.28 allows only the logo helpers, Settings/events, image writer, conditional
+report/print headers, wrapped signatory and version/note. **36 core function bodies
+and the entire Store/Cloud/Recovery objects remain byte-identical**, as do CSS,
+font/license blocks and old archives. `logo-compat.js` reverses only individually
+counted, exact header/writer/signature slots before legacy whole-body comparisons;
+it does not exclude any financial/storage/clock/bonus/row/Excel logic.
+
+Native downloads plus deterministic fixtures are independently reparsed/rasterised
+by PyMuPDF/openpyxl: **81 PDFs / 11 XLSX**. All 44 branded direct-PDF pages have one
+proportional, non-overlapping logo; every document shares one image object. This
+includes long business headers/continued dates, full Hindi image/ActualText content,
+120 advances over four salary pages, 100 item quantities over six Canteen pages,
+62-shift two-page Attendance, real browser-print logos and unchanged five-sheet
+numeric workbooks/blank Advances. A sub-point continued-date/image intersection
+was caught by geometric checks and fixed by reserving the horizontal logo slot;
+long company signatory text wraps without altering the no-logo legacy path.
+No physical-phone/Safari/desktop-Excel/live-customer-backend or delivery claim.
+
+v3.28 added **51 offline + 49 native** repeated-item regressions; its complete suite
+was **961 offline + 201 native** checks. Template selection intentionally saves
 Settings, so its tests use a separate fixture; report read-only/raw-storage
 assertions remain strict. PDF geometry checks account for the existing y=22
 continuation-only footer and y=64..820 body, including measured/aligned widths.

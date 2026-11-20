@@ -59,8 +59,8 @@ async function addEntry(page, bill, totals = [37.5]) {
     const legacy = await download(page, 'ctPdfDay', 'legacy-merged-day.pdf');
     check(countQty(legacy, 1000) === 1 && countQty(legacy, 500) === 0, 'native old-release PDF reproduces the combined 1000g row');
     await page.goto(URL); await page.waitForFunction(() => !!window.Hisaab); await goCanteen(page);
-    check(await page.locator('[data-ver]').first().textContent() === '3.28', 'native fixed release reports Panel v3.28');
-    check(await dataSnapshot(page) === saved, 'v3.27 → v3.28 preserves every raw-storage byte, original entry and financial/Attendance record');
+    check(await page.locator('[data-ver]').first().textContent() === '3.29', 'native current release reports Panel v3.29');
+    check(await dataSnapshot(page) === saved, 'v3.27 → v3.29 preserves every raw-storage byte, original entry and financial/Attendance record');
     let rows = await itemRows(page);
     check(rows.length === 2 && rows.every(r => r[1] === '500'), 'native daily item table has two separate 500g rows, not one 1000g row');
     check(rows[0][0].includes('QA-1') && rows[1][0].includes('QA-2') && rows.every(r => r.join(' ').includes('37.50')), 'native daily rows retain their own amount and original bill references');

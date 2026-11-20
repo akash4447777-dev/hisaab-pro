@@ -1965,7 +1965,7 @@ const rRate = (n) => { const x = Math.max(0, num(n)); return x >= 1 ? r2(x) : Ma
 /* rate dikhane ka format: <₹1 ho to 0.075 jaisa khula number, warna moneyS */
 const rateS = (n) => { const x = num(n); if (x > 0 && x < 1) return "₹" + String(Math.round((x + Number.EPSILON) * 10000) / 10000); return moneyS(x); };
 const clamp = (n, lo, hi) => Math.min(hi, Math.max(lo, n));
-const APP_VERSION = "3.28";
+const APP_VERSION = "3.29";
 const esc = (s) => String(s == null ? "" : s).replace(/[&<>"']/g, (m) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[m]));
 
 const MONTHS = ["January","February","March","April","May","June","July","August","September","October","November","December"];
@@ -3237,6 +3237,158 @@ function statusTag(rec) {
     : '<span class="tag warn" style="white-space:nowrap">● Pending</span>';
 }
 
+/* Company branding is an optional Settings value, not a financial record.
+   Store only a bounded, locally rasterised JPEG; no URL/SVG/HTML is executed. */
+let companyLogoTask = 0, companyLogoBusy = false, companyLogoMessage = "", companyLogoError = false;
+let companyLogoCacheValue = null, companyLogoCache = null;
+function companyLogoData(value) {
+  const url = value === undefined ? (Store.data.settings || {}).companyLogo : value;
+  if (url === companyLogoCacheValue) return companyLogoCache;
+  companyLogoCacheValue = url; companyLogoCache = null;
+  if (typeof url !== "string" || url.length > 120000 || !/^data:image\/jpeg;base64,[A-Za-z0-9+/]+={0,2}$/.test(url)) return null;
+  try {
+    const encoded = url.slice(23);
+    if (encoded.length % 4) return null;
+    const bytes = atob(encoded), n = (i) => bytes.charCodeAt(i);
+    if (bytes.length < 32 || n(0) !== 255 || n(1) !== 216 || n(bytes.length-2) !== 255 || n(bytes.length-1) !== 217) return null;
+    let at = 2;
+    while (at + 9 < bytes.length) {
+      if (n(at++) !== 255) return null;
+      while (n(at) === 255) at++;
+      const marker = n(at++);
+      if (marker === 218 || marker === 217) return null;
+      if (marker === 1 || marker >= 208 && marker <= 215) continue;
+      const length = n(at)*256+n(at+1);
+      if (length < 2 || at+length > bytes.length) return null;
+      if (marker === 192) {
+        const height=n(at+3)*256+n(at+4), width=n(at+5)*256+n(at+6);
+        if (length < 17 || n(at+2)!==8 || n(at+7)!==3 || width<1 || height<1 || width>640 || height>640) return null;
+        companyLogoCache = { name: "CompanyLogo", url, bytes, width, height }; return companyLogoCache;
+      }
+      at += length;
+    }
+  } catch (e) {}
+  return null;
+}
+function companyLogoCard() {
+  const logo = companyLogoData(), saved = !!(Store.data.settings || {}).companyLogo;
+  return '<div class="card" id="companyLogoCard" style="margin-top:14px"><div class="card-h"><div><h3>Company logo</h3>' +
+    '<div class="sub">Ek baar upload karein — sabhi naye PDF reports me apne aap</div></div><span class="k-ico">🏢</span></div>' +
+    '<div class="card-b" style="display:flex;align-items:center;gap:16px;flex-wrap:wrap">' +
+      '<div style="width:100px;height:80px;flex:0 0 100px;display:grid;place-items:center;border:1px solid var(--line);border-radius:12px;background:#fff;color:#64748b">' +
+        (logo ? '<img src="' + esc(logo.url) + '" alt="Saved company logo" style="max-width:88px;max-height:68px;object-fit:contain">' : '<span style="font-size:12px">No logo</span>') + '</div>' +
+      '<div style="flex:1;min-width:160px"><div style="display:flex;gap:8px;flex-wrap:wrap">' +
+        '<button class="btn primary" data-act="companyLogoChoose"' + (companyLogoBusy ? ' disabled' : '') + '>' + (logo ? 'Change logo' : 'Upload logo') + '</button>' +
+        (saved ? '<button class="btn" data-act="companyLogoRemove">Remove logo</button>' : '') +
+        (companyLogoBusy ? '<button class="btn" data-act="companyLogoCancel">Cancel upload</button>' : '') + '</div>' +
+        '<input type="file" id="companyLogoFile" accept="image/png,image/jpeg,image/webp,.png,.jpg,.jpeg,.webp" hidden aria-label="Upload company logo">' +
+        '<div class="sub" style="margin-top:9px">PNG, JPG ya WebP · maximum 5 MB. Shape/proportion safe; transparent background PDF ke liye white hota hai.</div>' +
+        '<div class="sub" style="margin-top:5px">Automatically saved · Salary, payroll, Canteen, Attendance aur WhatsApp PDF + print. JSON backup / configured cloud sync me bhi rahega. Purani downloaded PDF ko dobara download karein.</div>' +
+        '<div id="companyLogoStatus" role="status" aria-live="polite" style="margin-top:7px;font-size:12px;color:' + (companyLogoError ? 'var(--bad)' : 'var(--muted)') + '">' +
+          esc(companyLogoMessage || (logo ? 'Logo saved — har baar upload karne ki zaroorat nahi.' : saved ? 'Saved logo read nahi hua. Change / remove logo karein; original data safe hai.' : 'Logo optional hai; bina logo purane reports waise hi bante hain.')) + '</div>' +
+      '</div></div></div>';
+}
+function companyLogoRepaint() { const el = document.getElementById("companyLogoCard"); if (el) el.outerHTML = companyLogoCard(); }
+function companyLogoContext() { return { epoch: Cloud.epoch, scope: Cloud.scope, data: Store.data, before: Store.data.settings.companyLogo }; }
+function companyLogoCheck(ctx) {
+  if (ctx.epoch !== Cloud.epoch || ctx.scope !== Cloud.scope || ctx.data !== Store.data || ctx.before !== Store.data.settings.companyLogo || UI.view !== "settings")
+    throw new Error("Page/account ya saved data badal gaya — logo upload dobara karein. Koi data nahi badla.");
+  if (Store.storageProblem || Store.unsaved) throw new Error("Pehle pending data save / JSON backup karein; logo save abhi blocked hai.");
+  if (!Cloud.diskCurrent()) throw new Error(Cloud.lastError || "Doosre tab ka data badla — reload karein.");
+}
+function companyLogoSave(url, ctx) {
+  companyLogoCheck(ctx);
+  if (url && !companyLogoData(url)) throw new Error("Logo process nahi hua — PNG/JPG/WebP dobara chunein.");
+  Store.data.settings.companyLogo = url;
+  if (!Store.saveChange()) throw new Error("Logo save NAHIN hua. Purana logo/data rakha hai; storage / backup check karein.");
+}
+function companyLogoPrepare(file) {
+  return new Promise((resolve, reject) => {
+    if (!file || !file.size) return reject(new Error("Logo file khaali hai."));
+    if (!/^image\/(png|jpeg|webp)$/.test(file.type || "")) return reject(new Error("Sirf PNG, JPG ya WebP logo chunein; SVG/PDF files allowed nahi."));
+    if (file.size > 5*1024*1024) return reject(new Error("Logo 5 MB se chhota chahiye."));
+    const reader = new FileReader(), image = new Image(); let done = false;
+    const finish = (error, value) => { if (done) return; done = true; clearTimeout(timer); reader.onload = reader.onerror = image.onload = image.onerror = null; error ? reject(error) : resolve(value); };
+    const timer = setTimeout(() => finish(new Error("Logo load me waqt laga — chhoti image dobara chunein.")), 15000);
+    reader.onerror = () => finish(new Error("Logo file read nahi hui — dobara chunein."));
+    image.onerror = () => finish(new Error("Logo image kharab / unsupported hai — PNG/JPG/WebP dobara chunein."));
+    reader.onload = () => { image.src = reader.result; };
+    image.onload = () => {
+      try {
+        const iw=image.naturalWidth||image.width, ih=image.naturalHeight||image.height;
+        if (!iw || !ih || iw*ih > 25000000 || iw > 12000 || ih > 12000) throw new Error("Logo dimensions bahut badi / invalid hain. Chhoti image chunein.");
+        const canvas=document.createElement("canvas"), context=canvas.getContext("2d");
+        if (!context) throw new Error("Is browser me logo process nahi hua — doosra browser try karein.");
+        let maxSide=640;
+        for (let pass=0;pass<6;pass++,maxSide=Math.floor(maxSide*.75)) {
+          const scale=Math.min(1,maxSide/Math.max(iw,ih)); canvas.width=Math.max(1,Math.round(iw*scale)); canvas.height=Math.max(1,Math.round(ih*scale));
+          context.fillStyle="#fff"; context.fillRect(0,0,canvas.width,canvas.height); context.drawImage(image,0,0,canvas.width,canvas.height);
+          for (const quality of [.92,.8,.66,.5]) {
+            const url=canvas.toDataURL("image/jpeg",quality);
+            if (url.length<=120000 && companyLogoData(url)) { finish(null,url); return; }
+          }
+        }
+        throw new Error("Logo compress nahi hua. Simple / chhoti image chunein.");
+      } catch(e) { finish(e); }
+    };
+    try { reader.readAsDataURL(file); } catch(e) { finish(e); }
+  });
+}
+async function companyLogoPick(input) {
+  const file=input.files&&input.files[0]; input.value=""; if(!file)return;
+  const task=++companyLogoTask, ctx=companyLogoContext();
+  companyLogoBusy=true; companyLogoMessage="Logo process ho raha hai…"; companyLogoError=false; companyLogoRepaint();
+  try {
+    const url=await companyLogoPrepare(file); if(task!==companyLogoTask)return;
+    companyLogoSave(url,ctx); companyLogoMessage="Logo saved — sabhi naye PDF reports me automatic aayega."; toast("Company logo saved", "ok");
+  } catch(e) {
+    if(task!==companyLogoTask)return; companyLogoMessage=e.message||"Logo save nahi hua — dobara try karein."; companyLogoError=true; toast(companyLogoMessage,"bad");
+  } finally { if(task===companyLogoTask){companyLogoBusy=false;companyLogoRepaint();} }
+}
+function companyLogoCancel() { companyLogoTask++;companyLogoBusy=false;companyLogoMessage="Upload cancel hua. Saved logo/data nahi badla.";companyLogoError=false;companyLogoRepaint(); }
+function companyLogoRemove() {
+  const ctx=companyLogoContext();
+  confirmDialog("Remove company logo?","Sirf aage banne wale PDF / print se logo hatega. Salary, Canteen aur Attendance data nahi badlega.","Remove logo",()=>{
+    companyLogoTask++; companyLogoBusy=false;
+    try { companyLogoSave("",ctx);companyLogoMessage="Logo removed. Kabhi bhi naya logo upload kar sakte hain.";companyLogoError=false;toast("Logo removed","ok"); }
+    catch(e){companyLogoMessage=e.message;companyLogoError=true;toast(e.message,"bad");}
+    companyLogoRepaint();
+  },true);
+}
+function companyLogoHTML() {
+  const logo=companyLogoData();
+  return logo ? '<img data-company-logo src="'+esc(logo.url)+'" alt="Company logo" style="width:64px;height:44px;object-fit:contain;flex:0 0 64px;background:#fff">' : "";
+}
+function companyLogoPrintReady() {
+  return Promise.all(Array.from(document.querySelectorAll('#print-root img[data-company-logo]'), (image) => {
+    if (image.complete && image.naturalWidth) return Promise.resolve();
+    if (image.decode) return image.decode();
+    return new Promise((resolve,reject)=>{const timer=setTimeout(()=>reject(new Error("Logo load failed")),5000);image.onload=()=>{clearTimeout(timer);resolve();};image.onerror=()=>{clearTimeout(timer);reject(new Error("Logo load failed"));};});
+  }));
+}
+/* Every PDF page gets the same proportional image. New-page body starts below
+   the logo; first-page report headers reserve only horizontal branding space. */
+function companyLogoPdfPage(p) {
+  if (!p.logo) return;
+  const scale=Math.min(48/p.logo.width,32/p.logo.height), w=p.logo.width*scale,h=p.logo.height*scale;
+  p.op("q "+w.toFixed(3)+" 0 0 "+h.toFixed(3)+" "+(M+(48-w)/2).toFixed(3)+" "+(794+(32-h)/2).toFixed(3)+" cm /CompanyLogo Do Q");
+}
+/* Shared JPEG image repacking for company branding AND shaped Attendance text.
+   Respect xref/stream boundaries and embed each logo once, not once per page. */
+function pdfEmbedImages(original, images) {
+  if (!images.length) return original;
+  const at = Number(/startxref\s+(\d+)\s+%%EOF$/.exec(original)[1]), xref = original.slice(at).split("\n"), count = Number(xref[1].split(" ")[1]), objects = [];
+  for (let id = 1; id < count; id++) {
+    const start = Number(xref[id + 2].slice(0, 10)), end = id + 1 < count ? Number(xref[id + 3].slice(0, 10)) : at;
+    const raw = original.slice(start, end); objects.push(raw.slice(raw.indexOf("\n") + 1, raw.lastIndexOf("\nendobj")));
+  }
+  const names = images.map((image) => { objects.push("<< /Type /XObject /Subtype /Image /Width " + image.width + " /Height " + image.height + " /ColorSpace /DeviceRGB /BitsPerComponent 8 /Filter /DCTDecode /Length " + image.bytes.length + " >>\nstream\n" + image.bytes + "\nendstream"); return "/" + image.name + " " + objects.length + " 0 R"; }).join(" ");
+  objects.forEach((object, i) => { if (/^<< \/Type \/Page\b/.test(object)) objects[i] = object.replace("/Resources <<", "/Resources << /XObject << " + names + " >>"); });
+  let result = "%PDF-1.4\n"; const offsets = [];
+  objects.forEach((object, i) => { offsets.push(result.length); result += (i + 1) + " 0 obj\n" + object + "\nendobj\n"; });
+  const tail = result.length; result += "xref\n0 " + (objects.length + 1) + "\n0000000000 65535 f \n" + offsets.map((offset) => String(offset).padStart(10, "0") + " 00000 n \n").join("") + "trailer\n<< /Size " + (objects.length + 1) + " /Root 1 0 R >>\nstartxref\n" + tail + "\n%%EOF"; return result;
+}
+
 /* ============================ 11. SETTINGS ============================ */
 function viewSettings(){
   const s = Store.data.settings;
@@ -3272,7 +3424,7 @@ function viewSettings(){
         '</div></div>'+
     '</div>'+
 
-    ctSettingsCard()+attSettingsCard()+
+    companyLogoCard()+ctSettingsCard()+attSettingsCard()+
 
     '<div class="card" style="margin-top:14px"><div class="card-h"><div><h3>Data &amp; backup</h3>'+
       '<div class="sub">Sab kuch is browser me private rehta hai · Panel <b>v<span data-ver></span></b></div></div>'+
@@ -3290,6 +3442,7 @@ function viewSettings(){
 
     '<div style="text-align:center;font-size:11.5px;color:var(--muted);margin-top:18px;line-height:1.7">'+
       'Panel <b style="color:var(--ink)">v<span data-ver></span></b> · Auto-update enabled<br>'+
+      'v3.29 — <b style="color:var(--ink)">Company logo: ek upload, sabhi PDFs</b>: Settings me PNG/JPG/WebP logo upload / change / remove. Auto-save; salary, payroll summary, Canteen din/mahina aur Attendance/WhatsApp PDF ke har page par proportional logo, browser print me bhi. Logo JSON backup aur configured cloud me settings ke saath; purana data dobara enter nahi karna. Existing downloaded PDFs ke liye naya download karein. Salary, Canteen item lines, Attendance clocks/Sundays/bonus aur five-sheet Excel unchanged<br>'+
       'v3.28 — <b style="color:var(--ink)">Canteen: same item ki har entry alag</b>: din / mahina PDF, print aur item detail me ek jaise naam aur quantity wali lines ab merge nahi hoti. 500 gram + 500 gram do alag 500 gram lines rahengi, har line ka apna rate / amount aur source reference. Grand totals wahi sahi jod; original entries, paid/baki, rate catalog/history, Employee naming, Attendance reports, data aur sync unchanged. Purani entries dobara add na karein—naya PDF download karein<br>'+
       'v3.27 — <b style="color:var(--ink)">Employee naming throughout the panel</b>: navigation, dashboard, forms, search, messages, CSV, salary PDF/print aur sharing me consistent Employee / Employees labels. Sirf wording change; existing profiles/IDs, salary/canteen/Attendance data, clocks, calculations, Excel format, backups aur cloud sync unchanged. Purana data dobara add karne ki zaroorat nahi<br>'+
       'v3.26 — <b style="color:var(--ink)">Excel: upar full summary, neeche photo-style register</b>: first sheet me total present days, leaves/half/absent, actual attended Sunday dates/count, working hours, credits aur monthly extra bonus % upar. Neeche Date / manager attendance / actual check-in / actual check-out / blank Advance / shift / hours / credit / full remarks: black borders, white rows aur yellow Sundays. Present days distinct dates hain; multiple shifts se days double-count nahi. Advance sirf blank manual space, salary data se koi naam-based link ya amount/total guess nahi. Five sheets, raw details/history aur all selected rows retained. Sirf Excel presentation; saved data, clock controls, PDF design, bonus arithmetic, panel layout, salary/canteen aur sync unchanged<br>'+
@@ -3830,10 +3983,10 @@ function renderPrevMonths(wid, y, m) {
 
 /* ---------------------------- 13. PRINT VIEW ---------------------------- */
 function statementHTML(w, rec, c) {
-  const s = Store.data.settings;
+  const s = Store.data.settings, logoHTML = companyLogoHTML();
   const advRows = c.advances.concat(c.deductions.map((d) => ({ date: "", note: d.label, amount: d.amount, _ded: true })));
   return '<div class="stmt"><div class="pad">' +
-    '<div class="hd"><div><div class="shop">' + esc(s.shopName || "My Shop") + "<small>" + (s.address ? " · " : "") + esc(s.address || "") + (s.phone ? " · " + esc(s.phone) : "") + "</small></div></div>" +
+    '<div class="hd"><div' + (logoHTML ? ' style="display:flex;align-items:center;gap:12px;min-width:0"' : '') + '>' + logoHTML + '<div class="shop">' + esc(s.shopName || "My Shop") + "<small>" + (s.address ? " · " : "") + esc(s.address || "") + (s.phone ? " · " + esc(s.phone) : "") + "</small></div></div>" +
       '<div class="rt"><div class="ttl">SALARY STATEMENT</div><div class="hi">मासिक वेतन विवरण</div>' +
       "<div style=\"margin-top:4px\">" + monthLabel(rec.year, rec.month) + "</div>" +
       "<div>" + (rec.status === "paid" ? '<span class="watermark">' + esc(s.paidLabel || "PAID") + "</span>" : "PENDING") + "</div></div></div>" +
@@ -3944,11 +4097,11 @@ function pdfPrintWhenReady() {
   const ready = document.fonts && document.fonts.load
     ? Promise.all([400, 700, 900].map((w) => document.fonts.load(w + ' 12px "Hisaab Segoe"')))
     : Promise.resolve();
-  ready.then(() => window.print()).catch(() => toast("Print font load nahi hua — dobara try karo", "bad"));
+  Promise.all([ready, companyLogoPrintReady()]).then(() => window.print()).catch(() => toast("Print font / logo load nahi hua — dobara try karo", "bad"));
 }
 
-function PdfDoc() { this.pages = []; this.cur = null; this.newPage(); }
-PdfDoc.prototype.newPage = function () { this.cur = []; this.pages.push(this.cur); this.y = 800; return this; };
+function PdfDoc() { this.pages = []; this.cur = null; this.logo = companyLogoData(); this.newPage(); }
+PdfDoc.prototype.newPage = function () { this.cur = []; this.pages.push(this.cur); this.y = this.logo ? 780 : 800; companyLogoPdfPage(this); return this; };
 PdfDoc.prototype.op = function (s) { this.cur.push(s); };
 PdfDoc.prototype.text = function (x, y, size, str, opt) {
   opt = opt || {};
@@ -4052,7 +4205,7 @@ PdfDoc.prototype.build = function () {
   out += "xref\n0 " + (objs.length + 1) + "\n0000000000 65535 f \n";
   offsets.forEach((o) => { out += String(o).padStart(10, "0") + " 00000 n \n"; });
   out += "trailer\n<< /Size " + (objs.length + 1) + " /Root 1 0 R >>\nstartxref\n" + xref + "\n%%EOF";
-  return out;
+  return pdfEmbedImages(out, (this.logo ? [this.logo] : []).concat(this.attImages || []));
 };
 PdfDoc.measure = pdfWidth;
 PdfDoc.encode = toAscii;
@@ -4062,6 +4215,16 @@ const C = { ink: [0.06, 0.09, 0.16], muted: [0.42, 0.45, 0.5], line: [0.85, 0.87
 const PW = 595.28, M = 40, CW = PW - M * 2, RIGHT = PW - M;
 
 function pdfHeader(p, title, year, month, d) {
+  if (p.logo) {
+    const x=M+58, width=CW-230-58; let yy=800;
+    p.wrap(d.shopName || "My Shop",16,width,true).forEach((value)=>{p.text(x,yy,16,value,{bold:true,color:C.ink});yy-=19;});
+    p.wrap(toAscii(d.address || ""),8.5,width).forEach((value)=>{p.text(x,yy,8.5,value,{color:C.muted});yy-=10.5;});
+    if(d.phone){p.wrap("Phone: "+d.phone,8.5,width).forEach((value)=>{p.text(x,yy,8.5,value,{color:C.muted});yy-=10.5;});}
+    p.text(RIGHT,800,12,title,{bold:true,align:"right",color:C.ink});
+    p.text(RIGHT,787,8.5,"Masik Vetan Vivaran",{align:"right",color:C.muted});
+    p.text(RIGHT,776,9,monthLabel(year,month),{align:"right",color:C.ink,bold:true});
+    const bottom=Math.min(764,yy-4);p.line(M,bottom,RIGHT,bottom,C.ink,1.6);p.y=bottom-16;return;
+  }
   p.text(M, 800, 16, d.shopName || "My Shop", { bold: true, color: C.ink });
   let yy = 786;
   p.wrap(toAscii(d.address || ""), 8.5, 300).forEach((l) => { p.text(M, yy, 8.5, l, { color: C.muted }); yy -= 10.5; });
@@ -4207,7 +4370,12 @@ function drawStatement(p, w, rec, c) {
   p.line(M + 10, sy, M + 170, sy, [0.6, 0.62, 0.66], 0.8);
   p.text(M + 10, sy - 11, 8, "Employee signature", { color: C.muted });
   p.line(RIGHT - 170, sy, RIGHT - 10, sy, [0.6, 0.62, 0.66], 0.8);
-  p.text(RIGHT - 170, sy - 11, 8, (d.ownerName || "Authorised signatory") + " / For " + (d.shopName || ""), { color: C.muted });
+  if (p.logo) {
+    const signature = (d.ownerName || "Authorised signatory") + " / For " + (d.shopName || "");
+    p.wrap(signature, 8, 160).forEach((value, i) => p.text(RIGHT - 170, sy - 11 - i * 10, 8, value, { color: C.muted }));
+  } else {
+    p.text(RIGHT - 170, sy - 11, 8, (d.ownerName || "Authorised signatory") + " / For " + (d.shopName || ""), { color: C.muted });
+  }
 
   p.line(M, 48, RIGHT, 48, C.line, 0.6);
   p.text(M, 38, 7.2, p.wrap(d.statementNote || "", 7.2, 380)[0] || "", { color: C.muted });
@@ -6993,11 +7161,12 @@ function ctCsv() {
 }
 
 function ctStmtHead(title, sub, right) {
-  const s = Store.data.settings;
+  const s = Store.data.settings, logoHTML = companyLogoHTML();
+  const brand = '<div><div style="font-size:19px;font-weight:800">' + esc(s.shopName || "My Shop") + " — CANTEEN</div>" +
+    '<div style="font-size:11px;color:#4b5563;margin-top:3px;line-height:1.5">' +
+      esc(s.address || "") + (s.phone ? " · " + esc(s.phone) : "") + (s.ownerName ? " · " + esc(s.ownerName) : "") + "</div></div>";
   return '<div style="display:flex;justify-content:space-between;gap:18px;border-bottom:2.5px solid #0f172a;padding-bottom:12px">' +
-    '<div><div style="font-size:19px;font-weight:800">' + esc(s.shopName || "My Shop") + " — CANTEEN</div>" +
-      '<div style="font-size:11px;color:#4b5563;margin-top:3px;line-height:1.5">' +
-        esc(s.address || "") + (s.phone ? " · " + esc(s.phone) : "") + (s.ownerName ? " · " + esc(s.ownerName) : "") + "</div></div>" +
+    (logoHTML ? '<div style="display:flex;align-items:center;gap:12px;min-width:0">'+logoHTML+brand+'</div>' : brand) +
     '<div style="text-align:right"><div style="font-size:14px;font-weight:800;letter-spacing:.04em">' + esc(title) + "</div>" +
       '<div style="font-size:11px;color:#4b5563;margin-top:2px">' + esc(sub) + "</div>" +
       '<div style="font-size:10.5px;color:#6b7280;margin-top:2px">' + esc(right || "") + "</div></div>" +
@@ -7221,6 +7390,16 @@ function ctDashV(p, x, y1, y2, color, w) {
 function ctPdfHead(p, docTitle, sub) {
   const T = ctTpl(), st = Store.data.settings || {};
   const shop = st.shopName || "Hisaab";
+  if(p.logo){
+    const x=M+58,width=CW-210-58;let yy=814;
+    p.wrap(shop+" \u2014 CANTEEN",14.25,width,"black").forEach((value)=>{p.text(x,yy,14.25,value,{black:true,color:T.ink});yy-=17;});
+    const addr=[st.address,st.phone?"Ph: "+st.phone:"",st.ownerName].filter(Boolean).join(" \u00b7 ");
+    p.wrap(addr,8.25,width).forEach((value)=>{p.text(x,yy,8.25,value,{color:T.mut});yy-=10;});
+    p.text(RIGHT,814,10.5,docTitle.toUpperCase(),{black:true,align:"right",color:T.ink,charSpace:.42});
+    p.text(RIGHT,803,8.25,sub,{align:"right",color:T.mut});
+    p.text(RIGHT,792,7.875,"Generated "+new Date().toLocaleString("en-IN"),{align:"right",color:T.mut});
+    const bottom=Math.min(784,yy-6);p.line(M,bottom,RIGHT,bottom,T.style==="minimal"?T.ink:CT_PDF_NETBG,1.9);return bottom-16;
+  }
   p.text(M, 814, 14.25, shop + " \u2014 CANTEEN", { black: true, color: T.ink });
   const addr = [st.address, st.phone ? "Ph: " + st.phone : "", st.ownerName].filter(Boolean).join(" \u00b7 ");
   if (addr) p.text(M, 802, 8.25, addr, { color: T.mut });
@@ -9190,6 +9369,7 @@ function attCompactClock(value, nextDay) {
 function attPdfLayout(report) {
   attPdfMeasureCache.clear();
   const m = report.manager, s = report.summary, visits = report.sundays || [], bonuses = attReportBonus(report);
+  const logoPad = companyLogoData() ? 58 : 0;
   // The supplied reference: Segoe, monochrome split header, ruled key/value
   // summary, light bordered tables, a quiet total and dashed explanatory box.
   const ink = [0.07,0.10,0.16], muted = [0.32,0.37,0.44], line = [0.84,0.87,0.90], pale = [0.97,0.98,0.99], gold = [1,0.96,0.84];
@@ -9205,9 +9385,9 @@ function attPdfLayout(report) {
   function nextPage(table) {
     if (pages.length === 2) throw new Error("All details will not fit on 2 readable PDF pages. Choose a shorter date range or download the complete Excel workbook. Saved data is unchanged.");
     ops = []; pages.push(ops); y = 800;
-    wrap(m.name + " · " + m.code, 10, CW - 150, true).forEach((value) => { text(M, y, 10, value, { bold: true }); y -= 13; });
+    wrap(m.name + " · " + m.code, 10, CW - 150 - logoPad, true).forEach((value) => { text(M + logoPad, y, 10, value, { bold: true }); y -= 13; });
     text(RIGHT, 800, 8.5, "ATTENDANCE / CONTINUED", { align: "right", bold: true });
-    text(M, y - 1, 8.5, attNiceDate(report.from) + " — " + attNiceDate(report.to)); y -= 9;
+    text(M + logoPad, y - 1, 8.5, attNiceDate(report.from) + " — " + attNiceDate(report.to)); y -= 9;
     rule(M, y, RIGHT, y, ink, 1); y -= 4;
     if (table) tableHead();
   }
@@ -9221,10 +9401,10 @@ function attPdfLayout(report) {
     labels.forEach((value, i) => { text(x + 5, y - 14, 8.5, value, { bold: true, color: muted }); rule(x, y, x, y - 21); x += widths[i]; });
     rule(RIGHT, y, RIGHT, y - 21); rule(M, y, RIGHT, y); rule(M, y - 21, RIGHT, y - 21); y -= 21;
   }
-  const headerTop = y, brand = wrap(Store.data.settings.shopName || "Hisaab", 13, CW - 205, "black");
-  brand.forEach((value) => { text(M, y, 13, value, { bold: true, black: true }); y -= 16; });
+  const headerTop = y, brand = wrap(Store.data.settings.shopName || "Hisaab", 13, CW - 205 - logoPad, "black");
+  brand.forEach((value) => { text(M + logoPad, y, 13, value, { bold: true, black: true }); y -= 16; });
   const address = [Store.data.settings.address, Store.data.settings.ownerName].filter(Boolean).join(" · ");
-  if (address) wrap(address, 8, CW - 205).forEach((value) => { text(M, y, 8, value, { color: muted }); y -= 10; });
+  if (address) wrap(address, 8, CW - 205 - logoPad).forEach((value) => { text(M + logoPad, y, 8, value, { color: muted }); y -= 10; });
   const fullMonth = attRange("month", report.from);
   text(RIGHT, headerTop, 10, report.from === fullMonth.from && report.to === fullMonth.to ? "ATTENDANCE MONTHLY LEDGER" : "ATTENDANCE PERIOD LEDGER", { align: "right", bold: true, black: true });
   text(RIGHT, headerTop - 14, 8.5, attNiceDate(report.from) + " — " + attNiceDate(report.to), { align: "right", color: muted });
@@ -9298,7 +9478,8 @@ function attPdfString(report) {
 }
 /* Latin uses the panel's embedded vector fonts. Complex-script text is drawn
    by the browser with the bundled OFL Devanagari font, embedded as a high-DPI
-   PDF image with Unicode ActualText. Existing salary/canteen PDF is untouched. */
+   PDF image with Unicode ActualText. The shared writer also embeds the optional
+   company logo; vector font payloads remain unchanged. */
 function attPdfNeedsImage(value) {
   return Array.from(String(value == null ? "" : value)).some((ch) => { const n = ch.codePointAt(0); return n > 255 && PDF_UNICODE_BYTES[n] === undefined && !"•…≤≥✔✕✖→×÷⚡⧉°\n\r\t".includes(ch); });
 }
@@ -9342,19 +9523,8 @@ function attPdfText(p, x, y, size, value, options) {
   p.op("/Span << /ActualText <FEFF" + actual + "> >> BDC q " + (canvas.width / scale).toFixed(2) + " 0 0 " + (canvas.height / scale).toFixed(2) + " " + xx.toFixed(2) + " " + (y - (descent + pad) / scale).toFixed(2) + " cm /" + name + " Do Q EMC");
 }
 function attPdfBuild(p) {
-  const original = p.build(); if (!p.attImages || !p.attImages.length) return original;
-  /* Repack existing objects using their xref boundaries; never scan binary
-     streams for endobj, and recompute every byte offset after adding images. */
-  const at = Number(/startxref\s+(\d+)\s+%%EOF$/.exec(original)[1]), xref = original.slice(at).split("\n"), count = Number(xref[1].split(" ")[1]), objects = [];
-  for (let id = 1; id < count; id++) {
-    const start = Number(xref[id + 2].slice(0, 10)), end = id + 1 < count ? Number(xref[id + 3].slice(0, 10)) : at;
-    const raw = original.slice(start, end); objects.push(raw.slice(raw.indexOf("\n") + 1, raw.lastIndexOf("\nendobj")));
-  }
-  const names = p.attImages.map((image) => { objects.push("<< /Type /XObject /Subtype /Image /Width " + image.width + " /Height " + image.height + " /ColorSpace /DeviceRGB /BitsPerComponent 8 /Filter /DCTDecode /Length " + image.bytes.length + " >>\nstream\n" + image.bytes + "\nendstream"); return "/" + image.name + " " + objects.length + " 0 R"; }).join(" ");
-  objects.forEach((object, i) => { if (/^<< \/Type \/Page\b/.test(object)) objects[i] = object.replace("/Resources <<", "/Resources << /XObject << " + names + " >>"); });
-  let result = "%PDF-1.4\n"; const offsets = [];
-  objects.forEach((object, i) => { offsets.push(result.length); result += (i + 1) + " 0 obj\n" + object + "\nendobj\n"; });
-  const tail = result.length; result += "xref\n0 " + (objects.length + 1) + "\n0000000000 65535 f \n" + offsets.map((offset) => String(offset).padStart(10, "0") + " 00000 n \n").join("") + "trailer\n<< /Size " + (objects.length + 1) + " /Root 1 0 R >>\nstartxref\n" + tail + "\n%%EOF"; return result;
+  // The shared writer now embeds BOTH company branding and shaped text images.
+  return p.build();
 }
 function attXml(value) {
   return String(value == null ? "" : value).replace(/[\u0000-\u0008\u000b\u000c\u000e-\u001f\ufffe\uffff]/g, "").replace(/[&<>"']/g, (ch) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&apos;" }[ch]));
@@ -9755,6 +9925,9 @@ document.addEventListener("click", (e) => {
     case "saveRecClose": if (!commitModal()) break; closeModal(); render(); toast("Is device par saved", "ok"); break;
     case "printRecModal": { const st = UI.openRec; commitModal(); printStatement(st.wid, st.y, st.m); break; }
     case "pdfRecModal": { const st = UI.openRec; commitModal(); downloadStatementPdf(st.wid, st.y, st.m); break; }
+    case "companyLogoChoose": { const input=document.getElementById("companyLogoFile");if(input)input.click();break; }
+    case "companyLogoRemove": companyLogoRemove();break;
+    case "companyLogoCancel": companyLogoCancel();break;
     case "saveSettings": {
       const s = Store.data.settings;
       s.shopName = $("#sShop").value.trim() || "My Shop";
@@ -10034,6 +10207,7 @@ document.addEventListener("change", (e) => {
   const el = e.target;
   if (!el) return;
   if (el.dataset && el.dataset.br !== undefined) { ctBulkRowEdit(el); return; }
+  if (el.id === "companyLogoFile") { companyLogoPick(el); return; }
   if (el.dataset && el.dataset.ctPhoto !== undefined) { ctPhotoPick(el); return; }
   if (el.dataset && el.dataset.ctOcr !== undefined) { ctOcrFromFile(el); return; }
   if (el.id === "ctBulkKind") { const b = ctUI().bulk; if (b) b.kind = el.value; return; }
