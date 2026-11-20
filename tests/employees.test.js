@@ -1,6 +1,7 @@
 /* v3.27 — Employee wording throughout; legacy worker keys stay compatible.
    This suite exercises visible text, real CRUD/import/export actions and exact
    v3.26 data/calculation/report compatibility. No customer data or network. */
+const { withoutLogoHeader } = require('./logo-compat');
 const assert = require('node:assert/strict');
 const fs = require('node:fs'), path = require('node:path');
 const { JSDOM, VirtualConsole } = require('jsdom');
@@ -134,9 +135,9 @@ async function test(label, fn) { try { await fn(); passed++; console.log('  ✅ 
     const custom = copy(fixture); Object.assign(custom.workers[0], { name: 'Worker Welfare', role: 'Worker representative', note: 'Two workers requested this' }); custom.settings.shopName = 'Workers Cooperative';
     const current = boot(custom); assert.equal(current.w.localStorage.getItem(KEY), JSON.stringify(custom)); current.H.go('workers'); assert.match(current.$('#viewRoot').textContent, /Worker Welfare/); assert.equal(current.S.data.settings.shopName, 'Workers Cooperative'); assert.equal(current.S.data.workers[0].note, custom.workers[0].note);
   });
-  await test('storage/merge/finance/attendance functions, panel stylesheet and bundled fonts stay byte-identical', () => {
+  await test('storage/merge/finance/attendance, CSS and fonts stay identical except audited logo header slots', () => {
     for (const name of ['normalizeData', 'blankData', 'syncView', 'mergeSyncData', 'dataCounts', 'calc', 'ctTotals', 'attCalculate', 'attSummary', 'attReport', 'attBonus', 'attBonusMonths', 'attLateOut', 'attTransaction', 'attClockIn', 'attClockOut', 'attRegisterSheet', 'attXlsxBytes', 'attPdfString', 'attPdfLayout']) {
-      const re = new RegExp('^function ' + name + '\\([\\s\\S]*?^\\}', 'm'), a = html.match(re), b = previous.match(re); assert.ok(a && b, name); assert.equal(a[0], b[0], name);
+      const re = new RegExp('^function ' + name + '\\([\\s\\S]*?^\\}', 'm'), a = html.match(re), b = previous.match(re); assert.ok(a && b, name); assert.equal(name === 'attPdfLayout' ? withoutLogoHeader(a[0]) : a[0], b[0], name);
     }
     assert.deepEqual(html.match(/<style[\s\S]*?<\/style>/g), previous.match(/<style[\s\S]*?<\/style>/g));
     for (const tag of ['hisaab-pdf-fonts', 'hisaab-attendance-font', 'hisaab-attendance-font-license']) { const re = new RegExp('<script[^>]*id="' + tag + '"[^>]*>([\\s\\S]*?)<\\/script>'); assert.equal(html.match(re)[1], previous.match(re)[1]); }

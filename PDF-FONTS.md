@@ -181,3 +181,26 @@ were independently rendered/extracted with PyMuPDF and opened with openpyxl;
 Hindi shaping/text, totals, three sheets, freeze/filter headers and numeric types
 were checked. Artifacts stay in ignored `.cache/`; these Python tools and
 Playwright are optional developer QA, not app runtime dependencies.
+
+
+## Company branding resources (v3.29)
+
+Settings can now save an optional company logo once; see [Company logo](COMPANY-LOGO.md).
+No font payload, glyph metric, panel stylesheet or license notice changed.
+The shared vector writer has three audited image hooks: capture the saved logo,
+draw it on each new page (body below the reserved slot), and repack optional JPEG
+resources using real xref/stream boundaries. One logo image object is shared by
+all pages. Attendance passes its existing shaped-text images into the same writer;
+there is exactly one XObject dictionary, including both logo and text resources.
+Raw Latin-1 Blob conversion retains valid binary lengths/xref offsets. With no
+images, the old writer bytes are returned unchanged.
+
+Conditional header/address/name/date slots and salary signatory wrapping prevent
+logo/text overlap and long-company clipping; the no-logo path remains identical.
+Browser salary/Canteen print inserts the saved raster image and waits for decode
+plus the existing font-load Promise before printing. Report data and calculations
+are not modified. New regression guards reverse only these exact image/header/
+signature hooks, then compare the entire legacy body; finance/sync checks remain
+strict. Independent QA reparses/rasterises 81 PDFs, including 44 branded direct-PDF
+pages, long headings, four-page salary, six-page Canteen and Unicode/two-page
+Attendance; original embedded font/license blocks are byte-compared to v3.28.

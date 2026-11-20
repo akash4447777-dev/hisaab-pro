@@ -732,6 +732,54 @@ function closedDialog(d) { d.w.document.getElementById("modalRoot").innerHTML = 
     const db=new Server(ap()),d=await device(db);await d.login();db.failWrite={message:'offline'};const r=api(d).saveRecord(ar({id:undefined,shift:'evening',mode:'time',status:'auto',checkIn:'17:00',checkOut:'23:46',note:'Keep original'}));assert.equal(await d.C.pushNow(),false);const stored=d.dump();d.close();db.failRead={message:'offline'};const restored=await device(db,{storage:stored,session:A});assert.equal(api(restored).record(r.id).shift,'evening');assert.equal(api(restored).record(r.id).checkOut,'23:46');assert.equal(api(restored).bonus('manager-a','2026-11-01','2026-11-30')[0].count,1);db.failRead=null;db.failWrite=null;assert.equal(await restored.C.pushNow(),true);assert.equal(db.get().payload.attendance.records[0].shift,'evening');assert.equal(db.get().payload.attendance.records[0].note,'Keep original');noOverwrite(db);
   });
 
+  console.log("\n▸ v3.29 — one-time company logo uses existing Settings/cloud/recovery");
+  const logo = 'data:image/jpeg;base64,' + fs.readFileSync(path.join(__dirname, 'fixtures/company-logo.jpg')).toString('base64');
+  const otherLogo = 'data:image/jpeg;base64,' + fs.readFileSync(path.join(__dirname, 'fixtures/company-logo-alt.jpg')).toString('base64');
+  await test('logo-only cloud account is real data: a new device adopts it without any write', async () => {
+    const payload = { settings: { companyLogo: logo }, workers: [], records: [], canteen: { entries: [], rates: [], log: [], demo: false } };
+    const db = new Server(payload), d = await device(db); assert.equal(await d.login(), true);
+    assert.equal(d.S.data.settings.companyLogo, logo); assert.equal(db.writes.length, 0); assert.equal(d.C.dirty, false);
+    assert.ok(new d.H.PdfDoc().build().includes('/CompanyLogo ')); noOverwrite(db);
+  });
+  await test('logo survives offline save, scoped packed-cache reload and later confirmed sync', async () => {
+    const payload = ap(); payload.workers = [worker()]; payload.records = [record()]; payload.canteen.entries = [ctEntry('keep')];
+    const db = new Server(payload), d = await device(db); await d.login();
+    const before = copy(d.S.data); d.S.data.settings.companyLogo = logo; assert.equal(d.S.saveChange(), true);
+    db.failWrite = { message: 'offline' }; assert.equal(await d.C.pushNow(), false); assert.equal(d.C.dirty, true);
+    const disk = d.dump(); d.close(); db.failRead = { message: 'offline' };
+    const restored = await device(db, { storage: disk, session: A }); assert.equal(restored.S.data.settings.companyLogo, logo);
+    db.failRead = null; db.failWrite = null; assert.equal(await restored.C.pushNow(), true);
+    assert.equal(db.get().payload.settings.companyLogo, logo); assert.equal(restored.C.dirty, false);
+    for (const key of ['workers', 'records', 'canteen', 'attendance']) assert.equal(JSON.stringify(restored.S.data[key]), JSON.stringify(before[key]));
+    noOverwrite(db);
+  });
+  await test('concurrent logo + phone/bill changes merge independently with no financial loss', async () => {
+    const db = new Server(data(['bill'])), a = await device(db), b = await device(db); await a.login(); await b.login();
+    a.S.data.settings.companyLogo = logo; assert.equal(a.S.saveChange(), true);
+    b.S.data.settings.phone = '1234567890'; b.edit('bill', 3100);
+    assert.equal(await a.C.pushNow(), true); assert.equal(await b.C.pushNow(), true); assert.equal(await a.C.maybePull(), true);
+    assert.equal(db.get().payload.settings.companyLogo, logo); assert.equal(a.S.data.settings.phone, '1234567890');
+    assert.equal(a.S.data.canteen.entries[0].amount, 3100); assert.equal(a.C._pending, null); noOverwrite(db);
+  });
+  for (const preference of ['local', 'remote']) await test('different concurrent logos pause, then preserve the explicit ' + preference + ' choice', async () => {
+    const payload = data(['bill']); payload.settings.companyLogo = logo;
+    const db = new Server(payload), a = await device(db), b = await device(db); await a.login(); await b.login();
+    a.S.data.settings.companyLogo = ''; assert.equal(a.S.saveChange(), true);
+    b.S.data.settings.companyLogo = otherLogo; assert.equal(b.S.saveChange(), true);
+    assert.equal(await a.C.pushNow(), true); const writes = db.writes.length;
+    assert.equal(await b.C.pushNow(), false); assert.equal(db.writes.length, writes); assert.equal(b.C.status, 'conflict');
+    assert.ok(b.C._pending.conflicts.includes('settings.companyLogo')); assert.equal(db.get().payload.settings.companyLogo, '');
+    assert.equal(await b.C.resolve(preference), true); assert.equal(db.get().payload.settings.companyLogo, preference === 'local' ? otherLogo : '');
+    assert.deepEqual(rowIds(db), ['bill']); noOverwrite(db);
+  });
+  await test('a confirmed logo removal reaches another device without resurrecting its cached logo', async () => {
+    const payload = data(['bill']); payload.settings.companyLogo = logo;
+    const db = new Server(payload), a = await device(db), b = await device(db); await a.login(); await b.login();
+    a.S.data.settings.companyLogo = ''; assert.equal(a.S.saveChange(), true); assert.equal(await a.C.pushNow(), true);
+    assert.equal(await b.C.maybePull(), true); assert.equal(b.S.data.settings.companyLogo, '');
+    assert.ok(!new b.H.PdfDoc().build().includes('/CompanyLogo ')); assert.deepEqual(rowIds(db), ['bill']); noOverwrite(db);
+  });
+
   await test("all test browsers run without uncaught JavaScript errors", async () => {
     const db = new Server(data(["a"])), d = await device(db); await d.login(); d.H.go("settings");
     d.H.Recovery.open(); assert.deepEqual(d.errors, []); assert.deepEqual(runtimeErrors, []);
