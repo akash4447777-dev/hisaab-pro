@@ -1,9 +1,13 @@
-# HISAAB v3.29 — manager Attendance
+# HISAAB v3.30 — manager Attendance
 
 **Attendance is a tab inside the existing Hisaab Panel**, not a separate app.
 Manager profiles, attendance, credit settings and history share the panel’s
 existing local save, JSON backup and configured cloud sync. **Attendance never
 changes employee salaries, wages, advances, deductions or payments.**
+
+**v3.30:** sirf Canteen PDF/print ke Bikri / Kharcha columns/summary slots removed.
+Attendance clocks, actual hours, Sundays, bonus, two-page PDF, saved company logo
+and five-sheet Excel are unchanged. Existing records are never re-entered or migrated.
 
 ## v3.29 — saved company logo in every Attendance PDF
 
@@ -247,11 +251,11 @@ remains in JSON/history for compatibility and validation, **not arithmetic**.
 Consequently, old timed entries now display their **full in → out hours** and
 completed valid Time entries display Present, rather than the old target-based
 classification. Previous printed totals can differ; keep previous reports if needed.
-Use v3.29 on all devices/tabs for the latest Excel format and consistent clock labels; do not clear storage.
+Use v3.30 on all devices/tabs for the latest Excel format and consistent clock labels; do not clear storage.
 
 ## Start here
 
-1. Settings → **Backup (JSON)**. Open the latest panel and confirm **Panel v3.29**.
+1. Settings → **Backup (JSON)**. Open the latest panel and confirm **Panel v3.30**.
    See [safe device sync](CLOUD-SYNC.md).
 2. Sidebar → **Attendance** → **Add manager**. Enter a name and unique code,
    choose **Morning / Afternoon / Evening / Night** (or **Day (existing)**),

@@ -1,9 +1,13 @@
 # Hisaab Pro v3.29 — ek logo upload, sabhi naye PDFs
 
+**Current panel v3.30:** Canteen ke Bikri / Kharcha PDF columns/summary slots removed;
+logo handling, saved image, item rows and all financial/Attendance data unchanged.
+Pehle se saved logo ko dobara upload karne ki zaroorat nahi.
+
 ## Kaise use karein
 
 1. Jis browser/site par asli data hai, pehle **Settings → Backup (JSON)** lein.
-2. Panel **v3.29** kholein. **Settings → Company logo → Upload logo** dabayein.
+2. Panel **v3.30** (ya newer) kholein. **Settings → Company logo → Upload logo** dabayein.
 3. **PNG, JPG/JPEG ya WebP**, maximum **5 MB**, chunein. Preview aur **“Logo saved”** aane par logo automatically save ho gaya; alag **Save settings** zaroori nahi.
 4. Ab normal PDF download/share karein. Har baar image select karne ki zaroorat nahi.
 
@@ -47,8 +51,8 @@ Excel ya shorter PDF date range use karein.
 - Do devices alag logos replace/remove karein to existing conflict review me
   explicit local/cloud choice mangi jaati hai. Logo ek atomic setting hai; parts
   ko mila kar kharab image nahi banayi jaati. Removal explicit empty string hai.
-- Branding dekhne ke liye sabhi active devices/tabs ko **v3.29** par update karein.
-  Purane clients ke PDF generators me naya logo-rendering feature nahi hai.
+- Branding dekhne ke liye sabhi active devices/tabs ko **v3.30** par update karein.
+  Logo support v3.29 se hai; v3.28 aur usse purane clients ke PDF generators me ye feature nahi hai.
 
 ## Image handling aur unchanged data
 

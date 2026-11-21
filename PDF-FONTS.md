@@ -204,3 +204,40 @@ signature hooks, then compare the entire legacy body; finance/sync checks remain
 strict. Independent QA reparses/rasterises 81 PDFs, including 44 branded direct-PDF
 pages, long headings, four-page salary, six-page Canteen and Unicode/two-page
 Attendance; original embedded font/license blocks are byte-compared to v3.28.
+
+
+## Seven-column Canteen report presentation (v3.30)
+
+Only the report builders and monthly column specification changed; the embedded
+Segoe/Noto payloads, metrics/licenses, complete stylesheet, shared writer/table/
+summary/closing primitives and company-logo resource/header helpers are byte-identical
+to v3.29. Day/month summaries now draw one purchase row instead of three category
+slots; no orphan sale/expense amounts or dashed underlines remain. Monthly
+header/body/total all remove the same two columns; net closing labels omit the
+category-formula words but **net arithmetic and original entries are unchanged**.
+
+| Monthly PDF column | Width (pt) |
+|---|---:|
+| Date | 85 |
+| Din | 40 |
+| Entries | 50 |
+| Saman | 85 |
+| Net | 90 |
+| Paid | 85 |
+| Baki | 80.28 |
+| **Total** | **515.28** |
+
+This is the same full A4 content width (40 pt margins); money/count cells stay
+right-aligned, and the monthly total merges only Date/Din. All six PDF designs,
+day/month Web Share Files and browser print/Save-as-PDF are covered. Print keeps
+its existing CSS layout/rounding and logo-decode/font-load wait. Customer-entered
+names/notes, original sale/expense day records, separate item lines/own prices,
+Net/Paid/Baki, amount words and signatures are deliberately retained. Existing
+PDFs must be regenerated in Panel v3.30.
+
+QA: **1,080 offline + 385 native** checks. Independent PyMuPDF/openpyxl reparses
+**154 PDFs / 216 pages / 10 XLSX** (one PDF reproduces the legacy item-merge bug),
+including 67 actual seven-column monthly ledgers, 38 native fixture ledgers with
+exact cell values/order/geometry, and 100 proportional non-overlapping branded
+direct-PDF pages. Every page rasterised/unrepaired/in bounds; five-sheet workbooks
+and blank Advances retained. No app runtime dependency was added.

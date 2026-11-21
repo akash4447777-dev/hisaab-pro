@@ -1,12 +1,14 @@
 {
   "name": "hisaab-pro-tests",
-  "version": "3.29.0",
+  "version": "3.30.0",
   "private": true,
-  "description": "Hisaab \u2014 one-time company logo, canteen, salary, loader, PDF, attendance aur safe cloud sync ke developer-only tests",
+  "description": "Hisaab \u2014 seven-column Canteen PDFs, one-time company logo, canteen, salary, loader, PDF, attendance aur safe cloud sync ke developer-only tests",
   "scripts": {
-    "test": "node canteen.test.js && node loader.test.js && node pdf.test.js && node cloud.test.js && node attendance.test.js && node employees.test.js && node canteen-lines.test.js && node company-logo.test.js",
+    "test": "node canteen.test.js && node loader.test.js && node pdf.test.js && node cloud.test.js && node attendance.test.js && node employees.test.js && node canteen-lines.test.js && node company-logo.test.js && node canteen-pdf.test.js",
     "test:canteen": "node canteen.test.js",
     "test:canteen:lines": "node canteen-lines.test.js",
+    "test:canteen:pdf": "node canteen-pdf.test.js",
+    "test:canteen:pdf:browser": "node canteen-pdf.browser.js",
     "test:canteen:browser": "node canteen-lines.browser.js",
     "test:loader": "node loader.test.js",
     "test:pdf": "node pdf.test.js",

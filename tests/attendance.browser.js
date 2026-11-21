@@ -222,7 +222,10 @@ async function downloadedRegister(page, bytes) {
     const twoRegister=await downloadedRegister(reportPage,twoBook);check(twoRegister.count===62&&twoRegister.metrics['Total present days']==='31'&&twoRegister.metrics['Present shifts']==='62','native two-shift month preserves all 62 rows without double-counting the 31 present days');
     for(const width of [390,320]){
       await reportPage.setViewportSize({width,height:844});
-      check(await reportPage.evaluate(() => {const d=document.querySelector('.att-dialog'),h=d.querySelector('.modal-h').getBoundingClientRect(),f=d.querySelector('.modal-f').getBoundingClientRect();return document.documentElement.scrollWidth<=innerWidth+1&&h.top>=0&&f.bottom<=innerHeight}), width+'px report studio fits without horizontal overflow and keeps both downloads visible');
+      // Native resize/CSS layout is asynchronous; don't sample the previous
+      // viewport's dialog frame immediately after setViewportSize resolves.
+      const fit = await reportPage.waitForFunction(() => {const d=document.querySelector('.att-dialog'),h=d.querySelector('.modal-h').getBoundingClientRect(),f=d.querySelector('.modal-f').getBoundingClientRect();return document.documentElement.scrollWidth<=innerWidth+1&&h.top>=0&&f.bottom<=innerHeight}, null, {timeout:5000});
+      check(await fit.jsonValue(), width+'px report studio fits without horizontal overflow and keeps both downloads visible'); await fit.dispose();
       if(width===390)await screenshot(reportPage,'12-report-studio-mobile.png');
     }
     await reportPage.setViewportSize({width:1440,height:1000});await screenshot(reportPage,'13-report-studio-desktop.png');
@@ -303,7 +306,8 @@ async function downloadedRegister(page, bytes) {
     check(await periodPage.inputValue('#attRInWhen')==='same-afternoon'&&await periodPage.inputValue('#attROutWhen')==='same-evening','changing the independent Shift selector never reinterprets either typed clock period');
     for(const width of [390,320]){
       await periodPage.setViewportSize({width,height:844});
-      check(await periodPage.evaluate(()=>{const d=document.querySelector('.att-dialog'),h=d.querySelector('.modal-h').getBoundingClientRect(),f=d.querySelector('.modal-f').getBoundingClientRect();return document.documentElement.scrollWidth<=innerWidth+1&&h.top>=0&&f.bottom<=innerHeight&&[...document.querySelectorAll('#attRInWhen,#attROutWhen')].every(s=>s.options.length===8)}),width+'px form retains all eight clock choices without overflow; title and Save stay visible');
+      const fit = await periodPage.waitForFunction(()=>{const d=document.querySelector('.att-dialog'),h=d.querySelector('.modal-h').getBoundingClientRect(),f=d.querySelector('.modal-f').getBoundingClientRect();return document.documentElement.scrollWidth<=innerWidth+1&&h.top>=0&&f.bottom<=innerHeight&&[...document.querySelectorAll('#attRInWhen,#attROutWhen')].every(s=>s.options.length===8)}, null, {timeout:5000});
+      check(await fit.jsonValue(),width+'px form retains all eight clock choices without overflow; title and Save stay visible'); await fit.dispose();
       if(width===390)await screenshot(periodPage,'16-four-period-form-mobile.png');
     }
     // A real navigation from the historical release retains same-origin raw
