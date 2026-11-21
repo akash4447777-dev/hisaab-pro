@@ -66,7 +66,7 @@ const iso = (d) => d.getFullYear() + "-" + String(d.getMonth() + 1).padStart(2, 
   ok(H().Store.data.canteen.entries.length > 0, "sample canteen entries load hui (" + H().Store.data.canteen.entries.length + ")");
   ok(H().Store.data.workers.length === 4, "workers safe (4 demo)");
   const verEl = $("[data-ver]");
-  ok(verEl && verEl.textContent === "3.29", "version badge 3.29", verEl && verEl.textContent);
+  ok(verEl && verEl.textContent === "3.30", "version badge 3.30", verEl && verEl.textContent);
   ok(root().innerHTML.indexOf("Canteen") >= 0, "dashboard par canteen card dikha");
   ok(root().innerHTML.indexOf("Saman aaya") >= 0, "dashboard canteen strip me 'Saman aaya'");
 
@@ -955,7 +955,7 @@ const iso = (d) => d.getFullYear() + "-" + String(d.getMonth() + 1).padStart(2, 
   section("v3.14 — print CSS exact mirror (grid, dashed, sign boxes)");
   const d14 = H().canteen.pdfDayStr(todayIso).str;
   const m14 = H().canteen.pdfMonthStr(H().UI.year, H().UI.month).str;
-  ok(/110\.00 [\d.]+ m 110\.00 [\d.]+ l S/.test(m14), "mahine table me FULL GRID vertical borders");
+  ok(/125\.00 [\d.]+ m 125\.00 [\d.]+ l S/.test(m14), "v3.30: seven-column mahine table me FULL GRID vertical borders");
   ok(/102\.00 [\d.]+ m 102\.00 [\d.]+ l S/.test(d14), "din table me FULL GRID vertical borders");
   ok(m14.indexOf("0.953 0.957 0.965 rg") >= 0, "header row grey fill (print #f3f4f6)");
   ok(m14.indexOf("0.898 0.906 0.922 RG") >= 0, "grid + dashed lines print grey (#e5e7eb)");
@@ -966,7 +966,7 @@ const iso = (d) => d.getFullYear() + "-" + String(d.getMonth() + 1).padStart(2, 
   let g14 = true;
   H().canteen.tpls.forEach((t) => {
     H().canteen.setTpl(t.id);
-    if (!/110\.00 [\d.]+ m 110\.00/.test(H().canteen.pdfMonthStr(H().UI.year, H().UI.month).str)) g14 = false;
+    if (!/125\.00 [\d.]+ m 125\.00/.test(H().canteen.pdfMonthStr(H().UI.year, H().UI.month).str)) g14 = false;
   });
   ok(g14, "sab 6 templates me grid layout same");
   H().canteen.setTpl("neela");

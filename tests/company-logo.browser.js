@@ -52,7 +52,7 @@ async function settings(page){await go(page,'settings');await page.locator('#com
     for(let d=14;d<=18;d++)A.saveRecord({managerId:hindi.id,date:'2026-11-'+d,shift:'night',mode:'time',checkIn:'21:00',checkOut:'06:00',outNextDay:true,note:'संपूर्ण समय और रविवार की उपस्थिति'});
     return {latin:latin.id,hindi:hindi.id};
   });
-  const original=await snapshot(page);await page.goto(URL);await page.waitForFunction(()=>!!window.Hisaab);check(await snapshot(page)===original,'native v3.28 → v3.29 preserves every saved record, ID, clock, note, amount and storage byte');
+  const original=await snapshot(page);await page.goto(URL);await page.waitForFunction(()=>!!window.Hisaab);check(await snapshot(page)===original,'native v3.28 → v3.30 preserves every saved record, ID, clock, note, amount and storage byte');
   await settings(page);check(await page.locator('[data-act="companyLogoChoose"]').textContent()==='Upload logo','Settings offers a real upload button without requiring a logo file in the app');
   await page.fill('#sShop','Unsaved typed company');await upload(page,path.join(FIX,'company-logo.png'));
   let logo=await page.evaluate(()=>Hisaab.Store.data.settings.companyLogo);check(/^data:image\/jpeg;base64,/.test(logo)&&logo.length<=120000,'real transparent PNG decodes/canvas-encodes to a bounded self-contained JPEG');
