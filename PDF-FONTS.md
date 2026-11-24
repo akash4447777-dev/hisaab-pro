@@ -1,10 +1,12 @@
 # HISAAB PDF fonts — Canteen reference + Attendance Hindi
 
 Canteen’s reference-matched Segoe PDFs (v3.16+) and Attendance’s separate
-Hindi-capable report renderer (v3.19+) are described below. Attendance does not
-change the existing salary/canteen PDF font payloads, drawing geometry, six
-templates or WhatsApp file generation. The indicated Bikri/Kharcha summary-label
-spaces remain blank as shipped in v3.18, with amounts and rows unchanged.
+Hindi-capable renderer (v3.19+) are described below. Current **v3.31** reuses that
+bundled Unicode renderer only on a new filtered-report instance; shared PdfDoc,
+salary/Attendance renderers and font payloads stay intact. v3.30 removed the full
+Bikri/Kharcha summary slots and monthly columns (superseding the historical v3.18
+label-only blanks). v3.31 retains that seven-column ledger in date × party reports.
+[Saved parties / selected PDF instructions](CANTEEN-REPORTS.md).
 
 ## Canteen reference (v3.16)
 
@@ -241,3 +243,41 @@ including 67 actual seven-column monthly ledgers, 38 native fixture ledgers with
 exact cell values/order/geometry, and 100 proportional non-overlapping branded
 direct-PDF pages. Every page rasterised/unrepaired/in bounds; five-sheet workbooks
 and blank Advances retained. No app runtime dependency was added.
+
+
+## v3.31 — combined date × party reports and actual Hindi print glyphs
+
+The validated matching snapshot supplies every table and total in the new range
+PDF, including each original item occurrence and own rate. All six themes and
+saved company-logo resources use the existing table/header/closing helpers. Exact
+valid, unfiltered day/month presets retain their legacy renderer; a malformed
+calendar date in a legacy month forces the validated snapshot renderer, never
+contaminating selected totals.
+
+Only the filtered PdfDoc **instance** overrides text/wrap to call the existing
+bundled Indic canvas/shaping/ActualText helpers when needed. Fonts warm in the
+selection dialog and are awaited/rechecked at action time. Notes omitted by the
+old default builders are excluded only from that legacy fast-path eligibility
+check; new range reports include and render their full original notes. Hindi
+names/items/notes are not transliterated or stripped.
+
+The existing Latin-only Segoe subset can claim Indic code points with empty
+glyphs. Merely appending an Indic fallback produced a searchable but visibly
+blank print PDF in native QA. Unicode filtered print reports now choose
+**Hisaab Indic before Hisaab Segoe** via a scoped inline family; the bundled
+NotoSansDevanagari glyphs are actually embedded and visible. Font and logo-decode
+waits, account/data/selection guards apply before printing. No global stylesheet
+or embedded font/license changed. Direct PDFs retain shaped images with exact
+UTF-16 ActualText; PDF viewers’ copy/search support varies.
+
+Portable ASCII download filenames retain `.pdf` on Android/share targets that
+can reject Unicode filenames; a pure Hindi party may use `Selected_Party` in
+the filename, but its original Hindi name stays inside the PDF.
+
+Independent current QA: **185 PDFs / 288 pages / 10 XLSX** including one legacy-bug
+reproduction; all pages parsed unrepaired, rendered/in bounds. **52 combined-filter
+PDFs**, **160 exact selected daily ledger rows**, **120 proportional non-overlapping
+branded direct-PDF pages**, complete six-page/100-item report and Hindi direct/print
+metadata/glyphs checked. Full release **1,203 offline + 515 native** checks;
+[test guide](tests/README.md). Native OS share/print destinations are stubbed—no
+actual delivery or physical-device/desktop-Excel/live-customer-cloud claim.

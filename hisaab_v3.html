@@ -1965,7 +1965,7 @@ const rRate = (n) => { const x = Math.max(0, num(n)); return x >= 1 ? r2(x) : Ma
 /* rate dikhane ka format: <₹1 ho to 0.075 jaisa khula number, warna moneyS */
 const rateS = (n) => { const x = num(n); if (x > 0 && x < 1) return "₹" + String(Math.round((x + Number.EPSILON) * 10000) / 10000); return moneyS(x); };
 const clamp = (n, lo, hi) => Math.min(hi, Math.max(lo, n));
-const APP_VERSION = "3.30";
+const APP_VERSION = "3.31";
 const esc = (s) => String(s == null ? "" : s).replace(/[&<>"']/g, (m) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[m]));
 
 const MONTHS = ["January","February","March","April","May","June","July","August","September","October","November","December"];
@@ -2139,7 +2139,7 @@ const Store = {
   save(silent, options) {
     options = options || {};
     if (this.storageProblem) { toast("Purana saved data read nahi hua — automatic overwrite band hai", "bad"); return false; }
-    try { attValidate(this.data.attendance); } catch (e) { this.unsaved = true; Cloud.setStatus("storage", e.message); if (!silent) toast(e.message, "bad"); return false; }
+    try { attValidate(this.data.attendance); ctValidateParties(this.data); } catch (e) { this.unsaved = true; Cloud.setStatus("storage", e.message); if (!silent) toast(e.message, "bad"); return false; }
     const changed = !this.lastSaved || !samePayload(this.lastSaved, this.data);
     const previous = this.lastSaved;
     if (!options.bootstrap && changed && previous && this.pristineDemo(previous)) {
@@ -3442,6 +3442,7 @@ function viewSettings(){
 
     '<div style="text-align:center;font-size:11.5px;color:var(--muted);margin-top:18px;line-height:1.7">'+
       'Panel <b style="color:var(--ink)">v<span data-ver></span></b> · Auto-update enabled<br>'+
+      'v3.31 — <b style="color:var(--ink)">Canteen: saved parties + Date / Party PDF</b>: Canteen → Parties me naam ek baar save karein; entry me saved / purani party select karein. Har PDF / WhatsApp PDF / Print se pehle From Date, To Date aur Party Selection. Dono date boundaries included; sirf matching entries, original item lines aur unhi ke din / party totals, Paid / Baki / Net. No matches / invalid dates par export blocked. All six styles, company logo aur purani entries safe. Party names JSON / cloud / safety copies me saved.<br>'+
       'v3.30 — <b style="color:var(--ink)">PDF se Bikri / Kharcha columns removed</b>: Canteen ke saare six templates, din / mahina PDF, WhatsApp PDF aur print / Save as PDF se category summary slots aur Bikri / Kharcha columns hataye. Monthly ledger ab Date, Din, Entries, Saman, Net, Paid, Baki — poori width me. Original entries / item lines / own prices, category math, net / paid / baki, app / CSV, company logo, salary / Attendance aur backups / cloud unchanged. Purana PDF dobara download karein<br>'+
       'v3.29 — <b style="color:var(--ink)">Company logo: ek upload, sabhi PDFs</b>: Settings me PNG/JPG/WebP logo upload / change / remove. Auto-save; salary, payroll summary, Canteen din/mahina aur Attendance/WhatsApp PDF ke har page par proportional logo, browser print me bhi. Logo JSON backup aur configured cloud me settings ke saath; purana data dobara enter nahi karna. Existing downloaded PDFs ke liye naya download karein. Salary, Canteen item lines, Attendance clocks/Sundays/bonus aur five-sheet Excel unchanged<br>'+
       'v3.28 — <b style="color:var(--ink)">Canteen: same item ki har entry alag</b>: din / mahina PDF, print aur item detail me ek jaise naam aur quantity wali lines ab merge nahi hoti. 500 gram + 500 gram do alag 500 gram lines rahengi, har line ka apna rate / amount aur source reference. Grand totals wahi sahi jod; original entries, paid/baki, rate catalog/history, Employee naming, Attendance reports, data aur sync unchanged. Purani entries dobara add na karein—naya PDF download karein<br>'+
@@ -3627,6 +3628,7 @@ function closeCmdk(){ const el = $("#cmdk"); if (el) el.remove(); }
 
 /* ------------------------ 12. MODALS & DIALOGS -------------------------- */
 function openModal(html, opts) {
+  ctReportState = null;
   attRevokeDownloads();
   const root = $("#modalRoot");
   root.innerHTML = '<div class="overlay" id="overlay">' + html + "</div>";
@@ -3635,6 +3637,7 @@ function openModal(html, opts) {
   document.body.style.overflow = "hidden";
 }
 function closeModal() {
+  ctReportState = null;
   attRevokeDownloads();
   $("#modalRoot").innerHTML = "";
   document.body.style.overflow = "";
@@ -4527,9 +4530,11 @@ function importData() {
         const d = JSON.parse(rd.result);
         validateRemote({ payload: d });
         const previous = syncClone(Store.data);
-        Store.data = normalizeData({ ...d, attendance: d.attendance === undefined ? previous.attendance : d.attendance });
+        const keepParties = d.settings?.canteenParties === undefined && previous.settings.canteenParties !== undefined;
+        const settings = { ...(d.settings || {}), ...(keepParties ? { canteenParties: syncClone(previous.settings.canteenParties) } : {}) };
+        Store.data = normalizeData({ ...d, settings, attendance: d.attendance === undefined ? previous.attendance : d.attendance });
         if (!Store.save(false, { checkpoint: true })) { Store.data = previous; return; }
-        render(); toast(d.attendance === undefined && att().managers.length ? "Backup restored · purane backup me Attendance nahi thi; existing Attendance kept" : "Backup restored — cloud status check karein", "ok");
+        render(); toast((d.attendance === undefined && att().managers.length ? "Backup restored · purane backup me Attendance nahi thi; existing Attendance kept" : "Backup restored — cloud status check karein") + (keepParties ? " · purane backup me saved parties nahi thi; existing parties kept" : ""), "ok");
       } catch (e) { toast("Invalid backup file", "bad"); }
     };
     rd.readAsText(f);
@@ -4580,20 +4585,20 @@ function samePayload(a, b) { return syncStable(syncView(a)) === syncStable(syncV
 function dataCounts(d) {
   const c = d && d.canteen || {};
   return { workers: (d && d.workers || []).length, records: (d && d.records || []).length,
-    entries: (c.entries || []).length, rates: (c.rates || []).length, log: (c.log || []).length,
+    entries: (c.entries || []).length, rates: (c.rates || []).length, log: (c.log || []).length, parties: ctSavedPartyRows(d).length,
     managers: ((d && d.attendance || {}).managers || []).length, attendance: ((d && d.attendance || {}).records || []).length, attendanceHistory: ((d && d.attendance || {}).history || []).length };
 }
 function hasRows(d) { return Object.values(dataCounts(d)).some((n) => n > 0); }
 function hasUserData(d) {
   if (hasRows(d)) return true;
   const s = syncView(d).settings;
-  return Object.keys(s).some((key) => syncStable(s[key]) !== syncStable(DEFAULT_SETTINGS[key])) ||
+  return Object.keys(s).some((key) => key !== "canteenParties" && syncStable(s[key]) !== syncStable(DEFAULT_SETTINGS[key])) ||
     syncStable(syncView(d).attendance.settings) !== syncStable(attDefaults());
 }
 function ctCountOf(d) { return dataCounts(d).entries; }
 function dataCountText(d) {
   const n = dataCounts(d);
-  return n.workers + " employees · " + n.records + " salary records · " + n.entries + " canteen · " + n.rates + " rates · " + n.managers + " managers · " + n.attendance + " attendance";
+  return n.workers + " employees · " + n.records + " salary records · " + n.entries + " canteen · " + n.rates + " rates · " + n.parties + " saved parties · " + n.managers + " managers · " + n.attendance + " attendance";
 }
 function syncEntityKey(item, path) {
   if (!item || typeof item !== "object" || Array.isArray(item)) return null;
@@ -4677,6 +4682,7 @@ function validateRemote(row) {
     throw new Error("Cloud data ka format galat hai. Local data nahi badla; backup lekar setup check karein.");
   if (d.settings !== undefined && (!d.settings || typeof d.settings !== "object" || Array.isArray(d.settings)))
     throw new Error("Cloud settings format galat hai — overwrite blocked");
+  ctValidateParties(d);
   attValidate(d.attendance, d.attendance && d.attendance.managers === undefined);
   const recordKeys = new Set();
   d.records.forEach((r) => {
@@ -4765,7 +4771,7 @@ function unpackLocal(raw) {
 }
 function syncCollections(d) {
   const c = d && d.canteen || {};
-  return { workers: d && d.workers || [], records: d && d.records || [], entries: c.entries || [], rates: c.rates || [],
+  return { workers: d && d.workers || [], records: d && d.records || [], entries: c.entries || [], rates: c.rates || [], parties: ctSavedPartyRows(d),
     managers: (d && d.attendance || {}).managers || [], attendance: (d && d.attendance || {}).records || [] };
 }
 function unconfirmedRemoteLoss(base, local, remote, metadata) {
@@ -4968,7 +4974,7 @@ const Cloud = {
       throw new Error("Account cache save nahi hua — local data nahi badla");
     }
     Store.remember(); lastUndo = null; closeModal();
-    UI.ct.edit = null; UI.ct.bulk = null; UI.att = null; attEditor = null; attBackupScope = "";
+    UI.ct.edit = null; UI.ct.bulk = null; UI.ct.party = "all"; ctPartyViewContext = null; UI.att = null; attEditor = null; attBackupScope = "";
     this.setStatus("checking");
   },
   async signIn(email, password) {
@@ -5532,10 +5538,11 @@ function ct() {
 function ctUI() {
   if (!UI.ct || typeof UI.ct !== "object") UI.ct = {};
   const u = UI.ct;
-  if (["day", "month", "entries", "rates", "activity"].indexOf(u.tab) < 0) u.tab = "day";
+  if (["day", "month", "entries", "parties", "rates", "activity"].indexOf(u.tab) < 0) u.tab = "day";
   if (!/^\d{4}-\d{2}-\d{2}$/.test(String(u.date || ""))) u.date = isoDate(new Date());
   if (u.kind !== "all" && CT_KINDS.indexOf(u.kind) < 0) u.kind = "all";
   if (u.q == null) u.q = "";
+  if (typeof u.party !== "string") u.party = "all";
   if (u.from == null) u.from = "";
   if (u.to == null) u.to = "";
   if (u.scope !== "all" && u.scope !== "custom") u.scope = "month";
@@ -5620,6 +5627,7 @@ function ctFilteredEntries() {
     list = list.filter((e) => { const p = ctParts(e.date); return p.y === UI.year && p.m === UI.month; });
   }
   if (u.kind !== "all") list = list.filter((e) => e.kind === u.kind);
+  if (u.party !== "all") list = list.filter((e) => ctPartyMatches(e, u.party));
   if (q) {
     list = list.filter((e) =>
       String(e.party || "").toLowerCase().indexOf(q) >= 0 ||
@@ -5705,7 +5713,7 @@ function ctBakiList(list) {
 function ctParties() {
   const s = new Set();
   ct().entries.forEach((e) => { if (e.party) s.add(e.party); });
-  return Array.from(s).sort();
+  return ctPartyChoices(Array.from(s));
 }
 /* signed money — 0 par koi sign nahi (warna "−₹0" ajeeb lagta hai) */
 function ctSgn(v) { return (v < 0 ? "−" : v > 0 ? "+" : "") + money0(Math.abs(v)); }
@@ -5854,6 +5862,7 @@ function viewCanteen() {
     ["day", "📅 Din ka ledger"],
     ["month", "🗓 Mahine ka ledger"],
     ["entries", "🧾 Sab entries"],
+    ["parties", "👥 Parties"],
     ["rates", "🏷 Rate list"],
     ["activity", "🕘 Activity"]
   ];
@@ -5870,6 +5879,7 @@ function viewCanteen() {
         (u.tab === "month" ? '<button class="btn sm" data-act="ctPdfMonth">📄 PDF mahina</button>' : "") +
         (u.tab === "month" ? '<button class="btn sm" data-act="ctShareMonth">✆ WhatsApp mahina</button>' : "") +
         (u.tab === "month" ? '<button class="btn sm" data-act="ctSharePdfMonth" title="Mahine ki PDF seedha WhatsApp par">📤 WhatsApp PDF</button>' : "") +
+        '<button class="btn sm" data-act="ctReportOpen">📄 PDF · Date / Party</button>' +
         '<button class="btn sm" data-act="ctBulk" title="Word/WhatsApp se text ek saath paste karo — har item ki alag entry">📋 Paste se entries</button>' +
         '<button class="btn sm" data-act="ctCsv">⤓ CSV</button>' +
         '<button class="btn sm primary" data-act="ctAdd">＋ Entry add karo</button>' +
@@ -5879,6 +5889,7 @@ function viewCanteen() {
   if (u.tab === "day") body = ctDayLedger();
   else if (u.tab === "month") body = ctMonthLedger();
   else if (u.tab === "entries") body = ctEntriesView();
+  else if (u.tab === "parties") body = ctPartiesView();
   else if (u.tab === "rates") body = ctRatesView();
   else body = ctActivityView();
   return head + body;
@@ -6206,8 +6217,9 @@ function ctEntriesView() {
           '<option value="all"' + (u.kind === "all" ? " selected" : "") + ">Sab type</option>" +
           CT_KINDS.map((k) => '<option value="' + k + '"' + (u.kind === k ? " selected" : "") + ">" + CT_KIND[k].ico + " " + esc(CT_KIND[k].label) + "</option>").join("") +
         "</select>" +
+        '<select class="inp" id="ctPartyFilter" aria-label="Filter entries by party" style="width:auto;max-width:100%;min-width:150px">' + ctPartyOptions(u.party, true) + '</select>' +
         '<input class="inp" id="ctSearch" placeholder="Party, item, bill no. dhoondo…" value="' + esc(u.q) + '" autocomplete="off" style="min-width:190px;flex:1">' +
-        (u.q || u.from || u.to || u.kind !== "all" || u.scope !== "month"
+        (u.q || u.from || u.to || u.kind !== "all" || u.party !== "all" || u.scope !== "month"
           ? '<button class="btn sm" data-act="ctResetFilter">✕ Reset</button>' : "") +
       "</div>" +
     "</div></div>";
@@ -6521,7 +6533,8 @@ function ctRenderModal(isEdit) {
         '<div class="grid g3" style="margin-top:13px">' +
           field("Date (kab)", '<input type="date" class="inp" id="ctDateM" value="' + esc(d.date) + '">') +
           field(d.kind === "sale" ? "Kahan se / counter" : "Party / supplier / dukaan",
-            '<input class="inp" id="ctParty" list="ctPartyList" value="' + esc(d.party) + '" placeholder="' + (d.kind === "sale" ? "Canteen counter" : "Jaise: Sabzi Mandi, Gupta Kirana") + '">') +
+            '<select class="inp" id="ctPartySelect" aria-label="Saved or existing party" style="margin-bottom:7px">' + ctPartyOptions(ctPartyKey(d.party) ? ctPartyToken(d.party) : "", false) + '</select>' +
+            '<input class="inp" id="ctParty" maxlength="90" list="ctPartyList" value="' + esc(d.party) + '" placeholder="' + (d.kind === "sale" ? "Canteen counter" : "Jaise: Sabzi Mandi, Gupta Kirana") + '">') +
           field("Bill / parcha no. (optional)", '<input class="inp" id="ctBill" value="' + esc(d.billNo) + '" placeholder="Jaise SM-204">') +
         "</div>" +
         '<datalist id="ctPartyList">' + partyOpts + "</datalist>" +
@@ -7072,15 +7085,18 @@ function ctSettingsCard() {
 }
 function ctWipe() {
   const C = ct();
-  if (!C.entries.length && !C.rates.length && !C.log.length) return toast("Canteen me erase karne ko kuch nahi hai");
+  const savedParties = ctSavedPartyRows().length, context = ctDataContext();
+  if (!C.entries.length && !C.rates.length && !C.log.length && !savedParties) return toast("Canteen me erase karne ko kuch nahi hai");
   confirmDialog("Sirf canteen data erase karein?",
-    "<b>" + C.entries.length + " entries</b>, <b>" + C.rates.length + " rate-list items</b> aur <b>" + C.log.length + " activity events</b> delete ho jayenge.<br>" +
+    "<b>" + C.entries.length + " entries</b>, <b>" + C.rates.length + " rate-list items</b> aur <b>" + C.log.length + " activity events</b> aur <b>" + savedParties + " saved parties</b> delete ho jayenge.<br>" +
     "Employees aur salary records <b>safe</b> rahenge. Pehle backup (JSON) ya CSV nikal lo to behtar.",
     "Canteen data erase", () => {
-      const snap = JSON.parse(JSON.stringify(Store.data.canteen));
+      try { ctCheckContext(context); } catch (e) { toast(e.message, "bad"); return; }
+      const snap = JSON.parse(JSON.stringify(Store.data.canteen)), parties = syncClone(Store.data.settings.canteenParties);
       Store.data.canteen = blankCanteen();
+      if (parties !== undefined) Store.data.settings.canteenParties = {};
       if (!Store.saveChange()) { render(); return; } render();
-      setUndo(() => { Store.data.canteen = snap; if (!Store.saveChange()) { render(); return; } render(); toast("Canteen data wapas aa gaya ✔", "ok"); },
+      setUndo(() => { Store.data.canteen = snap; if (parties !== undefined) Store.data.settings.canteenParties = { ...parties, ...(Store.data.settings.canteenParties || {}) }; if (!Store.saveChange()) { render(); return; } render(); toast("Canteen data wapas aa gaya ✔", "ok"); },
         "Canteen data erase ho gaya");
     }, true);
 }
@@ -7698,6 +7714,391 @@ function ctSharePdf(which, iso, y, m) {
     "\n\nPDF download ho gayi hai \u2014 WhatsApp chat me \ud83d\udcce (attach) se bhej do."), "_blank");
   toast("PDF download ho gayi \u2014 WhatsApp me \ud83d\udcce se attach kar do", "ok");
 }
+
+/* v3.31 CANTEEN PARTIES / FILTERED REPORTS BEGIN
+   Add-only saved names use an optional Settings map. Existing string party fields,
+   entries, financial math and legacy report builders stay intact. The catalog
+   participates in counts, validation, deletion safeguards, recovery and sync. */
+const CT_REPORT_ENTRY_COLS = [
+  { l: "Date", w: 80 }, { l: "Type", w: 52 }, { l: "Party / bill / note", w: 150 },
+  { l: "Amount", w: 80, r: 1 }, { l: "Paid", w: 76, r: 1 }, { l: "Baki", w: 77.28, r: 1 }];
+let ctPartyViewContext = null, ctReportState = null;
+function ctPartyName(value) { return typeof value === "string" ? value.trim().replace(/\s+/g, " ") : ""; }
+function ctPartyKey(value) { return ctPartyName(value).toLowerCase(); }
+function ctPartyToken(value) { return "name:" + ctPartyKey(value); }
+function ctSavedPartyRows(data) {
+  const source = arguments.length ? data : Store.data;
+  const saved = ((source || {}).settings || {}).canteenParties;
+  return saved && typeof saved === "object" && !Array.isArray(saved)
+    ? Object.entries(saved).filter(([key, name]) => typeof name === "string" && key === "p:" + ctPartyKey(name) && ctPartyName(name)).map(([id, name]) => ({ id, name })) : [];
+}
+function ctSavedPartyNames() { return ctSavedPartyRows().map((party) => party.name); }
+function ctValidateParties(data) {
+  const saved = ((data || {}).settings || {}).canteenParties;
+  if (saved === undefined) return;
+  if (!saved || typeof saved !== "object" || Array.isArray(saved) || Object.entries(saved).some(([key, name]) =>
+      typeof name !== "string" || !name || name.length > 90 || name !== ctPartyName(name) || /[\u0000-\u001f\u007f]/.test(name) || key !== "p:" + ctPartyKey(name)))
+    throw new Error("Saved party list ka format invalid hai — data overwrite nahi kiya gaya. JSON backup / restore check karein.");
+}
+function ctPartyChoices(names) {
+  const map = new Map();
+  ctSavedPartyNames().concat(names || []).forEach((name) => { const key = ctPartyKey(name); if (key && !map.has(key)) map.set(key, ctPartyName(name)); });
+  return Array.from(map.values()).sort((a, b) => a.localeCompare(b));
+}
+function ctPartyMatches(entry, token) {
+  if (token === "all") return true;
+  if (token === "none") return !ctPartyKey(entry.party);
+  return typeof token === "string" && token.startsWith("name:") && token === ctPartyToken(entry.party);
+}
+function ctPartySelection(token) {
+  if (token === "all") return { token, name: "All parties" };
+  if (token === "none") return { token, name: "No party / unassigned" };
+  const name = ctParties().find((name) => ctPartyToken(name) === token);
+  if (!name) throw new Error("Party selection badal gayi / invalid hai. Party dobara chunein; All parties apne aap select nahi hoga.");
+  return { token, name };
+}
+function ctPartyOptions(selected, all) {
+  const pairs = (all ? [["all", "All parties"], ["none", "No party / unassigned"]] : [["", "No party / neeche naam likhein (optional)"]])
+    .concat(ctParties().map((name) => [ctPartyToken(name), all ? "Party: " + name : name]));
+  return pairs.map(([value, name]) => '<option value="' + esc(value) + '"' + (value === selected ? " selected" : "") + '>' + esc(name) + '</option>').join("");
+}
+function ctDataContext() {
+  return { data: Store.data, epoch: Cloud.epoch, scope: Cloud.scope, disk: Store.diskValue, version: Cloud.editVersion, snapshot: JSON.stringify(Store.data) };
+}
+function ctCheckContext(context) {
+  if (!context || context.data !== Store.data || context.epoch !== Cloud.epoch || context.scope !== Cloud.scope || context.version !== Cloud.editVersion || context.disk !== Store.diskValue || context.snapshot !== JSON.stringify(Store.data))
+    throw new Error("Data / account badal gaya. Ye form band karke dobara kholein; stale selection se export/save nahi hua.");
+  if (Store.storageProblem || Store.unsaved) throw new Error("Local save confirm nahi hua. Pehle pending data save / JSON backup karein.");
+  let owner, disk;
+  try { owner = localStorage.getItem(OWNER_KEY) || null; disk = localStorage.getItem(KEY); } catch (e) { throw new Error("Browser storage read nahi hui. JSON backup / reload check karein."); }
+  if (owner !== context.scope || disk !== context.disk) throw new Error("Doosre tab / account ka data badla. Reload karein; purani copy use nahi hui.");
+}
+function ctSavePartyName(value, context) {
+  ctCheckContext(context || ctDataContext());
+  const name = ctPartyName(value), key = "p:" + ctPartyKey(name), saved = Store.data.settings.canteenParties;
+  if (!name || name.length > 90 || /[\u0000-\u001f\u007f]/.test(name)) throw new Error("Party ka naam 1–90 characters me likhein.");
+  ctValidateParties(Store.data);
+  if (saved && Object.prototype.hasOwnProperty.call(saved, key)) return { name: saved[key], created: false };
+  Store.data.settings.canteenParties = { ...(saved || {}), [key]: name };
+  if (!Store.saveChange()) throw new Error("Party save NAHIN hui. Purani list/data safe hai; storage / backup check karein.");
+  return { name, created: true };
+}
+function ctPartiesView() {
+  ctPartyViewContext = ctDataContext();
+  const names = ctParties(), saved = new Set(ctSavedPartyNames().map(ctPartyKey)), grouped = new Map();
+  ctAll().forEach((entry) => { const key = ctPartyKey(entry.party); if (!grouped.has(key)) grouped.set(key, []); grouped.get(key).push(entry); });
+  const rows = names.map((name) => {
+    const token = ctPartyToken(name), totals = ctTotals(grouped.get(ctPartyKey(name)) || []);
+    return '<tr><td style="overflow-wrap:anywhere"><b>' + esc(name) + '</b><div class="ct-ilist">' + (saved.has(ctPartyKey(name)) ? "Saved party" : "Purani entries se · naam save karke rakh sakte hain") + '</div></td>' +
+      '<td class="num">' + totals.count + '</td><td class="num">' + money(totals.paid) + '</td><td class="num">' + money(totals.balance) + '</td><td><div class="row-actions">' +
+      (!saved.has(ctPartyKey(name)) ? '<button class="btn xs" data-act="ctPartyRemember" data-party="' + esc(token) + '">Save name</button>' : "") +
+      '<button class="btn xs" data-act="ctPartyEntry" data-party="' + esc(token) + '">＋ Entry</button>' +
+      '<button class="btn xs" data-act="ctPartyEntries" data-party="' + esc(token) + '">Entries</button>' +
+      '<button class="btn xs" data-act="ctPartyPdf" data-party="' + esc(token) + '">PDF</button></div></td></tr>';
+  }).join("");
+  return '<div class="card" style="margin-bottom:14px"><div class="card-h"><div><h3>Party Management</h3><div class="sub">Naam ek baar save karein · entry aur PDF me select karein</div></div></div>' +
+    '<div class="card-b"><form id="ctPartyForm"><label for="ctPartyNew" class="muted" style="display:block;margin-bottom:7px">Party ka naam</label><div style="display:flex;gap:9px;flex-wrap:wrap">' +
+    '<input class="inp" id="ctPartyNew" name="partyName" maxlength="90" required placeholder="Jaise Gupta Kirana" autocomplete="organization" style="flex:1 1 200px;min-width:0">' +
+    '<button class="btn primary" type="submit">＋ Save party</button></div><div id="ctPartyError" role="alert" style="color:var(--bad);margin-top:8px"></div></form>' +
+    '<div class="ct-note" style="margin-top:8px">Saved names aur purani entries ki parties dono available hain. Naam save karne se koi financial entry / amount nahi banta. Existing entries ke names/IDs nahi badalte.</div></div></div>' +
+    '<div class="card"><div class="card-h"><div><h3>Parties (' + names.length + ')</h3><div class="sub">All-time entries · paid / baki</div></div></div>' +
+    (names.length ? '<div class="twrap"><table class="tbl"><thead><tr><th>Party</th><th class="num">Entries</th><th class="num">Paid</th><th class="num">Baki</th><th>Actions</th></tr></thead><tbody>' + rows + '</tbody></table></div>' : '<div class="empty"><h4>Abhi koi party nahi</h4><p>Upar naam save karke pehli party add karein.</p></div>') + '</div>';
+}
+function ctPartySaveForm() {
+  try { const result = ctSavePartyName($("#ctPartyNew").value, ctPartyViewContext); render(); toast(result.created ? "Party saved — entry aur PDF me available" : "Party pehle se saved hai", "ok"); }
+  catch (error) { const box = $("#ctPartyError"); if (box) box.textContent = error.message; toast(error.message, "bad"); }
+}
+function ctReportDate(value) {
+  if (typeof value !== "string" || !/^\d{4}-\d{2}-\d{2}$/.test(value)) return false;
+  const d = new Date(value + "T00:00:00Z");
+  return Number.isFinite(d.getTime()) && d.toISOString().slice(0, 10) === value && value >= "1900-01-01" && value <= "9998-12-31";
+}
+function ctReportPartyAgg(entries) {
+  const groups = new Map(), names = new Map(ctParties().map((name) => [ctPartyKey(name), name]));
+  entries.forEach((entry) => { const key = ctPartyKey(entry.party); if (!groups.has(key)) groups.set(key, []); groups.get(key).push(entry); });
+  return Array.from(groups, ([key, list]) => {
+    const t = ctTotals(list);
+    return { name: key ? names.get(key) || ctPartyName(list[0].party) : "No party / unassigned", n: t.count, amt: r2(t.purchase + t.sale + t.expense), paid: t.paid, bal: t.balance };
+  }).sort((a, b) => b.amt - a.amt || a.name.localeCompare(b.name));
+}
+function ctReportQuery(from, to, party) {
+  if (!ctReportDate(from) || !ctReportDate(to)) throw new Error("From Date aur To Date me valid dates chunein (1900–9998).");
+  if (from > to) throw new Error("From Date, To Date ke baad nahi ho sakti.");
+  const selection = ctPartySelection(party === undefined ? "all" : party);
+  const entries = syncClone(ctAll().filter((entry) => ctReportDate(entry.date) && entry.date >= from && entry.date <= to && ctPartyMatches(entry, selection.token)))
+    .sort((a, b) => a.date.localeCompare(b.date) || num(a.createdAt) - num(b.createdAt));
+  const grouped = new Map();
+  entries.forEach((entry) => { if (!grouped.has(entry.date)) grouped.set(entry.date, []); grouped.get(entry.date).push(entry); });
+  const days = Array.from(grouped, ([iso, list]) => ({ iso, day: ctDayName(iso), list, t: ctTotals(list) }));
+  return { from, to, party: selection.token, partyName: selection.name, entries, days, parties: ctReportPartyAgg(entries), totals: ctTotals(entries) };
+}
+function ctReportFilename(report) {
+  // Keep the download extension reliable on Android/share targets that reject
+  // non-ASCII filenames. The original Unicode party name stays inside the PDF.
+  const party = report.party === "all" ? "All_Parties" : report.party === "none" ? "No_Party" : report.partyName.replace(/[^a-z0-9_-]+/gi, "_").replace(/^_+|_+$/g, "").slice(0, 60) || "Selected_Party";
+  return "Canteen_" + report.from + "_to_" + report.to + "_" + party + ".pdf";
+}
+function ctReportEntryText(entry) {
+  return [entry.party || "No party / unassigned", entry.billNo ? "Bill: " + entry.billNo : "", entry.mode === "total" ? "Lump-sum" : "Item-wise", entry.note ? "Note: " + entry.note : ""].filter(Boolean).join("\n");
+}
+function ctReportDayRows(report) {
+  return report.days.map((d) => [ctPretty(d.iso), d.day.slice(0, 3), String(d.list.length), money(d.t.purchase),
+    (d.t.net < 0 ? "−" : "") + money(Math.abs(d.t.net)), money(d.t.paid), d.t.balance > .005 ? money(d.t.balance) : "-"]);
+}
+function ctReportDayTotal(report) {
+  const t = report.totals;
+  return ["Period ka total", "", String(t.count), money(t.purchase), (t.net < 0 ? "−" : "") + money(Math.abs(t.net)), money(t.paid), t.balance > .005 ? money(t.balance) : "-"];
+}
+/* Reuse the already bundled Unicode renderer only for this report instance;
+   never monkey-patch the shared writer or Attendance/legacy report behavior. */
+function ctReportNeedsUnicode(report, legacy) {
+  const st = Store.data.settings || {};
+  return [report.partyName, st.shopName, st.ownerName, st.address, st.phone, st.statementNote,
+    ...report.entries.flatMap((e) => [e.party, e.billNo, legacy ? "" : e.note, ...(e.mode === "itemized" ? (e.items || []).flatMap((i) => [i.name, i.unit]) : [])])].some(attPdfNeedsImage);
+}
+function ctReportPdfDoc(report) {
+  if (ctReportNeedsUnicode(report) && (!document.fonts || !document.fonts.check('400 16px "Hisaab Indic"') || !document.fonts.check('700 16px "Hisaab Indic"')))
+    throw new Error("Unicode PDF fonts ready nahi hain. Dobara Download karein, ya Print / Save as PDF chunein.");
+  const p = new PdfDoc(), vectorText = p.text.bind(p), vectorWrap = p.wrap.bind(p);
+  p.text = function (x, y, size, value, options) {
+    if (attPdfNeedsImage(value)) attPdfText(p, x, y, size, value, { ...(options || {}), bold: !!(options && (options.bold || options.black)) });
+    else vectorText(x, y, size, value, options);
+    return p;
+  };
+  p.wrap = function (value, size, width, weight) {
+    return String(value == null ? "" : value).split(/\r?\n/).flatMap((part) => {
+      const lines = attPdfNeedsImage(part) ? attPdfWrap(part, size, width, !!weight) : vectorWrap(part, size, width, weight);
+      return lines.length ? lines : [""];
+    });
+  };
+  return p;
+}
+function ctReportPartyBox(p, y, name) {
+  const lines = p.wrap("Party: " + name, 9, CW - 24, true), height = Math.max(32, lines.length * 12 + 16);
+  y = ctEnsure(p, y, height + 12); p.roundBox(M, y - height, CW, height, 4, CT_PDF_GRID, [1, 1, 1]);
+  lines.forEach((line, i) => p.text(M + 12, y - 16 - i * 12, 9, line, { bold: true, color: ctTpl().ink }));
+  return y - height - 12;
+}
+function ctBuildRangePdf(report) {
+  if (!report.entries.length) return null;
+  const p = ctReportPdfDoc(report), t = report.totals;
+  let y = ctPdfHead(p, "CANTEEN PERIOD LEDGER", ctPretty(report.from) + " to " + ctPretty(report.to));
+  y = ctPdfSummary(p, y, [["From Date", ctPretty(report.from)], ["To Date", ctPretty(report.to)], ["Entries", t.count + " (" + report.days.length + " din)"]],
+    [["Saman aaya", money(t.purchase)], ["Paisa diya (paid)", money(t.paid)], ["Baki / udhaar", money(t.balance)]]);
+  y = ctReportPartyBox(p, y, report.partyName);
+  y = ctPdfSecTitle(p, y, "DIN-WISE LEDGER");
+  y = ctPdfTable(p, y, CT_COLS_MONTH, ctReportDayRows(report), ctReportDayTotal(report));
+  y = ctPdfSecTitle(p, y, "ENTRIES (SELECTED PERIOD / PARTY)");
+  y = ctPdfTable(p, y, CT_REPORT_ENTRY_COLS, report.entries.map((entry) => [ctPretty(entry.date), ctKindOf(entry).en, ctReportEntryText(entry), money(ctAmount(entry)), money(Math.min(ctPaid(entry), ctAmount(entry))), money(ctBalance(entry))]),
+    ["Entries total", "", "", money(r2(t.purchase + t.sale + t.expense)), money(t.paid), money(t.balance)]);
+  const items = ctItemLines(report.entries);
+  if (items.length) {
+    y = ctPdfSecTitle(p, y, "ITEM-WISE DETAIL (ORIGINAL LINES)");
+    y = ctPdfTable(p, y, CT_COLS_ITEMS, items.map((item) => [ctItemLineText(item), String(num(item.qty)), item.unit, item.rate < 1 ? rateS(item.rate) : money(item.rate), money(item.amt), item.entryNo + "." + (item.itemIndex + 1)]));
+  }
+  const parties = report.parties;
+  if (parties.length) {
+    y = ctPdfSecTitle(p, y, "PARTY / SUPPLIER-WISE");
+    y = ctPdfTable(p, y, CT_COLS_PARTY, parties.map((party) => [party.name, String(party.n), money(party.amt), money(party.paid), party.bal > .005 ? money(party.bal) : "-"]));
+  }
+  ctPdfClosing(p, y, "Period ka net", "Paid " + money(t.paid) + " · Baki " + money(t.balance), t.net);
+  return { str: p.build(), name: ctReportFilename(report) };
+}
+function ctPdfRangeStr(from, to, party) { return ctBuildRangePdf(ctReportQuery(from, to, party)); }
+function ctReportTableHTML(cols, rows, total) {
+  const value = (v) => esc(v).replace(/\n/g, "<br>");
+  const row = (cells, bold) => {
+    let span = 1; if (bold) while (span < cells.length && cells[span] === "") span++;
+    return '<tr>' + cells.map((cell, i) => i > 0 && i < span ? "" : '<td' + (cols[i].r ? ' class="r"' : "") + (i === 0 && span > 1 ? ' colspan="' + span + '"' : "") + ' style="overflow-wrap:anywhere;white-space:normal">' + (bold ? '<b>' : "") + value(cell) + (bold ? '</b>' : "") + '</td>').join("") + '</tr>';
+  };
+  return '<table style="table-layout:fixed"><colgroup>' + cols.map((col) => '<col style="width:' + (col.w / CW * 100).toFixed(4) + '%">').join("") + '</colgroup><thead><tr>' +
+    cols.map((col) => '<th' + (col.r ? ' class="r"' : "") + '>' + esc(col.l) + '</th>').join("") + '</tr></thead><tbody>' + rows.map((cells) => row(cells, false)).join("") + (total ? row(total, true) : "") + '</tbody></table>';
+}
+function ctReportPrintHTML(report) {
+  if (!report.entries.length) return null;
+  const t = report.totals, items = ctItemLines(report.entries), parties = report.parties;
+  // The Latin-only Segoe subset claims complex-script code points with empty
+  // glyphs. Put the bundled Indic font FIRST for Unicode print reports; a mere
+  // fallback after Segoe would create searchable but visibly blank names.
+  const family = ctReportNeedsUnicode(report) ? ' style="font-family:&quot;Hisaab Indic&quot;,&quot;Hisaab Segoe&quot;,sans-serif"' : "";
+  return '<div class="stmt ct-stmt"' + family + '><div class="pad">' + ctStmtHead("CANTEEN PERIOD LEDGER", ctPretty(report.from) + " to " + ctPretty(report.to), "Generated " + new Date().toLocaleString("en-IN")) +
+    '<div class="meta"><div>' + mRow("From Date", ctPretty(report.from)) + mRow("To Date", ctPretty(report.to)) + mRow("Entries", t.count + " (" + report.days.length + " din)") + '</div><div>' +
+    mRow("Saman aaya", money(t.purchase)) + mRow("Paisa diya (paid)", money(t.paid)) + mRow("Baki / udhaar", money(t.balance)) + '</div></div>' +
+    '<div class="inwords" style="overflow-wrap:anywhere">Party: <b>' + esc(report.partyName) + '</b></div><h4 class="sec">Din-wise ledger</h4>' + ctReportTableHTML(CT_COLS_MONTH, ctReportDayRows(report), ctReportDayTotal(report)) +
+    '<h4 class="sec">Entries (selected period / party)</h4>' + ctReportTableHTML(CT_REPORT_ENTRY_COLS, report.entries.map((entry) => [ctPretty(entry.date), ctKindOf(entry).en, ctReportEntryText(entry), money(ctAmount(entry)), money(Math.min(ctPaid(entry), ctAmount(entry))), money(ctBalance(entry))]),
+      ["Entries total", "", "", money(r2(t.purchase + t.sale + t.expense)), money(t.paid), money(t.balance)]) +
+    (items.length ? '<h4 class="sec">Item-wise detail (original lines)</h4>' + ctReportTableHTML(CT_COLS_ITEMS, items.map((item) => [ctItemLineText(item), String(num(item.qty)), item.unit, item.rate < 1 ? rateS(item.rate) : money(item.rate), money(item.amt), item.entryNo + "." + (item.itemIndex + 1)])) : "") +
+    (parties.length ? '<h4 class="sec">Party / supplier-wise</h4>' + ctReportTableHTML(CT_COLS_PARTY, parties.map((party) => [party.name, String(party.n), money(party.amt), money(party.paid), party.bal > .005 ? money(party.bal) : "-"])) : "") +
+    '<div class="ct-closing"><div class="net"><div><div class="l">Period ka net</div><div class="net-sub">Paid ' + money(t.paid) + ' · Baki ' + money(t.balance) + '</div></div><div class="v">' + (t.net < 0 ? "−" : "") + money(Math.abs(t.net)) + '</div></div>' +
+    '<div class="inwords">Amount in words: <b>' + esc(inWords(Math.abs(t.net))) + '</b></div><div class="sign"><div>Prepared by</div><div>' + esc(Store.data.settings.ownerName || "Authorised signatory") + '</div></div>' +
+    '<div class="ft"><span>' + esc(Store.data.settings.statementNote || "") + '</span><span>Hisaab v' + APP_VERSION + '</span></div></div></div></div>';
+}
+function ctPrintRangeHTML(from, to, party) { return ctReportPrintHTML(ctReportQuery(from, to, party)); }
+function ctReportOpen(preset, action, party) {
+  const u = ctUI(), source = preset || (u.tab === "day" ? "day" : u.tab === "month" ? "month" : "range");
+  let from = source === "day" ? u.date : monthFirst(UI.year, UI.month), to = source === "day" ? u.date : monthLast(UI.year, UI.month);
+  if (source === "range" && u.tab === "entries") {
+    if (u.scope === "all" && !u.from && !u.to) {
+      const dates = ctAll().map((entry) => entry.date).filter(ctReportDate).sort();
+      if (dates.length) { from = dates[0]; to = dates[dates.length - 1]; }
+    }
+    if (u.from) from = u.from; if (u.to) to = u.to;
+  }
+  const selected = party || (u.tab === "entries" ? u.party : "all") || "all";
+  const state = { context: ctDataContext(), source, from, to, year: UI.year, month: UI.month, serial: 0, busy: false, action: action || "download", form: null };
+  openModal('<div class="modal" style="max-width:820px" role="dialog" aria-modal="true" aria-labelledby="ctReportTitle"><div class="modal-h"><div><h3 id="ctReportTitle">Canteen PDF · Date + Party</h3><p>From / To dono dates included · sirf matching entries aur unhi ke totals</p></div><button class="x" data-act="closeModal" aria-label="Close PDF filters">✕</button></div>' +
+    '<div class="modal-b"><form id="ctReportForm"><div style="display:flex;gap:12px;flex-wrap:wrap">' +
+    '<label style="flex:1 1 180px;min-width:0" for="ctReportFrom">From Date<input type="date" class="inp" id="ctReportFrom" required min="1900-01-01" max="9998-12-31" value="' + esc(from) + '" style="width:100%;min-width:0;margin-top:6px"></label>' +
+    '<label style="flex:1 1 180px;min-width:0" for="ctReportTo">To Date<input type="date" class="inp" id="ctReportTo" required min="1900-01-01" max="9998-12-31" value="' + esc(to) + '" style="width:100%;min-width:0;margin-top:6px"></label>' +
+    '<label style="flex:1 1 230px;min-width:0" for="ctReportParty">Party Selection<select class="inp" id="ctReportParty" style="width:100%;min-width:0;margin-top:6px">' + ctPartyOptions(selected, true) + '</select></label></div>' +
+    '<div style="display:flex;gap:9px;flex-wrap:wrap;align-items:end;margin-top:14px"><label for="ctReportTpl" style="flex:1 1 200px;min-width:0">PDF design<select class="inp" id="ctReportTpl" style="width:100%;min-width:0;margin-top:6px">' + CT_TPLS.map((tpl) => '<option value="' + esc(tpl.id) + '"' + (tpl.id === ctTpl().id ? " selected" : "") + '>' + esc(tpl.name) + '</option>').join("") + '</select></label>' +
+    '<button type="button" class="btn sm" data-act="ctReportReset">This month · All parties</button></div>' +
+    '<div id="ctReportError" role="alert" style="color:var(--bad);margin-top:12px;overflow-wrap:anywhere"></div><div id="ctReportPreview" role="status" aria-live="polite" class="banner" style="display:block;margin-top:12px;overflow-wrap:anywhere"></div>' +
+    '<p class="ct-note" style="margin-top:10px">Dates aur party dono filters ek saath lagte hain. No matches par PDF nahi banegi; All parties me fallback nahi hoga. Original entries / paid / baki nahi badlenge. Nayi party add/save: Canteen → Parties.</p></form>' +
+    '<div id="ctReportFallback" style="margin-top:10px"></div></div><div class="modal-f" style="flex-wrap:wrap">' +
+    '<button class="btn" data-act="closeModal">Cancel</button><button class="btn" data-act="ctReportPrint" disabled>Print / Save as PDF</button>' +
+    '<button class="btn' + (action === "share" ? " primary" : "") + '" data-act="ctReportShare" disabled>📤 WhatsApp PDF</button>' +
+    '<button class="btn' + (action !== "share" ? " primary" : "") + '" data-act="ctReportDownload" disabled>⤓ Download PDF</button></div></div>');
+  state.form = $("#ctReportForm"); ctReportState = state;
+  // A stale/unknown preselection must not silently become the browser's first option.
+  $("#ctReportParty").value = selected;
+  ctReportRefresh();
+  // Warm bundled fonts while the user selects dates; action-time guards still
+  // recheck data/account/selection after any asynchronous load.
+  if (document.fonts && document.fonts.load) Promise.all([400, 700].map((weight) => document.fonts.load(weight + ' 16px "Hisaab Indic"'))).catch(() => {});
+}
+function ctReportFormModel() {
+  const state = ctReportState;
+  if (!state || state.form !== $("#ctReportForm")) throw new Error("Report form band / badal gaya. PDF filters dobara kholein.");
+  ctCheckContext(state.context);
+  return ctReportQuery($("#ctReportFrom").value, $("#ctReportTo").value, $("#ctReportParty").value);
+}
+function ctReportRefresh() {
+  const state = ctReportState, preview = $("#ctReportPreview"), error = $("#ctReportError");
+  if (!state || !preview || !error) return;
+  state.serial++; error.textContent = ""; const fallback = $("#ctReportFallback"); if (fallback) fallback.innerHTML = "";
+  let enabled = false;
+  try {
+    const report = ctReportFormModel(), t = report.totals;
+    enabled = report.entries.length > 0;
+    preview.textContent = report.partyName + " · " + ctPretty(report.from) + " to " + ctPretty(report.to) + " · " + t.count + " entries / " + report.days.length + " days · Saman " + money(t.purchase) + " · Paid " + money(t.paid) + " · Baki " + money(t.balance) + " · Net " + (t.net < 0 ? "−" : "") + money(Math.abs(t.net));
+    preview.dataset.count = String(t.count); preview.dataset.state = enabled ? "ready" : "empty";
+    if (!enabled) error.textContent = "Is date range + party me koi entry nahi. Dates / party badlein; koi extra data export nahi hua.";
+  } catch (e) { error.textContent = e.message; preview.textContent = "Valid From Date, To Date aur Party Selection chunein."; preview.dataset.state = "invalid"; preview.dataset.count = "0"; }
+  document.querySelectorAll('[data-act="ctReportDownload"], [data-act="ctReportShare"], [data-act="ctReportPrint"]').forEach((button) => { button.disabled = !enabled || state.busy; });
+}
+function ctReportLegacy(report, state) {
+  if (report.party !== "all" || report.from !== state.from || report.to !== state.to || ctReportNeedsUnicode(report, true)) return "";
+  const kind = state.source === "day" ? "day" : state.source === "month" && UI.year === state.year && UI.month === state.month ? "month" : "";
+  if (!kind) return "";
+  const list = kind === "day" ? ctOnDate(report.from) : ctInMonth(state.year, state.month), ids = new Set(report.entries.map((entry) => entry.id));
+  // Legacy import dates like 31 February must never sneak into a default-month
+  // total. Use the validated snapshot renderer unless both sets are identical.
+  return list.length === ids.size && list.every((entry) => ctReportDate(entry.date) && ids.has(entry.id)) ? kind : "";
+}
+function ctReportCurrent(state, serial) {
+  ctCheckContext(state.context);
+  if (state !== ctReportState || state.form !== $("#ctReportForm") || state.serial !== serial)
+    throw new Error("Selection / report badal gaya — PDF action dobara chunein.");
+}
+function ctReportManualShare(result, report) {
+  savePdf(result.name, result.str);
+  const note = (Store.data.settings.shopName || "Hisaab") + " — Canteen · " + report.from + " to " + report.to + " · " + report.partyName + "\nPDF downloaded. WhatsApp me Attach → Document se is PDF ko chunein. Automatically attached / sent nahi hai.";
+  const url = "https://wa.me/?text=" + encodeURIComponent(note), root = $("#ctReportFallback");
+  if (root) root.innerHTML = '<div class="banner info" style="display:block;overflow-wrap:anywhere"><b>PDF downloaded — manual attachment zaroori hai.</b><p>WhatsApp chat me Attach → Document se <b>' + esc(result.name) + '</b> chunein. PDF automatically attached / sent nahi hai.</p><a class="btn sm" href="' + esc(url) + '" target="_blank" rel="noopener noreferrer">WhatsApp kholo · phir Document attach karein</a></div>';
+  toast("PDF downloaded — WhatsApp me Document attach karein; automatically sent nahi hai", "ok");
+}
+async function ctReportOutput(action) {
+  const state = ctReportState;
+  if (!state || state.busy) return false;
+  let printRoot = null, rendered = null;
+  try {
+    const report = ctReportFormModel();
+    if (!report.entries.length) throw new Error("Is selection me koi entry nahi — PDF nahi banayi gayi.");
+    const legacy = ctReportLegacy(report, state), serial = state.serial;
+    state.busy = true;
+    document.querySelectorAll('[data-act="ctReportDownload"], [data-act="ctReportShare"], [data-act="ctReportPrint"]').forEach((button) => { button.disabled = true; });
+    $("#ctReportError").textContent = ""; $("#ctReportFallback").innerHTML = "";
+    if (action === "print") {
+      printRoot = $("#print-root"); printRoot.innerHTML = legacy ? ctPrintHTML(legacy, report.from) : ctReportPrintHTML(report); rendered = printRoot.innerHTML;
+      const fonts = document.fonts && document.fonts.load ? Promise.all([400, 700, 900].map((weight) => document.fonts.load(weight + ' 12px "Hisaab Segoe"')).concat([400, 700].map((weight) => document.fonts.load(weight + ' 12px "Hisaab Indic"')))) : Promise.resolve();
+      await Promise.all([fonts, companyLogoPrintReady()]);
+      ctReportCurrent(state, serial);
+      if (printRoot.innerHTML !== rendered) throw new Error("Print report badal gaya — dobara Print chunein.");
+      window.print(); closeModal(); return true;
+    }
+    if (!legacy && ctReportNeedsUnicode(report)) {
+      if (document.fonts && document.fonts.load) await Promise.all([400, 700].map((weight) => document.fonts.load(weight + ' 16px "Hisaab Indic"')));
+      ctReportCurrent(state, serial); attPdfMeasureCache.clear();
+    }
+    const result = legacy === "day" ? ctPdfDayStr(report.from) : legacy === "month" ? ctPdfMonthStr(state.year, state.month) : ctBuildRangePdf(report);
+    if (!result) throw new Error("Is selection me koi entry nahi — PDF nahi banayi gayi.");
+    ctReportCurrent(state, serial);
+    if (action !== "share") { savePdf(result.name, result.str); closeModal(); return true; }
+    const blob = pdfBlob(result.str), file = typeof File === "function" ? new File([blob], result.name, { type: "application/pdf" }) : null;
+    let nativeShare = false;
+    try { nativeShare = !!(file && navigator.share && navigator.canShare && navigator.canShare({ files: [file] })); } catch (e) { /* manual Document attachment below */ }
+    if (nativeShare) {
+      try {
+        await navigator.share({ files: [file], title: "Canteen · " + report.partyName, text: "Canteen ledger · " + report.from + " to " + report.to + " · " + report.partyName + " (PDF)" });
+        ctReportCurrent(state, serial); closeModal(); toast("Share sheet completed — sending WhatsApp me confirm karein", "ok"); return true;
+      } catch (e) {
+        ctReportCurrent(state, serial);
+        if (e && e.name === "AbortError") { toast("Sharing cancelled — automatic send / download nahi hua"); return false; }
+        // Rejected/expired/unsupported file sharing is not successful delivery.
+        // Download the same selection and expose an explicit manual link.
+      }
+    }
+    ctReportCurrent(state, serial); ctReportManualShare(result, report); return true;
+  } catch (e) {
+    if (printRoot && printRoot.innerHTML === rendered) printRoot.innerHTML = "";
+    const box = $("#ctReportError"); if (box) box.textContent = e.message;
+    toast(e.message || "PDF nahi bani — dobara try karein", "bad"); return false;
+  } finally {
+    state.busy = false;
+    if (state === ctReportState && state.form === $("#ctReportForm")) {
+      const ready = $("#ctReportPreview")?.dataset.state === "ready";
+      document.querySelectorAll('[data-act="ctReportDownload"], [data-act="ctReportShare"], [data-act="ctReportPrint"]').forEach((button) => { button.disabled = !ready; });
+    }
+  }
+}
+document.addEventListener("submit", (event) => {
+  if (event.target.id === "ctPartyForm") { event.preventDefault(); ctPartySaveForm(); }
+  if (event.target.id === "ctReportForm") { event.preventDefault(); ctReportOutput("download"); }
+});
+document.addEventListener("click", (event) => {
+  const button = event.target.closest('[data-act^="ctParty"], [data-act^="ctReport"]');
+  if (!button || button.disabled) return;
+  const action = button.dataset.act;
+  if (!["ctPartyRemember", "ctPartyEntry", "ctPartyEntries", "ctPartyPdf", "ctReportOpen", "ctReportReset", "ctReportDownload", "ctReportShare", "ctReportPrint"].includes(action)) return;
+  event.preventDefault(); event.stopImmediatePropagation();
+  try {
+    if (action === "ctReportOpen") return ctReportOpen();
+    if (action === "ctReportDownload" || action === "ctReportShare" || action === "ctReportPrint") return ctReportOutput(action === "ctReportShare" ? "share" : action === "ctReportPrint" ? "print" : "download");
+    if (action === "ctReportReset") { $("#ctReportFrom").value = monthFirst(UI.year, UI.month); $("#ctReportTo").value = monthLast(UI.year, UI.month); $("#ctReportParty").value = "all"; ctReportRefresh(); return; }
+    ctCheckContext(ctPartyViewContext);
+    const selection = ctPartySelection(button.dataset.party);
+    if (action === "ctPartyRemember") { const result = ctSavePartyName(selection.name, ctPartyViewContext); render(); toast(result.created ? "Party name saved" : "Party pehle se saved hai", "ok"); }
+    if (action === "ctPartyEntry") { openCtModal(); ctUI().edit.party = selection.name; ctRenderModal(false); }
+    if (action === "ctPartyEntries") { Object.assign(ctUI(), { tab: "entries", party: selection.token, scope: "all", from: "", to: "", q: "", kind: "all" }); render(); }
+    if (action === "ctPartyPdf") ctReportOpen("range", "download", selection.token);
+  } catch (e) { toast(e.message, "bad"); }
+});
+document.addEventListener("input", (event) => {
+  if (["ctReportFrom", "ctReportTo"].includes(event.target.id)) ctReportRefresh();
+  if (event.target.id === "ctParty" && $("#ctPartySelect")) $("#ctPartySelect").value = ctPartyToken(event.target.value);
+});
+document.addEventListener("change", (event) => {
+  const el = event.target;
+  if (["ctReportFrom", "ctReportTo", "ctReportParty"].includes(el.id)) ctReportRefresh();
+  if (el.id === "ctReportTpl") {
+    try { if (!ctReportState || ctReportState.busy) return; ctCheckContext(ctReportState.context); if (ctSetTpl(el.value)) { ctReportState.context = ctDataContext(); ctReportRefresh(); } else ctReportRefresh(); }
+    catch (e) { $("#ctReportError").textContent = e.message; }
+  }
+  if (el.id === "ctPartySelect" && ctUI().edit) { try { const name = el.value ? ctPartySelection(el.value).name : ""; $("#ctParty").value = name; ctUI().edit.party = name; } catch (e) { toast(e.message, "bad"); } }
+  if (el.id === "ctPartyFilter") { ctUI().party = el.value; render(); }
+});
+/* v3.31 CANTEEN PARTIES / FILTERED REPORTS END */
 
 /* ---------- 📋 BULK PASTE (v3.5): ek saath text paste → alag-alag entries ---------- */
 const CT_BULK_UNITS = {
@@ -10027,7 +10428,7 @@ document.addEventListener("click", (e) => {
     }
     case "ctLogScope": { const u = ctUI(); u.logScope = btn.dataset.scope === "all" ? "all" : "month"; render(); break; }
     case "ctResetFilter": {
-      const u = ctUI(); u.q = ""; u.kind = "all"; u.from = ""; u.to = ""; u.scope = "month";
+      const u = ctUI(); u.q = ""; u.kind = "all"; u.party = "all"; u.from = ""; u.to = ""; u.scope = "month";
       render(); toast("Filter reset"); break;
     }
     case "ctRateAdd": ctRateAdd(); break;
@@ -10036,7 +10437,7 @@ document.addEventListener("click", (e) => {
     case "ctRateSave": ctRateSave(btn.dataset.id); break;
     case "ctRateDel": ctRateDel(btn.dataset.id); break;
     case "ctCsv": ctCsv(); break;
-    case "ctPrintDay": ctPrintDay(); break;
+    case "ctPrintDay": ctReportOpen("day", "print"); break;
     case "ctBulk": ctBulkOpen(); break;
     case "ctOcrPick": {
       const fi = document.querySelector('[data-ct-ocr="1"]');
@@ -10070,8 +10471,8 @@ document.addEventListener("click", (e) => {
       break;
     }
     case "ctBulkSave": ctBulkSave(); break;
-    case "ctPdfDay": ctPdfDay(ctUI().date); break;
-    case "ctPdfMonth": ctPdfMonth(UI.year, UI.month); break;
+    case "ctPdfDay": ctReportOpen("day", "download"); break;
+    case "ctPdfMonth": ctReportOpen("month", "download"); break;
     case "ctPhotoView": {
       const pid = btn.dataset.id;
       const pe = pid ? ctEntry(pid) : null;
@@ -10084,13 +10485,13 @@ document.addEventListener("click", (e) => {
       if (d) { d.photo = ""; const b = document.getElementById("ctPhotoBox"); if (b) b.innerHTML = ctPhotoBoxHTML(d); }
       break;
     }
-    case "ctPrintMonth": ctPrintMonth(); break;
+    case "ctPrintMonth": ctReportOpen("month", "print"); break;
     case "ctShareDay": ctShareDay(); break;
     case "ctShareMonth": ctShareMonth(); break;
     case "ctTplPick": ctTplPick(); break;
     case "ctTplSet": if (ctSetTpl(btn.dataset.id)) ctTplPick(); break;
-    case "ctSharePdfDay": ctSharePdf("day", ctUI().date); break;
-    case "ctSharePdfMonth": ctSharePdf("month", null, UI.year, UI.month); break;
+    case "ctSharePdfDay": ctReportOpen("day", "share"); break;
+    case "ctSharePdfMonth": ctReportOpen("month", "share"); break;
     case "ctRestore": ctRestoreLog(btn.dataset.log); break;
     case "ctWipe": ctWipe(); break;
 
@@ -10347,7 +10748,9 @@ window.Hisaab = { Store, calc, monthMeta, PdfDoc, inWords, UI, render, go, Cloud
              ocrClean: ctOcrClean, enhancePixels: ctEnhancePixels, shareMonth: ctShareMonth,
              pdfDayStr: ctPdfDayStr, pdfMonthStr: ctPdfMonthStr, sharePdf: ctSharePdf,
              tpls: CT_TPLS, tpl: ctTpl, setTpl: ctSetTpl, tplPick: ctTplPick,
-             pdfCols: { day: CT_COLS_DAY, dayItems: CT_COLS_ITEMS, month: CT_COLS_MONTH,
+             parties: ctParties, savedParties: ctSavedPartyNames, saveParty: ctSavePartyName, partyToken: ctPartyToken,
+             report: ctReportQuery, reportOpen: ctReportOpen, reportOutput: ctReportOutput, pdfRangeStr: ctPdfRangeStr, printRangeHTML: ctPrintRangeHTML,
+             pdfCols: { rangeEntries: CT_REPORT_ENTRY_COLS, day: CT_COLS_DAY, dayItems: CT_COLS_ITEMS, month: CT_COLS_MONTH,
                         monthItems: CT_COLS_ITEMS, party: CT_COLS_PARTY } } };
 })();
 </script>

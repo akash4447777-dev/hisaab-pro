@@ -5,6 +5,7 @@
    controls as attendance.browser.js; Playwright is an optional scratch install. */
 const assert=require('node:assert/strict'),fs=require('node:fs'),path=require('node:path');
 const {chromium}=require('playwright');
+const { clickCanteenAction } = require('./canteen-report-dialog');
 const URL=process.env.HISAAB_URL||'http://127.0.0.1:8000/hisaab_v3.html';
 const OUT=path.resolve(process.env.HISAAB_ARTIFACTS||path.join(__dirname,'..','.cache','company-logo-browser-qa'));
 const FIX=path.join(__dirname,'fixtures'),KEY='hisaabPro.v1',DATE='2026-11-14',errors=[];
@@ -26,7 +27,7 @@ function logoPDF(bytes,logo){
   assert.equal(objects.filter(o=>/^<< \/Type \/XObject/.test(o)&&o.includes(Buffer.from(logo.split(',')[1],'base64').toString('latin1'))).length,1);
   return pages.length;
 }
-async function download(page,selector,name,logo){const ready=page.waitForEvent('download');await page.locator(selector).first().click();const file=await ready;await file.saveAs(path.join(OUT,name));const bytes=fs.readFileSync(path.join(OUT,name));if(logo)check(logoPDF(bytes,logo)>0,name+': native PDF has one shared logo drawn on every page');return bytes;}
+async function download(page,selector,name,logo){const ready=page.waitForEvent('download');await clickCanteenAction(page,selector);const file=await ready;await file.saveAs(path.join(OUT,name));const bytes=fs.readFileSync(path.join(OUT,name));if(logo)check(logoPDF(bytes,logo)>0,name+': native PDF has one shared logo drawn on every page');return bytes;}
 async function reportDownload(page,format,name,logo){
   const expected=page.waitForEvent('download',{timeout:6000}).catch(()=>null);await page.locator('[name="format"][value="'+format+'"]').click();let file=await expected;
   if(!file){const ready=page.waitForEvent('download');await page.locator('[data-att-file="'+format+'"]').click();file=await ready;}
@@ -35,7 +36,7 @@ async function reportDownload(page,format,name,logo){
 async function report(page,id,from,to,shift='all'){await page.evaluate(({id,from,to,shift})=>{Hisaab.go('attendance');Hisaab.attendance.ui().shift=shift;Hisaab.attendance.openExport(id);for(const [k,v]of [['attEFrom',from],['attETo',to]]){const e=document.getElementById(k);e.value=v;e.dispatchEvent(new Event('change',{bubbles:true}));}},{id,from,to,shift});}
 async function shareCapture(page,selector,name,logo){
   await page.evaluate(()=>{window.__shared=null;Object.defineProperty(navigator,'canShare',{configurable:true,value:()=>true});Object.defineProperty(navigator,'share',{configurable:true,value:async o=>{window.__shared={name:o.files[0].name,type:o.files[0].type,bytes:[...new Uint8Array(await o.files[0].arrayBuffer())]};}});});
-  await page.locator(selector).first().click();await page.waitForFunction(()=>window.__shared||document.getElementById('attShareReady'));
+  await clickCanteenAction(page,selector);await page.waitForFunction(()=>window.__shared||document.getElementById('attShareReady'));
   if(!await page.evaluate(()=>!!window.__shared))await page.locator('#attShareReady').click();await page.waitForFunction(()=>!!window.__shared);
   const shared=await page.evaluate(()=>window.__shared),bytes=Buffer.from(shared.bytes);fs.writeFileSync(path.join(OUT,name),bytes);check(shared.type==='application/pdf'&&shared.name.endsWith('.pdf')&&logoPDF(bytes,logo)>0,name+': actual native share File has the saved logo (destination stubbed)');
 }
@@ -52,7 +53,14 @@ async function settings(page){await go(page,'settings');await page.locator('#com
     for(let d=14;d<=18;d++)A.saveRecord({managerId:hindi.id,date:'2026-11-'+d,shift:'night',mode:'time',checkIn:'21:00',checkOut:'06:00',outNextDay:true,note:'संपूर्ण समय और रविवार की उपस्थिति'});
     return {latin:latin.id,hindi:hindi.id};
   });
-  const original=await snapshot(page);await page.goto(URL);await page.waitForFunction(()=>!!window.Hisaab);check(await snapshot(page)===original,'native v3.28 → v3.30 preserves every saved record, ID, clock, note, amount and storage byte');
+  // The fast synthetic loop can create history rows in the same millisecond.
+  // Immutable v3.28 already sorts those ties by ID on reload. Establish that
+  // real legacy-load baseline before the strict cross-version byte comparison;
+  // do not mistake its existing in-memory sort for a new-version data change.
+  await page.reload();await page.waitForFunction(()=>!!window.Hisaab);
+  const original=await snapshot(page);await page.goto(URL);await page.waitForFunction(()=>!!window.Hisaab);const migrated=await snapshot(page);
+  if(migrated!==original){fs.writeFileSync(path.join(OUT,'migration-before.json'),original);fs.writeFileSync(path.join(OUT,'migration-after.json'),migrated);}
+  check(migrated===original,'native v3.28 → v3.31 preserves every saved record, ID, clock, note, amount and storage byte');
   await settings(page);check(await page.locator('[data-act="companyLogoChoose"]').textContent()==='Upload logo','Settings offers a real upload button without requiring a logo file in the app');
   await page.fill('#sShop','Unsaved typed company');await upload(page,path.join(FIX,'company-logo.png'));
   let logo=await page.evaluate(()=>Hisaab.Store.data.settings.companyLogo);check(/^data:image\/jpeg;base64,/.test(logo)&&logo.length<=120000,'real transparent PNG decodes/canvas-encodes to a bounded self-contained JPEG');

@@ -43,6 +43,11 @@ function click(sel) {
   const el = typeof sel === "string" ? $(sel) : sel;
   if (!el) throw new Error("click: element not found -> " + sel);
   el.dispatchEvent(new window.MouseEvent("click", { bubbles: true, cancelable: true }));
+  const action = el.dataset.act;
+  if (["ctPdfDay", "ctPdfMonth", "ctSharePdfDay", "ctSharePdfMonth"].includes(action) && $("#ctReportForm")) {
+    if (!$("#ctReportFrom") || !$("#ctReportTo") || !$("#ctReportParty")) throw new Error("combined report selection controls missing");
+    click('[data-act="' + (action.startsWith("ctShare") ? "ctReportShare" : "ctReportDownload") + '"]');
+  }
   return el;
 }
 function setName(sel, val) { setInput(sel, val); $(sel).dispatchEvent(new window.Event("change", { bubbles: true })); }
@@ -66,7 +71,7 @@ const iso = (d) => d.getFullYear() + "-" + String(d.getMonth() + 1).padStart(2, 
   ok(H().Store.data.canteen.entries.length > 0, "sample canteen entries load hui (" + H().Store.data.canteen.entries.length + ")");
   ok(H().Store.data.workers.length === 4, "workers safe (4 demo)");
   const verEl = $("[data-ver]");
-  ok(verEl && verEl.textContent === "3.30", "version badge 3.30", verEl && verEl.textContent);
+  ok(verEl && verEl.textContent === "3.31", "version badge 3.31", verEl && verEl.textContent);
   ok(root().innerHTML.indexOf("Canteen") >= 0, "dashboard par canteen card dikha");
   ok(root().innerHTML.indexOf("Saman aaya") >= 0, "dashboard canteen strip me 'Saman aaya'");
 
@@ -74,7 +79,7 @@ const iso = (d) => d.getFullYear() + "-" + String(d.getMonth() + 1).padStart(2, 
   H().go("canteen");
   ok($("#viewTitle").textContent === "Canteen", "title = Canteen");
   ok($(".topbar-actions .btn.primary").textContent.indexOf("Canteen entry") >= 0, "topbar button canteen entry ban gaya");
-  ["day", "month", "entries", "rates", "activity"].forEach((t) => {
+  ["day", "month", "entries", "parties", "rates", "activity"].forEach((t) => {
     H().UI.ct.tab = t; H().render();
     const h = root().innerHTML;
     ok(h.length > 500, t + " tab render hua (" + h.length + " chars)");
@@ -759,7 +764,7 @@ const iso = (d) => d.getFullYear() + "-" + String(d.getMonth() + 1).padStart(2, 
   ok(!!shared8 && !!shared8.files && shared8.files.length === 1, "navigator.share ko PDF file gayi", shared8 && Object.keys(shared8));
   ok(shared8 && shared8.files[0].type === "application/pdf", "share file type application/pdf", shared8 && shared8.files[0].type);
   ok(shared8 && /Canteen_Din_.*\.pdf/.test(shared8.files[0].name), "file naam Canteen_Din_*.pdf", shared8 && shared8.files[0].name);
-  ok(shared8 && String(shared8.text).indexOf("canteen ledger") >= 0, "share text me ledger label", shared8 && shared8.text);
+  ok(shared8 && /canteen ledger/i.test(String(shared8.text)), "share text me ledger label", shared8 && shared8.text);
   /* fallback route (desktop): download + wa.me */
   Object.defineProperty(window.navigator, "canShare", { value: () => false, configurable: true });
   let wa8 = null;
@@ -770,6 +775,7 @@ const iso = (d) => d.getFullYear() + "-" + String(d.getMonth() + 1).padStart(2, 
   H().UI.ct.tab = "month"; H().render();
   click('[data-act="ctSharePdfMonth"]');
   await wait(40);
+  wa8 = $("#ctReportFallback a")?.href || wa8;
   window.open = ro8;
   window.Blob = RB8;
   ok(!!wa8 && String(wa8).indexOf("https://wa.me/") === 0, "fallback me wa.me khula", String(wa8).slice(0, 40));

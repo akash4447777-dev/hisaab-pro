@@ -4,6 +4,7 @@
    stubbed. Disposable isolated QA data only — never a customer account. */
 const assert = require('node:assert/strict'), fs = require('node:fs'), path = require('node:path');
 const { chromium } = require('playwright');
+const { clickCanteenAction } = require('./canteen-report-dialog');
 const URL = process.env.HISAAB_URL || 'http://127.0.0.1:8000/hisaab_v3.html';
 const OUT = path.resolve(process.env.HISAAB_ARTIFACTS || path.join(__dirname, '..', '.cache', 'canteen-lines-browser-qa'));
 const DATE = '2026-11-14', errors = [];
@@ -23,7 +24,7 @@ async function itemRows(page) {
   });
 }
 async function download(page, action, name) {
-  const event = page.waitForEvent('download'); await page.locator('[data-act="' + action + '"]').first().click();
+  const event = page.waitForEvent('download'); await clickCanteenAction(page, '[data-act="' + action + '"]');
   const file = await event; await file.saveAs(path.join(OUT, name));
   check(file.suggestedFilename().endsWith('.pdf'), name + ': actual native .pdf filename');
   const bytes = fs.readFileSync(path.join(OUT, name)); check(bytes.toString('latin1').startsWith('%PDF-1.4'), name + ': real PDF bytes'); return bytes;
@@ -59,8 +60,8 @@ async function addEntry(page, bill, totals = [37.5]) {
     const legacy = await download(page, 'ctPdfDay', 'legacy-merged-day.pdf');
     check(countQty(legacy, 1000) === 1 && countQty(legacy, 500) === 0, 'native old-release PDF reproduces the combined 1000g row');
     await page.goto(URL); await page.waitForFunction(() => !!window.Hisaab); await goCanteen(page);
-    check(await page.locator('[data-ver]').first().textContent() === '3.30', 'native current release reports Panel v3.30');
-    check(await dataSnapshot(page) === saved, 'v3.27 → v3.30 preserves every raw-storage byte, original entry and financial/Attendance record');
+    check(await page.locator('[data-ver]').first().textContent() === '3.31', 'native current release reports Panel v3.31');
+    check(await dataSnapshot(page) === saved, 'v3.27 → v3.31 preserves every raw-storage byte, original entry and financial/Attendance record');
     let rows = await itemRows(page);
     check(rows.length === 2 && rows.every(r => r[1] === '500'), 'native daily item table has two separate 500g rows, not one 1000g row');
     check(rows[0][0].includes('QA-1') && rows[1][0].includes('QA-2') && rows.every(r => r.join(' ').includes('37.50')), 'native daily rows retain their own amount and original bill references');
@@ -71,7 +72,7 @@ async function addEntry(page, bill, totals = [37.5]) {
       const pdf = await download(page, which === 'day' ? 'ctPdfDay' : 'ctPdfMonth', 'native-repeated-' + which + '.pdf');
       check(countQty(pdf, 500) === 2 && countQty(pdf, 1000) === 0, 'native ' + which + ' download contains two 500g rows, each with its own amount');
       const n = await page.evaluate(() => window.__prints);
-      await page.locator('[data-act="' + (which === 'day' ? 'ctPrintDay' : 'ctPrintMonth') + '"]').first().click();
+      await clickCanteenAction(page, '[data-act="' + (which === 'day' ? 'ctPrintDay' : 'ctPrintMonth') + '"]');
       await page.waitForFunction(n => window.__prints > n, n);
       check(await page.evaluate(() => { const h = [...document.querySelectorAll('#print-root h4.sec')].find(h => /item-wise/i.test(h.textContent)); return [...h.nextElementSibling.querySelectorAll('tbody tr')].filter(r => !r.textContent.includes('Item-wise total')).filter(r => r.cells[1].textContent === '500').length === 2; }), 'native ' + which + ' browser-print DOM keeps two original rows');
       await page.pdf({ path: path.join(OUT, 'native-print-' + which + '.pdf'), format: 'A4', printBackground: true, preferCSSPageSize: true });
@@ -80,7 +81,7 @@ async function addEntry(page, bill, totals = [37.5]) {
         Object.defineProperty(navigator, 'canShare', { configurable: true, value: () => true });
         Object.defineProperty(navigator, 'share', { configurable: true, value: data => { window.__shared = data; return Promise.resolve(); } });
       });
-      await page.locator('[data-act="' + (which === 'day' ? 'ctSharePdfDay' : 'ctSharePdfMonth') + '"]').first().click();
+      await clickCanteenAction(page, '[data-act="' + (which === 'day' ? 'ctSharePdfDay' : 'ctSharePdfMonth') + '"]');
       const shared = await page.evaluate(async () => { const f = window.__shared.files[0]; return { name: f.name, type: f.type, bytes: [...new Uint8Array(await f.arrayBuffer())] }; });
       fs.writeFileSync(path.join(OUT, 'native-shared-' + which + '.pdf'), Buffer.from(shared.bytes));
       check(shared.type === 'application/pdf' && shared.name.endsWith('.pdf') && countQty(Buffer.from(shared.bytes), 500) === 2, 'native ' + which + ' WhatsApp-share File is a real PDF with both 500g lines (share API stubbed)');
