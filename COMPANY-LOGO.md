@@ -1,13 +1,15 @@
 # Hisaab Pro v3.29 — ek logo upload, sabhi naye PDFs
 
-**Current panel v3.30:** Canteen ke Bikri / Kharcha PDF columns/summary slots removed;
-logo handling, saved image, item rows and all financial/Attendance data unchanged.
-Pehle se saved logo ko dobara upload karne ki zaroorat nahi.
+**Current panel v3.31:** saved Canteen parties aur combined From Date / To Date ×
+Party PDF selection. Six themes me sirf matching data; har direct-PDF continuation
+par wahi saved logo. Removed Bikri/Kharcha columns stay removed. Logo handling,
+item prices/occurrences and financial/Attendance data retained; saved logo ko dobara
+upload nahi karna. [Date / Party instructions](CANTEEN-REPORTS.md).
 
 ## Kaise use karein
 
 1. Jis browser/site par asli data hai, pehle **Settings → Backup (JSON)** lein.
-2. Panel **v3.30** (ya newer) kholein. **Settings → Company logo → Upload logo** dabayein.
+2. Panel **v3.31** (ya newer) kholein. **Settings → Company logo → Upload logo** dabayein.
 3. **PNG, JPG/JPEG ya WebP**, maximum **5 MB**, chunein. Preview aur **“Logo saved”** aane par logo automatically save ho gaya; alag **Save settings** zaroori nahi.
 4. Ab normal PDF download/share karein. Har baar image select karne ki zaroorat nahi.
 
@@ -23,7 +25,7 @@ rok diya jata hai; pehle backup/status check karke reload/retry karein.
 |---|---|
 | Individual Employee salary statement | Har generated PDF page |
 | Full payroll / monthly summary + Employee statements | Har generated PDF page, continuation samet |
-| Canteen day / month ledger, saare six templates | Har generated PDF page, repeated-item continuation samet |
+| Canteen day / month / Date × Party ledger, saare six templates | Har generated PDF page, repeated-item continuation samet |
 | Canteen / Attendance WhatsApp PDF file | Wahi saved logo; existing share/manual-attachment flow |
 | Attendance individual / monthly / custom-date PDF | Har generated page; Hindi text/images bhi retained |
 | Salary + Canteen browser print / Save as PDF | Har report ka business header |

@@ -1,9 +1,15 @@
-# HISAAB v3.30 — manager Attendance
+# HISAAB v3.31 — manager Attendance
 
 **Attendance is a tab inside the existing Hisaab Panel**, not a separate app.
 Manager profiles, attendance, credit settings and history share the panel’s
 existing local save, JSON backup and configured cloud sync. **Attendance never
 changes employee salaries, wages, advances, deductions or payments.**
+
+**v3.31:** saved Canteen parties aur From / To Date × Party PDFs added. Sirf selected
+matching Canteen data report hota hai; optional catalog existing backup/cloud/recovery
+me included. No Attendance record, clock/day flag, hours/Sunday/bonus, PDF/Excel or
+salary change. [Canteen guide](CANTEEN-REPORTS.md). Existing names/entries/logo re-enter
+ya storage clear na karein.
 
 **v3.30:** sirf Canteen PDF/print ke Bikri / Kharcha columns/summary slots removed.
 Attendance clocks, actual hours, Sundays, bonus, two-page PDF, saved company logo

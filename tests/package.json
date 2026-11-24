@@ -1,10 +1,10 @@
 {
   "name": "hisaab-pro-tests",
-  "version": "3.30.0",
+  "version": "3.31.0",
   "private": true,
-  "description": "Hisaab \u2014 seven-column Canteen PDFs, one-time company logo, canteen, salary, loader, PDF, attendance aur safe cloud sync ke developer-only tests",
+  "description": "Hisaab — saved Canteen parties, combined date/party PDFs, company logo, salary, attendance and safe cloud-sync tests",
   "scripts": {
-    "test": "node canteen.test.js && node loader.test.js && node pdf.test.js && node cloud.test.js && node attendance.test.js && node employees.test.js && node canteen-lines.test.js && node company-logo.test.js && node canteen-pdf.test.js",
+    "test": "node canteen.test.js && node loader.test.js && node pdf.test.js && node cloud.test.js && node attendance.test.js && node employees.test.js && node canteen-lines.test.js && node company-logo.test.js && node canteen-pdf.test.js && node canteen-filters.test.js",
     "test:canteen": "node canteen.test.js",
     "test:canteen:lines": "node canteen-lines.test.js",
     "test:canteen:pdf": "node canteen-pdf.test.js",
@@ -19,7 +19,9 @@
     "test:attendance:browser": "node attendance.browser.js",
     "test:employees:browser": "node employees.browser.js",
     "test:logo": "node company-logo.test.js",
-    "test:logo:browser": "node company-logo.browser.js"
+    "test:logo:browser": "node company-logo.browser.js",
+    "test:canteen:filters": "node canteen-filters.test.js",
+    "test:canteen:filters:browser": "node canteen-filters.browser.js"
   },
   "devDependencies": {
     "jsdom": "^26.0.0"

@@ -4,6 +4,7 @@
    Disposable fixture data only. OS print/share destinations are stubbed, never sent. */
 const assert = require('node:assert/strict'), fs = require('node:fs'), path = require('node:path');
 const { chromium } = require('playwright');
+const { clickCanteenAction } = require('./canteen-report-dialog');
 const { DATE, fixture, columns, monthRows } = require('./fixtures/canteen-pdf');
 const URL = process.env.HISAAB_URL || 'http://127.0.0.1:8000/hisaab_v3.html';
 const OUT = path.resolve(process.env.HISAAB_ARTIFACTS || path.join(__dirname, '..', '.cache', 'canteen-pdf-browser-qa'));
@@ -13,7 +14,7 @@ const same = (a, b) => JSON.stringify(a) === JSON.stringify(b);
 async function snapshot(page) { return page.evaluate(() => JSON.stringify({ data: Hisaab.Store.data, disk: Object.fromEntries(Object.keys(localStorage).sort().map(k => [k, localStorage.getItem(k)])), dirty: Hisaab.Cloud.dirty })); }
 async function go(page, which = 'day') { await page.evaluate(({ date, which }) => { Hisaab.UI.year = 2026; Hisaab.UI.month = 10; Hisaab.UI.ct.date = date; Hisaab.UI.ct.tab = which; Hisaab.go('canteen'); }, { date: DATE, which }); }
 async function download(page, act, name) {
-  const ready = page.waitForEvent('download'); await page.locator('[data-act="' + act + '"]').first().click(); const f = await ready;
+  const ready = page.waitForEvent('download'); await clickCanteenAction(page, '[data-act="' + act + '"]'); const f = await ready;
   await f.saveAs(path.join(OUT, name)); return { name: f.suggestedFilename(), bytes: fs.readFileSync(path.join(OUT, name)) };
 }
 function updated(pdf, which, branded) {
@@ -49,8 +50,8 @@ async function printState(page) {
     await page.evaluate(data => localStorage.setItem('hisaabPro.v1', JSON.stringify(data)), fixture); await page.reload(); await page.waitForFunction(() => !!window.Hisaab);
     const original = await snapshot(page);
     await page.goto(URL); await page.waitForFunction(() => !!window.Hisaab); await go(page);
-    check(await snapshot(page) === original, 'native v3.29 → v3.30 preserves every original saved entry, salary record and raw-storage byte');
-    check(await page.locator('[data-ver]').first().textContent() === '3.30', 'native release shows Panel v3.30');
+    check(await snapshot(page) === original, 'native v3.29 → v3.31 preserves every original saved entry, salary record and raw-storage byte');
+    check(await page.locator('[data-ver]').first().textContent() === '3.31', 'native release shows Panel v3.31');
     const beforeEntries = await page.evaluate(() => JSON.stringify({ canteen: Hisaab.Store.data.canteen, workers: Hisaab.Store.data.workers, records: Hisaab.Store.data.records, attendance: Hisaab.Store.data.attendance }));
     const tpls = await page.evaluate(() => Hisaab.canteen.tpls.map(t => t.id));
     for (const branded of [false, true]) {
@@ -71,11 +72,11 @@ async function printState(page) {
           const file = await download(page, which === 'day' ? 'ctPdfDay' : 'ctPdfMonth', tag + '-' + which + '.pdf');
           check(file.name.endsWith('.pdf') && updated(file.bytes, which, branded), tag + ' ' + which + ': real download has the new fields, correct net and both original item rows');
           const count = await page.evaluate(() => window.__shared.length);
-          await page.locator('[data-act="' + (which === 'day' ? 'ctSharePdfDay' : 'ctSharePdfMonth') + '"]').first().click();
+          await clickCanteenAction(page, '[data-act="' + (which === 'day' ? 'ctSharePdfDay' : 'ctSharePdfMonth') + '"]');
           await page.waitForFunction(n => window.__shared.length > n, count);
           const shared = await page.evaluate(() => window.__shared.at(-1)), sharedBytes = Buffer.from(shared.bytes); fs.writeFileSync(path.join(OUT, tag + '-shared-' + which + '.pdf'), sharedBytes);
           check(shared.type === 'application/pdf' && shared.name === file.name && sharedBytes.equals(file.bytes), tag + ' ' + which + ': native-share File is the exact updated PDF, not text or an old format');
-          const prints = await page.evaluate(() => window.__prints); await page.locator('[data-act="' + (which === 'day' ? 'ctPrintDay' : 'ctPrintMonth') + '"]').first().click();
+          const prints = await page.evaluate(() => window.__prints); await clickCanteenAction(page, '[data-act="' + (which === 'day' ? 'ctPrintDay' : 'ctPrintMonth') + '"]');
           await page.waitForFunction(n => window.__prints > n, prints); const state = await printState(page);
           check(!/bikri|kharcha/i.test(state.text) && state.meta[which === 'day' ? 1 : 0].length === 1 && state.net === (which === 'day' ? '₹142.50' : '−₹817.50') && state.label === (which === 'day' ? 'Din ka net' : 'Mahine ka net') && state.logos === (branded ? 1 : 0), tag + ' ' + which + ': print/Save-as-PDF removes the whole summary slots and formula words, retaining exact net and saved logo');
           if (which === 'month') {
@@ -89,7 +90,8 @@ async function printState(page) {
     }
     await go(page, 'month'); await page.evaluate(() => Object.defineProperty(navigator, 'canShare', { configurable: true, value: () => false }));
     const fallback = await download(page, 'ctSharePdfMonth', 'manual-fallback-month.pdf');
-    check(updated(fallback.bytes, 'month', true) && await page.evaluate(() => window.__opened.at(-1)?.startsWith('https://wa.me/')), 'unsupported native share downloads the updated PDF and opens only the manual-attachment link');
+    check(updated(fallback.bytes, 'month', true) && (await page.locator('#ctReportFallback a').getAttribute('href')).startsWith('https://wa.me/'), 'unsupported native share downloads the updated PDF and exposes only the honest manual-attachment link');
+    await page.locator('.modal-f [data-act="closeModal"]').click();
     const beforeOffline = await snapshot(page); await ctx.setOffline(true);
     const offline = await download(page, 'ctPdfMonth', 'offline-month.pdf'); check(updated(offline.bytes, 'month', true), 'already-open panel creates the updated logo PDF completely offline');
     check(await snapshot(page) === beforeOffline, 'offline reports preserve the complete saved JSON and pending cloud state'); await ctx.setOffline(false);

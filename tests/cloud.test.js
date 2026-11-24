@@ -780,6 +780,89 @@ function closedDialog(d) { d.w.document.getElementById("modalRoot").innerHTML = 
     assert.ok(!new b.H.PdfDoc().build().includes('/CompanyLogo ')); assert.deepEqual(rowIds(db), ['bill']); noOverwrite(db);
   });
 
+  console.log('\n▸ v3.31 — independent saved parties, backward compatibility and account/report safety');
+  const partyData = (names = [], withSalary = false) => {
+    const payload = data([], withSalary ? [worker()] : []);
+    payload.settings.canteenParties = Object.fromEntries(names.map(name => ['p:' + name.trim().replace(/\s+/g, ' ').toLowerCase(), name]));
+    if (withSalary) payload.records = [record()];
+    return payload;
+  };
+  const partyNames = d => Array.from(d.H.canteen.savedParties()).sort();
+  await test('fresh second device downloads a saved-party-only account with no employee/entry and no cloud write', async () => {
+    const db = new Server(partyData(['Cloud-only Party'])), d = await device(db);
+    assert.equal(await d.login(), true); assert.deepEqual(partyNames(d), ['Cloud-only Party']); assert.equal(d.H.sync.counts(d.S.data).parties, 1);
+    assert.equal(d.S.data.workers.length, 0); assert.deepEqual(d.ids(), []); assert.equal(db.writes.length, 0); noOverwrite(db);
+  });
+  await test('an independently saved local party uploads to a new account even with no employee or Canteen entry', async () => {
+    const db = new Server(), d = await device(db, { payload: { settings: {}, workers: [], records: [], canteen: { entries: [], rates: [], log: [], demo: false } } });
+    d.H.canteen.saveParty('Local-only Party'); assert.equal(await d.login(), true);
+    assert.equal(db.get().payload.settings.canteenParties['p:local-only party'], 'Local-only Party'); assert.equal(db.get().payload.workers.length, 0); assert.deepEqual(rowIds(db), []); noOverwrite(db);
+  });
+  await test('two offline devices add different saved parties and merge both catalogs without inventing financial rows', async () => {
+    const db = new Server(partyData(['Original Party'])), a = await device(db), b = await device(db); await a.login(); await b.login();
+    a.H.canteen.saveParty('Party A'); b.H.canteen.saveParty('Party B'); assert.equal(await a.C.pushNow(), true); assert.equal(await b.C.pushNow(), true); assert.equal(await a.C.maybePull(), true);
+    assert.deepEqual(partyNames(a), ['Original Party', 'Party A', 'Party B']); assert.deepEqual(partyNames(b), partyNames(a)); assert.deepEqual(rowIds(db), []); noOverwrite(db);
+  });
+  await test('offline saved-party changes survive failed writes, scoped cache/reload and reconnect with original financial data intact', async () => {
+    const payload = partyData(['Initial Party'], true), db = new Server(payload), d = await device(db); await d.login();
+    const before = JSON.stringify({ workers: d.S.data.workers, records: d.S.data.records, canteen: d.S.data.canteen, attendance: d.S.data.attendance });
+    d.H.canteen.saveParty('Offline Party'); db.failWrite = { message: 'offline' }; assert.equal(await d.C.pushNow(), false); assert.equal(d.C.dirty, true);
+    const storage = d.dump(); d.close(); db.failRead = { message: 'offline' }; const r = await device(db, { storage, session: A });
+    assert.deepEqual(partyNames(r), ['Initial Party', 'Offline Party']); assert.equal(r.C.dirty, true); db.failRead = null; db.failWrite = null;
+    assert.equal(await r.C.pushNow(), true); assert.equal(db.get().payload.settings.canteenParties['p:offline party'], 'Offline Party'); assert.equal(r.C.dirty, false);
+    assert.equal(JSON.stringify({ workers: r.S.data.workers, records: r.S.data.records, canteen: r.S.data.canteen, attendance: r.S.data.attendance }), before); noOverwrite(db);
+  });
+  await test('older remote snapshots missing the optional party catalog preserve saved names while merging a real bill edit', async () => {
+    const payload = partyData(['Must survive']); payload.canteen.entries = [ctEntry('legacy-bill')];
+    const db = new Server(payload), d = await device(db); await d.login(); const legacy = data([ctEntry('legacy-bill', 3100)]);
+    db.set(A, legacy, '2026-11-14T11:00:00.000Z'); assert.equal(await d.C.maybePull(), true);
+    assert.deepEqual(partyNames(d), ['Must survive']); assert.equal(d.S.data.canteen.entries[0].amount, 3100); assert.equal(db.get().payload.settings.canteenParties['p:must survive'], 'Must survive'); noOverwrite(db);
+  });
+  await test('a disappearing catalog without explicit deletion intent pauses and never clears the surviving device', async () => {
+    const payload = partyData(['Protected Party'], true), db = new Server(payload), d = await device(db); await d.login();
+    const broken = copy(payload); broken.settings.canteenParties = {}; db.set(A, broken, '2026-11-14T11:00:00.000Z');
+    assert.equal(await d.C.maybePull(), false); assert.equal(d.C._pending.kind, 'empty'); assert.deepEqual(partyNames(d), ['Protected Party']); assert.equal(db.writes.length, 0);
+    assert.equal(await d.C.resolve('local'), true); assert.equal(db.get().payload.settings.canteenParties['p:protected party'], 'Protected Party'); noOverwrite(db);
+  });
+  await test('confirmed party-only Canteen wipe propagates explicit parties deletion, with salary data and recovery copies retained', async () => {
+    const db = new Server(partyData(['Erase Party'], true)), a = await device(db), b = await device(db); await a.login(); await b.login();
+    const before = JSON.stringify({ workers: a.S.data.workers, records: a.S.data.records }); a.H.go('settings'); a.click('[data-act="ctWipe"]'); a.click('#cfmOk');
+    assert.deepEqual(partyNames(a), []); assert.equal(await a.C.pushNow(), true); assert.ok(db.get().payload._sync.deletedCollections.includes('parties'));
+    assert.equal(await b.C.maybePull(), true); assert.deepEqual(partyNames(b), []); assert.equal(JSON.stringify({ workers: b.S.data.workers, records: b.S.data.records }), before);
+    assert.ok(a.H.Recovery.list().some(c => c.payload.settings.canteenParties['p:erase party'] === 'Erase Party')); noOverwrite(db);
+  });
+  await test('known catalog clear does not delete a newly added party from another offline device', async () => {
+    const db = new Server(partyData(['Old Party'], true)), a = await device(db), b = await device(db); await a.login(); await b.login();
+    a.H.go('settings'); a.click('[data-act="ctWipe"]'); a.click('#cfmOk'); b.H.canteen.saveParty('Concurrent New Party');
+    assert.equal(await a.C.pushNow(), true); assert.equal(await b.C.pushNow(), true); assert.equal(await a.C.maybePull(), true);
+    assert.deepEqual(partyNames(a), ['Concurrent New Party']); assert.deepEqual(partyNames(b), ['Concurrent New Party']); assert.equal(a.S.data.records.length, 1); noOverwrite(db);
+  });
+  for (const preference of ['local', 'remote']) await test('same canonical party saved with competing display names asks before the explicit ' + preference + ' choice', async () => {
+    const db = new Server(partyData(['Baseline Party'])), a = await device(db), b = await device(db); await a.login(); await b.login();
+    a.H.canteen.saveParty('ACME Shop'); b.H.canteen.saveParty('Acme SHOP'); assert.equal(await a.C.pushNow(), true); const count = db.writes.length;
+    assert.equal(await b.C.pushNow(), false); assert.equal(db.writes.length, count); assert.ok(b.C._pending.conflicts.includes('settings.canteenParties.p:acme shop'));
+    assert.equal(await b.C.resolve(preference), true); assert.equal(db.get().payload.settings.canteenParties['p:acme shop'], preference === 'local' ? 'Acme SHOP' : 'ACME Shop'); noOverwrite(db);
+  });
+  await test('cloud apply cannot replace an open date/party report with another selection behind its preview', async () => {
+    const payload = partyData(['Report Party']); payload.canteen.entries = [ctEntry('report-bill')]; payload.canteen.entries[0].party = 'Report Party';
+    const db = new Server(payload), a = await device(db), b = await device(db); await a.login(); await b.login();
+    a.H.canteen.reportOpen('month'); const form = a.w.document.querySelector('#ctReportForm'), preview = a.w.document.querySelector('#ctReportPreview').textContent;
+    b.edit('report-bill', 9999); assert.equal(await b.C.pushNow(), true); assert.equal(await a.C.pushNow(), false);
+    assert.equal(a.S.data.canteen.entries[0].amount, 2800); assert.equal(a.w.document.querySelector('#ctReportPreview').textContent, preview); assert.equal(a.w.document.querySelector('#ctReportForm'), form);
+    a.click('[data-act="closeModal"]'); assert.equal(await a.C.maybePull(), true); assert.equal(a.S.data.canteen.entries[0].amount, 9999); noOverwrite(db);
+  });
+  await test('account switch clears report/party UI state and never uploads account A saved names into account B', async () => {
+    const db = new Server(partyData(['Account A Party'])), d = await device(db); await d.login(); d.H.UI.ct.party = 'name:account a party'; d.H.canteen.reportOpen('month');
+    await d.C.signOut(); assert.equal(await d.login(B), true); assert.equal(d.H.UI.ct.party, 'all'); assert.equal(d.w.document.querySelector('#ctReportForm'), null);
+    assert.deepEqual(partyNames(d), []); assert.equal(await d.H.canteen.reportOutput('download'), false); assert.equal(db.get(B), undefined);
+    d.H.canteen.saveParty('Account B Party'); assert.equal(await d.C.pushNow(), true); assert.equal(db.get(B).payload.settings.canteenParties['p:account a party'], undefined);
+    await d.C.signOut(); await d.login(A); assert.deepEqual(partyNames(d), ['Account A Party']); noOverwrite(db);
+  });
+  for (const catalog of [[], null, { wrong: 'Bad Key' }, { 'p:name': 42 }, { 'p:name': ' Name ' }]) await test('invalid remote saved catalog is refused without rewriting local names: ' + JSON.stringify(catalog), async () => {
+    const db = new Server(partyData(['Local Safe Party'])), d = await device(db); await d.login(); const bad = partyData([]); bad.settings.canteenParties = catalog;
+    db.set(A, bad, '2026-11-14T11:00:00.000Z'); assert.equal(await d.C.maybePull(), false); assert.deepEqual(partyNames(d), ['Local Safe Party']); assert.equal(db.writes.length, 0); noOverwrite(db);
+  });
+
   await test("all test browsers run without uncaught JavaScript errors", async () => {
     const db = new Server(data(["a"])), d = await device(db); await d.login(); d.H.go("settings");
     d.H.Recovery.open(); assert.deepEqual(d.errors, []); assert.deepEqual(runtimeErrors, []);
