@@ -850,6 +850,9 @@ select.ct-pm option{font-size:11.5px;font-weight:700}
 @media(max-width:720px){.stk-mobile-balance{display:block}.stk-metrics{grid-template-columns:repeat(2,minmax(0,1fr));gap:9px}.stk-toolbar .row-actions{flex-wrap:wrap}.stk-tabs{gap:6px}.stk-tabs .btn{font-size:11px;padding:8px 10px}.stk-pager{padding:12px}.stk-dialog .modal-h,.stk-dialog .modal-b,.stk-dialog .modal-f{padding:14px}.stk-form-grid{gap:12px}.stk-filter-grid>label{flex-basis:130px}.stk-audit summary{padding:12px;gap:8px}.stk-audit summary>span:last-child{font-size:10px}}
 @media(max-width:420px){.stk-form-grid{grid-template-columns:1fr}.stk-photo-editor{align-items:flex-start;gap:10px;padding:10px}.stk-photo.large{width:70px;height:70px}.stk-photo-editor .btn{font-size:10px}.stk-dialog .modal-f .btn{font-size:11px}.stk-audit summary{flex-wrap:wrap}.stk-audit summary .stk-note{font-size:10px}.stk-toolbar .btn{font-size:11px}}
 /* v3.32 STOCK STYLE END */
+/* v3.33 STOCK IMPORT STYLE BEGIN */
+.stki-dialog{width:min(1000px,calc(100vw - 24px));max-width:1000px}.stki-dialog .modal-b>p{font-size:11px;line-height:1.6;margin:12px 0}.stki-preview{max-height:34vh;max-height:34dvh;margin-top:10px;border:1px solid var(--line);border-radius:10px}.stki-preview table{min-width:620px;font-size:12px}.stki-preview td{white-space:normal;overflow-wrap:anywhere}.stki-preview td:first-child{min-width:180px}.stki-preview .stk-photo{display:block;margin-bottom:6px}.stki-preview details{margin-top:5px;font-size:10px}.stki-preview details p{max-width:400px;white-space:pre-wrap}.stki-review{display:flex;gap:9px;align-items:flex-start;font-size:12px;line-height:1.7;margin-top:14px}.stki-review input{flex-shrink:0;margin-top:4px}.stki-dialog input[type=file]{max-width:100%;min-width:0;font-size:11px}.stki-dialog #stkiPreview>p{font-size:11px;line-height:1.6;margin-top:10px}.stki-dialog .modal-f .row-actions{flex-wrap:wrap}.stki-mobile-quantity{display:none}@media(max-width:720px){.stki-mobile-quantity{display:block;font-size:11px;line-height:1.6;margin-top:5px;color:var(--primary)}.stki-mobile-quantity>span{display:block;color:var(--muted)}}
+/* v3.33 STOCK IMPORT STYLE END */
 </style>
 </head>
 <body>
@@ -1977,7 +1980,7 @@ const rRate = (n) => { const x = Math.max(0, num(n)); return x >= 1 ? r2(x) : Ma
 /* rate dikhane ka format: <₹1 ho to 0.075 jaisa khula number, warna moneyS */
 const rateS = (n) => { const x = num(n); if (x > 0 && x < 1) return "₹" + String(Math.round((x + Number.EPSILON) * 10000) / 10000); return moneyS(x); };
 const clamp = (n, lo, hi) => Math.min(hi, Math.max(lo, n));
-const APP_VERSION = "3.32";
+const APP_VERSION = "3.33";
 const esc = (s) => String(s == null ? "" : s).replace(/[&<>"']/g, (m) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[m]));
 
 const MONTHS = ["January","February","March","April","May","June","July","August","September","October","November","December"];
@@ -3460,6 +3463,7 @@ function viewSettings(){
 
     '<div style="text-align:center;font-size:11.5px;color:var(--muted);margin-top:18px;line-height:1.7">'+
       'Panel <b style="color:var(--ink)">v<span data-ver></span></b> · Auto-update enabled<br>'+
+      'v3.33 — <b style="color:var(--ink)">Stock opening import</b>: CSV / JSON file se products, available quantity aur exact unit ka preview; cut-over date aur review ke baad ek atomic save. Existing products skip, unit mismatch / duplicate file rows refused. Zero-stock items, optional photos / notes, before-after audit aur required safety copy; salary / Canteen / Attendance unchanged. Private inventory release me bundled nahi hai.<br>'+
       'v3.32 — <b style="color:var(--ink)">Stock Management</b>: Products + photo + opening entry; Stock In / purpose-wise Out / customer, salesperson aur delivery details wali Sale. Live stock transactions se auto-calculate; date / product / party / salesperson filters, full history, audited edit/delete aur minimum-stock warnings. Negative dated balance par save blocked; JSON / configured cloud / safety copies included. Purana salary, Canteen aur Attendance data unchanged.<br>'+
       'v3.31 — <b style="color:var(--ink)">Canteen: saved parties + Date / Party PDF</b>: Canteen → Parties me naam ek baar save karein; entry me saved / purani party select karein. Har PDF / WhatsApp PDF / Print se pehle From Date, To Date aur Party Selection. Dono date boundaries included; sirf matching entries, original item lines aur unhi ke din / party totals, Paid / Baki / Net. No matches / invalid dates par export blocked. All six styles, company logo aur purani entries safe. Party names JSON / cloud / safety copies me saved.<br>'+
       'v3.30 — <b style="color:var(--ink)">PDF se Bikri / Kharcha columns removed</b>: Canteen ke saare six templates, din / mahina PDF, WhatsApp PDF aur print / Save as PDF se category summary slots aur Bikri / Kharcha columns hataye. Monthly ledger ab Date, Din, Entries, Saman, Net, Paid, Baki — poori width me. Original entries / item lines / own prices, category math, net / paid / baki, app / CSV, company logo, salary / Attendance aur backups / cloud unchanged. Purana PDF dobara download karein<br>'+
@@ -3648,6 +3652,7 @@ function closeCmdk(){ const el = $("#cmdk"); if (el) el.remove(); }
 
 /* ------------------------ 12. MODALS & DIALOGS -------------------------- */
 function openModal(html, opts) {
+  stkiCancel();
   stkEditor = null;
   ctReportState = null;
   attRevokeDownloads();
@@ -3658,6 +3663,7 @@ function openModal(html, opts) {
   document.body.style.overflow = "hidden";
 }
 function closeModal() {
+  stkiCancel();
   stkEditor = null;
   ctReportState = null;
   attRevokeDownloads();
@@ -11068,7 +11074,7 @@ function viewStock() {
   const tabs = [["products", "▣ Products & Live Stock"], ["history", "⇄ Stock History"], ["audit", "◷ Change Audit"]];
   let content; try { content = u.tab === "products" ? stkInventoryHTML() : u.tab === "history" ? stkMovementHTML() : stkAuditHTML(); }
   catch (error) { content = '<div class="banner warn" role="alert">' + esc(error.message) + ' <button class="btn sm" data-stk="resetFilters">Reset filters</button></div>'; }
-  return '<section class="stk-page"><div class="stk-toolbar"><div><h3>Company inventory</h3><p class="muted">Opening + Stock In − Stock Out − Sales = Available</p></div><div class="row-actions"><button class="btn" data-stk="movement" data-type="in">＋ Stock In</button><button class="btn" data-stk="movement" data-type="out">− Stock Out</button><button class="btn primary" data-stk="movement" data-type="sale">Stock Sale</button></div></div>' +
+  return '<section class="stk-page"><div class="stk-toolbar"><div><h3>Company inventory</h3><p class="muted">Opening + Stock In − Stock Out − Sales = Available</p></div><div class="row-actions"><button class="btn" data-stki="open">Import stock</button><button class="btn" data-stk="movement" data-type="in">＋ Stock In</button><button class="btn" data-stk="movement" data-type="out">− Stock Out</button><button class="btn primary" data-stk="movement" data-type="sale">Stock Sale</button></div></div>' +
     '<div class="stk-metrics"><div class="card"><span>Products</span><b>' + inventory.length + '</b></div><div class="card"><span>Stock entries</span><b>' + stkData().transactions.length + '</b></div><div class="card' + (lows.length ? ' stk-warning' : '') + '"><span>Low stock alerts</span><b>' + lows.length + '</b></div><div class="card"><span>Audit records</span><b>' + stkData().history.length + '</b></div></div>' +
     (lows.length ? '<div class="banner warn stk-low-alert" role="status"><div><b>⚠ Low stock: ' + lows.length + ' product' + (lows.length > 1 ? 's' : '') + '</b><div>' + lows.slice(0,5).map(p => esc(p.name) + ': ' + stkFmt(p.available) + ' / min ' + stkFmt(p.minQty) + ' ' + esc(p.unit)).join(' · ') + (lows.length > 5 ? ' · …aur ' + (lows.length - 5) : '') + '</div></div><button class="btn sm" data-stk="showLow">View low stock</button></div>' : '') +
     '<div class="stk-tabs" role="tablist" aria-label="Stock sections">' + tabs.map(([k,v]) => '<button class="btn' + (u.tab === k ? ' primary' : '') + '" role="tab" aria-selected="' + (u.tab === k) + '" data-stk="tab" data-value="' + k + '">' + esc(v) + '</button>').join('') + '</div>' + stkFiltersHTML() + content +
@@ -11197,6 +11203,149 @@ document.addEventListener('change', event => {
 });
 /* v3.32 STOCK MANAGEMENT END */
 
+/* v3.33 STOCK OPENING IMPORT BEGIN
+   User-selected files only. No customer inventory is bundled in the release.
+   Preview is read-only; one guarded atomic save creates ordinary Stock records. */
+const STKI_MAX_BYTES = 5 * 1024 * 1024, STKI_MAX_ROWS = 2000;
+let stkiEditor = null;
+function stkiCancel() {
+  const old = stkiEditor; stkiEditor = null;
+  if (old?.reader?.readyState === 1) old.reader.abort();
+}
+function stkiRows(input) {
+  if (!Array.isArray(input) || !input.length || input.length > STKI_MAX_ROWS) throw new Error('Import me 1–2000 product rows honi chahiye.');
+  const names = new Set();
+  return input.map((row, i) => {
+    try {
+      stkObject(row, ['name','unit','quantity','minQty','note','photo'], 'opening import row');
+      const name = stkName(row.name), unit = stkName(row.unit);
+      stkText(name, 90, true, 'Product name'); stkText(unit, 18, true, 'Unit');
+      if (names.has(stkKey(name))) throw new Error('File me duplicate product name hai: ' + name + '. Har product ko sirf ek baar rakhein.');
+      names.add(stkKey(name));
+      const quantity = stkQty(row.quantity, true), minQty = row.minQty === undefined || row.minQty === '' ? 0 : stkQty(row.minQty, true);
+      const note = stkText(row.note, 500, false, 'Product note'), photo = row.photo === undefined ? '' : row.photo;
+      if (typeof photo !== 'string' || photo && !stkImageValid(photo)) throw new Error('Photo sirf bounded embedded JPEG honi chahiye; external URL / SVG allowed nahi.');
+      return { name, unit, quantity, minQty, note, photo };
+    } catch (error) { throw new Error('Row ' + (i + 1) + ': ' + error.message); }
+  });
+}
+function stkiCSV(text) {
+  const rows = []; let row = [], cell = '', quoted = false, ended = false;
+  const field = () => { row.push(cell); cell = ''; ended = false; };
+  const line = () => { field(); if (row.some(value => value.trim() !== '')) rows.push(row); row = []; if (rows.length > STKI_MAX_ROWS + 1) throw new Error('Maximum 2000 import rows allowed hain.'); };
+  for (let i = 0; i < text.length; i++) {
+    const c = text[i];
+    if (quoted) { if (c === '"') { if (text[i + 1] === '"') { cell += '"'; i++; } else { quoted = false; ended = true; } } else cell += c; }
+    else if (c === ',') field();
+    else if (c === '\n' || c === '\r') { line(); if (c === '\r' && text[i + 1] === '\n') i++; }
+    else if (c === '"') { if (cell || ended) throw new Error('CSV quote format invalid hai.'); quoted = true; }
+    else { if (ended) throw new Error('CSV closing quote ke baad comma / newline chahiye.'); cell += c; }
+  }
+  if (quoted) throw new Error('CSV me closing quote missing hai.');
+  line(); if (rows.length < 2) throw new Error('CSV me header aur kam se kam ek product row chahiye.');
+  const aliases = {name:'name',product:'name','product name':'name',unit:'unit',quantity:'quantity',qty:'quantity',available:'quantity','available quantity':'quantity','opening quantity':'quantity',minqty:'minQty',min_qty:'minQty',minimum:'minQty','minimum stock':'minQty',note:'note',notes:'note',photo:'photo'};
+  const headers = rows.shift().map(value => aliases[value.trim().toLowerCase()]);
+  if (headers.some(key => !key) || new Set(headers).size !== headers.length || ['name','unit','quantity'].some(key => !headers.includes(key))) throw new Error('CSV columns: name, quantity, unit; optional minQty, note, photo. Unknown / duplicate columns allowed nahi.');
+  return rows.map((values, i) => { if (values.length !== headers.length) throw new Error('CSV row ' + (i + 2) + ': column count match nahi hai.'); return Object.fromEntries(headers.map((key, j) => [key, values[j]])); });
+}
+function stkiParse(text, filename) {
+  if (typeof text !== 'string' || new Blob([text]).size > STKI_MAX_BYTES) throw new Error('Import file maximum 5 MB UTF-8 CSV / JSON honi chahiye.');
+  text = text.replace(/^\uFEFF/, ''); if (!text.trim()) throw new Error('Import file empty hai.');
+  if (/\.json$/i.test(filename || '') || /^[\s]*[\[{]/.test(text)) {
+    let data; try { data = JSON.parse(text); } catch (error) { throw new Error('Valid opening-stock JSON file chunein.'); }
+    stkObject(data, ['format','version','rows'], 'opening import file');
+    if (data.format !== 'hisaab-stock-opening' || data.version !== 1) throw new Error('Yeh Stock opening-import file nahi hai. Full backup ke liye Settings ka Restore alag hai.');
+    return stkiRows(data.rows);
+  }
+  return stkiRows(stkiCSV(text));
+}
+function stkiPlan(input, date) {
+  if (date !== '' && !stkDate(date)) throw new Error('Opening / cut-over ki valid date chunein (1900–9998). File se date guess nahi hoti.');
+  const existing = new Map(stkInventory().map(p => [stkKey(p.name), p]));
+  const rows = stkiRows(input).map(row => {
+    const old = existing.get(stkKey(row.name));
+    return { ...row, status: !old ? 'new' : old.unit === row.unit ? 'skip' : 'conflict', existingQuantity: old?.available, existingUnit: old?.unit };
+  });
+  return { date, rows, added: rows.filter(r => r.status === 'new').length, skipped: rows.filter(r => r.status === 'skip').length, conflicts: rows.filter(r => r.status === 'conflict').length };
+}
+function stkiApply(input, date, context, filename) {
+  stkCheck(context); if (!stkDate(date)) throw new Error('Opening / cut-over ki valid date chunein.'); const plan = stkiPlan(input, date), source = stkText(filename || 'opening-stock file', 120, true, 'File name');
+  if (plan.conflicts) throw new Error('Existing product ki unit file se alag hai. Import blocked; quantity convert / overwrite nahi hui.');
+  if (!plan.added) return { imported: 0, skipped: plan.skipped, entries: 0 };
+  return stkAtomic(s => {
+    let entries = 0;
+    plan.rows.filter(r => r.status === 'new').forEach(row => {
+      const p = { id: uid(), name: row.name, unit: row.unit, date, minQty: row.minQty, photoId: stkPhotoPut(s, row.photo), note: row.note, createdAt: Date.now(), updatedAt: Date.now() };
+      s.products.push(p); stkAudit(s, 'product', null, p, 'create', 'Opening import: ' + source);
+      if (row.quantity > 0) {
+        const t = stkMakeMovement({productId:p.id,type:'in',qty:row.quantity,date,source:'opening',purpose:'Opening stock — imported',note:row.note},s);
+        s.transactions.push(t); stkAudit(s,'transaction',null,t,'create','Opening import: '+source); entries++;
+      }
+    });
+    return { imported: plan.added, skipped: plan.skipped, entries };
+  }, context, true);
+}
+function stkiCurrent(editor) { return stkiEditor === editor && $('#stkiForm') === editor?.form; }
+function stkiMessage(message) { const el = $('#stkiError'); if (el) el.textContent = message; }
+function stkiRefresh() {
+  const e = stkiEditor; if (!stkiCurrent(e)) return;
+  const save = $('#stkiSave'), preview = $('#stkiPreview'); save.disabled = true;
+  if (!e.rows) { preview.innerHTML = '<p class="muted">File choose karein. Preview / file selection se data save nahi hota.</p>'; return; }
+  let plan; const date = $('#stkiDate').value;
+  try { stkCheck(e.context); plan = stkiPlan(e.rows, date); }
+  catch (error) { stkiMessage(error.message); return; }
+  const label = row => row.status === 'new' ? 'New product' : row.status === 'skip' ? 'Skip — existing ' + stkFmt(row.existingQuantity) + ' ' + row.existingUnit + ' unchanged' : 'Blocked — existing unit: ' + row.existingUnit;
+  preview.innerHTML = '<p><b>' + plan.added + ' new · ' + plan.skipped + ' existing skipped · ' + plan.conflicts + ' unit conflicts</b></p><p class="muted">File: ' + esc(e.filename) + '. Har row neeche available hai. Existing products ka stock kabhi overwrite / double-add nahi hota.</p><div class="twrap stki-preview"><table class="tbl"><thead><tr><th>Product / note</th><th class="num">Opening qty</th><th>Unit</th><th>Result</th></tr></thead><tbody>' + plan.rows.map(row => '<tr data-stki-row="' + row.status + '"><td>' + (row.photo ? '<img class="stk-photo" src="' + esc(row.photo) + '" alt="Imported product photo" loading="lazy">' : '') + '<b>' + esc(row.name) + '</b><span class="stki-mobile-quantity">Opening: <b>' + stkFmt(row.quantity) + ' ' + esc(row.unit) + '</b><span>' + esc(label(row)) + '</span></span>' + (row.note ? '<details><summary>Source / note</summary><p>' + esc(row.note) + '</p></details>' : '') + '</td><td class="num">' + stkFmt(row.quantity) + '</td><td>' + esc(row.unit) + '</td><td>' + esc(label(row)) + '</td></tr>').join('') + '</tbody></table></div>';
+  if (plan.conflicts) stkiMessage('Unit mismatch: import blocked. Correct file chunein; existing products unchanged rahenge.');
+  else if (!plan.added) stkiMessage('Saare products pehle se hain — kuch add nahi hoga. Existing quantity file se alag ho sakti hai; automatic overwrite nahi.');
+  else stkiMessage(date ? '' : 'Opening / cut-over date chunein; yeh purana transaction history import nahi hai.');
+  save.disabled = e.busy || !plan.added || !!plan.conflicts || !stkDate(date) || !$('#stkiReviewed').checked;
+}
+function stkiOpen() {
+  stkCheck(stkContext());
+  openModal('<div class="modal stk-dialog stki-dialog"><form id="stkiForm"><div class="modal-h"><div><h3>Import opening stock</h3><p>CSV / JSON · preview, phir ek atomic save</p></div><button type="button" class="x" data-act="closeModal" aria-label="Close">✕</button></div><div class="modal-b"><div class="banner warn">Old panel ki <b>available quantity → Opening Stock</b>. Sahi cut-over date choose karein. Purane sales / receipts invent nahi honge. Existing Stock, salary, Canteen, Attendance aur company logo replace nahi hote.</div><div class="stk-form-grid"><label class="stk-field"><span>Stock file (max 5 MB / 2000 rows)</span><input id="stkiFile" class="inp" type="file" accept=".csv,.json,text/csv,application/json"></label><label class="stk-field"><span>Opening / cut-over date</span><input id="stkiDate" class="inp" type="date" min="1900-01-01" max="9998-12-31" required></label></div><p class="muted">CSV: name, quantity, unit; optional minQty, note, photo. Unit labels exactly as file; box/pcs conversion nahi. Photo sirf embedded bounded JPEG. Full Settings backup yahan import nahi hota.</p><div id="stkiPreview" aria-live="polite"></div><p id="stkiError" class="stk-error" role="alert" tabindex="-1"></p><label class="stki-review"><input type="checkbox" id="stkiReviewed" required> Maine names, quantities, units aur opening date verify ki hai. Existing products skip honge, unka stock unchanged rahega.</label></div><div class="modal-f"><button class="btn" type="button" data-stki="template">CSV example</button><div class="row-actions"><button class="btn" type="button" data-act="closeModal">Cancel</button><button class="btn primary" type="submit" id="stkiSave" disabled>Import new products</button></div></div></form></div>', {sticky:true});
+  stkiEditor = { context: stkContext(), rows: null, filename: '', serial: 0, busy: false, form: $('#stkiForm'), reader: null }; stkiRefresh();
+}
+function stkiChoose(input) {
+  const e = stkiEditor; if (!stkiCurrent(e)) return;
+  e.serial++; const serial = e.serial; e.rows = null; e.busy = false; $('#stkiReviewed').checked = false;
+  if (e.reader?.readyState === 1) e.reader.abort(); stkiRefresh(); stkiMessage('');
+  const file = input.files?.[0]; if (!file) return;
+  if (file.size > STKI_MAX_BYTES || !/\.(csv|json)$/i.test(file.name)) { stkiMessage('Maximum 5 MB ki UTF-8 .csv / .json file chunein.'); return; }
+  const reader = new FileReader(); e.reader = reader; e.busy = true;
+  reader.onload = () => {
+    if (!stkiCurrent(e) || e.serial !== serial) return;
+    try { stkCheck(e.context); e.rows = stkiParse(String(reader.result), file.name); e.filename = file.name.replace(/[\u0000-\u001f\u007f]/g, '').slice(0,120) || 'opening-stock file'; e.busy = false; stkiRefresh(); }
+    catch (error) { e.rows = null; e.busy = false; stkiRefresh(); stkiMessage(error.message); }
+  };
+  reader.onerror = () => { if (stkiCurrent(e) && e.serial === serial) { e.busy = false; stkiMessage('File read nahi hui. Dobara choose karein.'); } };
+  reader.readAsText(file, 'UTF-8');
+}
+function stkiSubmit() {
+  const e = stkiEditor; if (!stkiCurrent(e)) return;
+  try {
+    if (e.busy || !e.rows || !$('#stkiReviewed').checked) throw new Error('File preview, date aur review confirmation zaroori hain.');
+    e.busy = true; $('#stkiSave').disabled = true;
+    const result = stkiApply(e.rows, $('#stkiDate').value, e.context, e.filename);
+    closeModal(); Object.assign(stkUI(),{tab:'products',q:'',product:'all',low:false,page:0}); render();
+    toast(result.imported + ' products / ' + result.entries + ' opening entries imported; ' + result.skipped + ' existing skipped', 'ok');
+  } catch (error) { if (stkiCurrent(e)) { e.busy = false; $('#stkiSave').disabled = false; stkiMessage(error.message); $('#stkiError').focus(); } }
+}
+document.addEventListener('click', event => {
+  const button = event.target.closest('[data-stki]'); if (!button) return; event.preventDefault();
+  try {
+    if (button.dataset.stki === 'open') stkiOpen();
+    if (button.dataset.stki === 'template') { const blob = new Blob(['name,quantity,unit,minQty,note\r\nExample product,10,box,0,Replace this sample row\r\n'], {type:'text/csv;charset=utf-8'}); const url = URL.createObjectURL(blob), a = document.createElement('a'); a.href = url; a.download = 'opening-stock-example.csv'; a.click(); setTimeout(() => URL.revokeObjectURL(url), 30000); }
+  } catch (error) { toast(error.message, 'bad'); }
+});
+document.addEventListener('change', event => {
+  if (event.target.id === 'stkiFile') stkiChoose(event.target);
+  if (event.target.id === 'stkiDate') { $('#stkiReviewed').checked = false; stkiRefresh(); }
+  if (event.target.id === 'stkiReviewed') stkiRefresh();
+});
+document.addEventListener('submit', event => { if (event.target.id === 'stkiForm') { event.preventDefault(); stkiSubmit(); } });
+/* v3.33 STOCK OPENING IMPORT END */
+
 /* ----------------------------- 17. BOOTSTRAP ---------------------------- */
 Store.load();
 initTheme();
@@ -11252,7 +11401,8 @@ window.Hisaab = { Store, calc, monthMeta, PdfDoc, inWords, UI, render, go, Cloud
     pdfString: attPdfString, pdfLayout: attPdfLayout, sharePdf: (report) => attDownloadReport(report, "whatsapp"), xlsxBytes: attXlsxBytes, download: attDownloadReport, setDate: attSetDate, resolveManager: attResolveManager },
   stock: { data: stkData, blank: stkBlank, validate: stkValidate, quantity: stkQty, inventory: stkInventory, query: stkQuery, ledger: stkLedger,
     saveProduct: stkSaveProduct, deleteProduct: stkDeleteProduct, saveEntry: stkSaveMovement, deleteEntry: stkDeleteMovement,
-    ui: stkUI, context: stkContext, openProduct: stkOpenProduct, openEntry: stkOpenMovement },
+    ui: stkUI, context: stkContext, openProduct: stkOpenProduct, openEntry: stkOpenMovement,
+    openingImport: { parse: stkiParse, plan: stkiPlan, apply: stkiApply, open: stkiOpen } },
   /* canteen module API */
   canteen: { data: ct, totals: ctTotals, itemLines: ctItemLines, entries: ctAll, onDate: ctOnDate, inMonth: ctInMonth,
              dayLedger: ctDayLedger, monthLedger: ctMonthLedger, openModal: openCtModal, save: ctSave,
