@@ -1,7 +1,11 @@
 # HISAAB PDF fonts — Canteen reference + Attendance Hindi
 
 Canteen’s reference-matched Segoe PDFs (v3.16+) and Attendance’s separate
-Hindi-capable renderer (v3.19+) are described below. Current **v3.31** reuses that
+Hindi-capable renderer (v3.19+) are described below. Current **v3.32** adds the
+separate [Stock Management](STOCK-MANAGEMENT.md) tab, not a new report/font engine.
+Product photos stay separate from the saved company logo; the shared PDF writer,
+font payloads, seven-column Canteen reports and Attendance PDF/Excel are unchanged.
+**v3.31** reuses that
 bundled Unicode renderer only on a new filtered-report instance; shared PdfDoc,
 salary/Attendance renderers and font payloads stay intact. v3.30 removed the full
 Bikri/Kharcha summary slots and monthly columns (superseding the historical v3.18

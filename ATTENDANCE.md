@@ -1,9 +1,15 @@
-# HISAAB v3.31 — manager Attendance
+# HISAAB v3.32 — manager Attendance
 
 **Attendance is a tab inside the existing Hisaab Panel**, not a separate app.
 Manager profiles, attendance, credit settings and history share the panel’s
 existing local save, JSON backup and configured cloud sync. **Attendance never
 changes employee salaries, wages, advances, deductions or payments.**
+
+**v3.32:** separate **Stock Management** tab: transaction-derived availability,
+photos, In / Out / Sales, minimum warnings and complete audited history. Optional
+Stock payload existing JSON/cloud/recovery me included. Attendance clocks/day flags,
+actual hours/Sunday/bonus calculations, two-page PDF, five-sheet Excel and financial
+records unchanged. [Stock guide](STOCK-MANAGEMENT.md).
 
 **v3.31:** saved Canteen parties aur From / To Date × Party PDFs added. Sirf selected
 matching Canteen data report hota hai; optional catalog existing backup/cloud/recovery

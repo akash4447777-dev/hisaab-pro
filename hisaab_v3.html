@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Hisaab — Salary, Attendance &amp; Canteen Panel</title>
+<title>Hisaab — Salary, Attendance, Canteen &amp; Stock Panel</title>
 <style>
 /* ============================================================
    HISAAB v3 — design system
@@ -839,6 +839,17 @@ select.ct-pm option{font-size:11.5px;font-weight:700}
 .att-calc-preview{grid-template-columns:repeat(2,minmax(0,1fr))}.att-sunday-count{display:inline-block;font-size:11px;background:var(--primary-soft);color:var(--primary);padding:3px 7px;border-radius:7px;margin-left:5px}.att-sunday-person{padding:11px 0;border-bottom:1px solid var(--line-2);overflow-wrap:anywhere}.att-sunday-person>b{font-size:13px;margin-right:10px}.att-sunday-dates{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}.att-sunday-date{display:inline-block;border:1px solid var(--line);border-radius:9px;padding:9px 11px;background:var(--primary-soft);font-size:12px;font-weight:700}.att-sunday-date small{display:block;font-size:10px;font-weight:500;color:var(--muted);margin-top:4px}@media(max-width:560px){.att-tabs{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));overflow:visible}.att-tabs button{width:100%;padding:9px 5px}}
 @media(prefers-reduced-motion:reduce){.att-page{animation:none}.att-page *{transition:none!important}}
 
+/* v3.32 STOCK STYLE BEGIN */
+.stk-page{min-width:0}.stk-mobile-balance{display:none;font-size:11px;color:var(--primary);margin-top:5px;white-space:normal}.stk-toolbar{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:16px}.stk-toolbar h3{font-size:18px}.stk-toolbar p{font-size:12px;margin-top:3px}
+.stk-metrics{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;margin-bottom:15px}.stk-metrics .card{padding:14px 17px;display:flex;flex-direction:column;gap:4px}.stk-metrics span{font-size:12px;color:var(--muted);font-weight:600}.stk-metrics b{font-size:26px;font-variant-numeric:tabular-nums}.stk-metrics .stk-warning{background:var(--warn-soft);border-color:var(--warn);color:var(--warn)}
+.stk-low-alert{justify-content:space-between;flex-wrap:wrap;gap:10px;margin-bottom:14px}.stk-low-alert>div{flex:1 1 220px;min-width:0;overflow-wrap:anywhere}.stk-low-alert>div>div{font-size:12px;margin-top:4px}
+.stk-tabs{display:flex;gap:8px;margin-bottom:14px;overflow-x:auto;padding-bottom:3px}.stk-tabs button{flex-shrink:0}.stk-filters{padding:14px;margin-bottom:14px}.stk-filter-grid{display:flex;flex-wrap:wrap;align-items:flex-end;gap:10px}.stk-filter-grid>label{flex:1 1 145px;min-width:0;font-size:11px;font-weight:700;display:flex;flex-direction:column;gap:5px}.stk-filter-buttons{display:flex;gap:7px;flex-wrap:wrap}.stk-select{width:auto;max-width:100%}.stk-filters .inp{font-size:12px}
+.stk-table{min-width:880px}.stk-table.history{min-width:1130px}.stk-table th{white-space:nowrap}.stk-table td{vertical-align:top;max-width:250px;overflow-wrap:anywhere}.stk-table td:first-child{min-width:155px}.stk-product{display:flex;gap:10px;align-items:center;min-width:175px}.stk-product>div{min-width:0}.stk-product .muted{font-size:11px}.stk-photo{width:48px;height:48px;border-radius:10px;border:1px solid var(--line);object-fit:contain;background:var(--surface-2);flex-shrink:0}.stk-photo.large{width:92px;height:92px;border-radius:13px}.stk-placeholder{display:inline-grid;place-items:center;color:var(--faint);font-size:24px}.stk-note{display:block;font-size:11px;line-height:1.5;color:var(--muted);overflow-wrap:anywhere;white-space:pre-wrap}.stk-note:not(:empty){margin-top:4px}.stk-balance b{font-size:18px;color:var(--primary)}.stk-actions{flex-wrap:wrap;min-width:165px;max-width:220px;gap:5px!important}.stk-pager{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px;padding:14px 16px;border-top:1px solid var(--line);font-size:11px;color:var(--muted)}.stk-pager .row-actions{align-items:center}.stk-footnote{font-size:11px;line-height:1.7;color:var(--muted);margin:14px 2px}
+.stk-dialog{width:min(720px,calc(100vw - 24px));max-width:720px;display:flex;flex-direction:column;max-height:calc(100vh - 52px);max-height:calc(100dvh - 52px);overflow:hidden}.stk-dialog .modal-h,.stk-dialog .modal-f{flex-shrink:0}.stk-dialog form{display:flex;flex-direction:column;min-height:0;max-height:inherit;flex:1}.stk-dialog .modal-b{min-height:0;overflow-y:auto;overscroll-behavior:contain}.stk-form-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:13px}.stk-field{display:flex;flex-direction:column;gap:6px;min-width:0;font-size:12px;font-weight:600}.stk-field small{font-size:10px;font-weight:400;line-height:1.6}.stk-field .inp{width:100%;font-weight:400}.stk-field textarea{resize:vertical;min-height:64px}.stk-photo-editor{display:flex;gap:14px;align-items:center;margin-top:18px;padding:14px;border:1px dashed var(--line);border-radius:12px;min-width:0}.stk-photo-editor>div{min-width:0}.stk-photo-editor .row-actions{flex-wrap:wrap}.stk-dialog .modal-f{justify-content:space-between;flex-wrap:wrap;gap:9px}.stk-error{color:var(--bad);font-size:12px;white-space:pre-wrap;overflow-wrap:anywhere}.stk-error:not(:empty){margin-top:12px;padding:10px;background:var(--bad-soft);border-radius:8px}.stk-dialog .banner{font-size:12px;margin-bottom:14px;display:block}
+.stk-audit{border-bottom:1px solid var(--line)}.stk-audit:last-child{border-bottom:0}.stk-audit summary{display:flex;align-items:center;gap:12px;padding:13px 16px;cursor:pointer;font-size:12px;list-style:none}.stk-audit summary>span:nth-child(2){flex:1;min-width:0;overflow-wrap:anywhere}.stk-audit summary>span:last-child{flex-shrink:0;font-size:11px}.stk-audit-body{padding:0 16px 16px;font-size:12px}.stk-audit-body>p{color:var(--muted);margin-bottom:10px}.stk-audit-table{min-width:480px;table-layout:fixed}.stk-audit-table td,.stk-audit-table th{overflow-wrap:anywhere;white-space:pre-wrap}.stk-audit-table .stk-changed{background:var(--primary-soft)}
+@media(max-width:720px){.stk-mobile-balance{display:block}.stk-metrics{grid-template-columns:repeat(2,minmax(0,1fr));gap:9px}.stk-toolbar .row-actions{flex-wrap:wrap}.stk-tabs{gap:6px}.stk-tabs .btn{font-size:11px;padding:8px 10px}.stk-pager{padding:12px}.stk-dialog .modal-h,.stk-dialog .modal-b,.stk-dialog .modal-f{padding:14px}.stk-form-grid{gap:12px}.stk-filter-grid>label{flex-basis:130px}.stk-audit summary{padding:12px;gap:8px}.stk-audit summary>span:last-child{font-size:10px}}
+@media(max-width:420px){.stk-form-grid{grid-template-columns:1fr}.stk-photo-editor{align-items:flex-start;gap:10px;padding:10px}.stk-photo.large{width:70px;height:70px}.stk-photo-editor .btn{font-size:10px}.stk-dialog .modal-f .btn{font-size:11px}.stk-audit summary{flex-wrap:wrap}.stk-audit summary .stk-note{font-size:10px}.stk-toolbar .btn{font-size:11px}}
+/* v3.32 STOCK STYLE END */
 </style>
 </head>
 <body>
@@ -846,7 +857,7 @@ select.ct-pm option{font-size:11.5px;font-weight:700}
   <aside class="sidebar">
     <div class="brand">
       <div class="logo">₹</div>
-      <div><h1>Hisaab</h1><span>Salary · Attendance · Canteen</span></div>
+      <div><h1>Hisaab</h1><span>Salary · Attendance · Canteen · Stock</span></div>
     </div>
     <nav class="nav" id="nav">
       <button data-view="dashboard" class="active"><span class="ico">◧</span>Dashboard</button>
@@ -855,6 +866,7 @@ select.ct-pm option{font-size:11.5px;font-weight:700}
       <button data-view="ledger"><span class="ico">⇄</span>Ledger</button>
       <button data-view="attendance"><span class="ico">▦</span>Attendance<span class="nav-badge" id="navAttCount" style="display:none">0</span></button>
       <button data-view="canteen"><span class="ico">🍽</span>Canteen<span class="nav-badge" id="navCtBal" style="display:none">0</span></button>
+      <button data-view="stock"><span class="ico">▣</span>Stock Management<span class="nav-badge" id="navStockLow" style="display:none">0</span></button>
       <button data-view="records"><span class="ico">◷</span>Records</button>
       <button data-view="settings"><span class="ico">⚙</span>Settings</button>
     </nav>
@@ -1965,7 +1977,7 @@ const rRate = (n) => { const x = Math.max(0, num(n)); return x >= 1 ? r2(x) : Ma
 /* rate dikhane ka format: <₹1 ho to 0.075 jaisa khula number, warna moneyS */
 const rateS = (n) => { const x = num(n); if (x > 0 && x < 1) return "₹" + String(Math.round((x + Number.EPSILON) * 10000) / 10000); return moneyS(x); };
 const clamp = (n, lo, hi) => Math.min(hi, Math.max(lo, n));
-const APP_VERSION = "3.31";
+const APP_VERSION = "3.32";
 const esc = (s) => String(s == null ? "" : s).replace(/[&<>"']/g, (m) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[m]));
 
 const MONTHS = ["January","February","March","April","May","June","July","August","September","October","November","December"];
@@ -2139,7 +2151,7 @@ const Store = {
   save(silent, options) {
     options = options || {};
     if (this.storageProblem) { toast("Purana saved data read nahi hua — automatic overwrite band hai", "bad"); return false; }
-    try { attValidate(this.data.attendance); ctValidateParties(this.data); } catch (e) { this.unsaved = true; Cloud.setStatus("storage", e.message); if (!silent) toast(e.message, "bad"); return false; }
+    try { attValidate(this.data.attendance); ctValidateParties(this.data); stkValidate(stkData(this.data)); } catch (e) { this.unsaved = true; Cloud.setStatus("storage", e.message); if (!silent) toast(e.message, "bad"); return false; }
     const changed = !this.lastSaved || !samePayload(this.lastSaved, this.data);
     const previous = this.lastSaved;
     if (!options.bootstrap && changed && previous && this.pristineDemo(previous)) {
@@ -2278,7 +2290,8 @@ function updateSideStats() {
   const act = Store.activeWorkers().length;
   const ctCount = ((Store.data.canteen && Store.data.canteen.entries) || []).length;
   if (el) el.textContent = act + " active employee" + (act === 1 ? "" : "s") + " · " + Store.data.records.length + " records" +
-    (ctCount ? " · " + ctCount + " canteen" : "") + (att().managers.length ? " · " + att().managers.length + " managers" : "");
+    (ctCount ? " · " + ctCount + " canteen" : "") + (att().managers.length ? " · " + att().managers.length + " managers" : "") + (stkData().products.length ? " · " + stkData().products.length + " products" : "");
+  stkNavBadge();
   const attBadge = $("#navAttCount");
   if (attBadge) { const count = att().managers.filter((m) => m.active).length; attBadge.textContent = count; attBadge.style.display = count ? "inline-block" : "none"; }
   const badge = $("#navPend");
@@ -2305,6 +2318,7 @@ const VIEW_META = {
   ledger:    ["Ledger", "Is mahine ke saare advances aur deductions ek jagah"],
   attendance:["Attendance", "Manager attendance · Morning / Afternoon / Evening / Night · individual reports"],
   canteen:   ["Canteen", "Saman entry (rate-wise ya ek-saath total) · din aur mahine ka ledger · poori activity"],
+  stock:     ["Stock Management", "Products · Stock In / Out / Sales · live availability · complete history & audit"],
   records:   ["Records & History", "Month-wise salary records with payment status"],
   settings:  ["Settings", "Shop details, salary rules and your data"]
 };
@@ -2327,6 +2341,7 @@ function render() {
   else if (UI.view === "ledger") root.innerHTML = viewLedger();
   else if (UI.view === "attendance") root.innerHTML = viewAttendance();
   else if (UI.view === "canteen") root.innerHTML = viewCanteen();
+  else if (UI.view === "stock") root.innerHTML = viewStock();
   else if (UI.view === "records") root.innerHTML = viewRecords();
   else if (UI.view === "settings") root.innerHTML = viewSettings();
   updateSideStats();
@@ -2338,10 +2353,13 @@ function render() {
   if (topAdd) {
     if (UI.view === "attendance") { topAdd.dataset.act = "attAdd"; topAdd.textContent = "+ Mark attendance"; }
     else if (UI.view === "canteen") { topAdd.dataset.act = "ctAdd"; topAdd.textContent = "＋ Canteen entry"; }
+    else if (UI.view === "stock") { topAdd.dataset.act = "stkAdd"; topAdd.textContent = "＋ Add product"; }
     else { topAdd.dataset.act = "addWorker"; topAdd.textContent = "+ Add Employee"; }
   }
   const globalSearch = $("#gSearch");
-  if (globalSearch) { globalSearch.placeholder = UI.view === "attendance" ? "Search managers / attendance…" : "Dhoondo…"; globalSearch.value = UI.view === "attendance" ? attUI().q : UI.search; }
+  if (globalSearch) { globalSearch.placeholder = UI.view === "stock" ? "Search product / party / salesperson…" : UI.view === "attendance" ? "Search managers / attendance…" : "Dhoondo…"; globalSearch.value = UI.view === "stock" ? stkUI().q : UI.view === "attendance" ? attUI().q : UI.search; }
+  const monthControls = $(".topbar-actions .mp");
+  if (monthControls) monthControls.style.display = UI.view === "stock" ? "none" : "";
   /* on phones the top bar scrolls sideways — keep the active tab visible */
   const bar = document.querySelector(".sidebar"), act = document.querySelector(".nav button.active");
   if (bar && act && bar.scrollWidth > bar.clientWidth + 4) bar.scrollLeft = Math.max(0, act.offsetLeft - 70);
@@ -3442,6 +3460,7 @@ function viewSettings(){
 
     '<div style="text-align:center;font-size:11.5px;color:var(--muted);margin-top:18px;line-height:1.7">'+
       'Panel <b style="color:var(--ink)">v<span data-ver></span></b> · Auto-update enabled<br>'+
+      'v3.32 — <b style="color:var(--ink)">Stock Management</b>: Products + photo + opening entry; Stock In / purpose-wise Out / customer, salesperson aur delivery details wali Sale. Live stock transactions se auto-calculate; date / product / party / salesperson filters, full history, audited edit/delete aur minimum-stock warnings. Negative dated balance par save blocked; JSON / configured cloud / safety copies included. Purana salary, Canteen aur Attendance data unchanged.<br>'+
       'v3.31 — <b style="color:var(--ink)">Canteen: saved parties + Date / Party PDF</b>: Canteen → Parties me naam ek baar save karein; entry me saved / purani party select karein. Har PDF / WhatsApp PDF / Print se pehle From Date, To Date aur Party Selection. Dono date boundaries included; sirf matching entries, original item lines aur unhi ke din / party totals, Paid / Baki / Net. No matches / invalid dates par export blocked. All six styles, company logo aur purani entries safe. Party names JSON / cloud / safety copies me saved.<br>'+
       'v3.30 — <b style="color:var(--ink)">PDF se Bikri / Kharcha columns removed</b>: Canteen ke saare six templates, din / mahina PDF, WhatsApp PDF aur print / Save as PDF se category summary slots aur Bikri / Kharcha columns hataye. Monthly ledger ab Date, Din, Entries, Saman, Net, Paid, Baki — poori width me. Original entries / item lines / own prices, category math, net / paid / baki, app / CSV, company logo, salary / Attendance aur backups / cloud unchanged. Purana PDF dobara download karein<br>'+
       'v3.29 — <b style="color:var(--ink)">Company logo: ek upload, sabhi PDFs</b>: Settings me PNG/JPG/WebP logo upload / change / remove. Auto-save; salary, payroll summary, Canteen din/mahina aur Attendance/WhatsApp PDF ke har page par proportional logo, browser print me bhi. Logo JSON backup aur configured cloud me settings ke saath; purana data dobara enter nahi karna. Existing downloaded PDFs ke liye naya download karein. Salary, Canteen item lines, Attendance clocks/Sundays/bonus aur five-sheet Excel unchanged<br>'+
@@ -3567,6 +3586,7 @@ function cmdkItems(){
     { t:"Canteen — rate list", k:"", act:"ctTabNav", v:"rates", ic:"🏷" },
     { t:"Canteen — poori activity", k:"", act:"ctTabNav", v:"activity", ic:"🕘" },
     { t:"＋ Canteen entry add karo (saman / bikri / kharcha)", k:"", act:"ctAddNew", ic:"＋" },
+    { t:"Stock Management — inventory, history & audit", k:"g i", act:"nav", v:"stock", ic:"▣" },
     { t:"Records & History", k:"g r", act:"nav", v:"records", ic:"◷" },
     { t:"Settings", k:"g s", act:"nav", v:"settings", ic:"⚙" },
     { t:"+ Naya employee add karo", k:"", act:"addWorker", ic:"＋" },
@@ -3628,6 +3648,7 @@ function closeCmdk(){ const el = $("#cmdk"); if (el) el.remove(); }
 
 /* ------------------------ 12. MODALS & DIALOGS -------------------------- */
 function openModal(html, opts) {
+  stkEditor = null;
   ctReportState = null;
   attRevokeDownloads();
   const root = $("#modalRoot");
@@ -3637,6 +3658,7 @@ function openModal(html, opts) {
   document.body.style.overflow = "hidden";
 }
 function closeModal() {
+  stkEditor = null;
   ctReportState = null;
   attRevokeDownloads();
   $("#modalRoot").innerHTML = "";
@@ -4520,6 +4542,7 @@ function exportData() {
   toast("Backup downloaded", "ok");
 }
 function importData() {
+  const importContext = stkContext();
   const inp = document.createElement("input");
   inp.type = "file"; inp.accept = "application/json,.json";
   inp.onchange = () => {
@@ -4527,15 +4550,17 @@ function importData() {
     const rd = new FileReader();
     rd.onload = () => {
       try {
+        stkCheck(importContext);
         const d = JSON.parse(rd.result);
         validateRemote({ payload: d });
         const previous = syncClone(Store.data);
         const keepParties = d.settings?.canteenParties === undefined && previous.settings.canteenParties !== undefined;
         const settings = { ...(d.settings || {}), ...(keepParties ? { canteenParties: syncClone(previous.settings.canteenParties) } : {}) };
+        stkImportSettings(settings, d, previous);
         Store.data = normalizeData({ ...d, settings, attendance: d.attendance === undefined ? previous.attendance : d.attendance });
         if (!Store.save(false, { checkpoint: true })) { Store.data = previous; return; }
         render(); toast((d.attendance === undefined && att().managers.length ? "Backup restored · purane backup me Attendance nahi thi; existing Attendance kept" : "Backup restored — cloud status check karein") + (keepParties ? " · purane backup me saved parties nahi thi; existing parties kept" : ""), "ok");
-      } catch (e) { toast("Invalid backup file", "bad"); }
+      } catch (e) { toast(e.message || "Invalid backup file", "bad"); }
     };
     rd.readAsText(f);
   };
@@ -4586,19 +4611,20 @@ function dataCounts(d) {
   const c = d && d.canteen || {};
   return { workers: (d && d.workers || []).length, records: (d && d.records || []).length,
     entries: (c.entries || []).length, rates: (c.rates || []).length, log: (c.log || []).length, parties: ctSavedPartyRows(d).length,
-    managers: ((d && d.attendance || {}).managers || []).length, attendance: ((d && d.attendance || {}).records || []).length, attendanceHistory: ((d && d.attendance || {}).history || []).length };
+    managers: ((d && d.attendance || {}).managers || []).length, attendance: ((d && d.attendance || {}).records || []).length, attendanceHistory: ((d && d.attendance || {}).history || []).length,
+    stockProducts: stkData(d).products.length, stockEntries: stkData(d).transactions.length, stockHistory: stkData(d).history.length, stockImages: stkData(d).images.length };
 }
 function hasRows(d) { return Object.values(dataCounts(d)).some((n) => n > 0); }
 function hasUserData(d) {
   if (hasRows(d)) return true;
   const s = syncView(d).settings;
-  return Object.keys(s).some((key) => key !== "canteenParties" && syncStable(s[key]) !== syncStable(DEFAULT_SETTINGS[key])) ||
+  return Object.keys(s).some((key) => key !== "canteenParties" && key !== "stockInventory" && syncStable(s[key]) !== syncStable(DEFAULT_SETTINGS[key])) ||
     syncStable(syncView(d).attendance.settings) !== syncStable(attDefaults());
 }
 function ctCountOf(d) { return dataCounts(d).entries; }
 function dataCountText(d) {
   const n = dataCounts(d);
-  return n.workers + " employees · " + n.records + " salary records · " + n.entries + " canteen · " + n.rates + " rates · " + n.parties + " saved parties · " + n.managers + " managers · " + n.attendance + " attendance";
+  return n.workers + " employees · " + n.records + " salary records · " + n.entries + " canteen · " + n.rates + " rates · " + n.parties + " saved parties · " + n.managers + " managers · " + n.attendance + " attendance" + (n.stockProducts || n.stockEntries || n.stockHistory || n.stockImages ? " · " + n.stockProducts + " stock products · " + n.stockEntries + " stock entries · " + n.stockHistory + " stock audit · " + n.stockImages + " stock photos" : "");
 }
 function syncEntityKey(item, path) {
   if (!item || typeof item !== "object" || Array.isArray(item)) return null;
@@ -4617,6 +4643,9 @@ function mergeSyncData(base, local, remote, preference) {
     if (eq(l, r)) return syncClone(l);
     if (eq(l, b)) return syncClone(r);
     if (eq(r, b)) return syncClone(l);
+    if (path.startsWith("settings.stockInventory.history[") || path.startsWith("settings.stockInventory.images[")) {
+      conflicts.push(path); details.push({ path, local: syncStable(l), remote: syncStable(r) }); return syncClone(preference === "remote" ? r : l);
+    }
     if (path.endsWith(".updatedAt")) return Math.max(num(l), num(r));
     if ((path.startsWith("records[") || path.startsWith("attendance.records[")) && path.endsWith(".id")) return syncClone(r || l);
     if (path.startsWith("attendance.") && path.endsWith(".createdAt")) return Math.min(num(l) || Infinity, num(r) || Infinity);
@@ -4673,6 +4702,7 @@ function mergeSyncData(base, local, remote, preference) {
     Object.assign(entry, syncClone(group(preference === "remote" ? r : l)));
   });
   attMergeSafety(data, base, local, remote, preference, conflict, eq);
+  stkMergeSafety(data, base, local, remote, preference, conflict, eq);
   return { data, conflicts, details };
 }
 function validateRemote(row) {
@@ -4683,6 +4713,7 @@ function validateRemote(row) {
   if (d.settings !== undefined && (!d.settings || typeof d.settings !== "object" || Array.isArray(d.settings)))
     throw new Error("Cloud settings format galat hai — overwrite blocked");
   ctValidateParties(d);
+  stkValidate(stkData(d));
   attValidate(d.attendance, d.attendance && d.attendance.managers === undefined);
   const recordKeys = new Set();
   d.records.forEach((r) => {
@@ -4737,6 +4768,7 @@ function completeRemote(payload, fallback) {
     d.attendance.settings = { ...((prev.attendance || {}).settings || attDefaults()), ...(d.attendance.settings || {}) };
   }
   attValidate(d.attendance);
+  stkValidate(stkData(d));
   return syncView(d);
 }
 function syncScope(cfg, user) { return String(cfg.url).replace(/\/+$/, "").toLowerCase() + "|" + user.id; }
@@ -4772,7 +4804,8 @@ function unpackLocal(raw) {
 function syncCollections(d) {
   const c = d && d.canteen || {};
   return { workers: d && d.workers || [], records: d && d.records || [], entries: c.entries || [], rates: c.rates || [], parties: ctSavedPartyRows(d),
-    managers: (d && d.attendance || {}).managers || [], attendance: (d && d.attendance || {}).records || [] };
+    managers: (d && d.attendance || {}).managers || [], attendance: (d && d.attendance || {}).records || [],
+    stockProducts: stkData(d).products, stockEntries: stkData(d).transactions, stockHistory: stkData(d).history, stockImages: stkData(d).images };
 }
 function unconfirmedRemoteLoss(base, local, remote, metadata) {
   if (!base) return false;
@@ -4830,7 +4863,7 @@ const Recovery = {
       const before = syncClone(Store.data);
       if (!this.capture(before, "Safety copy jodne se pehle")) return toast("Safety backup ke liye storage nahi — JSON download karein", "bad");
       const recovered = mergeSyncData(syncView(blankData()), syncView(Store.data), syncView(copy.payload), "local").data;
-      try { attValidate(recovered.attendance); } catch (e) { toast(e.message, "bad"); return; }
+      try { attValidate(recovered.attendance); stkRecoveryCheck(recovered, before, copy.payload); } catch (e) { toast(e.message, "bad"); return; }
       Store.data = normalizeData(recovered);
       if (!Store.save()) { Store.data = before; return; }
       render(); toast("Safety copy ka data jod diya — cloud status check karein", "ok");
@@ -4974,7 +5007,7 @@ const Cloud = {
       throw new Error("Account cache save nahi hua — local data nahi badla");
     }
     Store.remember(); lastUndo = null; closeModal();
-    UI.ct.edit = null; UI.ct.bulk = null; UI.ct.party = "all"; ctPartyViewContext = null; UI.att = null; attEditor = null; attBackupScope = "";
+    UI.ct.edit = null; UI.ct.bulk = null; UI.ct.party = "all"; ctPartyViewContext = null; UI.att = null; attEditor = null; attBackupScope = ""; stkResetSession();
     this.setStatus("checking");
   },
   async signIn(email, password) {
@@ -5040,7 +5073,7 @@ const Cloud = {
   applyMerged(data, base, stamp, dirty, ctx) {
     if (!this.current(ctx)) return false;
     const before = syncClone(Store.data), old = { base: this.base, stamp: this.stamp, dirty: this.dirty, lastSync: this.lastSync };
-    attValidate(data.attendance);
+    attValidate(data.attendance); stkValidate(stkData(data));
     const next = normalizeData(data);
     if (before.settings && before.settings.theme) next.settings.theme = before.settings.theme;
     if ($("#overlay") && !samePayload(before, next)) {
@@ -5093,6 +5126,7 @@ const Cloud = {
           ok.path === detail.path && ok.local === detail.local && ok.remote === detail.remote));
         if (result.conflicts.length && !choiceValid) { this.hold(remote, result.conflicts, "fields", result.details, !!options.recover); return false; }
         if (result.conflicts.length && !Recovery.capture(rdata, "Cloud values — conflict se pehle")) throw new Error("Conflict backup save nahi hua — overwrite roka gaya");
+        if (choiceValid && result.conflicts.some(path => path.startsWith("settings.stockInventory"))) stkResolutionAudit(result.data, local, rdata, options.preference);
         const storedRemote = remote ? syncView(remote.payload) : rdata;
         if (samePayload(result.data, storedRemote)) {
           this.applyMerged(result.data, rdata, remote && remote.updated_at || null, false, ctx);
@@ -5163,6 +5197,8 @@ function conflictRows(pending) {
     if (value && typeof value === "object") {
       if (value.manager) return value.manager.name + " · " + (value.records || []).length + " attendance records";
       if (value.managers) return value.managers.map((m) => m.name + " (" + m.code + ")").join(", ") + " · " + (value.records || []).length + " attendance records";
+      if (value.products) return value.products.map(p => p.name).join(", ") + " · " + (value.transactions || []).length + " stock entries";
+      if (value.productName) return value.productName + " · " + (STK_KINDS[value.type] || "Stock") + " · " + stkFmt(value.qty) + " " + (value.unit || "") + " · " + (value.date || "");
       if (value.worker) return value.worker.name + " · " + (value.records || []).length + " salary records";
       if (value.amount !== undefined) return "Amount " + money(value.amount) + (value.paid !== undefined ? " · Paid " + money(value.paid) : "");
       if (Array.isArray(value)) return value.length + " rows · " + JSON.stringify(value).slice(0, 80);
@@ -5186,7 +5222,7 @@ function askWhichData() {
   const remote = pending.remote && pending.remote.payload || blankData(), empty = pending.kind === "empty";
   openModal('<div class="modal" style="max-width:600px"><div class="modal-h"><div><h3>🛡️ Data overwrite roka gaya</h3>' +
     '<p>' + (empty ? "Cloud me unconfirmed missing/demo data aaya. Is device ka bacha data delete nahi kiya gaya." :
-      "Dono devices ne same fields badli hain. Alag entries dono taraf ki rahengi — sirf conflicting values ke liye choice hai.") +
+      (stkHasConflict(pending) ? "Stock conflict: combined entries se negative balance, duplicate product ya changed product/unit ho sakta hai. Affected product ki poori dependent entry-set selected device se li jayegi; losing rows safety copy aur audit me rahengi. Independent products merge honge." : "Dono devices ne same fields badli hain. Alag entries dono taraf ki rahengi — sirf conflicting values ke liye choice hai.")) +
     '</p></div><button class="x" data-act="closeModal">✕</button></div><div class="modal-b">' +
     '<p><b>Cloud:</b> ' + esc(dataCountText(remote)) + '</p><p><b>Is device:</b> ' + esc(dataCountText(Store.data)) + '</p>' +
     (!empty ? '<div class="banner warn" style="font-size:12px">Matching field changes / edit-v-delete. Financial values guess karke nahi badlenge.</div>' +
@@ -10239,6 +10275,7 @@ document.addEventListener("click", (e) => {
     case "prevMonth": UI.month--; if (UI.month < 0) { UI.month = 11; UI.year--; } render(); break;
     case "nextMonth": UI.month++; if (UI.month > 11) { UI.month = 0; UI.year++; } render(); break;
     case "todayMonth": UI.year = today.getFullYear(); UI.month = today.getMonth(); render(); break;
+    case "stkAdd": try { stkOpenProduct(); } catch(e) { toast(e.message, "bad"); } break;
     case "attAdd": attOpenRecord(); break;
     case "addWorker": openWorkerModal(); break;
     case "editWorker": openWorkerModal(wid); break;
@@ -10524,17 +10561,20 @@ document.addEventListener("click", (e) => {
     case "importData": importData(); break;
     case "loadSample":
       if (Cloud.scope) { toast("Account ke real data par demo load nahi kar sakte. Pehle JSON backup lein.", "bad"); break; }
-      confirmDialog("Load sample data?", "Current employees, salary records aur canteen data demo se replace honge. Manager attendance safe rahegi. Pehle JSON backup lein.", "Load sample", () => {
-        const previous = Store.data; Store.data = { ...sampleData(), attendance: previous.attendance };
+      confirmDialog("Load sample data?", "Current employees, salary records aur canteen data demo se replace honge. Manager attendance aur Stock Management safe rahenge. Pehle JSON backup lein.", "Load sample", () => {
+        const previous = Store.data; Store.data = stkPreserve(previous, { ...sampleData(), attendance: previous.attendance });
         if (!Store.save(false, { checkpoint: true })) { Store.data = previous; return; }
         render(); toast("Sample data loaded", "ok");
       }, true); break;
-    case "wipeData":
-      confirmDialog("Erase all data?", "Ye <b>saare employees, salary records, canteen aur manager attendance</b> erase karega. Cloud login on hai to doosre devices par bhi deletion sync hogi. Pehle JSON backup lein.", "Erase everything", () => {
-        const previous = Store.data; Store.data = blankData();
+    case "wipeData": {
+      const context = stkContext();
+      confirmDialog("Erase all data?", "Ye <b>saare employees, salary records, canteen, manager attendance aur Stock Management (photos / audit samet)</b> erase karega. Cloud login on hai to doosre devices par bhi deletion sync hogi. Pehle JSON backup lein.", "Erase everything", () => {
+        try { stkCheck(context); } catch (e) { toast(e.message, "bad"); return; }
+        const previous = Store.data; Store.data = stkPreserve(previous, blankData(), true);
         if (!Store.save(false, { checkpoint: true })) { Store.data = previous; return; }
-        render(); toast("Data cleared — safety copy available; cloud status check karein");
+        stkResetSession(); render(); toast("Data cleared — safety copy available; cloud status check karein");
       }, true); break;
+    }
   }
 });
 
@@ -10687,6 +10727,476 @@ function patchAllTotals() {
   set("sumDed", d ? "−" + moneyS(d) : moneyS(0)); set("sumNet", moneyS(n));
 }
 
+/* v3.32 STOCK MANAGEMENT BEGIN
+   An optional Settings payload preserves older clients' unknown Settings fields.
+   There is NO saved/manual available-stock counter. Integer thousandths are
+   derived from dated, stable-order movements; UI edits and deletes are audited. */
+const STK_SCALE = 1000, STK_PAGE = 40, STK_MAX_TOTAL = 999999999999999;
+const STK_KINDS = { in: "Stock In", out: "Stock Out", sale: "Stock Sale" };
+let stkEditor = null, stkViewContext = null, stkBackupScope = "";
+function stkBlank() { return { v: 1, products: [], transactions: [], images: [], history: [] }; }
+function stkData(data) { const d = arguments.length ? data : Store.data; return d?.settings?.stockInventory === undefined ? stkBlank() : d.settings.stockInventory; }
+function stkName(value) { return typeof value === "string" ? value.trim().replace(/\s+/g, " ") : ""; }
+function stkKey(value) { return stkName(value).toLocaleLowerCase("en"); }
+function stkText(value, max, required, label) {
+  if (value == null) value = "";
+  if (typeof value !== "string" || value.length > max || /[\u0000-\u0008\u000b\u000c\u000e-\u001f\u007f]/.test(value) || required && !value.trim()) throw new Error(label + " sahi likhein (" + (required ? "1–" : "maximum ") + max + " characters).");
+  return value.trim();
+}
+function stkQty(value, zero) {
+  const text = typeof value === "number" && Number.isFinite(value) ? String(value) : typeof value === "string" ? value.trim() : "";
+  if (!/^\d{1,9}(?:\.\d{1,3})?$/.test(text)) throw new Error("Quantity valid number honi chahiye: maximum 3 decimal places, bina minus / exponent / comma ke.");
+  const [whole, fraction = ""] = text.split("."), scaled = Number(whole) * STK_SCALE + Number(fraction.padEnd(3, "0"));
+  if (!Number.isSafeInteger(scaled) || scaled < (zero ? 0 : 1)) throw new Error(zero ? "Quantity zero ya usse zyada honi chahiye." : "Quantity zero se zyada honi chahiye.");
+  return scaled / STK_SCALE;
+}
+function stkUnits(value, zero) { return Math.round(stkQty(value, zero) * STK_SCALE); }
+function stkFmt(value) { return Number(value || 0).toLocaleString("en-IN", { maximumFractionDigits: 3 }); }
+function stkDate(value) { return ctReportDate(value); }
+function stkObject(value, keys, label) {
+  if (!value || typeof value !== "object" || Array.isArray(value) || Object.keys(value).some(k => !keys.includes(k))) throw new Error("Invalid Stock " + label + " format — overwrite blocked.");
+}
+function stkId(value) { return typeof value === "string" && /^[a-zA-Z0-9:_-]{1,160}$/.test(value); }
+function stkTime(value) { return Number.isSafeInteger(value) && value >= 0; }
+function stkImageValid(url) { return typeof url === "string" && url.length <= 120000 && !!companyLogoData(url); }
+function stkValidateProduct(p, images) {
+  stkObject(p, ["id", "name", "unit", "date", "minQty", "photoId", "note", "createdAt", "updatedAt"], "product");
+  if (!stkId(p.id) || !stkDate(p.date) || p.name !== stkName(p.name) || p.unit !== stkName(p.unit) || !stkTime(p.createdAt) || !stkTime(p.updatedAt)) throw new Error("Invalid Stock product fields.");
+  stkText(p.name, 90, true, "Product name"); stkText(p.unit, 18, true, "Unit"); stkText(p.note, 500, false, "Product note");
+  if (typeof p.minQty !== "number") throw new Error("Stock minimum limit numeric honi chahiye."); stkQty(p.minQty, true);
+  if (typeof p.photoId !== "string" || p.photoId && (!stkId(p.photoId) || images && !images.has(p.photoId))) throw new Error("Stock product photo missing / invalid hai.");
+}
+function stkValidateMovement(t, products, images) {
+  stkObject(t, ["id", "productId", "productName", "unit", "photoId", "type", "qty", "date", "sequence", "party", "salesperson", "deliveryName", "deliveryPhone", "deliveryDetails", "purpose", "note", "source", "createdAt", "updatedAt"], "transaction");
+  if (!stkId(t.id) || !stkId(t.productId) || !Object.hasOwn(STK_KINDS, t.type) || !stkDate(t.date) || !stkTime(t.sequence) || !stkTime(t.createdAt) || !stkTime(t.updatedAt) || !["manual", "opening"].includes(t.source) || t.source === "opening" && t.type !== "in") throw new Error("Invalid Stock transaction ID / type / date / order.");
+  if (typeof t.qty !== "number") throw new Error("Stock quantity numeric honi chahiye."); stkQty(t.qty, false);
+  stkText(t.productName, 90, true, "Product name"); stkText(t.unit, 18, true, "Unit");
+  stkText(t.party, 90, t.type === "sale", "Party / customer"); stkText(t.salesperson, 90, t.type === "sale", "Salesperson");
+  stkText(t.deliveryName, 90, t.type === "sale", "Delivery person"); stkText(t.deliveryPhone, 35, false, "Delivery phone");
+  stkText(t.deliveryDetails, 500, false, "Delivery details"); stkText(t.purpose, 250, t.type === "out", "Stock Out purpose"); stkText(t.note, 500, false, "Transaction note");
+  if (typeof t.photoId !== "string" || t.photoId && (!stkId(t.photoId) || images && !images.has(t.photoId))) throw new Error("Stock transaction photo missing / invalid hai.");
+  if (products && (!products.has(t.productId) || products.get(t.productId).unit !== t.unit)) throw new Error("Stock transaction ka product / unit missing ya badal gaya. Product aur movements saath restore karein.");
+}
+function stkSort(a, b) { return a.date.localeCompare(b.date) || a.sequence - b.sequence || a.id.localeCompare(b.id); }
+function stkLedger(data) {
+  const s = data === undefined ? stkData() : data, balances = new Map(), after = new Map(), totals = new Map();
+  s.products.forEach(p => { balances.set(p.id, 0); totals.set(p.id, { in: 0, out: 0, sale: 0, count: 0 }); });
+  s.transactions.slice().sort(stkSort).forEach(t => {
+    const qty = stkUnits(t.qty, false), before = balances.get(t.productId);
+    if (before === undefined) throw new Error("Stock product missing: " + t.productName);
+    const balance = before + (t.type === "in" ? qty : -qty);
+    if (!Number.isSafeInteger(balance) || Math.abs(balance) > STK_MAX_TOTAL) throw new Error("Stock quantity total bahut bada hai — safe numeric limit cross hui.");
+    if (balance < 0) throw new Error(t.productName + ": " + ctPretty(t.date) + " par stock negative hoga (" + STK_KINDS[t.type] + " " + stkFmt(t.qty) + " " + t.unit + "). Pehle Stock In / dependent entries check karein; save/delete nahi hua.");
+    balances.set(t.productId, balance); after.set(t.id, balance / STK_SCALE); const total = totals.get(t.productId); total[t.type] += qty; total.count++;
+    if (!Number.isSafeInteger(total[t.type]) || total[t.type] > STK_MAX_TOTAL) throw new Error("Stock movement total safe numeric limit se bada hai.");
+  });
+  return { balances, after, totals };
+}
+function stkValidate(s) {
+  if (s === undefined) return true;
+  stkObject(s, ["v", "products", "transactions", "images", "history"], "data");
+  if (s.v !== 1 || ["products", "transactions", "images", "history"].some(k => !Array.isArray(s[k]))) throw new Error("Stock data version / collections invalid hain — overwrite blocked.");
+  const products = new Map(), images = new Set(), names = new Set(), tids = new Set(), hids = new Set();
+  s.images.forEach(image => { stkObject(image, ["id", "data"], "photo"); if (!stkId(image.id) || images.has(image.id) || !stkImageValid(image.data)) throw new Error("Invalid / duplicate Stock photo. Sirf bounded JPEG backup allowed hai."); images.add(image.id); });
+  s.products.forEach(p => { stkValidateProduct(p, images); if (products.has(p.id) || names.has(stkKey(p.name))) throw new Error("Duplicate Stock product ID / name. Har product ka unique naam rakhein."); products.set(p.id, p); names.add(stkKey(p.name)); });
+  s.transactions.forEach(t => { stkValidateMovement(t, products, images); if (tids.has(t.id)) throw new Error("Duplicate Stock transaction ID."); tids.add(t.id); });
+  s.history.forEach(h => {
+    stkObject(h, ["id", "at", "sequence", "date", "entity", "entityId", "action", "actor", "reason", "before", "after"], "audit");
+    if (!stkId(h.id) || hids.has(h.id) || !stkTime(h.at) || !stkTime(h.sequence) || !stkDate(h.date) || !["product", "transaction"].includes(h.entity) || !stkId(h.entityId) || !["create", "edit", "delete", "restore", "merge"].includes(h.action) || h.before === null && h.after === null) throw new Error("Invalid / duplicate Stock audit history.");
+    stkText(h.actor, 320, true, "Audit actor"); stkText(h.reason, 250, false, "Audit reason");
+    if (h.action === "create" && h.before !== null || h.action === "delete" && h.after !== null || h.action === "edit" && (!h.before || !h.after)) throw new Error("Stock audit before/after invalid hai.");
+    [h.before, h.after].forEach(value => { if (value === null) return; if (value.id !== h.entityId) throw new Error("Stock audit reference invalid hai."); if (h.entity === "product") stkValidateProduct(value, images); else stkValidateMovement(value, null, images); }); hids.add(h.id);
+  });
+  stkLedger(s); return true;
+}
+function stkContext() { return ctDataContext(); }
+function stkCheck(context) { ctCheckContext(context); }
+function stkNextSequence(rows) { return rows.reduce((max, row) => Math.max(max, row.sequence + 1), Date.now()); }
+function stkAudit(s, entity, before, after, action, reason) {
+  const row = after || before;
+  s.history.push({ id: uid(), at: Date.now(), sequence: stkNextSequence(s.history), date: isoDate(new Date()), entity, entityId: row.id, action,
+    actor: Cloud.user?.email || "This device", reason: reason || "", before: before ? syncClone(before) : null, after: after ? syncClone(after) : null });
+}
+function stkAtomic(fn, context, checkpoint) {
+  stkCheck(context || stkContext());
+  const before = syncClone(Store.data), next = syncClone(stkData()), scope = (Cloud.scope || "local") + "|" + isoDate(new Date());
+  const value = fn(next); stkValidate(next);
+  if ((checkpoint || stkBackupScope !== scope) && !Recovery.capture(before, "Stock Management — change se pehle")) throw new Error("Stock safety copy save nahi hui. Pehle JSON backup / browser storage check karein.");
+  try {
+    Store.data.settings.stockInventory = next;
+    if (!Store.save(false, { checkpoint: !!checkpoint })) throw new Error(Cloud.lastError || "Stock save NAHIN hua — purana data safe hai.");
+    stkBackupScope = scope; return value;
+  } catch (error) { Store.data = before; throw error; }
+}
+function stkPhotoPut(s, url) {
+  if (!url) return "";
+  if (!stkImageValid(url)) throw new Error("Stock photo invalid hai — PNG/JPG/WebP dobara choose karein.");
+  const found = s.images.find(image => image.data === url); if (found) return found.id;
+  const image = { id: uid(), data: url }; s.images.push(image); return image.id;
+}
+function stkSaveProduct(input, context) {
+  const old = input.id ? stkData().products.find(p => p.id === input.id) : null;
+  if (input.id && !old) throw new Error("Product delete / account change hua. Current list dobara kholein.");
+  const name = stkName(input.name), unit = stkName(input.unit ?? "pcs"); stkText(name, 90, true, "Product name"); stkText(unit, 18, true, "Unit");
+  if (old && unit !== old.unit && stkData().transactions.some(t => t.productId === old.id)) throw new Error("Transactions wale product ka unit nahi badal sakte. Alag unit ke liye naya product banayein; stock silently convert nahi hoga.");
+  if (stkData().products.some(p => p.id !== old?.id && stkKey(p.name) === stkKey(name))) throw new Error("Is naam ka product pehle se hai. Usi me Stock In add karein ya unique product name rakhein.");
+  const opening = input.openingQty === undefined || input.openingQty === "" ? 0 : stkQty(input.openingQty, true);
+  if (old && opening) throw new Error("Available stock manually edit nahi hota. Stock In / Out / Sale entry karein.");
+  if (opening && !stkDate(input.date)) throw new Error("Opening stock ki valid date chunein.");
+  return stkAtomic(s => {
+    const next = { id: old?.id || uid(), name, unit, date: input.date || old?.date || isoDate(new Date()), minQty: stkQty(input.minQty === undefined ? old?.minQty ?? 5 : input.minQty, true),
+      photoId: input.photo === undefined ? old?.photoId || "" : stkPhotoPut(s, input.photo), note: stkText(input.note ?? old?.note ?? "", 500, false, "Product note"), createdAt: old?.createdAt ?? Date.now(), updatedAt: Date.now() };
+    if (old) s.products[s.products.findIndex(p => p.id === old.id)] = next; else s.products.push(next);
+    stkAudit(s, "product", old, next, old ? "edit" : "create", old ? "Product details updated; quantity derived from transactions" : "Product created");
+    if (opening) {
+      const t = stkMakeMovement({ productId: next.id, type: "in", qty: opening, date: input.date, source: "opening", purpose: "Opening stock" }, s);
+      s.transactions.push(t); stkAudit(s, "transaction", null, t, "create", "Opening quantity recorded as Stock In");
+    }
+    return syncClone(next);
+  }, context, !!old);
+}
+function stkMakeMovement(input, s) {
+  const old = input.id ? s.transactions.find(t => t.id === input.id) : null;
+  if (input.id && !old) throw new Error("Stock entry delete / account change hui. Current history dobara kholein.");
+  const p = s.products.find(p => p.id === (input.productId || old?.productId)); if (!p) throw new Error("List se product chunein.");
+  const type = input.type || old?.type; if (!Object.prototype.hasOwnProperty.call(STK_KINDS, type)) throw new Error("Stock In, Stock Out ya Stock Sale chunein.");
+  const next = { id: old?.id || uid(), productId: p.id, productName: old?.productId === p.id ? old.productName : p.name, unit: p.unit,
+    photoId: old?.productId === p.id ? old.photoId : p.photoId, type, qty: stkQty(input.qty, false), date: input.date,
+    sequence: old?.sequence ?? stkNextSequence(s.transactions), source: (input.source || old?.source) === "opening" && type === "in" ? "opening" : "manual",
+    party: stkText(input.party ?? "", 90, type === "sale", "Party / customer"), salesperson: stkText(input.salesperson ?? "", 90, type === "sale", "Salesperson"),
+    deliveryName: stkText(input.deliveryName ?? "", 90, type === "sale", "Delivery person"), deliveryPhone: stkText(input.deliveryPhone ?? "", 35, false, "Delivery phone"),
+    deliveryDetails: stkText(input.deliveryDetails ?? "", 500, false, "Delivery details"), purpose: stkText(input.purpose ?? "", 250, type === "out", "Stock Out purpose"),
+    note: stkText(input.note ?? "", 500, false, "Transaction note"), createdAt: old?.createdAt ?? Date.now(), updatedAt: Date.now() };
+  if (!stkDate(next.date)) throw new Error("Stock entry ki valid date chunein (1900–9998).");
+  return next;
+}
+function stkSaveMovement(input, context) {
+  return stkAtomic(s => {
+    const next = stkMakeMovement(input, s), index = s.transactions.findIndex(t => t.id === next.id), old = index < 0 ? null : s.transactions[index];
+    if (old) s.transactions[index] = next; else s.transactions.push(next);
+    stkAudit(s, "transaction", old, next, old ? "edit" : "create", old ? "Stock entry edited; all subsequent balances rechecked" : STK_KINDS[next.type] + " recorded");
+    return syncClone(next);
+  }, context, !!input.id);
+}
+function stkDeleteMovement(id, context) {
+  return stkAtomic(s => {
+    const old = s.transactions.find(t => t.id === id); if (!old) throw new Error("Stock entry nahi mili. Current history check karein.");
+    s.transactions = s.transactions.filter(t => t.id !== id); stkAudit(s, "transaction", old, null, "delete", "Entry deleted; inventory recomputed"); return syncClone(old);
+  }, context, true);
+}
+function stkDeleteProduct(id, context) {
+  return stkAtomic(s => {
+    const old = s.products.find(p => p.id === id); if (!old) throw new Error("Product nahi mila. Current list check karein.");
+    const rows = s.transactions.filter(t => t.productId === id);
+    rows.forEach(t => stkAudit(s, "transaction", t, null, "delete", "Product deleted with its transactions"));
+    s.transactions = s.transactions.filter(t => t.productId !== id); s.products = s.products.filter(p => p.id !== id);
+    stkAudit(s, "product", old, null, "delete", "Product deleted; " + rows.length + " transactions removed; audit retained");
+    return { product: syncClone(old), transactions: syncClone(rows) };
+  }, context, true);
+}
+function stkInventory(data) {
+  const s = arguments.length ? stkData(data) : stkData(), ledger = stkLedger(s);
+  return s.products.map(p => { const totals = ledger.totals.get(p.id), available = (ledger.balances.get(p.id) || 0) / STK_SCALE;
+    return { ...syncClone(p), available, low: available < p.minQty, totalIn: totals.in / STK_SCALE, totalOut: totals.out / STK_SCALE, totalSale: totals.sale / STK_SCALE, entries: totals.count };
+  });
+}
+function stkUnionRows(target, sources, key) {
+  const map = new Map(target[key].map(row => [row.id, row]));
+  sources.forEach(s => (s[key] || []).forEach(row => {
+    if (map.has(row.id) && syncStable(map.get(row.id)) !== syncStable(row)) throw new Error("Stock " + key + " ki same ID par alag values hain. Backup compare karein; silent overwrite nahi hua.");
+    if (!map.has(row.id)) map.set(row.id, syncClone(row));
+  })); target[key] = Array.from(map.values());
+}
+function stkEnsureImages(target, sources) {
+  const refs = new Set(); target.products.concat(target.transactions).forEach(row => row.photoId && refs.add(row.photoId));
+  target.history.forEach(h => [h.before, h.after].forEach(row => row?.photoId && refs.add(row.photoId)));
+  refs.forEach(id => { if (target.images.some(image => image.id === id)) return;
+    const image = sources.flatMap(s => s.images || []).find(image => image.id === id); if (image) target.images.push(syncClone(image));
+  });
+}
+function stkAuditDiff(target, before, action, reason) {
+  ["products", "transactions"].forEach(key => {
+    const old = new Map(before[key].map(row => [row.id, row])), next = new Map(target[key].map(row => [row.id, row]));
+    new Set([...old.keys(), ...next.keys()]).forEach(id => { const a = old.get(id) || null, b = next.get(id) || null;
+      if (syncStable(a) !== syncStable(b)) stkAudit(target, key === "products" ? "product" : "transaction", a, b, action, reason);
+    });
+  }); stkEnsureImages(target, [before]);
+}
+function stkImportSettings(settings, imported, previous) {
+  if (imported.settings?.stockInventory === undefined) {
+    if (previous.settings?.stockInventory !== undefined) settings.stockInventory = syncClone(stkData(previous));
+    return;
+  }
+  const next = syncClone(stkData(imported)), before = stkData(previous);
+  stkUnionRows(next, [before], "history"); stkUnionRows(next, [before], "images"); stkEnsureImages(next, [before]);
+  stkAuditDiff(next, before, "restore", "JSON backup restored; previous audit retained"); stkValidate(next); settings.stockInventory = next;
+}
+function stkRecoveryCheck(recovered, before, copy) {
+  if (before.settings?.stockInventory === undefined && copy.settings?.stockInventory === undefined) return;
+  const s = stkData(recovered), current = stkData(before), old = stkData(copy);
+  ["products", "transactions"].forEach(key => old[key].forEach(row => {
+    if (!current[key].some(x => x.id === row.id) && !s[key].some(x => x.id === row.id && syncStable(x) === syncStable(row))) throw new Error("Stock recovery me balance / product conflict hai. Missing rows silently discard nahi ki gayi; JSON safety copies compare karein.");
+  }));
+  stkAuditDiff(s, current, "restore", "Missing data jodo — stock restored; current matching values retained"); stkEnsureImages(s, [old, current]); stkValidate(s);
+}
+function stkPreserve(previous, next, erase) {
+  if (previous.settings?.stockInventory !== undefined) next.settings.stockInventory = erase ? stkBlank() : syncClone(stkData(previous));
+  return next;
+}
+/* A combined offline merge must never oversell, orphan a movement, change units
+   under a ledger, or invent an atomic movement neither device entered. Resolve
+   only the affected connected product sets; independent products stay merged. */
+function stkMergeSafety(data, base, local, remote, preference, conflict, eq) {
+  if (!data?.settings || data.settings.stockInventory === undefined) return;
+  const s = stkData(data), b = stkData(base), l = stkData(local), r = stkData(remote), chosen = preference === "remote" ? r : l;
+  const fields = ["productId", "productName", "unit", "photoId", "type", "qty", "date", "sequence", "source"];
+  const core = t => t && Object.fromEntries(fields.map(k => [k, t[k]]));
+  s.transactions.forEach(t => {
+    const old = b.transactions.find(x => x.id === t.id), left = l.transactions.find(x => x.id === t.id), right = r.transactions.find(x => x.id === t.id);
+    if (left && right && !eq(core(left), core(old)) && !eq(core(right), core(old)) && !eq(core(left), core(right))) {
+      conflict("settings.stockInventory.transactions[" + t.id + "].movement", core(left), core(right)); Object.assign(t, core(preference === "remote" ? right : left));
+    }
+  });
+  stkEnsureImages(s, [l, r, b]);
+  try { stkValidate(s); return; } catch (error) { /* locate affected product dependencies below */ }
+  const allProducts = [...s.products, ...l.products, ...r.products, ...b.products], ids = new Set(allProducts.map(p => p.id)), graph = new Map(Array.from(ids, id => [id, new Set([id])]));
+  const connect = list => { list.forEach(id => { if (!graph.has(id)) graph.set(id, new Set([id])); }); list.forEach(a => list.forEach(b => graph.get(a).add(b))); };
+  const byName = new Map(); allProducts.forEach(p => { const key = stkKey(p.name); if (!byName.has(key)) byName.set(key, new Set()); byName.get(key).add(p.id); }); byName.forEach(group => connect([...group]));
+  const byTx = new Map(); [s,l,r,b].forEach(book => book.transactions.forEach(t => { if (!byTx.has(t.id)) byTx.set(t.id, new Set()); byTx.get(t.id).add(t.productId); })); byTx.forEach(group => connect([...group]));
+  const visited = new Set();
+  for (const id of graph.keys()) {
+    if (visited.has(id)) continue; const group = new Set(), queue = [id];
+    while (queue.length) { const next = queue.pop(); if (group.has(next)) continue; group.add(next); visited.add(next); graph.get(next)?.forEach(x => queue.push(x)); }
+    const select = book => ({ products: book.products.filter(p => group.has(p.id)), transactions: book.transactions.filter(t => group.has(t.productId)) });
+    const part = select(s);
+    try { stkValidate({ ...stkBlank(), ...part, images: s.images }); continue; } catch (error) { /* explicit side choice required */ }
+    conflict("settings.stockInventory.productSet[" + [...group].sort().join(",") + "].inventory", select(l), select(r));
+    const pick = select(chosen); s.products = s.products.filter(p => !group.has(p.id)).concat(syncClone(pick.products)); s.transactions = s.transactions.filter(t => !group.has(t.productId)).concat(syncClone(pick.transactions));
+  }
+  stkEnsureImages(s, [l, r, b]); stkValidate(s);
+}
+function stkResolutionAudit(data, local, remote, preference) {
+  if (!data.settings?.stockInventory) return;
+  const s = stkData(data); stkAuditDiff(s, stkData(local), "merge", "Cloud conflict: " + preference + "; previous local → resolved"); stkAuditDiff(s, stkData(remote), "merge", "Cloud conflict: " + preference + "; previous cloud → resolved"); stkEnsureImages(s, [stkData(local), stkData(remote)]); stkValidate(s);
+}
+function stkHasConflict(pending) { return (pending.conflicts || []).some(path => path.startsWith("settings.stockInventory")); }
+function stkUI() {
+  if (!UI.stock) UI.stock = { tab: "products", q: "", product: "all", party: "", salesperson: "", from: "", to: "", type: "all", low: false, order: "newest", page: 0 };
+  return UI.stock;
+}
+function stkFilterValid(f, s) {
+  if (f.from && !stkDate(f.from) || f.to && !stkDate(f.to)) throw new Error("Valid From / To Date chunein (1900–9998).");
+  if (f.from && f.to && f.from > f.to) throw new Error("From Date, To Date ke baad nahi ho sakti.");
+  if (f.product && f.product !== "all" && !s.products.some(p => p.id === f.product)) throw new Error("Selected product ab available nahi hai. Filters reset karke current product chunein.");
+  if (f.type && f.type !== "all" && !Object.hasOwn(STK_KINDS, f.type)) throw new Error("Valid transaction type chunein.");
+}
+function stkMatches(t, f, s) {
+  const p = s.products.find(p => p.id === t.productId), includes = (value, needle) => stkKey(value).includes(stkKey(needle));
+  return (!f.product || f.product === "all" || t.productId === f.product) && (!f.type || f.type === "all" || t.type === f.type) &&
+    (!f.from || t.date >= f.from) && (!f.to || t.date <= f.to) && includes(t.party, f.party || "") && includes(t.salesperson, f.salesperson || "") &&
+    (!f.q || includes([p?.name, t.productName, t.party, t.salesperson, t.deliveryName, t.deliveryPhone, t.deliveryDetails, t.purpose, t.note, t.date, STK_KINDS[t.type], t.source === "opening" ? "opening stock" : ""].join(" "), f.q));
+}
+function stkQuery(filters, data) {
+  const s = data === undefined ? stkData() : stkData(data), f = filters || stkUI(); stkFilterValid(f, s);
+  const ledger = stkLedger(s), rows = s.transactions.filter(t => stkMatches(t, f, s)).sort(stkSort);
+  if (f.order !== "oldest") rows.reverse();
+  return rows.map(t => ({ ...syncClone(t), balance: ledger.after.get(t.id), currentProductName: s.products.find(p => p.id === t.productId)?.name || t.productName }));
+}
+function stkPhotoHTML(id, name, large) {
+  const image = stkData().images.find(image => image.id === id);
+  return image ? '<img class="stk-photo' + (large ? ' large' : '') + '" src="' + esc(image.data) + '" alt="' + esc(name || "Product photo") + '" loading="lazy">' : '<span class="stk-photo stk-placeholder' + (large ? ' large' : '') + '" aria-label="No product photo">▣</span>';
+}
+function stkOptions(selected, archived) {
+  const list = new Map(stkData().products.map(p => [p.id,p]));
+  if (archived) stkData().history.slice().reverse().forEach(h => { if (h.entity==='product' && !list.has(h.entityId)) { const p=h.after||h.before; list.set(p.id,{...p,name:p.name+' (deleted)'}); } });
+  return Array.from(list.values()).sort((a,b) => a.name.localeCompare(b.name)).map(p => '<option value="' + esc(p.id) + '"' + (p.id === selected ? ' selected' : '') + '>' + esc(p.name + ' · ' + p.unit) + '</option>').join("");
+}
+function stkPager(total, page) {
+  const pages = Math.max(1, Math.ceil(total / STK_PAGE));
+  return '<div class="stk-pager"><span>' + (total ? page * STK_PAGE + 1 : 0) + '–' + Math.min(total, (page + 1) * STK_PAGE) + ' of ' + total + ' · poori history pages me available</span><div class="row-actions"><button class="btn sm" data-stk="page" data-value="-1"' + (!page ? ' disabled' : '') + '>‹ Previous</button><span>' + (page + 1) + ' / ' + pages + '</span><button class="btn sm" data-stk="page" data-value="1"' + (page + 1 >= pages ? ' disabled' : '') + '>Next ›</button></div></div>';
+}
+function stkPageRows(rows) { const u = stkUI(); u.page = Math.max(0, Math.min(u.page, Math.max(0, Math.ceil(rows.length / STK_PAGE) - 1))); return rows.slice(u.page * STK_PAGE, (u.page + 1) * STK_PAGE); }
+function stkInventoryHTML() {
+  const u = stkUI(); stkFilterValid({ product: u.product }, stkData());
+  const rows = stkInventory().filter(p => (u.product === "all" || p.id === u.product) && (!u.low || p.low) && (!u.q || stkKey(p.name + " " + p.note + " " + p.unit).includes(stkKey(u.q)))).sort((a,b) => Number(b.low) - Number(a.low) || a.name.localeCompare(b.name));
+  const page = stkPageRows(rows), body = page.map(p => '<tr data-stock-product="' + esc(p.id) + '"><td><div class="stk-product">' + stkPhotoHTML(p.photoId, p.name) + '<div><b>' + esc(p.name) + '</b><div class="muted">Unit: ' + esc(p.unit) + ' · ' + esc(ctPretty(p.date)) + '</div><div class="stk-mobile-balance">Available: <b>' + stkFmt(p.available) + ' ' + esc(p.unit) + '</b> · Min ' + stkFmt(p.minQty) + '</div>' + (p.note ? '<div class="stk-note">' + esc(p.note) + '</div>' : '') + '</div></div></td>' +
+    '<td class="num">' + stkFmt(p.totalIn) + '</td><td class="num">' + stkFmt(p.totalOut) + '</td><td class="num">' + stkFmt(p.totalSale) + '</td><td class="num stk-balance"><b>' + stkFmt(p.available) + '</b><div class="muted">' + esc(p.unit) + '</div></td><td class="num">' + stkFmt(p.minQty) + '</td><td>' + (p.low ? '<span class="badge red">Low stock</span>' : p.available ? '<span class="badge green">In stock</span>' : '<span class="badge">Zero stock</span>') + '</td><td><div class="row-actions stk-actions">' +
+    '<button class="btn xs" data-stk="productEdit" data-id="' + esc(p.id) + '">Edit</button><button class="btn xs" data-stk="movement" data-type="in" data-product="' + esc(p.id) + '">＋ In</button><button class="btn xs" data-stk="movement" data-type="out" data-product="' + esc(p.id) + '">− Out</button><button class="btn xs" data-stk="movement" data-type="sale" data-product="' + esc(p.id) + '">Sale</button><button class="btn xs" data-stk="productHistory" data-id="' + esc(p.id) + '">History</button></div></td></tr>').join("");
+  return '<div class="card"><div class="card-h"><div><h3>Products &amp; Live Stock <span class="muted">(' + rows.length + ')</span></h3><div class="sub">All saved dates · Opening / In − Out − Sales · har product ki apni unit; mixed units ka total nahi</div></div><label class="chk"><input id="stkLowOnly" type="checkbox"' + (u.low ? ' checked' : '') + '> Low stock only</label></div>' +
+    (rows.length ? '<div class="twrap"><table class="tbl stk-table"><thead><tr><th>Product / photo</th><th class="num">Opening + In</th><th class="num">Out</th><th class="num">Sales</th><th class="num">Available</th><th class="num">Minimum</th><th>Status</th><th>Actions</th></tr></thead><tbody>' + body + '</tbody></table></div>' : '<div class="empty"><div class="big">▣</div><h4>' + (stkData().products.length ? 'Koi matching product nahi' : 'Apna pehla product add karein') + '</h4><p>Name, photo, unit, opening quantity aur minimum limit ek jagah.</p><button class="btn primary" data-stk="productAdd">＋ Add product</button></div>') + stkPager(rows.length, u.page) + '</div>';
+}
+function stkMovementHTML() {
+  const u = stkUI(), rows = stkQuery(u), page = stkPageRows(rows);
+  const body = page.map(t => '<tr data-stock-entry="' + esc(t.id) + '"><td class="nowrap">' + esc(ctPretty(t.date)) + '</td><td><b>' + esc(t.currentProductName) + '</b>' + (t.productName !== t.currentProductName ? '<div class="stk-note">At entry: ' + esc(t.productName) + '</div>' : '') + '</td><td><span class="badge ' + (t.type === 'in' ? 'green' : t.type === 'out' ? 'amber' : 'blue') + '">' + (t.source === 'opening' ? 'Opening / In' : STK_KINDS[t.type]) + '</span></td><td class="num"><b>' + (t.type === 'in' ? '+' : '−') + stkFmt(t.qty) + '</b> ' + esc(t.unit) + '</td>' +
+    '<td><b>' + esc(t.party || '—') + '</b>' + (t.purpose ? '<div class="stk-note">Purpose: ' + esc(t.purpose) + '</div>' : '') + (t.note ? '<div class="stk-note">' + esc(t.note) + '</div>' : '') + '</td><td>' + esc(t.salesperson || '—') + '</td><td>' + esc(t.deliveryName || '—') + (t.deliveryPhone ? '<div class="stk-note">' + esc(t.deliveryPhone) + '</div>' : '') + (t.deliveryDetails ? '<div class="stk-note">' + esc(t.deliveryDetails) + '</div>' : '') + '</td><td class="num">' + stkFmt(t.balance) + ' ' + esc(t.unit) + '</td><td><div class="row-actions"><button class="btn xs" data-stk="entryEdit" data-id="' + esc(t.id) + '">Edit</button><button class="btn xs danger" data-stk="entryDelete" data-id="' + esc(t.id) + '">Delete</button></div></td></tr>').join("");
+  return '<div class="card"><div class="card-h"><div><h3>Stock History <span class="muted">(' + rows.length + ')</span></h3><div class="sub">Date-wise complete ledger · Balance after entry = full chronological ledger, not filtered subtotal</div></div><select class="inp stk-select" id="stkOrder" aria-label="History order"><option value="newest"' + (u.order === 'newest' ? ' selected' : '') + '>Newest date first</option><option value="oldest"' + (u.order === 'oldest' ? ' selected' : '') + '>Oldest date first</option></select></div>' +
+    (rows.length ? '<div class="twrap"><table class="tbl stk-table history"><thead><tr><th>Date</th><th>Product</th><th>Entry</th><th class="num">Quantity</th><th>Party / purpose / note</th><th>Salesperson</th><th>Delivery details</th><th class="num">Balance after entry</th><th>Actions</th></tr></thead><tbody>' + body + '</tbody></table></div>' : '<div class="empty"><h4>Koi matching stock entry nahi</h4><p>Filters check karein, ya Stock In / Out / Sale add karein. All history retained hai.</p></div>') + stkPager(rows.length, u.page) + '</div>';
+}
+function stkAuditRows(f) {
+  const s = stkData(); stkFilterValid({ ...f, product: 'all' }, s);
+  return s.history.filter(h => {
+    const snapshots = [h.before, h.after].filter(Boolean), entityProduct = h.entity === 'product' ? h.entityId : snapshots[0]?.productId;
+    if (f.product !== 'all' && f.product !== entityProduct || f.from && h.date < f.from || f.to && h.date > f.to) return false;
+    return (!f.party || snapshots.some(t => stkKey(t.party).includes(stkKey(f.party)))) && (!f.salesperson || snapshots.some(t => stkKey(t.salesperson).includes(stkKey(f.salesperson)))) &&
+      (!f.type || f.type === 'all' || snapshots.some(t => t.type === f.type)) && (!f.q || stkKey([h.action,h.reason,h.actor, ...snapshots.map(t => [t.name,t.productName,t.party,t.salesperson,t.deliveryName,t.purpose,t.note].join(' '))].join(' ')).includes(stkKey(f.q)));
+  }).sort((a,b) => (f.order === 'oldest' ? 1 : -1) * (a.sequence - b.sequence || a.id.localeCompare(b.id)));
+}
+const STK_LABELS = { name: "Product", productName: "Product at entry", productId: "Product ID", unit: "Unit", minQty: "Minimum stock", photoId: "Photo reference", note: "Note", type: "Entry type", qty: "Quantity", date: "Entry date", party: "Party / customer", salesperson: "Salesperson", deliveryName: "Delivery person", deliveryPhone: "Delivery phone", deliveryDetails: "Delivery / address / vehicle details", purpose: "Purpose", source: "Source", id: "ID", sequence: "Ledger order", createdAt: "Created", updatedAt: "Updated" };
+function stkAuditValue(key, value) {
+  if (value == null || value === "") return "—";
+  if (["createdAt", "updatedAt"].includes(key)) return new Date(value).toLocaleString("en-IN");
+  if (key === "type") return STK_KINDS[value] || String(value);
+  return typeof value === "number" && ["qty", "minQty"].includes(key) ? stkFmt(value) : String(value);
+}
+function stkAuditDetails(h) {
+  const keys = [...new Set([...Object.keys(h.before || {}), ...Object.keys(h.after || {})])];
+  return '<div class="twrap"><table class="tbl stk-audit-table"><thead><tr><th>Field</th><th>Before</th><th>After</th></tr></thead><tbody>' + keys.map(k => '<tr' + (syncStable(h.before?.[k]) !== syncStable(h.after?.[k]) ? ' class="stk-changed"' : '') + '><td>' + esc(STK_LABELS[k] || k) + '</td><td>' + esc(stkAuditValue(k, h.before?.[k])) + '</td><td>' + esc(stkAuditValue(k, h.after?.[k])) + '</td></tr>').join('') + '</tbody></table></div>';
+}
+function stkAuditHTML() {
+  const u = stkUI(), rows = stkAuditRows(u), page = stkPageRows(rows);
+  return '<div class="card"><div class="card-h"><div><h3>Change Audit <span class="muted">(' + rows.length + ')</span></h3><div class="sub">Who / when / before → after · edits aur deleted entries bhi retained · date filter = change ki date</div></div></div>' +
+    (rows.length ? '<div class="stk-audit-list">' + page.map(h => '<details class="stk-audit"><summary><span class="badge">' + esc(h.action.toUpperCase()) + '</span><span><b>' + esc(h.after?.name || h.before?.name || h.after?.productName || h.before?.productName || h.entityId) + '</b><span class="stk-note">' + esc(new Date(h.at).toLocaleString('en-IN')) + ' · ' + esc(h.actor) + (h.entity === 'transaction' ? ' · entry ' + esc(h.after?.date || h.before?.date) : '') + '</span></span><span class="muted">Details ▾</span></summary><div class="stk-audit-body"><p>' + esc(h.reason) + '</p>' + stkAuditDetails(h) + '</div></details>').join('') + '</div>' : '<div class="empty"><h4>Koi matching change nahi</h4><p>Har Stock save / edit / delete ka audit yahan dikhega. Audit directly edit/delete nahi hota.</p></div>') + stkPager(rows.length, u.page) + '</div>';
+}
+function stkFiltersHTML() {
+  const u = stkUI(), products = u.tab === "products";
+  return '<form id="stkFilters" class="card stk-filters"><div class="stk-filter-grid"><label>Product<select class="inp" name="product" id="stkProductFilter"><option value="all">All products</option>' + stkOptions(u.product, u.tab === 'audit') + (u.tab !== 'audit' && u.product !== 'all' && !stkData().products.some(p => p.id === u.product) ? '<option selected value="' + esc(u.product) + '">Deleted product — reset filter</option>' : '') + '</select></label>' +
+    (products ? '' : '<label>Party / customer<input class="inp" name="party" id="stkPartyFilter" maxlength="90" value="' + esc(u.party) + '" placeholder="Any party"></label><label>Salesperson<input class="inp" name="salesperson" id="stkSalespersonFilter" maxlength="90" value="' + esc(u.salesperson) + '" placeholder="Any salesperson"></label><label>From Date<input class="inp" name="from" id="stkFrom" type="date" min="1900-01-01" max="9998-12-31" value="' + esc(u.from) + '"></label><label>To Date<input class="inp" name="to" id="stkTo" type="date" min="1900-01-01" max="9998-12-31" value="' + esc(u.to) + '"></label><label>Entry type<select class="inp" name="type" id="stkTypeFilter"><option value="all">All types</option>' + Object.entries(STK_KINDS).map(([k,v]) => '<option value="' + k + '"' + (u.type === k ? ' selected' : '') + '>' + v + '</option>').join('') + '</select></label>') +
+    '<div class="stk-filter-buttons"><button class="btn primary" type="submit">Apply filters</button><button class="btn" type="button" data-stk="resetFilters">Reset</button></div></div><div id="stkFilterError" role="alert"></div></form>';
+}
+function viewStock() {
+  const u = stkUI(), inventory = stkInventory(), lows = inventory.filter(p => p.low); stkViewContext = stkContext();
+  const tabs = [["products", "▣ Products & Live Stock"], ["history", "⇄ Stock History"], ["audit", "◷ Change Audit"]];
+  let content; try { content = u.tab === "products" ? stkInventoryHTML() : u.tab === "history" ? stkMovementHTML() : stkAuditHTML(); }
+  catch (error) { content = '<div class="banner warn" role="alert">' + esc(error.message) + ' <button class="btn sm" data-stk="resetFilters">Reset filters</button></div>'; }
+  return '<section class="stk-page"><div class="stk-toolbar"><div><h3>Company inventory</h3><p class="muted">Opening + Stock In − Stock Out − Sales = Available</p></div><div class="row-actions"><button class="btn" data-stk="movement" data-type="in">＋ Stock In</button><button class="btn" data-stk="movement" data-type="out">− Stock Out</button><button class="btn primary" data-stk="movement" data-type="sale">Stock Sale</button></div></div>' +
+    '<div class="stk-metrics"><div class="card"><span>Products</span><b>' + inventory.length + '</b></div><div class="card"><span>Stock entries</span><b>' + stkData().transactions.length + '</b></div><div class="card' + (lows.length ? ' stk-warning' : '') + '"><span>Low stock alerts</span><b>' + lows.length + '</b></div><div class="card"><span>Audit records</span><b>' + stkData().history.length + '</b></div></div>' +
+    (lows.length ? '<div class="banner warn stk-low-alert" role="status"><div><b>⚠ Low stock: ' + lows.length + ' product' + (lows.length > 1 ? 's' : '') + '</b><div>' + lows.slice(0,5).map(p => esc(p.name) + ': ' + stkFmt(p.available) + ' / min ' + stkFmt(p.minQty) + ' ' + esc(p.unit)).join(' · ') + (lows.length > 5 ? ' · …aur ' + (lows.length - 5) : '') + '</div></div><button class="btn sm" data-stk="showLow">View low stock</button></div>' : '') +
+    '<div class="stk-tabs" role="tablist" aria-label="Stock sections">' + tabs.map(([k,v]) => '<button class="btn' + (u.tab === k ? ' primary' : '') + '" role="tab" aria-selected="' + (u.tab === k) + '" data-stk="tab" data-value="' + k + '">' + esc(v) + '</button>').join('') + '</div>' + stkFiltersHTML() + content +
+    '<p class="stk-footnote">Available stock manually edit nahi hota. Opening quantity ek dated Stock In entry hai. Edits/deletes par saare subsequent balances check hote hain. Future-dated saved entries bhi ledger me included hain. Data is browser me auto-save hota hai; Settings se JSON backup lein.</p></section>';
+}
+function stkFormError(error) { const box = $("#stkFormError"); if (box) { box.textContent = error.message; box.focus(); } toast(error.message, "bad"); }
+function stkField(label, input, help) { return '<label class="stk-field"><span>' + esc(label) + '</span>' + input + (help ? '<small class="muted">' + esc(help) + '</small>' : '') + '</label>'; }
+function stkPhotoDraft(editor) {
+  const preview = $("#stkPhotoPreview"); if (!preview || stkEditor !== editor) return;
+  preview.innerHTML = editor.photo ? '<img class="stk-photo large" src="' + esc(editor.photo) + '" alt="Selected product photo">' : '<span class="stk-photo large stk-placeholder">▣</span>';
+  const status = $("#stkPhotoStatus"); if (status) status.textContent = editor.busy ? 'Photo process ho rahi hai… save se pehle wait karein.' : editor.photoMessage || 'PNG / JPG / WebP · max 5 MB · locally compressed; photo optional';
+  const save = $("#stkProductSave"); if (save) save.disabled = editor.busy;
+}
+function stkOpenProduct(id) {
+  stkCheck(stkContext()); const p = id ? stkData().products.find(p => p.id === id) : null;
+  if (id && !p) throw new Error("Product nahi mila. Current list check karein.");
+  const editor = { kind: 'product', id: p?.id || '', context: stkContext(), photo: p?.photoId ? stkData().images.find(image => image.id === p.photoId)?.data || '' : '', task: 0, busy: false };
+  const quantity = p ? stkInventory().find(x => x.id === p.id)?.available : 0;
+  openModal('<div class="modal stk-dialog"><form id="stkProductForm"><div class="modal-h"><div><h3>' + (p ? 'Edit product' : 'Add product / opening stock') + '</h3><p>' + (p ? 'Available: ' + stkFmt(quantity) + ' ' + esc(p.unit) + ' · quantity sirf transactions se change hoti hai' : 'Product details save karein; opening quantity Stock In me record hogi') + '</p></div><button type="button" class="x" data-act="closeModal" aria-label="Close">✕</button></div><div class="modal-b"><div class="stk-form-grid">' +
+    stkField('Product name *', '<input class="inp" id="stkPName" required maxlength="90" value="' + esc(p?.name || '') + '" placeholder="e.g. Cotton fabric / Product code">') +
+    stkField('Unit *', '<input class="inp" id="stkPUnit" required maxlength="18" value="' + esc(p?.unit || 'pcs') + '" list="stkUnits"><datalist id="stkUnits"><option value="pcs"><option value="kg"><option value="metre"><option value="box"><option value="litre"></datalist>', 'Ek product ki ek unit. Movements ke baad unit lock rahegi.') +
+    (p ? '' : stkField('Opening quantity', '<input class="inp" id="stkPOpening" inputmode="decimal" value="0" maxlength="13">', 'Zero se shuru kar sakte hain · up to 3 decimals')) + stkField(p ? 'Product entry date *' : 'Opening date *', '<input class="inp" id="stkPDate" type="date" required min="1900-01-01" max="9998-12-31" value="' + (p?.date || isoDate(new Date())) + '">', p ? 'Opening movement ki date History → Edit se badlein; ye product record ki date hai.' : '') +
+    stkField('Minimum stock alert *', '<input class="inp" id="stkPMin" required inputmode="decimal" maxlength="13" value="' + (p ? p.minQty : 5) + '">', 'Available is limit se neeche ho to warning. 0 = alert off.') +
+    stkField('Product note', '<textarea class="inp" id="stkPNote" maxlength="500" rows="2">' + esc(p?.note || '') + '</textarea>') + '</div><div class="stk-photo-editor"><div id="stkPhotoPreview"></div><div><b>Product photo</b><div class="row-actions" style="margin:8px 0"><button class="btn sm" type="button" data-stk="photoChoose">Choose / replace photo</button><button class="btn sm" type="button" data-stk="photoRemove">Remove photo</button></div><input type="file" id="stkPhotoFile" accept="image/png,image/jpeg,image/webp" hidden><div id="stkPhotoStatus" role="status" class="stk-note"></div></div></div><div id="stkFormError" class="stk-error" role="alert" tabindex="-1"></div></div><div class="modal-f">' +
+    (p ? '<button type="button" class="btn danger" data-stk="productDelete" data-id="' + esc(p.id) + '">Delete product…</button>' : '') + '<div class="row-actions"><button type="button" class="btn" data-act="closeModal">Cancel</button><button type="submit" class="btn primary" id="stkProductSave">' + (p ? 'Save changes' : 'Save product') + '</button></div></div></form></div>', { sticky: true });
+  stkEditor = editor; stkPhotoDraft(editor); setTimeout(() => { if (stkEditor === editor) $("#stkPName")?.focus(); }, 60);
+}
+async function stkPickPhoto(input) {
+  const editor = stkEditor, file = input.files?.[0]; input.value = '';
+  if (!editor || editor.kind !== 'product' || !file) return;
+  const task = ++editor.task; editor.busy = true; editor.photoMessage = ''; stkPhotoDraft(editor);
+  try {
+    stkCheck(editor.context); const url = await companyLogoPrepare(file); if (stkEditor !== editor || task !== editor.task) return;
+    stkCheck(editor.context); editor.photo = url; editor.photoMessage = 'Photo ready — Save product par permanently save hogi.';
+  } catch (error) { if (stkEditor !== editor || task !== editor.task) return; editor.photoMessage = error.message.replace(/Logo/g,'Stock photo').replace(/logo/g,'stock photo'); stkFormError(new Error(editor.photoMessage)); }
+  finally { if (stkEditor === editor && task === editor.task) { editor.busy = false; stkPhotoDraft(editor); } }
+}
+function stkSubmitProduct() {
+  const e = stkEditor; if (!e || e.kind !== 'product' || e.busy) return;
+  try {
+    const p = stkSaveProduct({ id: e.id || undefined, name: $("#stkPName").value, unit: $("#stkPUnit").value, minQty: $("#stkPMin").value, photo: e.photo, note: $("#stkPNote").value, openingQty: $("#stkPOpening")?.value, date: $("#stkPDate")?.value }, e.context);
+    closeModal(); render(); toast(p.name + ' saved · live stock updated', 'ok');
+  } catch (error) { stkFormError(error); }
+}
+function stkMovementFields() {
+  const type = $("#stkRType")?.value; if (!type) return;
+  $$("[data-stk-sale]").forEach(el => { el.hidden = type !== 'sale'; el.querySelectorAll('input,textarea').forEach(input => { input.required = type === 'sale' && ['stkRSalesperson','stkRDeliveryName'].includes(input.id); }); });
+  const purpose = $("#stkRPurpose"); if (purpose) purpose.required = type === 'out';
+  const party = $("#stkRParty"); if (party) party.required = type === 'sale';
+  const note = $("#stkMovementHint"), id = $("#stkRProduct")?.value, product = stkInventory().find(p => p.id === id);
+  if (note) note.textContent = product ? 'Current available: ' + stkFmt(product.available) + ' ' + product.unit + '. Backdated edit / delete bhi poori chronology check karegi; opening aur all subsequent balances negative nahi ho sakte.' : 'Product select karein.';
+}
+function stkOpenMovement(type, productId, id) {
+  stkCheck(stkContext());
+  const old = id ? stkData().transactions.find(t => t.id === id) : null;
+  if (id && !old) throw new Error("Stock entry nahi mili. Current history kholein.");
+  if (!stkData().products.length) { stkOpenProduct(); toast('Pehle product add karein, phir Stock In / Out / Sale.', 'ok'); return; }
+  const t = old || { productId: productId || stkData().products[0].id, type: type || 'in', qty: '', date: isoDate(new Date()) }, editor = { kind: 'movement', id: old?.id || '', context: stkContext() };
+  openModal('<div class="modal stk-dialog"><form id="stkMovementForm"><div class="modal-h"><div><h3>' + (old ? 'Edit stock entry' : 'New ' + STK_KINDS[t.type]) + '</h3><p>Save se inventory automatically recalculate hogi; changes audit me retained rahenge.</p></div><button type="button" class="x" data-act="closeModal" aria-label="Close">✕</button></div><div class="modal-b"><div id="stkMovementHint" class="banner info"></div><div class="stk-form-grid">' +
+    stkField('Product *', '<select class="inp" id="stkRProduct" required>' + stkOptions(t.productId) + '</select>') + stkField('Entry type *', '<select class="inp" id="stkRType">' + Object.entries(STK_KINDS).map(([k,v]) => '<option value="' + k + '"' + (t.type === k ? ' selected' : '') + '>' + v + '</option>').join('') + '</select>') +
+    stkField('Quantity *', '<input class="inp" id="stkRQty" required inputmode="decimal" maxlength="13" value="' + esc(t.qty) + '" placeholder="0.000">', 'Positive quantity · maximum 3 decimals') + stkField('Entry date *', '<input class="inp" id="stkRDate" type="date" required min="1900-01-01" max="9998-12-31" value="' + esc(t.date) + '">') +
+    stkField('Party / customer (required for Sale)', '<input class="inp" id="stkRParty" maxlength="90" value="' + esc(t.party || '') + '">') + stkField('Purpose (required for Stock Out)', '<input class="inp" id="stkRPurpose" maxlength="250" value="' + esc(t.purpose || '') + '" placeholder="e.g. production / sample / damaged">') +
+    '<div data-stk-sale>' + stkField('Salesperson *', '<input class="inp" id="stkRSalesperson" maxlength="90" value="' + esc(t.salesperson || '') + '">') + '</div><div data-stk-sale>' + stkField('Delivery person *', '<input class="inp" id="stkRDeliveryName" maxlength="90" value="' + esc(t.deliveryName || '') + '">') + '</div><div data-stk-sale>' + stkField('Delivery phone', '<input class="inp" id="stkRDeliveryPhone" type="tel" maxlength="35" value="' + esc(t.deliveryPhone || '') + '">') + '</div><div data-stk-sale>' + stkField('Delivery details / address / vehicle', '<textarea class="inp" id="stkRDeliveryDetails" maxlength="500" rows="2">' + esc(t.deliveryDetails || '') + '</textarea>') + '</div>' +
+    stkField('Note', '<textarea class="inp" id="stkRNote" maxlength="500" rows="2">' + esc(t.note || '') + '</textarea>') + '</div><div id="stkFormError" class="stk-error" role="alert" tabindex="-1"></div></div><div class="modal-f"><button class="btn" type="button" data-act="closeModal">Cancel</button><button class="btn primary" type="submit">' + (old ? 'Save changes & recalculate' : 'Save entry') + '</button></div></form></div>', { sticky: true });
+  stkEditor = editor; stkMovementFields();
+}
+function stkSubmitMovement() {
+  const e = stkEditor; if (!e || e.kind !== 'movement') return;
+  try {
+    const type = $("#stkRType").value, value = id => $("#" + id).value;
+    stkSaveMovement({ id: e.id || undefined, productId: value('stkRProduct'), type, qty: value('stkRQty'), date: value('stkRDate'), party: value('stkRParty'), purpose: value('stkRPurpose'), note: value('stkRNote'),
+      salesperson: type === 'sale' ? value('stkRSalesperson') : '', deliveryName: type === 'sale' ? value('stkRDeliveryName') : '', deliveryPhone: type === 'sale' ? value('stkRDeliveryPhone') : '', deliveryDetails: type === 'sale' ? value('stkRDeliveryDetails') : '' }, e.context);
+    closeModal(); render(); toast('Stock entry saved · live stock updated · audit retained', 'ok');
+  } catch (error) { stkFormError(error); }
+}
+function stkConfirmDelete(kind, id) {
+  const context = stkEditor?.context || stkViewContext; stkCheck(context);
+  const p = kind === 'product' ? stkData().products.find(p => p.id === id) : stkData().transactions.find(t => t.id === id);
+  if (!p) throw new Error('Entry nahi mili. Current list check karein.');
+  const count = kind === 'product' ? stkData().transactions.filter(t => t.productId === id).length : 1;
+  confirmDialog(kind === 'product' ? 'Delete product and its stock entries?' : 'Delete stock entry?', '<b>' + esc(p.name || p.productName) + '</b><p>' + (kind === 'product' ? count + ' Stock In / Out / Sale entries bhi remove hongi.' : 'Available stock aur subsequent balances dobara calculate honge. Stock negative hua to deletion refuse hogi.') + '</p><p>Before / after audit aur existing photo history retained rahegi. Safety copy bhi save hogi.</p>', 'Delete & recalculate', () => {
+    try { if (kind === 'product') stkDeleteProduct(id, context); else stkDeleteMovement(id, context); if (stkUI().product === id) stkUI().product = 'all'; render(); toast('Deleted · stock recalculated · audit retained', 'ok'); }
+    catch (error) { openModal('<div class="modal stk-dialog"><div class="modal-h"><div><h3>Stock delete nahi hua</h3><p>Purani entry aur availability safe hain.</p></div><button class="x" data-act="closeModal">✕</button></div><div class="modal-b"><div class="banner warn" role="alert">' + esc(error.message) + '</div></div><div class="modal-f"><button class="btn primary" data-act="closeModal">History check karein</button></div></div>'); toast(error.message, 'bad'); }
+  }, true);
+}
+function stkNavBadge() {
+  const badge = $("#navStockLow"); if (!badge) return;
+  try { const n = stkInventory().filter(p => p.low).length; badge.textContent = n; badge.style.display = n ? 'inline-block' : 'none'; badge.title = n + ' products below minimum stock'; }
+  catch (error) { badge.textContent = '!'; badge.style.display = 'inline-block'; badge.title = 'Stock data needs review'; }
+}
+function stkResetSession() { UI.stock = null; stkEditor = null; stkViewContext = null; stkBackupScope = ''; }
+document.addEventListener('click', event => {
+  const button = event.target.closest('[data-stk]'); if (!button || button.disabled) return;
+  event.preventDefault(); const u = stkUI();
+  try {
+    switch (button.dataset.stk) {
+      case 'tab': u.tab = button.dataset.value; u.page = 0; render(); break;
+      case 'page': u.page = Math.max(0, u.page + Number(button.dataset.value)); render(); break;
+      case 'productAdd': stkOpenProduct(); break;
+      case 'productEdit': stkCheck(stkViewContext); stkOpenProduct(button.dataset.id); break;
+      case 'movement': stkCheck(stkViewContext || stkContext()); stkOpenMovement(button.dataset.type, button.dataset.product); break;
+      case 'entryEdit': stkCheck(stkViewContext); stkOpenMovement(null,null,button.dataset.id); break;
+      case 'entryDelete': stkConfirmDelete('transaction',button.dataset.id); break;
+      case 'productDelete': stkConfirmDelete('product',button.dataset.id); break;
+      case 'productHistory': Object.assign(u,{ tab: 'history', product: button.dataset.id, from:'',to:'',party:'',salesperson:'',type:'all',q:'',page:0 }); render(); break;
+      case 'showLow': Object.assign(u,{ tab:'products',low:true,product:'all',q:'',page:0 }); render(); break;
+      case 'resetFilters': Object.assign(u,{product:'all',q:'',party:'',salesperson:'',from:'',to:'',type:'all',low:false,page:0}); render(); break;
+      case 'photoChoose': $("#stkPhotoFile")?.click(); break;
+      case 'photoRemove': if(stkEditor?.kind==='product') { stkEditor.task++; stkEditor.busy=false; stkEditor.photo=''; stkEditor.photoMessage='Photo removed from this draft. Save product to apply.'; stkPhotoDraft(stkEditor); } break;
+    }
+  } catch (error) { toast(error.message, 'bad'); }
+});
+document.addEventListener('submit', event => {
+  if (event.target.id === 'stkProductForm') { event.preventDefault(); stkSubmitProduct(); }
+  if (event.target.id === 'stkMovementForm') { event.preventDefault(); stkSubmitMovement(); }
+  if (event.target.id === 'stkFilters') {
+    event.preventDefault(); const u = stkUI(); event.target.querySelectorAll('[name]').forEach(input => u[input.name] = input.value.trim()); u.page=0; render();
+  }
+});
+document.addEventListener('change', event => {
+  const el=event.target;
+  if (el.id==='stkPhotoFile') stkPickPhoto(el);
+  if (el.id==='stkRType' || el.id==='stkRProduct') stkMovementFields();
+  if (el.id==='stkLowOnly') { stkUI().low=el.checked; stkUI().page=0; render(); }
+  if (el.id==='stkOrder') { stkUI().order=el.value; stkUI().page=0; render(); }
+});
+/* v3.32 STOCK MANAGEMENT END */
+
 /* ----------------------------- 17. BOOTSTRAP ---------------------------- */
 Store.load();
 initTheme();
@@ -10702,7 +11212,7 @@ document.addEventListener("keydown", (e) => {
   if (e.key.toLowerCase() === "g") { gKey = true; clearTimeout(gTimer); gTimer = setTimeout(() => { gKey = false; }, 900); return; }
   if (gKey) {
     gKey = false;
-    const map = { d: "dashboard", h: "hisaab", w: "workers", l: "ledger", a: "attendance", c: "canteen", r: "records", s: "settings" };
+    const map = { d: "dashboard", h: "hisaab", w: "workers", l: "ledger", a: "attendance", c: "canteen", i: "stock", r: "records", s: "settings" };
     const v = map[e.key.toLowerCase()];
     if (v) { e.preventDefault(); UI.search = ""; UI.filter = "all"; go(v); }
   }
@@ -10716,7 +11226,8 @@ document.addEventListener("input", (e) => {
   searchTimer = setTimeout(() => {
     const pos = e.target.selectionStart;
     if (UI.view === "attendance") { attUI().q = UI.search; attUI().page = 0; }
-    if (UI.view !== "attendance" && UI.view !== "hisaab" && UI.view !== "workers" && UI.view !== "records") UI.view = "hisaab";
+    if (UI.view === "stock") { stkUI().q = UI.search; stkUI().page = 0; }
+    if (UI.view !== "stock" && UI.view !== "attendance" && UI.view !== "hisaab" && UI.view !== "workers" && UI.view !== "records") UI.view = "hisaab";
     $$("#nav button").forEach((b) => b.classList.toggle("active", b.dataset.view === UI.view));
     const m = VIEW_META[UI.view] || ["", ""];
     if ($("#viewTitle")) $("#viewTitle").textContent = m[0];
@@ -10739,6 +11250,9 @@ window.Hisaab = { Store, calc, monthMeta, PdfDoc, inWords, UI, render, go, Cloud
     clockParts: attClockParts, clockFrom12: attClockFrom12, clockPeriods: ATT_CLOCK_PERIODS, timeLabel: attTimeLabel, scheduleLabel: attScheduleLabel,
     ui: attUI, openManager: attOpenManager, openRecord: attOpenRecord, openRules: attOpenRules, openBulk: attOpenBulk, openExport: attOpenExport,
     pdfString: attPdfString, pdfLayout: attPdfLayout, sharePdf: (report) => attDownloadReport(report, "whatsapp"), xlsxBytes: attXlsxBytes, download: attDownloadReport, setDate: attSetDate, resolveManager: attResolveManager },
+  stock: { data: stkData, blank: stkBlank, validate: stkValidate, quantity: stkQty, inventory: stkInventory, query: stkQuery, ledger: stkLedger,
+    saveProduct: stkSaveProduct, deleteProduct: stkDeleteProduct, saveEntry: stkSaveMovement, deleteEntry: stkDeleteMovement,
+    ui: stkUI, context: stkContext, openProduct: stkOpenProduct, openEntry: stkOpenMovement },
   /* canteen module API */
   canteen: { data: ct, totals: ctTotals, itemLines: ctItemLines, entries: ctAll, onDate: ctOnDate, inMonth: ctInMonth,
              dayLedger: ctDayLedger, monthLedger: ctMonthLedger, openModal: openCtModal, save: ctSave,
