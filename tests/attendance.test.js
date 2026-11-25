@@ -535,7 +535,7 @@ function assertPdf(pdf) {
   await test('export-only change leaves v3.25 four detail sheets and Attendance PDF byte-identical apart from the version footer',()=>{
     reset();const m=manager();mark(m,{mode:'time',checkIn:'10:32',checkOut:'13:33',outNextDay:true,note:'Original note retained'});const payload=copy(S.data),old=boot(payload,fs.readFileSync(path.join(__dirname,'..','Hisaab-Pro-v3.25.html'),'utf8')),OA=old.Hisaab.attendance;
     const now=w.Date.now,oldNow=old.Date.now;w.Date.now=old.Date.now=()=>1794657600000;
-    try{const current=A.report(m.id,'2026-11-01','2026-11-30','all'),previous=OA.report(m.id,'2026-11-01','2026-11-30','all'),newZip=parseZip(A.xlsxBytes(current)),oldZip=parseZip(OA.xlsxBytes(previous));for(let i=1;i<=4;i++)assert.equal(newZip['xl/worksheets/sheet'+i+'.xml'],oldZip['xl/worksheets/sheet'+i+'.xml']);assert.equal(A.pdfString(current).replaceAll('Hisaab v3.34','Hisaab v3.25'),OA.pdfString(previous));}finally{w.Date.now=now;old.Date.now=oldNow;}
+    try{const current=A.report(m.id,'2026-11-01','2026-11-30','all'),previous=OA.report(m.id,'2026-11-01','2026-11-30','all'),newZip=parseZip(A.xlsxBytes(current)),oldZip=parseZip(OA.xlsxBytes(previous));for(let i=1;i<=4;i++)assert.equal(newZip['xl/worksheets/sheet'+i+'.xml'],oldZip['xl/worksheets/sheet'+i+'.xml']);assert.equal(A.pdfString(current).replaceAll('Hisaab v3.35','Hisaab v3.25'),OA.pdfString(previous));}finally{w.Date.now=now;old.Date.now=oldNow;}
     assert.deepEqual(copy(S.data),payload);salaryUnchanged();
   });
   await test('paper-register headers and comments remain literal text with no workbook formulas, macros or external links',()=>{

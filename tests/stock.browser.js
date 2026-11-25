@@ -26,7 +26,7 @@ async function movement(page,type,id,qty,date,extra={}){await page.locator('.stk
 async function goto(page,view){await page.locator('#nav [data-view="'+view+'"]').click();}
 async function importJSON(page,data){await goto(page,'settings');const chooser=page.waitForEvent('filechooser');await page.locator('[data-act="importData"]').click();await(await chooser).setFiles({name:'pre-stock-backup.json',mimeType:'application/json',buffer:Buffer.from(JSON.stringify(data))});await page.waitForFunction(()=>document.querySelector('#toast')?.textContent.includes('Backup restored'));}
 (async()=>{
- console.log('\n▸ Real browser Stock v3.34 — operational forms, safety and persistence');
+ console.log('\n▸ Real browser Stock v3.35 — operational forms, safety and persistence');
  const browser=await chromium.launch({headless:true,...(process.env.HISAAB_CHROME_EXECUTABLE?{executablePath:process.env.HISAAB_CHROME_EXECUTABLE}:{}),args:process.env.HISAAB_CHROME_ARGS?JSON.parse(process.env.HISAAB_CHROME_ARGS):['--no-sandbox']});
  try{
   const context=await browser.newContext({viewport:{width:1440,height:1000},locale:'en-IN',timezoneId:'Asia/Kolkata',acceptDownloads:true});
@@ -34,8 +34,8 @@ async function importJSON(page,data){await goto(page,'settings');const chooser=p
   const page=await context.newPage();page.on('pageerror',e=>errors.push(e.stack));page.on('request',r=>requests.push(r.url()));
   const oldURL=new globalThis.URL('Hisaab-Pro-v3.31.html',URL).href;
   await page.goto(oldURL);await page.evaluate(data=>{localStorage.clear();localStorage.setItem('hisaabPro.v1',JSON.stringify(data));},legacy);await page.reload();await page.waitForFunction(()=>!!window.Hisaab);const original=await state(page),financeBefore=await page.evaluate(()=>JSON.stringify({workers:Hisaab.Store.data.workers,records:Hisaab.Store.data.records,canteen:Hisaab.Store.data.canteen,attendance:Hisaab.Store.data.attendance}));
-  await page.goto(URL);await page.waitForFunction(()=>!!window.Hisaab);check(await state(page)===original,'native v3.31 → v3.34 keeps every original raw storage byte, ID, financial / Attendance row');
-  await goto(page,'stock');check(await page.locator('.stk-page').count()===1,'Stock Management is a genuine navigation tab');check(await page.locator('[data-ver]').first().textContent()==='3.34','Panel reports v3.34');check(!await page.locator('.topbar-actions .mp').isVisible(),'Stock hides unrelated month selector; own inclusive date range is used');check(await page.locator('.stk-tabs [role="tab"]').count()===3,'Products & Live Stock, Stock History and Change Audit are separate sections');await shot(page,'01-empty.png');
+  await page.goto(URL);await page.waitForFunction(()=>!!window.Hisaab);check(await state(page)===original,'native v3.31 → v3.35 keeps every original raw storage byte, ID, financial / Attendance row');
+  await goto(page,'stock');check(await page.locator('.stk-page').count()===1,'Stock Management is a genuine navigation tab');check(await page.locator('[data-ver]').first().textContent()==='3.35','Panel reports v3.35');check(!await page.locator('.topbar-actions .mp').isVisible(),'Stock hides unrelated month selector; own inclusive date range is used');check(await page.locator('.stk-tabs [role="tab"]').count()===3,'Products & Live Stock, Stock History and Change Audit are separate sections');await shot(page,'01-empty.png');
   const photo=path.join(__dirname,'fixtures/company-logo.png'),cloth=await addProduct(page,'Native cotton','metre',100,100,photo);
   check(await available(page,cloth)===100,'real product/opening form creates exactly100metres');
   check(await page.evaluate(id=>{const s=Hisaab.stock.data(),p=s.products.find(p=>p.id===id),t=s.transactions.find(t=>t.productId===id);return p.date==='2026-11-01'&&t.date==='2026-11-01'&&t.source==='opening'&&t.type==='in'&&t.qty===100;},cloth),'product and Opening / In both retain chosen date; no manual available field');

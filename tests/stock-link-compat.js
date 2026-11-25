@@ -1,5 +1,6 @@
 /* Exact v3.34 allowance: recover ENTIRE immutable v3.33 before older guards. */
 const assert = require('node:assert/strict');
+const { withoutStockMessage } = require('./stock-message-compat');
 const hooks = [
   [
     'try { stklBoot = Promise.resolve(Cloud.boot()).catch(() => false); } catch (e) {}',
@@ -33,6 +34,7 @@ const hooks = [
   ]
 ];
 function withoutStockLink(source) {
+  source = withoutStockMessage(source);
   if (!source.includes('/* v3.34 PRIVATE STOCK LINK BEGIN')) return source;
   for (const [start,end] of [['/* v3.34 PRIVATE STOCK LINK BEGIN','/* v3.34 PRIVATE STOCK LINK END */'],['/* v3.34 STOCK LINK STYLE BEGIN */','/* v3.34 STOCK LINK STYLE END */']]) {
     assert.equal(source.split(start).length-1,1);assert.equal(source.split(end).length-1,1);
