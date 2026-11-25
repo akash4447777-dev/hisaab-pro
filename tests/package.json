@@ -1,10 +1,10 @@
 {
   "name": "hisaab-pro-tests",
-  "version": "3.33.0",
+  "version": "3.34.0",
   "private": true,
   "description": "Hisaab — derived Stock Management, audited inventory, saved Canteen parties, combined date/party PDFs, company logo, salary, attendance and safe cloud-sync tests",
   "scripts": {
-    "test": "node canteen.test.js && node loader.test.js && node pdf.test.js && node cloud.test.js && node attendance.test.js && node employees.test.js && node canteen-lines.test.js && node company-logo.test.js && node canteen-pdf.test.js && node canteen-filters.test.js && node stock.test.js && node stock-cloud.test.js && node stock-import.test.js",
+    "test": "node canteen.test.js && node loader.test.js && node pdf.test.js && node cloud.test.js && node attendance.test.js && node employees.test.js && node canteen-lines.test.js && node company-logo.test.js && node canteen-pdf.test.js && node canteen-filters.test.js && node stock.test.js && node stock-cloud.test.js && node stock-import.test.js && node stock-link.test.js",
     "test:stock": "node stock.test.js && node stock-cloud.test.js",
     "test:stock:browser": "node stock.browser.js",
     "test:canteen": "node canteen.test.js",
@@ -25,7 +25,9 @@
     "test:canteen:filters": "node canteen-filters.test.js",
     "test:canteen:filters:browser": "node canteen-filters.browser.js",
     "test:stock:import": "node stock-import.test.js",
-    "test:stock:import:browser": "node stock-import.browser.js"
+    "test:stock:import:browser": "node stock-import.browser.js",
+    "test:stock:link": "node stock-link.test.js",
+    "test:stock:link:browser": "node stock-link.browser.js"
   },
   "devDependencies": {
     "jsdom": "^26.0.0"

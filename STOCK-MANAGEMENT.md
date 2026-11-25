@@ -1,4 +1,4 @@
-# Hisaab Pro v3.33 — Stock Management
+# Hisaab Pro v3.34 — Stock Management
 
 Stock Management existing Hisaab panel ka **alag tab** hai: products/photo, Stock In,
 purpose-wise Stock Out, customer-wise Sales, live availability, date-wise history,
@@ -8,7 +8,7 @@ nahi karni**; har saved transaction se balance apne-aap calculate hota hai.
 ## 1. Pehli baar
 
 1. Jis **same browser/site** par asli data hai, Settings → **Backup (JSON)** download karein.
-2. Updated panel me **Panel v3.33** confirm karein. Storage clear, entries re-enter
+2. Updated panel me **Panel v3.34** confirm karein. Storage clear, entries re-enter
    ya company logo dobara upload karne ki zaroorat nahi.
 3. Sidebar → **Stock Management** kholein. Phone par upar navigation ko sideways
    scroll kar sakte hain. Keyboard shortcut: **g**, phir **i**.
@@ -18,7 +18,7 @@ nahi karni**; har saved transaction se balance apne-aap calculate hota hai.
    ki **Opening / Stock In** entry save hoti hai. Zero opening par fake entry nahi banti.
 
 Purana version khule ya **Import stock** button na dikhe to [normal panel link](https://akash4447777-dev.github.io/hisaab-pro/)
-dobara kholkar refresh karein aur **Panel v3.33** dekhein. **Browser ka site data /
+dobara kholkar refresh karein aur **Panel v3.34** dekhein. **Browser ka site data /
 local storage clear na karein**—isse unsynced entries hat sakti hain.
 
 Photo camera/gallery se PNG, JPG ya WebP ho sakti hai, maximum **5 MB** input.
@@ -26,14 +26,14 @@ Browser ise locally bounded JPEG me compress karta hai; koi image-upload service
 nahi. Invalid image par purani photo/data retained. Photo choose karna abhi draft
 hai—**Save product** ke bina save nahi hota. Company logo alag rehta hai.
 
-## 1a. Purane panel se available stock lana (v3.33)
+## 1a. Purane panel se available stock lana (v3.33 file import)
 
 **Yeh opening-stock snapshot hai, purane receipts / Out / Sales ka history nahi.**
 Old panel me jo available quantity hai wahi chosen cut-over date ki Opening banti
 hai. Box ko box, pcs ko pcs rakhein—pack size ya box → pcs conversion guess nahi hoti.
 
 1. Pehle same asli-data wale browser/site par **Settings → Backup (JSON)** lein aur
-   **Panel v3.33** confirm karein. Same account/project use karein; storage clear na karein.
+   **Panel v3.34** confirm karein. Same account/project use karein; storage clear na karein.
 2. **Stock Management → Import stock** → apni prepared `.json` / UTF-8 `.csv` file chunein.
    **Partial opening file ko Settings → Restore me mat daalein**; woh whole-backup
    replacement hai. Stock importer full Settings backups accept nahi karta.
@@ -82,6 +82,56 @@ nahi karta. Release / public tests me private catalogue ya screenshots bundled n
 Selected file browser me parse hoti hai; koi third-party file/image-upload service
 nahi. Saved Stock records normal existing account-cloud sync me shamil hote hain.
 Import purana salary, Attendance, Canteen, saved parties ya company logo replace nahi karta.
+
+## 1b. Private Add stock link — file choose kiye bina (v3.34)
+
+Prepared **private stock link** ko **usi browser/site/account** me kholein jahan
+asli Hisaab data hai. Link seedha current normal panel me complete stock preview
+kholta hai—file chooser, JSON paste ya Settings Restore nahi. Configured cloud ka
+initial login/sync complete hone ka wait hota hai; sign-in chahiye to normal panel
+login karein. Account/local-browser label aur **poori names/quantities/units list**
+review karke sirf **“Haan, … products jodo”** dabayein. **Abhi nahi / Close / Escape**
+cancel karta hai. Link kholna ya preview dekhna save permission nahi hai.
+
+Opening date link ki explicitly chosen policy se aati hai: **import-day** ka matlab
+link-opening waqt ki **device-local date**, UTC ya screenshot date nahi. Login me
+midnight nikal jaye tab bhi opening waqt ki date retained; confirmation se pehle
+editable hai. Explicit calendar date bhi supported; unspecified date blank hi hai.
+Ordinary CSV/JSON file import ab bhi blank date + review-checkbox wala flow hai.
+
+Same-name/exact-unit **skip unchanged**, different-unit **whole batch blocked**,
+zero-stock products, required pre-change safety copy, **one atomic save** aur har
+new product/positive opening ka independent audit file-import jaise hi hain.
+Reopen par existing quantities na overwrite hoti hain na double-add. Account/data/
+disk badalne ke baad purana reviewed Add blocked; fresh link + review karein.
+
+**Privacy:** catalogue public release me embedded nahi. Data URL ke **fragment**
+(`stock-opening`) me local hand-off hai; panel ise bootstrap/cloud se pehle address
+se hata kar locally decode karta hai. HTTP request/Referer me fragment nahi jata,
+koi compression/image/upload service nahi. **Yeh encryption, expiring secret ya
+account authorization nahi**—link paane wala inventory dekh/copy kar sakta hai;
+forward, public issue/PR, screenshot ya URL-shortener me na daalein. Browser/history/
+chat copies par control ki guarantee nahi. Sirf aapka explicit Haan current local/
+configured account me ordinary saved Stock banata hai; local save cloud ACK nahi.
+
+Modern Chrome/Safari ka local UTF-8/gzip support chahiye; unsupported/corrupt link
+save nahi karta. Token maximum **131,072 characters**, expanded JSON **5 MB** aur
+existing **2,000-row** limits; gzip expansion bounded hai. Initial open aur same-tab
+hash navigation dono supported, late decoding/replaced forms safely cancelled.
+
+Developer-only local creation (prepared manifest private hi rahe):
+
+```bash
+npm ci --prefix tests
+node scripts/create-stock-link.js --input private-imports/opening.json --date import-day --output private-imports/add-stock.md
+```
+
+`--date` explicit `import-day`, `ask` (blank), ya `YYYY-MM-DD`; optional `--encoding raw`
+for uncompressed hand-off. Actual current parser validates in an isolated offline
+DOM. Script only writes owner-readable Markdown + URL text under ignored
+`private-imports/`, never uploads/adds account data or prints the token. Current
+same-origin versioned HTML target required; loader/root URL is not used. Do not
+publish these private outputs or run a preview server serving the repository root.
 
 ## 2. Stock In, Stock Out aur Stock Sale
 
@@ -175,7 +225,7 @@ product rename/photo replacement purani history ko rewrite nahi karta.
 - Failed local save/quota/stale tab/account par success assume na karein; error padhein.
   Draft memory me ho sakta hai. Purane confirmed Stock/available/audit rollback rehte
   hain; successful pre-change safety copy alag se ban sakti hai.
-- Saare editing devices/tabs **v3.33** par update karein. Local save cloud ACK nahi:
+- Saare editing devices/tabs **v3.34** par update karein. Local save cloud ACK nahi:
   doosre device par jaane se pehle **Cloud synced** confirm karein.
 
 Independent devices ki compatible entries merge ho sakti hain. Lekin Stock 100 par
