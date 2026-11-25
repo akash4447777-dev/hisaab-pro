@@ -17,6 +17,10 @@ nahi karni**; har saved transaction se balance apne-aap calculate hota hai.
 5. **Save product** ke baad product aur, opening quantity positive ho to, usi date
    ki **Opening / Stock In** entry save hoti hai. Zero opening par fake entry nahi banti.
 
+Purana version khule ya **Import stock** button na dikhe to [normal panel link](https://akash4447777-dev.github.io/hisaab-pro/)
+dobara kholkar refresh karein aur **Panel v3.33** dekhein. **Browser ka site data /
+local storage clear na karein**—isse unsynced entries hat sakti hain.
+
 Photo camera/gallery se PNG, JPG ya WebP ho sakti hai, maximum **5 MB** input.
 Browser ise locally bounded JPEG me compress karta hai; koi image-upload service
 nahi. Invalid image par purani photo/data retained. Photo choose karna abhi draft
