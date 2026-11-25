@@ -3,6 +3,7 @@
    whole preexisting source. The independent new module has its own behavior,
    PDF geometry, persistence/cloud, stale-state and native-browser tests. */
 const assert = require('node:assert/strict');
+const { withoutStock } = require('./stock-compat');
 const hooks = [
   [
     "        const keepParties = d.settings?.canteenParties === undefined && previous.settings.canteenParties !== undefined;\n        const settings = { ...(d.settings || {}), ...(keepParties ? { canteenParties: syncClone(previous.settings.canteenParties) } : {}) };\n        Store.data = normalizeData({ ...d, settings, attendance: d.attendance === undefined ? previous.attendance : d.attendance });",
@@ -196,6 +197,7 @@ const hooks = [
   ]
 ];
 function withoutPartyReports(source) {
+  source = withoutStock(source);
   const start = '/* v3.31 CANTEEN PARTIES / FILTERED REPORTS BEGIN', end = '/* v3.31 CANTEEN PARTIES / FILTERED REPORTS END */';
   if (!source.includes(start)) return source;
   assert.equal(source.split(start).length - 1, 1, 'one independent party/report module');

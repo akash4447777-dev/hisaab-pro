@@ -54,8 +54,8 @@ async function importJson(page, payload, name = 'synthetic-party-backup.json') {
     const page = await context.newPage(); page.on('pageerror', e => errors.push(e.stack));
     await page.goto(new globalThis.URL('Hisaab-Pro-v3.30.html', URL).href); await page.waitForFunction(() => !!window.Hisaab); await seed(page); const old = await snapshot(page);
     await page.goto(URL); await page.waitForFunction(() => !!window.Hisaab); await go(page);
-    check(await snapshot(page) === old, 'native v3.30 → v3.31 keeps every raw byte, record, ID, amount, party and line item');
-    check(await page.locator('[data-ver]').first().textContent() === '3.31', 'native panel reports v3.31');
+    check(await snapshot(page) === old, 'native v3.30 → v3.32 keeps every raw byte, record, ID, amount, party and line item');
+    check(await page.locator('[data-ver]').first().textContent() === '3.32', 'native panel reports v3.32');
     const originalFinance = await finance(page); await page.locator('[data-act="ctTab"][data-tab="parties"]').click();
     check(await page.locator('#ctPartyForm').count() === 1 && (await page.locator('#viewRoot').textContent()).includes(FRESH), 'Parties tab shows a labelled save form and already-saved names with zero entries');
     await page.fill('#ctPartyNew', '  Native   Fresh Shop  '); await page.locator('#ctPartyForm button[type="submit"]').click();

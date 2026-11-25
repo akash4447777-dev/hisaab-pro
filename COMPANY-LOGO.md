@@ -1,6 +1,10 @@
 # Hisaab Pro v3.29 — ek logo upload, sabhi naye PDFs
 
-**Current panel v3.31:** saved Canteen parties aur combined From Date / To Date ×
+**Current panel v3.32:** separate [Stock Management](STOCK-MANAGEMENT.md) tab added.
+Product photos company logo ko replace nahi karti; saved logo PDF resource aur
+previous report rules retained. Logo dobara upload nahi karna.
+
+**v3.31:** saved Canteen parties aur combined From Date / To Date ×
 Party PDF selection. Six themes me sirf matching data; har direct-PDF continuation
 par wahi saved logo. Removed Bikri/Kharcha columns stay removed. Logo handling,
 item prices/occurrences and financial/Attendance data retained; saved logo ko dobara

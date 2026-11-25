@@ -1,3 +1,4 @@
+const { withoutStock } = require('./stock-compat');
 /* v3.28 — each original canteen item line must survive UI / PDF / print.
    No live backend/customer data. Includes the reported two × 500g regression. */
 const { withoutLogoHeader } = require('./logo-compat');
@@ -177,9 +178,9 @@ async function test(label, fn) { try { await fn(); passed++; console.log('  ✅ 
   });
   await test('CSV entries and old JSON shape remain unchanged by the report-only fix', async () => { d.C.csv(); old.C.csv(); const a = (await blobBytes(d.files.at(-1).blob, d)).toString('utf8'), b = (await blobBytes(old.files.at(-1).blob, old)).toString('utf8'); assert.equal(a, b); assert.equal(d.w.localStorage.getItem(KEY), d.raw); assert.equal(JSON.stringify(d.S.data.canteen).includes('entryNo'), false); });
   await test('UI/PDF/print/sharing never rewrites saved entries/history or cloud dirty state', () => { const before = snapshot(d); d.C.dayLedger(); d.C.monthLedger(); d.C.itemLines(d.C.entries()); d.C.pdfDayStr(DATE); d.C.pdfMonthStr(2026, 10); d.C.printDay(); d.C.printMonth(); d.C.shareMonth(); assert.equal(snapshot(d), before); });
-  await test('normalization, finances, catalog, save/sync and Attendance stay identical except audited logo header slots', () => {
-    for (const name of ['normCtItem', 'normCtEntry', 'normCanteen', 'ctItemAmt', 'ctItemUnitRate', 'ctTotals', 'ctItemAgg', 'ctPartyAgg', 'ctSave', 'ctRatesView', 'ctRateHist', 'ctSharePdf', 'normalizeData', 'syncView', 'mergeSyncData', 'calc', 'attCalculate', 'attSummary', 'attReport', 'attRegisterSheet', 'attXlsxBytes', 'attPdfString', 'attPdfLayout']) { const re = new RegExp('^function ' + name + '\\([\\s\\S]*?^\\}', 'm'); assert.ok(html.match(re) && previous.match(re), name); assert.equal(name === 'attPdfLayout' ? withoutLogoHeader(html.match(re)[0]) : html.match(re)[0], previous.match(re)[0], name); }
-    same(html.match(/<style[\s\S]*?<\/style>/g), previous.match(/<style[\s\S]*?<\/style>/g));
+  await test('legacy normalization, finances, catalog, sync and Attendance stay exact after enumerated Stock and logo hooks', () => {
+    for (const name of ['normCtItem', 'normCtEntry', 'normCanteen', 'ctItemAmt', 'ctItemUnitRate', 'ctTotals', 'ctItemAgg', 'ctPartyAgg', 'ctSave', 'ctRatesView', 'ctRateHist', 'ctSharePdf', 'normalizeData', 'syncView', 'mergeSyncData', 'calc', 'attCalculate', 'attSummary', 'attReport', 'attRegisterSheet', 'attXlsxBytes', 'attPdfString', 'attPdfLayout']) { const re = new RegExp('^function ' + name + '\\([\\s\\S]*?^\\}', 'm'); assert.ok(withoutStock(html).match(re) && previous.match(re), name); assert.equal(name === 'attPdfLayout' ? withoutLogoHeader(withoutStock(html).match(re)[0]) : withoutStock(html).match(re)[0], previous.match(re)[0], name); }
+    same(withoutStock(html).match(/<style[\s\S]*?<\/style>/g), previous.match(/<style[\s\S]*?<\/style>/g));
   });
   await test('all repeated-item regression tests finish without uncaught JavaScript errors', () => same(errors, []));
   for (const dom of windows) dom.window.close(); console.log(`\n${failed ? '❌' : '✅'} CANTEEN LINES: ${passed} checks pass${failed ? ', ' + failed + ' FAIL' : ''}`); process.exitCode = failed ? 1 : 0;

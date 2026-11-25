@@ -1,4 +1,4 @@
-# HISAAB v3.31 — safe login, device sync aur recovery
+# HISAAB v3.32 — safe login, device sync aur recovery
 
 v3.17’s data-safety protocol remains in place. v3.19 extends the same protection
 to the integrated manager Attendance tab; no new Supabase table/project is needed.
@@ -61,7 +61,7 @@ keep the bounded local image. A confirmed removal is an explicit empty value;
 concurrent different replacements/removal pause for an explicit local/cloud
 choice. No new storage key, backend/table or sync/recovery/financial change.
 Bad/cancelled/stale-account uploads or failed local persistence retain the previous
-logo/data; local save is never a cloud ACK. Update all devices/tabs to **v3.31** to
+logo/data; local save is never a cloud ACK. Update all devices/tabs to **v3.32** to
 see branding on their PDFs. [Logo guide](COMPANY-LOGO.md).
 
 v3.30 removes only Canteen PDF/print Bikri / Kharcha display columns and their
@@ -82,12 +82,37 @@ context-checked and defers cloud adoption while its dialog is open. Design selec
 only changes the existing PDF preference. Use v3.31 for the new selectors on every
 device/tab; do not clear storage or re-enter entries. [Party / PDF guide](CANTEEN-REPORTS.md).
 
+v3.32 adds **Stock Management** in optional `settings.stockInventory` (v1):
+products, dated In/Out/Sale transactions, deduplicated local JPEG images and full
+before/after history. Stock-only, history-only and photo-only payloads count as real
+data; old missing-field backups/cloud snapshots retain current Stock. Explicit
+empty Stock participates in deletion-intent/loss checks and recovery. No new table,
+project or storage key. Existing employees, salary, Attendance, logo and Canteen
+parties/reports stay intact. [Use guide](STOCK-MANAGEMENT.md).
+
+Every local write/import/recovery/cloud candidate validates product/unit/image
+references and the **whole chronological ledger**, not just final availability.
+Independent valid movements merge; two offline sales that together oversell pause
+for explicit choice. An affected product and its dependent movement set are chosen
+coherently from the selected side, not mixed into a negative/orphan ledger. Losing
+rows/images remain in audit and required safety copies; independent products still
+merge. A later cloud change requires a fresh choice. Review physical quantities;
+this is not a server-reserved multi-user warehouse lock.
+
+Stock dialogs use the existing account/data/disk/edit-version guards. Failed
+canonical persistence restores previous inventory/audit/dirty state; a successfully
+saved **pre-change safety copy** may still advance. Global erase explicitly includes
+Stock photos/audit; demo/sample and old backups without Stock preserve it. Recovery
+adds missing dependencies or refuses an invalid dated combination, never clamps
+available quantity. Update every editing client to **v3.32** before Stock use.
+Synthetic CAS/RLS/adversarial tests are not live-customer backend verification.
+
 ## Pehle ye karein (existing users)
 
-1. **Jis phone/laptop par asli data abhi dikh raha hai, uska Settings → Backup (JSON) download karein.** Salary, canteen aur saved Attendance sab isi backup me aate hain. Doosre device par bhi bacha data ho to uska alag backup rakhein.
-2. **Dono devices aur saare purane tabs par v3.31 kholein:**
-   [Hisaab-Pro-v3.31.html](https://akash4447777-dev.github.io/hisaab-pro/Hisaab-Pro-v3.31.html).
-   Sidebar me **Panel v3.31** confirm karein. Browser/site storage clear, uninstall, “Erase all data” ya “Sample data” mat karein.
+1. **Jis phone/laptop par asli data abhi dikh raha hai, uska Settings → Backup (JSON) download karein.** Salary, canteen, saved Attendance aur Stock/photos/audit sab isi backup me aate hain. Doosre device par bhi bacha data ho to uska alag backup rakhein.
+2. **Dono devices aur saare purane tabs par v3.32 kholein:**
+   [Hisaab-Pro-v3.32.html](https://akash4447777-dev.github.io/hisaab-pro/Hisaab-Pro-v3.32.html).
+   Sidebar me **Panel v3.32** confirm karein. Browser/site storage clear, uninstall, “Erase all data” ya “Sample data” mat karein.
 3. Pehle bache-data wale device par **usi Supabase Project URL aur usi email/account** se sign in karein. Existing setup ko reset ya naya project/account banane ki zaroorat nahi.
 4. Settings → **Sync now**. `Cloud synced` aane par doosre updated device par bhi same project/account se sign in karein. Pehli login par cloud read hota hai; naya khaali/demo device populated cloud ko replace nahi karta.
 5. `Sync paused · data protected` aaye to neeche wali conflict/recovery choice dekhein. `Local saved · sync pending` ya `Offline · sync pending` ko cloud backup ki confirmation **na** maanein.

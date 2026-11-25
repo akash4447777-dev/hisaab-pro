@@ -1,10 +1,12 @@
 {
   "name": "hisaab-pro-tests",
-  "version": "3.31.0",
+  "version": "3.32.0",
   "private": true,
-  "description": "Hisaab — saved Canteen parties, combined date/party PDFs, company logo, salary, attendance and safe cloud-sync tests",
+  "description": "Hisaab — derived Stock Management, audited inventory, saved Canteen parties, combined date/party PDFs, company logo, salary, attendance and safe cloud-sync tests",
   "scripts": {
-    "test": "node canteen.test.js && node loader.test.js && node pdf.test.js && node cloud.test.js && node attendance.test.js && node employees.test.js && node canteen-lines.test.js && node company-logo.test.js && node canteen-pdf.test.js && node canteen-filters.test.js",
+    "test": "node canteen.test.js && node loader.test.js && node pdf.test.js && node cloud.test.js && node attendance.test.js && node employees.test.js && node canteen-lines.test.js && node company-logo.test.js && node canteen-pdf.test.js && node canteen-filters.test.js && node stock.test.js && node stock-cloud.test.js",
+    "test:stock": "node stock.test.js && node stock-cloud.test.js",
+    "test:stock:browser": "node stock.browser.js",
     "test:canteen": "node canteen.test.js",
     "test:canteen:lines": "node canteen-lines.test.js",
     "test:canteen:pdf": "node canteen-pdf.test.js",

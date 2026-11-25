@@ -1,9 +1,14 @@
-# Hisaab Pro v3.31 — Saved parties + Date × Party PDF
+# Hisaab Pro v3.32 — Saved parties + Date × Party PDF
+
+**v3.32:** alag [Stock Management](STOCK-MANAGEMENT.md) tab added. Canteen saved
+parties, combined date × party selection, six templates, logo, individual original
+item lines aur seven-column ledger retained; Stock operations Canteen amounts ya
+entries nahi badalti. Neeche v3.31 se available Canteen workflow wahi hai.
 
 ## 1. Party ka naam ek baar save karein
 
 1. Apne asli data wale **same browser/site** par Settings → **Backup (JSON)** lein.
-2. Latest panel refresh karke **Panel v3.31** confirm karein. Storage clear / entries re-enter na karein.
+2. Latest panel refresh karke **Panel v3.32** confirm karein. Storage clear / entries re-enter na karein.
 3. **Canteen → Parties** kholein, party ka naam likhein aur **Save party** dabayein.
 4. **Canteen entry** me saved-party dropdown se naam chunein. Party row ka **＋ Entry** bhi wahi naam preselect karta hai. Phone par wide table ko sideways scroll karke row actions dekh sakte hain.
 
