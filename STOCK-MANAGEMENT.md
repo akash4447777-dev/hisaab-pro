@@ -1,4 +1,4 @@
-# Hisaab Pro v3.32 — Stock Management
+# Hisaab Pro v3.33 — Stock Management
 
 Stock Management existing Hisaab panel ka **alag tab** hai: products/photo, Stock In,
 purpose-wise Stock Out, customer-wise Sales, live availability, date-wise history,
@@ -8,7 +8,7 @@ nahi karni**; har saved transaction se balance apne-aap calculate hota hai.
 ## 1. Pehli baar
 
 1. Jis **same browser/site** par asli data hai, Settings → **Backup (JSON)** download karein.
-2. Updated panel me **Panel v3.32** confirm karein. Storage clear, entries re-enter
+2. Updated panel me **Panel v3.33** confirm karein. Storage clear, entries re-enter
    ya company logo dobara upload karne ki zaroorat nahi.
 3. Sidebar → **Stock Management** kholein. Phone par upar navigation ko sideways
    scroll kar sakte hain. Keyboard shortcut: **g**, phir **i**.
@@ -21,6 +21,63 @@ Photo camera/gallery se PNG, JPG ya WebP ho sakti hai, maximum **5 MB** input.
 Browser ise locally bounded JPEG me compress karta hai; koi image-upload service
 nahi. Invalid image par purani photo/data retained. Photo choose karna abhi draft
 hai—**Save product** ke bina save nahi hota. Company logo alag rehta hai.
+
+## 1a. Purane panel se available stock lana (v3.33)
+
+**Yeh opening-stock snapshot hai, purane receipts / Out / Sales ka history nahi.**
+Old panel me jo available quantity hai wahi chosen cut-over date ki Opening banti
+hai. Box ko box, pcs ko pcs rakhein—pack size ya box → pcs conversion guess nahi hoti.
+
+1. Pehle same asli-data wale browser/site par **Settings → Backup (JSON)** lein aur
+   **Panel v3.33** confirm karein. Same account/project use karein; storage clear na karein.
+2. **Stock Management → Import stock** → apni prepared `.json` / UTF-8 `.csv` file chunein.
+   **Partial opening file ko Settings → Restore me mat daalein**; woh whole-backup
+   replacement hai. Stock importer full Settings backups accept nahi karta.
+3. **Opening / cut-over date** khud chunein. Date blank se shuru hoti hai; screenshot
+   filename / today ko original stock date nahi maana jata. Snapshot lene ke baad hui
+   movements ko double-count na karein; actual physical stock/date reconcile karein.
+4. Poora preview dekhein: **name, quantity, unit, note/photo, New / Skip / Blocked**.
+   Phone par opening quantity/unit aur result naam ke neeche bhi dikhte hain; full
+   table ko sideways aur vertically scroll kar sakte hain.
+5. Review checkbox tick karke **Import new products** dabayein. Saare new products +
+   positive dated openings **ek atomic save** me aate hain, har row ka Before → After
+   audit aur file-name provenance ke saath. Zero-stock products bhi rehte hain, bina
+   fake zero movement ke. Pehle valid safety copy save na ho sake to import blocked.
+6. Product-wise live quantities verify karke naya **Backup (JSON)** lein. Configured
+   cloud ho to **Cloud synced** confirm karein, phir doosra updated device kholein.
+   Same batch ko alag offline devices par saath import na karein; same-name creations
+   conflict bana sakti hain.
+
+**Existing records kabhi overwrite / double-add nahi hote.** Normalized same-name +
+exact same-unit product **skip unchanged** hota hai, file ki quantity alag hone par
+bhi; preview actual existing balance batata hai. Same-name + different unit par
+**poora batch blocked**, partial import nahi. File ke duplicate names (case / extra
+spaces samet) refuse hote hain. Sab rows existing hon to strict no-op. Cancel / bad
+file / failed save se confirmed inventory aur financial data unchanged rehte hain;
+stale account/tab/edited preview ko fresh open + review chahiye.
+
+Maximum **5 MB / 2,000 rows**. CSV header: `name,quantity,unit`; optional `minQty,note,photo`.
+Quoted commas, doubled quotes, multiline notes, BOM / CRLF supported; unknown or
+duplicate columns refused. Names ≤90 characters, units ≤18, notes ≤500. Numeric
+quantities use the same nonnegative / 3-decimal bounds as ordinary Stock.
+`minQty` absent/blank ho to **0** (warning off)—yeh unknown historical minimum ko
+invent nahi karta. Unit labels file se exactly retained; spelling aliases ko
+prepared file me explicitly review karein. Optional photo sirf bounded embedded
+JPEG data URL hai, external URL / SVG nahi; ordinary Add product photo chooser alag hai.
+
+JSON shape (generic example only; `minQty`, `note`, `photo` optional):
+
+```json
+{"format":"hisaab-stock-opening","version":1,"rows":[
+  {"name":"Example product","quantity":12,"unit":"box","minQty":0,"note":"Opening snapshot"}
+]}
+```
+
+**CSV example** button generic template download karta hai, customer inventory seed
+nahi karta. Release / public tests me private catalogue ya screenshots bundled nahi.
+Selected file browser me parse hoti hai; koi third-party file/image-upload service
+nahi. Saved Stock records normal existing account-cloud sync me shamil hote hain.
+Import purana salary, Attendance, Canteen, saved parties ya company logo replace nahi karta.
 
 ## 2. Stock In, Stock Out aur Stock Sale
 
@@ -114,7 +171,7 @@ product rename/photo replacement purani history ko rewrite nahi karta.
 - Failed local save/quota/stale tab/account par success assume na karein; error padhein.
   Draft memory me ho sakta hai. Purane confirmed Stock/available/audit rollback rehte
   hain; successful pre-change safety copy alag se ban sakti hai.
-- Saare editing devices/tabs **v3.32** par update karein. Local save cloud ACK nahi:
+- Saare editing devices/tabs **v3.33** par update karein. Local save cloud ACK nahi:
   doosre device par jaane se pehle **Cloud synced** confirm karein.
 
 Independent devices ki compatible entries merge ho sakti hain. Lekin Stock 100 par

@@ -60,7 +60,7 @@ async function settings(page){await go(page,'settings');await page.locator('#com
   await page.reload();await page.waitForFunction(()=>!!window.Hisaab);
   const original=await snapshot(page);await page.goto(URL);await page.waitForFunction(()=>!!window.Hisaab);const migrated=await snapshot(page);
   if(migrated!==original){fs.writeFileSync(path.join(OUT,'migration-before.json'),original);fs.writeFileSync(path.join(OUT,'migration-after.json'),migrated);}
-  check(migrated===original,'native v3.28 → v3.32 preserves every saved record, ID, clock, note, amount and storage byte');
+  check(migrated===original,'native v3.28 → v3.33 preserves every saved record, ID, clock, note, amount and storage byte');
   await settings(page);check(await page.locator('[data-act="companyLogoChoose"]').textContent()==='Upload logo','Settings offers a real upload button without requiring a logo file in the app');
   await page.fill('#sShop','Unsaved typed company');await upload(page,path.join(FIX,'company-logo.png'));
   let logo=await page.evaluate(()=>Hisaab.Store.data.settings.companyLogo);check(/^data:image\/jpeg;base64,/.test(logo)&&logo.length<=120000,'real transparent PNG decodes/canvas-encodes to a bounded self-contained JPEG');

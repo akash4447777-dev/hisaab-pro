@@ -2,6 +2,7 @@
    scoped CSS, then reverse each enumerated hook to immutable v3.31. Existing
    regression suites keep comparing the ENTIRE preexisting program. */
 const assert = require('node:assert/strict');
+const { withoutStockImport } = require('./stock-import-compat');
 const hooks = [
   [
     "      'v3.32 — <b style=\"color:var(--ink)\">Stock Management</b>: Products + photo + opening entry; Stock In / purpose-wise Out / customer, salesperson aur delivery details wali Sale. Live stock transactions se auto-calculate; date / product / party / salesperson filters, full history, audited edit/delete aur minimum-stock warnings. Negative dated balance par save blocked; JSON / configured cloud / safety copies included. Purana salary, Canteen aur Attendance data unchanged.<br>'+\n      'v3.31 — <b style=\"color:var(--ink)\">Canteen: saved parties + Date / Party PDF",
@@ -220,6 +221,7 @@ const hooks = [
   ]
 ];
 function withoutStock(source) {
+  source = withoutStockImport(source);
   if (!source.includes('/* v3.32 STOCK MANAGEMENT BEGIN')) return source;
   for (const [start,end] of [['/* v3.32 STOCK MANAGEMENT BEGIN','/* v3.32 STOCK MANAGEMENT END */'],['/* v3.32 STOCK STYLE BEGIN */','/* v3.32 STOCK STYLE END */']]) {
     assert.equal(source.split(start).length-1,1,'one Stock module start');
