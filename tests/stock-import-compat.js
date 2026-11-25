@@ -1,5 +1,6 @@
 /* Exact v3.33 allowance; recover all immutable v3.32 bytes, not a loose regex. */
 const assert = require('node:assert/strict');
+const { withoutStockLink } = require('./stock-link-compat');
 const hooks = [
   [
     "      'v3.33 — <b style=\"color:var(--ink)\">Stock opening import</b>: CSV / JSON file se products, available quantity aur exact unit ka preview; cut-over date aur review ke baad ek atomic save. Existing products skip, unit mismatch / duplicate file rows refused. Zero-stock items, optional photos / notes, before-after audit aur required safety copy; salary / Canteen / Attendance unchanged. Private inventory release me bundled nahi hai.<br>'+\n      'v3.32 — <b style=\"color:var(--ink)\">Stock Management</b>",
@@ -28,6 +29,7 @@ const hooks = [
   ]
 ];
 function withoutStockImport(source) {
+  source = withoutStockLink(source);
   if (!source.includes('/* v3.33 STOCK OPENING IMPORT BEGIN')) return source;
   for (const [start,end] of [['/* v3.33 STOCK OPENING IMPORT BEGIN','/* v3.33 STOCK OPENING IMPORT END */'],['/* v3.33 STOCK IMPORT STYLE BEGIN */','/* v3.33 STOCK IMPORT STYLE END */']]) {
     assert.equal(source.split(start).length-1,1);assert.equal(source.split(end).length-1,1);

@@ -853,6 +853,9 @@ select.ct-pm option{font-size:11.5px;font-weight:700}
 /* v3.33 STOCK IMPORT STYLE BEGIN */
 .stki-dialog{width:min(1000px,calc(100vw - 24px));max-width:1000px}.stki-dialog .modal-b>p{font-size:11px;line-height:1.6;margin:12px 0}.stki-preview{max-height:34vh;max-height:34dvh;margin-top:10px;border:1px solid var(--line);border-radius:10px}.stki-preview table{min-width:620px;font-size:12px}.stki-preview td{white-space:normal;overflow-wrap:anywhere}.stki-preview td:first-child{min-width:180px}.stki-preview .stk-photo{display:block;margin-bottom:6px}.stki-preview details{margin-top:5px;font-size:10px}.stki-preview details p{max-width:400px;white-space:pre-wrap}.stki-review{display:flex;gap:9px;align-items:flex-start;font-size:12px;line-height:1.7;margin-top:14px}.stki-review input{flex-shrink:0;margin-top:4px}.stki-dialog input[type=file]{max-width:100%;min-width:0;font-size:11px}.stki-dialog #stkiPreview>p{font-size:11px;line-height:1.6;margin-top:10px}.stki-dialog .modal-f .row-actions{flex-wrap:wrap}.stki-mobile-quantity{display:none}@media(max-width:720px){.stki-mobile-quantity{display:block;font-size:11px;line-height:1.6;margin-top:5px;color:var(--primary)}.stki-mobile-quantity>span{display:block;color:var(--muted)}}
 /* v3.33 STOCK IMPORT STYLE END */
+/* v3.34 STOCK LINK STYLE BEGIN */
+.stkl-account{padding:11px 13px;background:var(--surface-2);border:1px solid var(--line);border-radius:10px;font-size:12px;line-height:1.7;overflow-wrap:anywhere;margin-bottom:14px}.stkl-date{max-width:360px}.stkl-counts{font-size:12px;font-weight:700;margin-top:14px}.stkl-consent{font-size:11px;line-height:1.7;margin-top:14px;color:var(--muted)}.stkl-dialog .modal-f{justify-content:flex-end}.stkl-dialog .modal-f .btn{white-space:normal;overflow-wrap:anywhere}.stkl-dialog .stki-preview:focus{outline:2px solid var(--primary);outline-offset:2px}
+/* v3.34 STOCK LINK STYLE END */
 </style>
 </head>
 <body>
@@ -1980,7 +1983,7 @@ const rRate = (n) => { const x = Math.max(0, num(n)); return x >= 1 ? r2(x) : Ma
 /* rate dikhane ka format: <₹1 ho to 0.075 jaisa khula number, warna moneyS */
 const rateS = (n) => { const x = num(n); if (x > 0 && x < 1) return "₹" + String(Math.round((x + Number.EPSILON) * 10000) / 10000); return moneyS(x); };
 const clamp = (n, lo, hi) => Math.min(hi, Math.max(lo, n));
-const APP_VERSION = "3.33";
+const APP_VERSION = "3.34";
 const esc = (s) => String(s == null ? "" : s).replace(/[&<>"']/g, (m) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[m]));
 
 const MONTHS = ["January","February","March","April","May","June","July","August","September","October","November","December"];
@@ -3463,6 +3466,7 @@ function viewSettings(){
 
     '<div style="text-align:center;font-size:11.5px;color:var(--muted);margin-top:18px;line-height:1.7">'+
       'Panel <b style="color:var(--ink)">v<span data-ver></span></b> · Auto-update enabled<br>'+
+      'v3.34 — <b style="color:var(--ink)">Private one-click Stock link</b>: File choose kiye bina local-only private link ka complete preview. Confirmed import-day / chosen date, account review aur ek Haan click se guarded opening import. Link kholne se save nahi; same-name skip / unit conflict / required safety copy / atomic audit retained. Private inventory public release me nahi hai.<br>'+
       'v3.33 — <b style="color:var(--ink)">Stock opening import</b>: CSV / JSON file se products, available quantity aur exact unit ka preview; cut-over date aur review ke baad ek atomic save. Existing products skip, unit mismatch / duplicate file rows refused. Zero-stock items, optional photos / notes, before-after audit aur required safety copy; salary / Canteen / Attendance unchanged. Private inventory release me bundled nahi hai.<br>'+
       'v3.32 — <b style="color:var(--ink)">Stock Management</b>: Products + photo + opening entry; Stock In / purpose-wise Out / customer, salesperson aur delivery details wali Sale. Live stock transactions se auto-calculate; date / product / party / salesperson filters, full history, audited edit/delete aur minimum-stock warnings. Negative dated balance par save blocked; JSON / configured cloud / safety copies included. Purana salary, Canteen aur Attendance data unchanged.<br>'+
       'v3.31 — <b style="color:var(--ink)">Canteen: saved parties + Date / Party PDF</b>: Canteen → Parties me naam ek baar save karein; entry me saved / purani party select karein. Har PDF / WhatsApp PDF / Print se pehle From Date, To Date aur Party Selection. Dono date boundaries included; sirf matching entries, original item lines aur unhi ke din / party totals, Paid / Baki / Net. No matches / invalid dates par export blocked. All six styles, company logo aur purani entries safe. Party names JSON / cloud / safety copies me saved.<br>'+
@@ -3652,6 +3656,7 @@ function closeCmdk(){ const el = $("#cmdk"); if (el) el.remove(); }
 
 /* ------------------------ 12. MODALS & DIALOGS -------------------------- */
 function openModal(html, opts) {
+  stklCancel();
   stkiCancel();
   stkEditor = null;
   ctReportState = null;
@@ -3663,6 +3668,7 @@ function openModal(html, opts) {
   document.body.style.overflow = "hidden";
 }
 function closeModal() {
+  stklCancel(true);
   stkiCancel();
   stkEditor = null;
   ctReportState = null;
@@ -11346,6 +11352,119 @@ document.addEventListener('change', event => {
 document.addEventListener('submit', event => { if (event.target.id === 'stkiForm') { event.preventDefault(); stkiSubmit(); } });
 /* v3.33 STOCK OPENING IMPORT END */
 
+/* v3.34 PRIVATE STOCK LINK BEGIN
+   The URL fragment is local input, not a credential or automatic write permission.
+   Remove it before bootstrap. Decode locally; require one explicit Add click. */
+const STKL_PREFIX = '#stock-opening=', STKL_MAX_TOKEN = 131072;
+let stklPending = null, stklEditor = null, stklInitialToken = null, stklInitialError = false, stklBoot = Promise.resolve();
+const stklOpenedOn = isoDate(new Date());
+function stklConsumeHash() {
+  if (!location.hash.startsWith(STKL_PREFIX)) return null;
+  const token = location.hash.slice(STKL_PREFIX.length), clean = new URL(location.href); clean.hash = '';
+  history.replaceState(history.state, '', clean.href); return token;
+}
+try { stklInitialToken = stklConsumeHash(); } catch (error) { stklInitialError = true; }
+function stklCancel(keepUnreviewed = false) {
+  // Account bootstrap closes empty modals; retain an unreviewed login hand-off only.
+  if (keepUnreviewed && stklPending && !stklPending.context && !$('#overlay')) return;
+  const old = stklPending; stklPending = null; stklEditor = null;
+  old?.observer?.disconnect(); if (old?.resolveWait) old.resolveWait();
+  if (old?.reader) { try { old.reader.cancel().catch(() => {}); } catch (error) {} }
+}
+async function stklReady(job) {
+  await stklBoot; if (stklPending !== job) return false;
+  const login = $('#loginRoot');
+  if (Cloud.blocked || login?.childElementCount) await new Promise(resolve => {
+    job.resolveWait = resolve;
+    job.observer = new MutationObserver(() => { if (!Cloud.blocked && !login.childElementCount) { job.observer.disconnect(); job.resolveWait = null; resolve(); } });
+    job.observer.observe(login, {childList:true});
+  });
+  if (stklPending !== job) return false;
+  const task = Cloud.task; if (task) await task.catch(() => false);
+  if (stklPending !== job) return false;
+  if ($('#overlay') || Cloud.blocked) throw new Error('Pehle login / khula form complete karein, phir private link dobara kholein.');
+  job.context = stkContext(); stkCheck(job.context); return true;
+}
+function stklParse(text, openedOn = isoDate(new Date())) {
+  if (typeof text !== 'string' || new Blob([text]).size > STKI_MAX_BYTES) throw new Error('Stock link maximum 5 MB decoded data rakh sakta hai.');
+  let data; try { data = JSON.parse(text); } catch (error) { throw new Error('Stock link ka data valid nahi hai. Naya private link kholein.'); }
+  stkObject(data, ['format','version','date','opening'], 'private Stock link');
+  if (data.format !== 'hisaab-stock-link' || data.version !== 1 || typeof data.date !== 'string' || data.date !== '' && data.date !== 'import-day' && !stkDate(data.date)) throw new Error('Stock link format / opening date valid nahi hai.');
+  return { date: data.date === 'import-day' ? openedOn : data.date, dateMode: data.date, rows: stkiParse(JSON.stringify(data.opening), 'private-opening.json') };
+}
+async function stklDecode(token, job) {
+  if (typeof token !== 'string' || token.length > STKL_MAX_TOKEN || !/^(j1|g1)\.[A-Za-z0-9_-]+$/.test(token)) throw new Error('Private Stock link invalid / bahut bada hai.');
+  const raw = token.slice(3); if (raw.length % 4 === 1) throw new Error('Private Stock link adhura hai.');
+  let binary; try { binary = atob(raw.replace(/-/g, '+').replace(/_/g, '/') + '='.repeat((4 - raw.length % 4) % 4)); } catch (error) { throw new Error('Private Stock link decode nahi hua.'); }
+  const bytes = Uint8Array.from(binary, c => c.charCodeAt(0));
+  if (typeof TextDecoder !== 'function') throw new Error('Is browser me private link supported nahi. Updated Chrome / Safari me kholein.');
+  if (token.startsWith('j1.')) return new TextDecoder('utf-8', {fatal:true}).decode(bytes);
+  if (typeof DecompressionStream !== 'function' || !Blob.prototype.stream) throw new Error('Is browser me compressed link supported nahi. Updated Chrome / Safari me kholein.');
+  const reader = new Blob([bytes]).stream().pipeThrough(new DecompressionStream('gzip')).getReader(); job.reader = reader;
+  let size = 0; const chunks = [];
+  try {
+    while (true) {
+      const part = await reader.read(); if (stklPending !== job) return null;
+      if (part.done) break;
+      size += part.value.byteLength;
+      if (size > STKI_MAX_BYTES) { await reader.cancel(); throw new Error('Stock link decoded data maximum 5 MB ho sakta hai.'); }
+      chunks.push(part.value);
+    }
+  } finally { job.reader = null; reader.releaseLock(); }
+  const result = new Uint8Array(size); let offset = 0;
+  for (const chunk of chunks) { result.set(chunk, offset); offset += chunk.byteLength; }
+  return new TextDecoder('utf-8', {fatal:true}).decode(result);
+}
+function stklCurrent(editor) { return stklEditor === editor && !!editor && $('#stklDialog') === editor.element; }
+function stklMessage(message) { const el = $('#stklError'); if (el) el.textContent = message; }
+function stklRefresh() {
+  const e = stklEditor; if (!stklCurrent(e)) return;
+  const save = $('#stklSave'); save.disabled = true;
+  let plan; try { stkCheck(e.context); plan = stkiPlan(e.rows, $('#stklDate').value); } catch (error) { stklMessage(error.message); return; }
+  const label = row => row.status === 'new' ? 'Naya product' : row.status === 'skip' ? 'Skip — existing ' + stkFmt(row.existingQuantity) + ' ' + row.existingUnit + ' unchanged' : 'Blocked — existing unit: ' + row.existingUnit;
+  $('#stklCounts').textContent = plan.added + ' naye · ' + plan.skipped + ' pehle se hain · ' + plan.conflicts + ' unit conflicts';
+  $('#stklPreview').innerHTML = '<table class="tbl"><thead><tr><th>Product / note</th><th class="num">Opening qty</th><th>Unit</th><th>Result</th></tr></thead><tbody>' + plan.rows.map(row => '<tr data-stkl-row="' + row.status + '"><td>' + (row.photo ? '<img class="stk-photo" src="' + esc(row.photo) + '" alt="Product screenshot thumbnail" loading="lazy">' : '') + '<b>' + esc(row.name) + '</b><span class="stki-mobile-quantity">Opening: <b>' + stkFmt(row.quantity) + ' ' + esc(row.unit) + '</b><span>' + esc(label(row)) + '</span></span>' + (row.note ? '<details><summary>Source / note</summary><p>' + esc(row.note) + '</p></details>' : '') + '</td><td class="num">' + stkFmt(row.quantity) + '</td><td>' + esc(row.unit) + '</td><td>' + esc(label(row)) + '</td></tr>').join('') + '</tbody></table>';
+  save.textContent = plan.added ? 'Haan, ' + plan.added + ' products jodo' : 'Stock pehle se added hai';
+  stklMessage(plan.conflicts ? 'Unit alag hai — poora import blocked. Existing stock unchanged hai; conversion nahi hogi.' : !plan.added ? 'Saare products pehle se hain. Quantity dobara add / overwrite nahi hui.' : !plan.date ? 'Opening date chunein, phir neeche Haan dabayein.' : '');
+  save.disabled = e.busy || !plan.added || !!plan.conflicts || !stkDate(plan.date);
+}
+function stklShow(packet, context) {
+  go('stock'); stkCheck(context);
+  openModal('<div class="modal stk-dialog stki-dialog stkl-dialog" id="stklDialog" role="dialog" aria-modal="true" aria-labelledby="stklTitle"><div class="modal-h"><div><h3 id="stklTitle">Aapka stock jodne ke liye taiyar hai</h3><p>File choose nahi karni. Neeche dekhkar ek baar Haan dabayein.</p></div><button type="button" class="x" data-act="closeModal" aria-label="Close">✕</button></div><div class="modal-b"><div class="banner warn">Sirf <b>naye products + opening stock</b> judenge. Box / pcs apni unit me rahenge. Purana Stock, salary, Canteen, Attendance aur logo replace nahi honge. Link kholne se abhi kuch save nahi hua.</div><div class="stkl-account"><b>Is panel ka account:</b> ' + esc(Cloud.user?.email || 'Is browser ka local data') + '<br>Jis account me stock chahiye, wahi khula hona chahiye. Private link kisi aur ko share na karein.</div><label class="stk-field stkl-date"><span>Opening stock ki date</span><input id="stklDate" type="date" class="inp" min="1900-01-01" max="9998-12-31" value="' + esc(packet.date) + '" required><small>' + (packet.dateMode === 'import-day' ? 'Aapki choice: link kholne wale din ki device date. Galat ho to abhi sudharein.' : 'Quantity isi date ki opening entry banegi. Date review karein.') + '</small></label><p id="stklCounts" class="stkl-counts" aria-live="polite"></p><div id="stklPreview" class="twrap stki-preview" tabindex="0" role="region" aria-label="Complete product, quantity and unit review"></div><p id="stklError" class="stk-error" role="alert" tabindex="-1"></p><p class="stkl-consent">Neeche <b>Haan</b> dabane ka matlab: maine account, date, names, quantities aur units dekh li hain aur ye naya opening stock jodna hai. Pehle se maujood products skip honge. Save se pehle required safety copy banegi.</p></div><div class="modal-f"><button type="button" class="btn" data-act="closeModal">Abhi nahi</button><button type="button" class="btn primary" id="stklSave" data-stkl="save" disabled>Stock jodo</button></div></div>', {sticky:true});
+  stklEditor = { context, rows:packet.rows, busy:false, element:$('#stklDialog') }; stklRefresh();
+}
+async function stklOpen(token, openedOn = isoDate(new Date())) {
+  if ($('#overlay')) throw new Error('Pehle khula form band karein, phir private stock link dobara kholein.');
+  stklCancel(); const job = { context:null, reader:null }; stklPending = job;
+  try {
+    if (!await stklReady(job)) return false;
+    const text = await stklDecode(token, job); if (stklPending !== job) return false;
+    stkCheck(job.context); const packet = stklParse(text, openedOn); stklShow(packet, job.context); return true;
+  } catch (error) { if (stklPending === job) { stklPending = null; throw error; } return false; }
+}
+function stklSave() {
+  const e = stklEditor; if (!stklCurrent(e) || e.busy) return;
+  try {
+    e.busy = true; $('#stklSave').disabled = true;
+    const result = stkiApply(e.rows, $('#stklDate').value, e.context, 'Private opening-stock link');
+    closeModal(); Object.assign(stkUI(), {tab:'products',q:'',product:'all',low:false,page:0}); go('stock');
+    toast(result.imported + ' products / ' + result.entries + ' opening entries added; ' + result.skipped + ' existing skipped', 'ok');
+  } catch (error) { if (stklCurrent(e)) { e.busy = false; stklRefresh(); stklMessage(error.message); $('#stklError').focus(); } }
+}
+document.addEventListener('click', event => { if (event.target.closest('[data-stkl="save"]')) { event.preventDefault(); stklSave(); } });
+document.addEventListener('change', event => { if (event.target.id === 'stklDate') stklRefresh(); });
+document.addEventListener('keydown', event => { if (event.key === 'Escape' && (stklPending || stklCurrent(stklEditor))) { stklCancel(); closeModal(); } });
+window.addEventListener('hashchange', () => {
+  try { const token = stklConsumeHash(); if (token !== null) { stklInitialToken = null; stklOpen(token).catch(error => toast(error.message, 'bad')); } }
+  catch (error) { toast('Private link browser history se safely clear nahi hua. Updated browser me kholein.', 'bad'); }
+});
+window.addEventListener('load', () => {
+  if (stklInitialError) { toast('Private link browser history se safely clear nahi hua. Updated browser me kholein.', 'bad'); return; }
+  const token = stklInitialToken; stklInitialToken = null;
+  if (token !== null) stklOpen(token, stklOpenedOn).catch(error => toast(error.message, 'bad'));
+}, {once:true});
+/* v3.34 PRIVATE STOCK LINK END */
+
 /* ----------------------------- 17. BOOTSTRAP ---------------------------- */
 Store.load();
 initTheme();
@@ -11389,7 +11508,7 @@ document.addEventListener("input", (e) => {
 
 syncMonthPickers();
 go("dashboard");
-try { Cloud.boot(); } catch (e) {}
+try { stklBoot = Promise.resolve(Cloud.boot()).catch(() => false); } catch (e) {}
 window.Hisaab = { Store, calc, monthMeta, PdfDoc, inWords, UI, render, go, Cloud, Recovery,
   sync: { merge: mergeSyncData, view: syncView, same: samePayload, counts: dataCounts, hasData: hasUserData },
   attendance: { data: att, blank: blankAttendance, defaults: attDefaults, validate: attValidate, calculate: attCalculate, summary: attSummary,
@@ -11402,7 +11521,8 @@ window.Hisaab = { Store, calc, monthMeta, PdfDoc, inWords, UI, render, go, Cloud
   stock: { data: stkData, blank: stkBlank, validate: stkValidate, quantity: stkQty, inventory: stkInventory, query: stkQuery, ledger: stkLedger,
     saveProduct: stkSaveProduct, deleteProduct: stkDeleteProduct, saveEntry: stkSaveMovement, deleteEntry: stkDeleteMovement,
     ui: stkUI, context: stkContext, openProduct: stkOpenProduct, openEntry: stkOpenMovement,
-    openingImport: { parse: stkiParse, plan: stkiPlan, apply: stkiApply, open: stkiOpen } },
+    openingImport: { parse: stkiParse, plan: stkiPlan, apply: stkiApply, open: stkiOpen },
+    openingLink: { parse: stklParse, open: stklOpen } },
   /* canteen module API */
   canteen: { data: ct, totals: ctTotals, itemLines: ctItemLines, entries: ctAll, onDate: ctOnDate, inMonth: ctInMonth,
              dayLedger: ctDayLedger, monthLedger: ctMonthLedger, openModal: openCtModal, save: ctSave,
