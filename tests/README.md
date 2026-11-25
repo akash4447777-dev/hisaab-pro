@@ -1,6 +1,6 @@
 # Hisaab Pro — tests (developer only)
 
-Ye folder **app ke liye zaroori nahi**. `hisaab_v3.html` / `Hisaab-Pro-v3.34.html` akeli file me chalti hai —
+Ye folder **app ke liye zaroori nahi**. `hisaab_v3.html` / `Hisaab-Pro-v3.35.html` akeli file me chalti hai —
 kisi install ki zaroorat nahi. Ye tests sirf tab chalao jab code me change kiya ho aur check karna ho
 ki **Stock**, **Attendance**, **Canteen**, salary, PDF, loader aur **cross-device cloud sync** toot to nahi gaye.
 Guides: [`STOCK-MANAGEMENT.md`](../STOCK-MANAGEMENT.md) · [`CANTEEN-REPORTS.md`](../CANTEEN-REPORTS.md) · [`ATTENDANCE.md`](../ATTENDANCE.md).
@@ -10,13 +10,14 @@ Guides: [`STOCK-MANAGEMENT.md`](../STOCK-MANAGEMENT.md) · [`CANTEEN-REPORTS.md`
 ```bash
 cd tests
 npm ci               # lockfile se jsdom install hota hai
-npm test             # previous 1457 + private-link 70
-node canteen.test.js ../Hisaab-Pro-v3.34.html   # kisi aur file par chalana ho
+npm test             # 1643: previous 1527 + reviewed message 116
+node canteen.test.js ../Hisaab-Pro-v3.35.html   # kisi aur file par chalana ho
 node stock.test.js      # 129 derived inventory/CRUD/audit/forms/import/recovery checks
 node stock-cloud.test.js # 36 CAS/RLS/conflict/offline/adversarial/photo safety checks
 npm run test:stock       # both original Stock targeted suites
 npm run test:stock:import # 89 additive CSV/JSON opening-import checks
 npm run test:stock:link   # 70 private fragment/consent/date/cloud/generator checks
+npm run test:stock:message # 116 read-only parser/OCR/roles/dedup/cutoff/atomic/context/cloud checks
 node loader.test.js  # sirf index.html loader ke tests
 node pdf.test.js     # fonts + bottom geometry + multi-page
 node cloud.test.js   # fake backend + independent browser stores, 126 sync checks
@@ -29,33 +30,35 @@ node canteen-filters.test.js --artifacts ../.cache/canteen-filters-qa # actual s
 node canteen-pdf.test.js --artifacts ../.cache/canteen-pdf-qa # optional actual PDFs
 node company-logo.test.js  # 63 upload/persistence/all-PDF/header/data-safety checks
 node canteen-lines.test.js --artifacts ../.cache/canteen-lines-qa # optional real PDFs
-HISAAB_HTML=../Hisaab-Pro-v3.34.html npm test  # exact release, all 1527 checks
+HISAAB_HTML="$(realpath ../Hisaab-Pro-v3.35.html)" npm test  # exact release, all 1643 checks
 node attendance.test.js --artifacts ../.cache/attendance-qa # real fixture PDF + .xlsx
 node pdf.test.js --artifacts ../.cache/pdf-qa # optional local sample PDFs
 ```
 
 Har suite ka PASS summary aur poore `npm test` ka exit code **0** zaroori hai.
-Current full run ki aakhri line: `✅ STOCK LINK: 70 checks pass`.
+Current full run ki aakhri line: `✅ STOCK MESSAGE: 116 checks pass`.
 
 ## Kya-kya test hota hai
 
 | Area | Checks |
 |---|---|
+| Message / screenshot Stock (v3.35), 116 | strict local source/year/calendar/quantity/unit/bounds and complete dated parsing; separate receipts/header parties/tags/phone, no guessed roles/supplier/quoted sender, exact thousandths source arithmetic + as-of-header ledger, no previous/Available write; conservative exact/alias matching including collisions/prototype safety, no fuzzy numeric-spec matching; semantic repeated-message/receipt/edited-deleted/manual dedup, explicit unique reference, opening/zero-opening cutoffs and same-day attestation; one canonical save + mandatory checkpoint + per-row audit, every stale account/disk/snapshot/quota/async/cancel guard, genuine forms/source edits/review reset, raw single-digit OCR/confidence/engine/model failure + late-worker cancellation, XSS escaping, backup/cloud/reload and concurrent-device semantic-ID merges; six exact hooks + bounded JS/CSS restore every immutable v3.34 byte |
+| Optional message Chromium (75, not in npm test) | actual v3.34→current raw-storage navigation; complete mixed message preview, unguessed year/roles/type, explicit office Out/purpose/receiver/driver details, source arithmetic/unit/cutoff/manual duplicate refusal, checkpoint/stale/quota rollback, one-save ordinary movements/audits, native alias persistence, cross-message receipt dedup, true offline paste, genuine JSON download; 320/390px date/qty/unit/action/Confirm without page overflow, light/dark; real browser Canvas PNG → Tesseract5 English SIMD WASM/model OCR (no fake OCR), preserved green tags/one-digit quantities/source/confidence/editable text, corrupt/SVG/oversized/static-engine and language-model download failure/fallback; only GET asset requests and no image/text upload; no customer login/backend |
 | Private Stock link (v3.34), 70 | strict bounded raw/gzip/versioned fragment and expanded data, exact opening parser/date/unit/photo checks; initial and same-document hash scrub, no file chooser/extra checkbox, complete read-only preview and one Haan; link-opening local date including cross-midnight boot/login, normal sign-in/offline destination review, no auto-write, cancellation/Escape/replaced-modal/late-reader, all context/quota/checkpoint guards, exact93-product atomic audits/zero rows/photo/reload/reopen/cloud; local generator date/target/privacy/owner-only ignored output/CLI validation; six exact integration hooks + bounded module/style recover entire v3.33 |
 | Optional private-link Chromium (57, not in npm test) | actual v3.33→current initial and same-tab gzip/raw hand-off, full93-row preview and decoded photo, native single Add with exact names/qty/unit/min/date/openings/audits, no file controls/automatic write, account/date display, cancel/Escape/reopen/actual skipped balance/unit conflict/stale/quota/reload/offline/full backup, 320/390px visible quantities and reachable Add, device-local midnight date, delayed mock cloud boot and real normal-login form followed by safe preview, no payload in HTTP URL/Referer or external upload; mock accounts only |
 | Opening-stock import (v3.33), 89 | strict versioned JSON/quoted UTF-8 CSV, BOM/CRLF/multiline/header aliases, file/row/quantity/name/unit/note/photo/date bounds, unknown/full-backup refusal, duplicate names, exact unit fidelity/no pack conversion; full read-only detached preview with blank date/resettable review, existing same-unit skip with actual balance and mismatch blocking entire batch, strict reimport no-op; one atomic save + required checkpoint + independent audits, zero-stock catalogue, deduplicated photos/unchanged company logo/financial data, actual FileReader/form/download, malicious-text escaping, cancellation/late readers, account/epoch/disk/version/snapshot/unsaved/stale/quota guards, existing conditional cloud/reload and independent/concurrent-name imports; five exact hooks (six locations) plus bounded JS/CSS recover entire immutable v3.32 |
 | Optional opening-import Chromium (43, not in npm test) | real v3.32→v3.33 raw-storage navigation, actual file chooser with full 93-row generic preview, decoded JPEG, explicit date/review/reset/cancel, wrong backup/negative quantity/unit mismatch/same-unit actual skipped balance, full quota rollback and only required pre-change recovery advancing, exact names/quantities/units/minima/dates/audits and reload, strict reimport, stale state, 320/390px bounds/reachable Import and visible opening quantity + unit + result without sideways scroll, genuine offline quoted multiline CSV and full JSON download, original financial/Attendance/Canteen/settings invariance, no external runtime/upload or uncaught error; optional private file runs locally in disposable browser only |
 | Stock Management (v3.32), 129 | exact whole-source reversal to v3.31; old raw-JSON navigation; integer-thousandth Opening + In − Out − Sales, strict quantity/calendar/reference validation and aggregate ceiling; full chronological overdraw refusal, all CRUD/cascade recalculation, before/after actor/date audit, snapshots and retained photos, bounded draft-only images/stale decoders/company-logo coexistence; real forms, combined product/party/salesperson/date/type/search, pagination and all-time Products despite hidden History dates; storage/account/stale/modal guards, JSON/old-missing/explicit-clear/demo/erase/recovery and failed-save rollback; no salary/Canteen/Attendance mutation |
 | Stock synthetic cloud (v3.32), 36 | independent products and compatible In/Out/Sales, overdrawn concurrent sales coherent product-set choices with losing-row audit, photo conflicts/all-image retention/photo-only first upload, edit/delete/unit/name dependencies, CAS retry/in-flight/stale approvals, old clients, scoped offline reload/account switching, corrupt/quota/RLS protection, dependency-aware recovery; 400 deterministic adversarial offline pairs × three merge preferences validate nonnegative/no-orphan/no-duplicate results |
-| Optional Stock Chromium (82, not in npm test) | actual v3.31→current v3.34 raw-storage navigation; native product/photo/opening/In/Out/Sale/edit/delete/cascade forms and complete audit, real PNG/JPEG decoding and SVG/corrupt/>5MB refusals, required purpose/customer/salesperson/delivery, backdated overdraw and receipt-deletion refusal, combined inclusive filters/search, 50-row pagination, genuine JSON download/old import, 320/390px availability/navigation/scrollable Sale dialog/reachable Save, offline save/reload, actual erase/recovery and canonical-quota rollback; no external runtime request/uncaught error |
+| Optional Stock Chromium (82, not in npm test) | actual v3.31→current v3.35 raw-storage navigation; native product/photo/opening/In/Out/Sale/edit/delete/cascade forms and complete audit, real PNG/JPEG decoding and SVG/corrupt/>5MB refusals, required purpose/customer/salesperson/delivery, backdated overdraw and receipt-deletion refusal, combined inclusive filters/search, 50-row pagination, genuine JSON download/old import, 320/390px availability/navigation/scrollable Sale dialog/reachable Save, offline save/reload, actual erase/recovery and canonical-quota rollback; no external runtime request/uncaught error |
 | Saved parties / filtered reports (v3.31), 102 + 17 cloud | independent zero-entry saved names; canonical case/space matching with untouched original party strings/IDs; actual save/entry/select shortcuts, date/type/party CSV intersection, inclusive cross-month/leap/year dates, exact date × party report snapshot/entry/bill/note/original-item/day/party/Net/Paid/Baki scope, unassigned/literal-All distinction, invalid/unknown/no-match refusal, six designs ± logo, original own prices, 100-line pagination and literal escaping; genuine downloaded/shared File/manual attachment/cancel, Unicode font refusal/Indic-first print, async selection/account/print races, blocked storage rollback, optional-field validation/counts/deletion intent, confirmed wipe/Undo/stale confirmation and actual Missing data jodo; 38 exact reversed hooks plus bounded module removal recover whole immutable v3.30 source |
 | Optional filter Chromium (130, not in npm test) | actual Parties form/save/reload/zero entries and entry dropdown/save; real six-theme ± logo selected downloads/identical shared PDF File bytes and print; no-match/invalid dates, same-day/unassigned/literal-All, honest manual fallback/cancel, offline/logo, real Hindi shaped resources/ActualText + actual Indic font in print, portable `.pdf` name; actual JSON file chooser (catalog/old missing field/invalid/explicit clear), recovery confirmation preserving new names, 320/390px forms, actual quota failure and complete original financial/storage invariance; OS destinations stubbed |
 | Canteen PDF columns (v3.30), 50 | exactly seven full-width/right-aligned headers, every daily row and merged total for all six day/month templates with/without logo, complete summary-slot/underline and formula-word removal, nonzero sale/expense/paid/partial balance and exact unchanged net, screenshot ₹59,038 / 26 entries, zero/sale-only/expense-only/empty cases, own-price separate 500g rows/100-line continuation, genuine download/shared File/manual-fallback bytes, unchanged app/CSV/customer-entered text/raw-storage/cloud state; exact counted presentation replacements plus entire remaining HTML/CSS/fonts/storage/cloud/salary/Attendance/logo byte comparison to immutable v3.29 |
-| Optional PDF-columns Chromium (106, not in npm test) | actual v3.29→current v3.34 raw-storage navigation, all six real template-picker choices × day/month × saved/no logo, native downloads and exact real shared PDF File bytes, real Chromium print PDFs with seven columns/every daily amount/merged totals/no empty summary values, saved once/reloaded logo, correct original positive/negative net, manual share fallback, already-open offline download, 320/390px screen bounds and complete data/disk/cloud-state invariance; OS destinations stubbed, never delivery |
+| Optional PDF-columns Chromium (106, not in npm test) | actual v3.29→current v3.35 raw-storage navigation, all six real template-picker choices × day/month × saved/no logo, native downloads and exact real shared PDF File bytes, real Chromium print PDFs with seven columns/every daily amount/merged totals/no empty summary values, saved once/reloaded logo, correct original positive/negative net, manual share fallback, already-open offline download, 320/390px screen bounds and complete data/disk/cloud-state invariance; OS destinations stubbed, never delivery |
 | Company logo (v3.29), 63 + 6 cloud | accessible Settings chooser/preview/auto-save, bounded raster data, metadata validation, PNG/JPG/WebP/white transparency, processing/cancel/error/oversized/stale-account/unsaved/quota guards, no old-data migration, reload/replace/confirmed-remove, all six Canteen day/month templates, separate 500g rows/100-line continuations, salary/payroll and two-page Attendance, one shared image per document/all pages, one XObject dictionary alongside shaped Hindi text, continued name/date slots, wrapped salary signatory, exact no-logo writer/salary/Attendance/Excel compatibility; real JSON backup + atomic cloud conflict/offline reload/confirmed removal |
 | Optional logo Chromium (78, not in npm test) | real native chooser + PNG/JPG/WebP/canvas compression/shape/white background, auto-save without losing typed fields, v3.28 raw-storage navigation/reload, 320/390px controls, every report/template, genuine downloads and shared PDF Files, Hindi/62-shift two-page Attendance, browser print/decode wait, corrupt/SVG/>5 MB refusals, replacement/confirmed removal/reload, 4000×1000→640×160 resize, backup restore in fresh isolated browser, actual localStorage quota rollback, offline PDFs, ordinary Save settings, long business headers, four-page/120-advance salary and six-page/100-line Canteen |
 | Canteen item lines (v3.28), 51 | exact two × 500g reproduction against v3.27; every saved line/own rate/amount/source retained, duplicate lines in one entry, dates/case/units/kinds/lump-sum/zero/precision/order/escaping, non-mutating frozen input, daily/monthly UI + full print + all six PDF templates, 100-row continuation, honest 14-/6-line previews, real shared PDF File bytes, preserved cumulative rate analytics/CSV and complete raw storage/data/cloud state; 23 core/report function bodies plus full CSS unchanged |
-| Optional Canteen Chromium (49, not in npm test) | real old-release forms/PDF reproduce merged 1000g, byte-identical v3.27→current v3.34 storage navigation, native 500g per-row downloads/print/share Files, same-bill 37.50/50 own rates, correct grand total, 100 repeated rows, reload, cumulative catalog, 320/390px scrolling tables and every original salary/Attendance/canteen entry retained; print/share destinations stubbed |
+| Optional Canteen Chromium (49, not in npm test) | real old-release forms/PDF reproduce merged 1000g, byte-identical v3.27→current v3.35 storage navigation, native 500g per-row downloads/print/share Files, same-bill 37.50/50 own rates, correct grand total, 100 repeated rows, reload, cumulative catalog, 320/390px scrolling tables and every original salary/Attendance/canteen entry retained; print/share destinations stubbed |
 | Employee terminology (v3.27), 33 | whole-panel visible text/placeholders/tooltips, Employee navigation/add/edit/validation/statuses, stable g+w route and command search, destructive confirmations cancelled, unchanged monthly/hourly salary math/advances/deductions, salary PDF drawing ops differ only in labels, real CSV/print/share text, cloud display-only alias, old JSON import and raw-data compatibility, customer-entered names/notes/shop names untouched, 20 byte-identical core/report functions plus original CSS/fonts |
 | Attendance (v3.27), 313 | dynamic profiles/unique codes/same-name resolution, active/employment rules, Tap/Time + Morning/Afternoon/Evening/Night and legacy Day, strict post-11:45-PM monthly bonus thresholds/exclusions/full-month all-shift basis/next-morning/attendance-month attribution and duplicate-history exclusion, 12-hour Morning/Afternoon/Evening/Night clocks in both Check-in/Check-out, all eight same/next-day choices, exhaustive 1,440-minute round-trips with bare/same/next-day prefixes, clock-band boundaries/mismatch rejection, 12 afternoon=noon / 12 night=midnight, blank-only suggestions, v3.24 raw-storage reopening without time/history/financial mutation, invalid 24-hour input rejection, old record reopening, blank clocks/period suggestions, mobile numeric/Hindi entry, actual durations including 24h 01m / screenshot 27h 01m / 36h / 47h 59m, exact same/next-day combinations, reversed/equal rejection, no deductions/automatic target classification, manual half-day/credit snapshots, open check-ins, Sunday status/date/shift dedup, month/year boundaries, filters/search/pagination, duplicate prevention, bulk skip/overwrite, actual forms, calendar/ledger/day/week/month/custom/search/sort, dashboard/settings/keyboard, escaped text, history/actor/before-after, stale editor/account/disk guards, quota rollback, local reload, old JSON/demo/reset/recovery preservation, 250 managers + 750 records pagination and 2,000-history limit |
 | Attendance exports (included above) | top first-sheet summary with numeric distinct present/status days, all actual Sunday dates, per-month full-basis numeric bonus rates; photo-style Date / manager-status / IN / OUT / blank Advance / Shift / Hours / Credit / Notes grid; no fabricated advance amounts, totals or salary-employee joins; empty/partial/multi-month/long-summary/profile-newline safety; unchanged four v3.25 detail XMLs and Attendance PDF (except version footer), genuine individual PDF + 5-sheet OOXML XLSX; chosen manager/shift/custom dates, unmarked vs absent, xrefs/stream lengths/paper bounds, one/two-page monthly layouts and explicit oversized-range refusal, bundled Hindi font + complete OFL notice, ZIP/CRC/XML/numeric hours, Unicode/emoji/formula-safe literal text, reference-style ruled 7-column ledger + dated Sunday list + outlined bonus/rule box + numeric Excel bonus Summary, styled primary register (real dates / `[h]:mm`, borders, gold Sundays, status colours, merges, pinned identity/date columns, actual table filters and identity print titles), atomic totals/signatures, original history/legacy metadata, actual Blob MIME/filenames/ready-file links/no-gesture fallback/failure reporting and full Store/localStorage/history/sync-state invariance, nine byte-identical storage/cloud/financial/clock-action core function bodies plus unchanged attCalculate arithmetic (only three error messages updated), byte-identical v3.23 stylesheet/embedded fonts/shared PDF engine except three narrowly reversed v3.29 logo hooks, and salary/canteen non-mutation |
@@ -117,15 +120,15 @@ cp ../*.html ../.cache/public-preview/
 # python3 -m http.server 8000 --bind 0.0.0.0 --directory ../.cache/public-preview
 HISAAB_URL=http://127.0.0.1:8000/hisaab_v3.html npm run test:attendance:browser
 # Exact release and screenshots:
-HISAAB_URL=http://127.0.0.1:8000/Hisaab-Pro-v3.34.html HISAAB_SCREENSHOTS=1 npm run test:stock:browser
-HISAAB_URL=http://127.0.0.1:8000/Hisaab-Pro-v3.34.html HISAAB_SCREENSHOTS=1 npm run test:stock:import:browser
-HISAAB_URL=http://127.0.0.1:8000/Hisaab-Pro-v3.34.html HISAAB_SCREENSHOTS=1 npm run test:stock:link:browser
-HISAAB_URL=http://127.0.0.1:8000/Hisaab-Pro-v3.34.html HISAAB_SCREENSHOTS=1 npm run test:attendance:browser
-HISAAB_URL=http://127.0.0.1:8000/Hisaab-Pro-v3.34.html HISAAB_SCREENSHOTS=1 npm run test:employees:browser
-HISAAB_URL=http://127.0.0.1:8000/Hisaab-Pro-v3.34.html HISAAB_SCREENSHOTS=1 npm run test:canteen:browser
-HISAAB_URL=http://127.0.0.1:8000/Hisaab-Pro-v3.34.html HISAAB_SCREENSHOTS=1 npm run test:logo:browser
-HISAAB_URL=http://127.0.0.1:8000/Hisaab-Pro-v3.34.html HISAAB_SCREENSHOTS=1 npm run test:canteen:pdf:browser
-HISAAB_URL=http://127.0.0.1:8000/Hisaab-Pro-v3.34.html HISAAB_SCREENSHOTS=1 npm run test:canteen:filters:browser
+HISAAB_URL=http://127.0.0.1:8000/Hisaab-Pro-v3.35.html HISAAB_SCREENSHOTS=1 npm run test:stock:browser
+HISAAB_URL=http://127.0.0.1:8000/Hisaab-Pro-v3.35.html HISAAB_SCREENSHOTS=1 npm run test:stock:import:browser
+HISAAB_URL=http://127.0.0.1:8000/Hisaab-Pro-v3.35.html HISAAB_SCREENSHOTS=1 npm run test:stock:link:browser
+HISAAB_URL=http://127.0.0.1:8000/Hisaab-Pro-v3.35.html HISAAB_SCREENSHOTS=1 npm run test:attendance:browser
+HISAAB_URL=http://127.0.0.1:8000/Hisaab-Pro-v3.35.html HISAAB_SCREENSHOTS=1 npm run test:employees:browser
+HISAAB_URL=http://127.0.0.1:8000/Hisaab-Pro-v3.35.html HISAAB_SCREENSHOTS=1 npm run test:canteen:browser
+HISAAB_URL=http://127.0.0.1:8000/Hisaab-Pro-v3.35.html HISAAB_SCREENSHOTS=1 npm run test:logo:browser
+HISAAB_URL=http://127.0.0.1:8000/Hisaab-Pro-v3.35.html HISAAB_SCREENSHOTS=1 npm run test:canteen:pdf:browser
+HISAAB_URL=http://127.0.0.1:8000/Hisaab-Pro-v3.35.html HISAAB_SCREENSHOTS=1 npm run test:canteen:filters:browser
 ```
 
 `127.0.0.1` here is only the **local test runner**, never a browser-facing app API.
@@ -142,7 +145,66 @@ Review native form inputs/download events as well as API fixtures. Inspect PDFs
 with PyMuPDF and workbooks with openpyxl if export code changes. Hindi image-backed
 ActualText is checked separately: copy/search support varies by PDF parser/viewer.
 
-### Current v3.34 evidence
+### Current v3.35 evidence
+
+The **exact versioned release** passes all **1,643 offline checks** = historical
+**1,527 + 116 message-entry checks**. All **ten native Chromium suites pass 772** =
+historical **697 + 75 message checks**. Native forms use isolated storage and mock
+accounts, never a customer backend. Message tests use synthetic names/numbers;
+private screenshot/catalogue data is not in the app, public fixtures/outputs or PR.
+
+Real browser OCR is exercised with the actual pinned **Tesseract 5.1.1 script,
+worker + SIMD LSTM WASM and English 4.0.0_best_int model**. Network routes locally
+fulfil matching npm files, not recognition results; the synthetic dark screenshot
+is generated by browser Canvas. Complete stock quantities and green @tags survive;
+raw OCR/confidence/source image remain reviewable, no O/I-to-digit guessing or
+single-character-line loss. Actual corrupt/oversized/SVG images and failed engine
+or model download preserve prior text; language rejection is caught without an
+uncaught library exception/120-second hang, with a working text fallback. These
+are not physical-phone/Safari, CDN-availability, WhatsApp or customer-backend tests.
+The user's three supplied screenshots were additionally read in a disposable local
+browser: all 12 item blocks / 14 movements and reviewed quantities/dates/units retained,
+unclear footer-reaction symbols warned, no stock save. An explicit test year was
+used, not inferred from the attachments. Those images/results remain
+ignored private scratch and are deliberately not public fixtures.
+
+Open/paste/photo/parse/preview/review never save. Tests exercise explicit type/
+purpose/seller/delivery/receiver/year selection; all rows, source notes/tags,
+read-only checks rather than fake openings, manual/edited/deleted/repeated receipt
+and batch dedup, separate-reference New resolution, cutoff and same-day attestation,
+one-write audited atomic save and whole-dated nonnegative ledger; required recovery,
+stale account/data/disk, cancellation during hash/OCR, quota rollback, alias collisions,
+real full backup/reload/offline and existing cloud/independent-device merge paths.
+
+Source audit: **739 statements = 711 prior + 28 new**, **705 original statements
+byte-identical**; only version, Settings note, Stock toolbar, both modal lifecycle
+hooks and public Stock API change. Six exact counted hooks + bounded module/style
+removal restore **the entire immutable v3.34 HTML** byte for byte, then every older
+strict compatibility guard chains unchanged. **All 37 old HTML archives** retain
+original bytes; no schema/table/app-localStorage-key or financial/Attendance/
+Canteen/report/font rewrite. The canonical/new release are identical:
+**1,186,303 bytes**, SHA-256
+`db3c78c06eec679a166da09bf9273b6707e1d5209a083fa6e7598ed772ed050f`.
+No private catalogue-name matches in public release/code/test/doc candidates.
+Native original report/clock/logo/five-sheet-Excel suites were re-run; independent
+PyMuPDF/openpyxl counts below are labelled **historical**, not a new external-parser
+run for this feature. [Entry workflow / limits / duplicate rules](../STOCK-MANAGEMENT.md).
+
+Real OCR suite setup, **from repository root** (optional scratch packages only):
+
+```bash
+npm install --prefix .cache/ocr-qa --no-save --package-lock=false --no-audit --no-fund playwright tesseract.js@5.1.1 @tesseract.js-data/eng@1.0.0
+# Use an installed Playwright Chromium, or set HISAAB_CHROME_EXECUTABLE / ARGS.
+# The public-only preview server described above must already be running.
+NODE_PATH="$PWD/.cache/ocr-qa/node_modules" HISAAB_OCR_ASSETS="$PWD/.cache/ocr-qa/node_modules" HISAAB_URL=http://127.0.0.1:8000/Hisaab-Pro-v3.35.html HISAAB_SCREENSHOTS=1 node tests/stock-message.browser.js
+```
+
+Do not expose the repo, `.cache`, `.git`, tests or `private-imports` via the preview
+server. OCR package files are served only through the isolated test's browser
+request interception. Test screenshots/JSON backups under `.cache` are never
+customer import files or release assets. No runtime install is needed for users.
+
+### Historical v3.34 evidence
 
 Exact versioned release passes **1,527 offline checks** = previous **1,457** +
 **70 private-link/generator checks**. All **nine native Chromium suites pass 697** =

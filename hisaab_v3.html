@@ -856,6 +856,9 @@ select.ct-pm option{font-size:11.5px;font-weight:700}
 /* v3.34 STOCK LINK STYLE BEGIN */
 .stkl-account{padding:11px 13px;background:var(--surface-2);border:1px solid var(--line);border-radius:10px;font-size:12px;line-height:1.7;overflow-wrap:anywhere;margin-bottom:14px}.stkl-date{max-width:360px}.stkl-counts{font-size:12px;font-weight:700;margin-top:14px}.stkl-consent{font-size:11px;line-height:1.7;margin-top:14px;color:var(--muted)}.stkl-dialog .modal-f{justify-content:flex-end}.stkl-dialog .modal-f .btn{white-space:normal;overflow-wrap:anywhere}.stkl-dialog .stki-preview:focus{outline:2px solid var(--primary);outline-offset:2px}
 /* v3.34 STOCK LINK STYLE END */
+/* v3.35 STOCK MESSAGE STYLE BEGIN */
+.stm-dialog{width:min(1100px,calc(100vw - 24px));max-width:1100px}.stm-dialog .modal-b{overflow-x:hidden}.stm-dialog [hidden]{display:none!important}.stm-controls{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;margin:14px 0}.stm-dialog .stk-field{min-width:0}.stm-dialog input,.stm-dialog select,.stm-dialog textarea{min-width:0;max-width:100%}.stm-step{font-size:13px;letter-spacing:.01em;margin:18px 0 10px;color:var(--ink)}.stm-text{width:100%;font-family:inherit;white-space:pre-wrap}.stm-input-actions{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px}.stm-help,.stm-account{font-size:11px;line-height:1.7;margin:10px 0;overflow-wrap:anywhere}.stm-account{padding:10px;border:1px solid var(--line);border-radius:9px}.stm-check{display:flex;gap:9px;align-items:flex-start;font-size:12px;line-height:1.6;margin:15px 0}.stm-check input{flex-shrink:0;margin-top:4px}.stm-heading{padding:12px;background:var(--surface-2);border-radius:10px;margin:15px 0;overflow-wrap:anywhere}.stm-heading p{font-size:11px;line-height:1.6;margin:5px 0}.stm-item{padding:13px;border:1px solid var(--line);border-radius:12px;margin:12px 0}.stm-item-title{display:flex;flex-wrap:wrap;gap:7px;justify-content:space-between;margin-bottom:10px;overflow-wrap:anywhere}.stm-item-title>span{font-size:11px;color:var(--muted)}.stm-item small{font-size:11px;line-height:1.6}.stm-rows{display:grid;gap:8px;margin-top:10px}.stm-row{display:flex;gap:12px;align-items:center;justify-content:space-between;padding:10px;background:var(--surface-2);border-radius:8px;font-size:12px;overflow-wrap:anywhere}.stm-row>div{min-width:0}.stm-row span{display:block;font-size:11px;margin-top:5px}.stm-row>label{max-width:320px;min-width:0}.stm-row .inp{font-size:11px}.stm-source{font-size:11px;line-height:1.6;margin-top:8px}.stm-source pre{font:inherit;white-space:pre-wrap;overflow-wrap:anywhere}.stm-errors{white-space:pre-line}#stmError.stm-message-ok{color:var(--ok);background:var(--ok-soft)}.stm-warnings{overflow-wrap:anywhere}#stmImage summary{font-size:12px;cursor:pointer;margin:10px 0}.stm-dialog .modal-f{gap:8px;flex-wrap:wrap}.stm-dialog .modal-f .btn{white-space:normal;overflow-wrap:anywhere}#stmImage img{max-width:100%;height:auto;object-fit:contain;margin:12px 0;border:1px solid var(--line);border-radius:9px}@media(max-width:600px){.stm-controls{grid-template-columns:1fr}.stm-row{display:block}.stm-row>label{display:block;max-width:none;margin-top:8px}.stm-dialog .modal-h h3{font-size:16px}}
+/* v3.35 STOCK MESSAGE STYLE END */
 </style>
 </head>
 <body>
@@ -1983,7 +1986,7 @@ const rRate = (n) => { const x = Math.max(0, num(n)); return x >= 1 ? r2(x) : Ma
 /* rate dikhane ka format: <₹1 ho to 0.075 jaisa khula number, warna moneyS */
 const rateS = (n) => { const x = num(n); if (x > 0 && x < 1) return "₹" + String(Math.round((x + Number.EPSILON) * 10000) / 10000); return moneyS(x); };
 const clamp = (n, lo, hi) => Math.min(hi, Math.max(lo, n));
-const APP_VERSION = "3.34";
+const APP_VERSION = "3.35";
 const esc = (s) => String(s == null ? "" : s).replace(/[&<>"']/g, (m) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[m]));
 
 const MONTHS = ["January","February","March","April","May","June","July","August","September","October","November","December"];
@@ -3466,6 +3469,7 @@ function viewSettings(){
 
     '<div style="text-align:center;font-size:11.5px;color:var(--muted);margin-top:18px;line-height:1.7">'+
       'Panel <b style="color:var(--ink)">v<span data-ver></span></b> · Auto-update enabled<br>'+
+      'v3.35 — <b style="color:var(--ink)">Message / screenshot se Stock</b>: Message paste ya local screenshot OCR se dated In / Sale / Out draft; party, original item text aur tags retained. Explicit type/roles/unit/year review, message maths + panel balance checks, duplicate/opening safeguards aur ek guarded atomic confirmation. Pichhle / Available se fake stock nahi banta. Extraction se save nahi; AI/chat access nahi.<br>'+
       'v3.34 — <b style="color:var(--ink)">Private one-click Stock link</b>: File choose kiye bina local-only private link ka complete preview. Confirmed import-day / chosen date, account review aur ek Haan click se guarded opening import. Link kholne se save nahi; same-name skip / unit conflict / required safety copy / atomic audit retained. Private inventory public release me nahi hai.<br>'+
       'v3.33 — <b style="color:var(--ink)">Stock opening import</b>: CSV / JSON file se products, available quantity aur exact unit ka preview; cut-over date aur review ke baad ek atomic save. Existing products skip, unit mismatch / duplicate file rows refused. Zero-stock items, optional photos / notes, before-after audit aur required safety copy; salary / Canteen / Attendance unchanged. Private inventory release me bundled nahi hai.<br>'+
       'v3.32 — <b style="color:var(--ink)">Stock Management</b>: Products + photo + opening entry; Stock In / purpose-wise Out / customer, salesperson aur delivery details wali Sale. Live stock transactions se auto-calculate; date / product / party / salesperson filters, full history, audited edit/delete aur minimum-stock warnings. Negative dated balance par save blocked; JSON / configured cloud / safety copies included. Purana salary, Canteen aur Attendance data unchanged.<br>'+
@@ -3656,6 +3660,7 @@ function closeCmdk(){ const el = $("#cmdk"); if (el) el.remove(); }
 
 /* ------------------------ 12. MODALS & DIALOGS -------------------------- */
 function openModal(html, opts) {
+  stmCancel();
   stklCancel();
   stkiCancel();
   stkEditor = null;
@@ -3668,6 +3673,7 @@ function openModal(html, opts) {
   document.body.style.overflow = "hidden";
 }
 function closeModal() {
+  stmCancel();
   stklCancel(true);
   stkiCancel();
   stkEditor = null;
@@ -11080,7 +11086,7 @@ function viewStock() {
   const tabs = [["products", "▣ Products & Live Stock"], ["history", "⇄ Stock History"], ["audit", "◷ Change Audit"]];
   let content; try { content = u.tab === "products" ? stkInventoryHTML() : u.tab === "history" ? stkMovementHTML() : stkAuditHTML(); }
   catch (error) { content = '<div class="banner warn" role="alert">' + esc(error.message) + ' <button class="btn sm" data-stk="resetFilters">Reset filters</button></div>'; }
-  return '<section class="stk-page"><div class="stk-toolbar"><div><h3>Company inventory</h3><p class="muted">Opening + Stock In − Stock Out − Sales = Available</p></div><div class="row-actions"><button class="btn" data-stki="open">Import stock</button><button class="btn" data-stk="movement" data-type="in">＋ Stock In</button><button class="btn" data-stk="movement" data-type="out">− Stock Out</button><button class="btn primary" data-stk="movement" data-type="sale">Stock Sale</button></div></div>' +
+  return '<section class="stk-page"><div class="stk-toolbar"><div><h3>Company inventory</h3><p class="muted">Opening + Stock In − Stock Out − Sales = Available</p></div><div class="row-actions"><button class="btn primary" data-stm="open">Message / screenshot</button><button class="btn" data-stki="open">Import stock</button><button class="btn" data-stk="movement" data-type="in">＋ Stock In</button><button class="btn" data-stk="movement" data-type="out">− Stock Out</button><button class="btn primary" data-stk="movement" data-type="sale">Stock Sale</button></div></div>' +
     '<div class="stk-metrics"><div class="card"><span>Products</span><b>' + inventory.length + '</b></div><div class="card"><span>Stock entries</span><b>' + stkData().transactions.length + '</b></div><div class="card' + (lows.length ? ' stk-warning' : '') + '"><span>Low stock alerts</span><b>' + lows.length + '</b></div><div class="card"><span>Audit records</span><b>' + stkData().history.length + '</b></div></div>' +
     (lows.length ? '<div class="banner warn stk-low-alert" role="status"><div><b>⚠ Low stock: ' + lows.length + ' product' + (lows.length > 1 ? 's' : '') + '</b><div>' + lows.slice(0,5).map(p => esc(p.name) + ': ' + stkFmt(p.available) + ' / min ' + stkFmt(p.minQty) + ' ' + esc(p.unit)).join(' · ') + (lows.length > 5 ? ' · …aur ' + (lows.length - 5) : '') + '</div></div><button class="btn sm" data-stk="showLow">View low stock</button></div>' : '') +
     '<div class="stk-tabs" role="tablist" aria-label="Stock sections">' + tabs.map(([k,v]) => '<button class="btn' + (u.tab === k ? ' primary' : '') + '" role="tab" aria-selected="' + (u.tab === k) + '" data-stk="tab" data-value="' + k + '">' + esc(v) + '</button>').join('') + '</div>' + stkFiltersHTML() + content +
@@ -11465,6 +11471,480 @@ window.addEventListener('load', () => {
 }, {once:true});
 /* v3.34 PRIVATE STOCK LINK END */
 
+/* v3.35 STOCK MESSAGE BEGIN
+   Local, reviewed message/OCR drafts; never read chats or write on extraction.
+   Ordinary movement IDs + create-audit reasons retain provenance and aliases.
+   No new schema, available counter, storage key, upload API or AI service. */
+const STM_PREFIX = 'Message stock v1:', STM_MAX_TEXT = 20000, STM_MAX_ITEMS = 50;
+let stmEditor = null;
+function stmStop(e) {
+  if (!e) return;
+  clearTimeout(e.ocrTimer);
+  try { if (e.reader?.readyState === 1) e.reader.abort(); } catch (error) {}
+  try { Promise.resolve(e.worker?.terminate()).catch(() => {}); } catch (error) {}
+  e.worker = null;
+}
+function stmCancel() {
+  const old = stmEditor; stmEditor = null;
+  if (old) { old.serial++; stmStop(old); }
+}
+function stmCurrent(e) { return !!e && stmEditor === e && $('#stmDialog') === e.element; }
+function stmUnit(value) {
+  const s = stkName(value).toLocaleLowerCase('en').replace(/\.$/, '');
+  const aliases = { boxes:'box', box:'box', ps:'pcs', pcs:'pcs', pc:'pcs', piece:'pcs', pieces:'pcs',
+    sets:'set', set:'set', rolls:'roll', roll:'roll', bundles:'bundle', bundle:'bundle',
+    tables:'table', table:'table', gaddi:'gaddi', bags:'bag', bag:'bag' };
+  return Object.hasOwn(aliases, s) ? aliases[s] : s;
+}
+function stmKey(value) { return stkName(value).normalize('NFKC').toLocaleLowerCase('en').replace(/[^\p{L}\p{N}]+/gu, ' ').trim().replace(/\s+/g, ' '); }
+function stmClean(text) {
+  // Never repair O/I to a digit, drop one-character quantities, or remove @/~ tags.
+  return text.replace(/\r\n?/g, '\n').replace(/[०-९]/g, d => String('०१२३४५६७८९'.indexOf(d)))
+    .replace(/[−–—]/g, '-').split('\n').map(s => s.trim().replace(/[ \t]+/g, ' ')).filter(Boolean);
+}
+function stmDate(value, year) {
+  const m = /^(\d{1,2})\/(\d{1,2})(?:\/(\d{4}))?$/.exec(value || '');
+  if (!m || !/^\d{4}$/.test(String(m[3] || year))) throw new Error('Message ka year confirm karein; date DD/MM ya DD/MM/YYYY honi chahiye.');
+  const date = String(m[3] || year) + '-' + m[2].padStart(2, '0') + '-' + m[1].padStart(2, '0');
+  if (!stkDate(date)) throw new Error('Message me invalid calendar date: ' + value);
+  return date;
+}
+function stmMeta(history) {
+  if (history.entity !== 'transaction' || history.action !== 'create' || !history.after || typeof history.reason !== 'string' || !history.reason.startsWith(STM_PREFIX)) return null;
+  try {
+    const m = JSON.parse(history.reason.slice(STM_PREFIX.length));
+    if (typeof m.b === 'string' && /^[a-f0-9]{32}$/.test(m.b) && typeof m.n === 'string' && m.n.length <= 90 && typeof m.u === 'string' && m.u.length <= 18) return m;
+  } catch (error) {}
+  return null;
+}
+async function stmHash(text) {
+  if (!globalThis.crypto?.subtle || typeof TextEncoder !== 'function') throw new Error('Updated Chrome / Safari me message import kholein (local hashing support chahiye).');
+  return Array.from(new Uint8Array(await crypto.subtle.digest('SHA-256', new TextEncoder().encode(text))), n => n.toString(16).padStart(2, '0')).join('');
+}
+function stmParse(text, year) {
+  if (typeof text !== 'string' || !text.trim() || text.length > STM_MAX_TEXT || /[\u0000-\u0008\u000b\u000c\u000e-\u001f\u007f]/.test(text)) throw new Error('Ek complete message paste karein (maximum 20,000 characters).');
+  const lines = stmClean(text), result = { text, header:null, blocks:[], tags:[], phone:'', errors:[], warnings:[], preamble:[], ignored:[] };
+  let block = null, footer = false, ended = false;
+  const fail = message => result.errors.push(message);
+  const finish = () => {
+    if (!block) return;
+    block.raw = block.lines.join('\n');
+    if (!block.name || block.name.length > 90) fail('Item ' + (block.index + 1) + ': product name clear / maximum 90 characters hona chahiye.');
+    if (!block.events.length) fail(block.name + ': aaye / gaye ki clear line chahiye.');
+    if (!block.unit || block.unit.length > 18) fail(block.name + ': unit clear nahi hai. Box / pcs / roll / bundle text me sudharein.');
+    if (block.prior !== null && block.available !== null) {
+      const expected = Math.round(block.prior * 1000) + block.events.reduce((n, r) => n + Math.round(r.qty * 1000) * (r.direction === 'in' ? 1 : -1), 0);
+      if (expected !== Math.round(block.available * 1000)) fail(block.name + ': message maths mismatch — previous + In − gaye, Available ke barabar nahi.');
+    } else result.warnings.push(block.name + ': previous / Available ki complete checks nahi di gayi; source quantities khud verify karein. Panel ka nonnegative ledger phir bhi check hoga.');
+    if (block.events.length > 8) fail(block.name + ': ek item me maximum 8 movement lines rakhein.');
+    result.blocks.push(block); block = null;
+  };
+  const quantity = (tail, label) => {
+    const m = /^\s*([+-]?)\s*(\d{1,9}(?:\.\d{1,3})?)\s*([\p{L}.]*)\s*$/u.exec(tail);
+    if (!m) { fail(label + ': quantity clear nahi hai; O/I, comma, exponent ya extra words correct karein.'); return null; }
+    try { return { qty:stkQty(m[2], true), sign:m[1], unit:stmUnit(m[3]) }; }
+    catch (error) { fail(label + ': ' + error.message); return null; }
+  };
+  for (let i = 0; i < lines.length; i++) {
+    let line = lines[i];
+    const item = /^(\d{1,3})\s*[.)-]\s*(.+)$/.exec(line);
+    const dated = /^(\d{1,2}\/\d{1,2}(?:\/\d{4})?)\s+(.+)$/.exec(line);
+    const isReceipt = dated && /^(?:ko\s+)?(?:aaye|aai|aay[ei]|aye|aaya|received|in|gaye|gai|gaya|gayi|out|sale)\b/i.test(dated[2]);
+    const header = dated && !isReceipt ? dated : null;
+    if (!result.header) {
+      if (!header) {
+        result.preamble.push(line);
+        if (item || isReceipt || /^(?:pichh?l[ea]\s+bach[ea]|previous|available|aaj\s+(?:aaye|gaye|gai|gaya)|[+-]\s*\d)/i.test(line)) fail('Date / party header se pehle stock lines mili hain. Cropped / do messages nahi; ek complete message use karein.');
+        continue;
+      }
+      result.header = { raw:line, date:stmDate(header[1], year), party:stkText(header[2], 90, true, 'Header party'), office:/\boffice\b/i.test(header[2]) };
+      continue;
+    }
+    if (item) {
+      if (footer) { fail('Footer ke baad naya item / doosra message mila. Ek complete message ek baar import karein.'); continue; }
+      finish();
+      if (result.blocks.length >= STM_MAX_ITEMS) throw new Error('Message me maximum 50 items allowed hain.');
+      if (Number(item[1]) !== result.blocks.length + 1) fail('Item numbering 1, 2, 3… complete honi chahiye. Missing / duplicate / OCR item number correct karein.');
+      block = { index:result.blocks.length, name:item[2], lines:[line], prior:null, available:null, unit:'', events:[], metrics:false };
+      continue;
+    }
+    // Only footer chrome is trimmed. Never strip a standalone digit or change
+    // a stock line; the unmodified OCR draft remains visible in the textarea.
+    if (footer || line.startsWith('@')) {
+      const clean = line.replace(/\s+\d{1,2}:?\d{2}\s*(?:am|pm)(?:\s*[✓✔]*)?$/i, '');
+      if (clean !== line) { result.ignored.push(line.slice(clean.length).trim()); line = clean; ended = true; }
+      if (ended && /^[\p{L}]?[^\p{L}\p{N}\s]{1,2}$/u.test(line)) { result.ignored.push(line); result.warnings.push('Message time ke baad short unclear symbol mila. Original screenshot / footer verify karein; yeh stock movement nahi maana gaya.'); continue; }
+      if (!/[\p{L}\p{N}]/u.test(line)) { result.ignored.push(line); continue; }
+    }
+    if (line.startsWith('@')) { finish(); footer = true; result.tags.push(line); continue; }
+    if (/^(?:Driver\s*(?:number|phone|mobile)|Delivery\s*(?:phone|number))\s*[:.-]?\s*/i.test(line)) {
+      finish(); footer = true;
+      const phone = line.replace(/^(?:Driver\s*(?:number|phone|mobile)|Delivery\s*(?:phone|number))\s*[:.-]?\s*/i, '').trim();
+      try {
+        if (result.phone) fail('Driver phone do baar hai; source verify karein.');
+        result.phone = stkText(phone, 35, true, 'Driver phone');
+        if (!/^\+?[\d ()-]{6,35}$/.test(phone)) fail('Driver phone text clear nahi hai.');
+      } catch (error) { fail(error.message); }
+      continue;
+    }
+    if (/^\d{1,2}:\d{2}\s*(?:am|pm)?(?:\s*[✓✔]*)?$/i.test(line) || /^(?:👍|✅|☑|[>✓✔]|\uFE0F)+$/u.test(line)) { result.ignored.push(line); if (/\d/.test(line)) ended = true; continue; }
+    if (!block) {
+      if (footer && result.tags.length && /^[\p{L} ~.'()-]+$/u.test(line)) { result.tags[result.tags.length - 1] += ' ' + line; continue; }
+      fail('Unclear / extra line: ' + line.slice(0, 100)); continue;
+    }
+    const prior = /^(?:pichh?l[ea]\s+bach[ea]|previous(?:\s+(?:stock|balance|left))?)\s*[:.-]?\s*([\p{L}.]*)\s*(.*)$/iu.exec(line);
+    const available = /^(?:available(?:\s+stock)?|balance)\s*[:.-]?\s*([\p{L}.]*)\s*(.*)$/iu.exec(line);
+    const movement = /^(?:(\d{1,2}\/\d{1,2}(?:\/\d{4})?)\s*(?:ko\s*)?|aaj\s+|today\s+)?(aaye|aai|aay[ei]|aye|aaya|received|in|gaye|gai|gaya|gayi|out|sale)\b\s*[.:]?\s*(.*)$/i.exec(line);
+    if (prior || available || movement) {
+      block.metrics = true;
+      const m = prior || available || movement, originalTail = movement ? m[3] : m[2], inlineUnit = movement ? '' : stmUnit(m[1]);
+      let tail = originalTail;
+      if (!tail.trim() && i + 1 < lines.length && /^[+-]?\s*\d+(?:\.\d{1,3})?(?:\s*[\p{L}.]+)?$/u.test(lines[i + 1])) tail = lines[++i];
+      block.lines.push(line); if (tail !== originalTail) block.lines.push(tail);
+      const q = quantity(tail, block.name); if (!q) continue;
+      const unit = inlineUnit || q.unit;
+      if (inlineUnit && q.unit && inlineUnit !== q.unit) fail(block.name + ': ek line me alag units hain.');
+      if (unit) {
+        if (block.unit && block.unit !== unit) fail(block.name + ': previous / Available / movement units alag hain.');
+        block.unit = unit;
+      }
+      if (prior || available) {
+        const key = prior ? 'prior' : 'available';
+        if (block[key] !== null) fail(block.name + ': ' + key + ' line do baar hai.');
+        if (q.sign) fail(block.name + ': previous / Available par sign nahi hona chahiye.');
+        block[key] = q.qty;
+      } else {
+        const direction = /^(?:gaye|gai|gaya|gayi|out|sale)$/i.test(m[2]) ? 'take' : 'in';
+        if (q.qty === 0) fail(block.name + ': zero movement entry nahi banegi; line verify karein.');
+        if (q.sign && (q.sign === '+' ? direction !== 'in' : direction !== 'take')) fail(block.name + ': aaye/gaye aur +/- sign disagree karte hain.');
+        try {
+          const date = m[1] ? stmDate(m[1], result.header.date.slice(0, 4)) : result.header.date;
+          if (date > result.header.date) fail(block.name + ': receipt/movement date header date ke baad hai. Year/date explicitly correct karein.');
+          if (block.events.length >= 8) throw new Error(block.name + ': maximum 8 movement lines per item.');
+          block.events.push({ date, direction, qty:q.qty });
+        } catch (error) { fail(error.message); }
+      }
+      continue;
+    }
+    if (header) { fail('Doosra date/party header mila. Ek message per preview rakhein.'); continue; }
+    if (!block.metrics && !/^\s*[+-]?\d+(?:\.\d+)?\s*$/.test(line)) { block.name += ' ' + line; block.lines.push(line); }
+    else { block.lines.push(line); fail(block.name + ': unclear line ' + line.slice(0, 80)); }
+  }
+  finish();
+  if (!result.header) throw new Error('Upar DD/MM party-name wala header nahi mila. Example: 23/11 Example party.');
+  if (!result.blocks.length || result.blocks.length > STM_MAX_ITEMS) fail('Message me 1–50 numbered complete items hone chahiye.');
+  if (result.tags.join('\n').length > 400) fail('Tagged members bahut lambe hain; shorter complete message use karein.');
+  return result;
+}
+function stmMatch(block, s) {
+  const unit = stmUnit(block.unit), key = stmKey(block.name);
+  const named = key ? s.products.filter(p => stmKey(p.name) === key) : [];
+  const direct = named.filter(p => stmUnit(p.unit) === unit), aliases = new Set();
+  s.history.forEach(h => { const m = stmMeta(h); if (key && m && m.n === key && m.u === unit && s.products.some(p => p.id === h.after.productId && stmUnit(p.unit) === unit)) aliases.add(h.after.productId); });
+  const ids = new Set(direct.map(p => p.id).concat([...aliases]));
+  if (ids.size === 1) return { id:[...ids][0], kind:direct.length ? 'Name + unit match' : 'Previously confirmed name + unit' };
+  if (!ids.size && named.length === 1) return { id:named[0].id, kind:'Name match, UNIT CONFLICT — source aur saved unit verify karein' };
+  const words = new Set(key.split(' '));
+  const suggestions = s.products.map(p => {
+    const other = new Set(stmKey(p.name).split(' ')), common = [...words].filter(x => other.has(x)).length;
+    return { id:p.id, score:2 * common / (words.size + other.size) };
+  }).filter(x => x.score >= .55).sort((a, b) => b.score - a.score).slice(0, 3).map(x => x.id);
+  return { id:'', kind:ids.size > 1 ? 'Conflicting matches — product choose karein' : 'Product confirm karein; similar suggestion automatic match nahi hai', suggestions };
+}
+async function stmPlan(text, options = {}, data) {
+  stkObject(options, ['year','reference','type','supplier','salesperson','deliveryName','purpose','sameDay','matches','actions'], 'message options');
+  const s = syncClone(data === undefined ? stkData() : data); stkValidate(s);
+  const parsed = stmParse(text, options.year), errors = [...parsed.errors], warnings = [...parsed.warnings];
+  const reference = stkText(options.reference, 80, false, 'Message / delivery reference');
+  const supplier = stkText(options.supplier, 90, false, 'Stock In supplier');
+  const salesperson = stkText(options.salesperson, 90, false, 'Salesperson');
+  const deliveryName = stkText(options.deliveryName, 90, false, 'Delivery / receiver name');
+  const purpose = stkText(options.purpose, 250, false, 'Stock Out purpose');
+  if (!['','sale','out'].includes(options.type || '')) errors.push('Outgoing type Sale ya Stock Out hi ho sakta hai.');
+  const batch = (await stmHash(JSON.stringify([stmClean(text), parsed.header.date.slice(0, 4), reference]))).slice(0, 32);
+  const imported = s.history.some(h => stmMeta(h)?.b === batch), selected = options.matches || {}, actions = options.actions || {};
+  const plan = { parsed, batch, reference, blocks:[], rows:[], errors, warnings, valid:false, signature:'', added:0, skipped:0 };
+  const seenProducts = new Set(), seenEvents = new Set();
+  // Include old values: an explicitly edited/deleted manual entry must not be
+  // silently resurrected just because the same old screenshot is supplied.
+  const known = s.transactions.concat(s.history.filter(h => h.entity === 'transaction').flatMap(h => [h.before, h.after].filter(Boolean)));
+  for (const block of parsed.blocks) {
+    const match = stmMatch(block, s);
+    const product = s.products.find(p => p.id === (Object.hasOwn(selected, block.index) ? selected[block.index] : match.id));
+    plan.blocks.push({ ...block, match, productId:product?.id || '' });
+    if (!product) { errors.push(block.name + ': saved product select karein. Naya product silently create nahi hoga.'); continue; }
+    if (stmUnit(product.unit) !== block.unit) { errors.push(block.name + ': source ' + block.unit + ' / saved ' + product.unit + ' — unit conflict; conversion nahi hogi.'); continue; }
+    if (seenProducts.has(product.id)) errors.push(product.name + ': ek hi product do item blocks me hai. Repeated/cropped items resolve karein; automatic combine nahi.');
+    seenProducts.add(product.id);
+    const openings = s.transactions.filter(t => t.productId === product.id && t.source === 'opening').map(t => t.date);
+    const cutover = openings.length ? openings.sort().at(-1) : product.date;
+    for (let j = 0; j < block.events.length; j++) {
+      const event = block.events[j], index = block.index + ':' + j, type = event.direction === 'in' ? 'in' : options.type || '';
+      const party = event.direction === 'in' ? supplier : parsed.header.party;
+      // Deliberately independent of sender, footer, screenshot bytes and outgoing
+      // type; the same receipt repeated in a later message remains the same event.
+      const id = 'smsg1_' + await stmHash(JSON.stringify([product.id, event.date, event.direction, stkUnits(event.qty, true), event.direction === 'in' ? '' : stkKey(parsed.header.party), reference]));
+      if (seenEvents.has(id)) errors.push(product.name + ': same date / quantity movement message me repeated hai. Source resolve karein.');
+      seenEvents.add(id);
+      const exact = imported || known.some(t => t.id === id);
+      const similar = known.some(t => t.productId === product.id && t.date === event.date && (t.type === 'in' ? 'in' : 'take') === event.direction && t.qty === event.qty && t.source !== 'opening');
+      const before = event.date < cutover;
+      const action = exact ? 'skip' : Object.hasOwn(actions, index) ? actions[index] : similar || before ? '' : 'new';
+      const row = { ...event, index, block:block.index, id, type, productId:product.id, productName:product.name, unit:product.unit, party, action, exact, similar, before, cutover };
+      plan.rows.push(row);
+      if (!['new','skip'].includes(action)) { errors.push(product.name + ': ' + event.date + ' ' + (before ? 'opening snapshot se pehle hai; already included ho to Skip choose karein' : 'similar entry current / audit history me hai; Skip ya unique-reference wali alag real entry confirm karein')); continue; }
+      if (action === 'skip') { plan.skipped++; continue; }
+      if (before) { errors.push(product.name + ': opening se purani movement add nahi hogi. History migration alag reconcile karein.'); continue; }
+      if (event.date === cutover && options.sameDay !== true) errors.push(product.name + ': same-day opening ke BAAD ki nayi movement hona explicitly confirm karein.');
+      if (similar && !reference) errors.push(product.name + ': same-date/same-qty alag real movement ke liye unique message/delivery reference chahiye.');
+      if (!type) errors.push('Gaye items ke liye Sale ya Stock Out / office transfer choose karein.');
+      const note = [parsed.header.raw, block.raw, ...parsed.tags, parsed.phone ? 'Source message driver number ' + parsed.phone : '', reference ? 'Reference ' + reference : ''].filter(Boolean).join('\n');
+      if (note.length > 500) errors.push(block.name + ': original item/header/tags note 500 characters se bada hai; source text ko saaf aur concise karein.');
+      row.input = { productId:product.id, type, qty:event.qty, date:event.date, party,
+        salesperson:type === 'sale' ? salesperson : '', deliveryName:event.direction === 'take' ? deliveryName : '',
+        deliveryPhone:event.direction === 'take' ? parsed.phone : '', deliveryDetails:reference ? 'Message reference: ' + reference : '',
+        purpose:type === 'out' ? purpose : '', note };
+      row.reason = STM_PREFIX + JSON.stringify({ b:batch, n:stmKey(block.name).length <= 90 ? stmKey(block.name) : '', u:block.unit });
+      try { stkText(row.reason, 250, true, 'Source provenance'); stkMakeMovement(row.input, s); }
+      catch (error) { errors.push(product.name + ': ' + error.message); }
+      plan.added++;
+    }
+  }
+  if (!errors.length && plan.added) {
+    try {
+      const next = syncClone(s);
+      plan.rows.filter(r => r.action === 'new').sort(stmRowOrder).forEach(r => { const t = stkMakeMovement(r.input, next); t.id = r.id; next.transactions.push(t); });
+      stkValidate(next); // Entire dated ledger, not just the final balance.
+      const at = { ...next, transactions:next.transactions.filter(t => t.date <= parsed.header.date) }, ledger = stkLedger(at);
+      for (const block of plan.blocks) {
+        if (block.available === null || !block.productId || !plan.rows.some(r => r.block === block.index && r.action === 'new')) continue;
+        const available = (ledger.balances.get(block.productId) || 0) / 1000;
+        if (Math.round(available * 1000) !== Math.round(block.available * 1000)) errors.push(block.name + ': panel ledger ' + stkFmt(available) + ' ' + block.unit + ' / message Available ' + stkFmt(block.available) + ' — opening / already included entries reconcile karein; automatic adjustment nahi hoga.');
+      }
+    } catch (error) { errors.push(error.message); }
+  }
+  plan.errors = [...new Set(errors)]; plan.valid = !plan.errors.length && plan.added > 0;
+  plan.signature = await stmHash(JSON.stringify([text, options, plan.rows.map(r => [r.id, r.action, r.input || null]), plan.errors]));
+  return plan;
+}
+function stmRowOrder(a, b) { return a.date.localeCompare(b.date) || a.block - b.block || Number(a.index.split(':')[1]) - Number(b.index.split(':')[1]); }
+async function stmApply(text, options, context, signature, consent) {
+  stkCheck(context);
+  const plan = await stmPlan(text, options); stkCheck(context);
+  if (consent && !consent()) throw new Error('Import cancelled / draft changed; nothing saved.');
+  if (!signature || signature !== plan.signature) throw new Error('Preview / selection badal gaya. Fresh preview aur confirmation chahiye.');
+  if (!plan.added && !plan.errors.length) return { imported:0, skipped:plan.skipped };
+  if (!plan.valid) throw new Error(plan.errors.join('\n'));
+  return stkAtomic(s => {
+    let count = 0;
+    plan.rows.filter(r => r.action === 'new').sort(stmRowOrder).forEach(row => {
+      if (s.transactions.some(t => t.id === row.id)) throw new Error('Movement already saved; stale import blocked.');
+      const t = stkMakeMovement(row.input, s); t.id = row.id; s.transactions.push(t);
+      stkAudit(s, 'transaction', null, t, 'create', row.reason); count++;
+    });
+    return { imported:count, skipped:plan.skipped };
+  }, context, true);
+}
+function stmOptions(e) {
+  const value = id => $('#' + id)?.value || '';
+  return { year:value('stmYear'), reference:value('stmReference'), type:value('stmType'), supplier:value('stmSupplier'),
+    salesperson:value('stmSalesperson'), deliveryName:value('stmDelivery'), purpose:value('stmPurpose'), sameDay:!!$('#stmSameDay')?.checked,
+    matches:{ ...e.matches }, actions:{ ...e.actions } };
+}
+function stmError(message) { const box = $('#stmError'); if (box) { box.textContent = message || ''; box.classList.toggle('stm-message-ok', /^(?:Ready\.|Sab movements)/.test(message || '')); } }
+function stmEnable() {
+  const e = stmEditor, save = $('#stmSave');
+  if (save) save.disabled = !stmCurrent(e) || e.busy || !e.plan?.valid || !$('#stmReviewed')?.checked;
+  if ($('#stmPreviewButton')) $('#stmPreviewButton').disabled = !!e?.busy;
+  if ($('#stmStopOcr')) $('#stmStopOcr').hidden = e?.phase !== 'ocr';
+}
+function stmInvalidate(e, clear) {
+  if (!stmCurrent(e)) return;
+  e.serial++; stmStop(e); e.busy = false; e.phase = ''; e.plan = null; $('#stmReviewed').checked = false;
+  if (clear) { e.matches = {}; e.actions = {}; $('#stmPreview').innerHTML = ''; }
+  stmError('Draft badla hai — fresh preview aur review zaroori hain.'); stmEnable();
+}
+function stmOpen() {
+  stkCheck(stkContext());
+  openModal(`<div class="modal stk-dialog stm-dialog" id="stmDialog" role="dialog" aria-modal="true" aria-labelledby="stmTitle">
+    <div class="modal-h"><div><h3 id="stmTitle">Message / screenshot se Stock</h3><p>Text YA photo → complete preview → Confirm</p></div><button class="x" type="button" data-act="closeModal" aria-label="Close message import">✕</button></div>
+    <div class="modal-b">
+      <div class="banner info">Message yahin paste / upload karein; chat me bhejna zaroori nahi. <b>Preview se stock save nahi hota.</b> Phone / WhatsApp apne-aap read nahi hota.</div>
+      <p class="stm-account"><b>Account:</b> ${esc(Cloud.user?.email || 'Is browser ka local data')}</p>
+      <h4 class="stm-step">1 · Message ya screenshot</h4>
+      <div class="stm-controls">
+        <label class="stk-field"><span>Message year — khud confirm karein *</span><input id="stmYear" class="inp" type="number" inputmode="numeric" min="1900" max="9998" placeholder="YYYY"><small>DD/MM me year diya nahi hota. Photo filename / today se guess nahi. Full DD/MM/YYYY ho to wahi year.</small></label>
+        <label class="stk-field"><span>Message / delivery reference (optional)</span><input id="stmReference" class="inp" maxlength="80" placeholder="Bill / delivery reference"><small>Same date/qty ki alag real delivery ho to unique reference.</small></label>
+      </div>
+      <label class="stk-field"><span>Ek poora numbered message paste karein *</span><textarea id="stmText" class="inp stm-text" rows="9" maxlength="20000" placeholder="23/11 Example party&#10;1- Example product&#10;Pichle bache box 12&#10;21/11 ko aaye +8&#10;Aaj gaye -3&#10;Available box 17&#10;@Salesperson @Delivery person"></textarea></label>
+      <div class="stm-input-actions"><button class="btn" type="button" data-stm="photo">📷 Screenshot se text</button><input id="stmPhoto" type="file" accept="image/png,image/jpeg,image/webp" hidden><button class="btn primary" type="button" id="stmPreviewButton" data-stm="preview">Entries taiyar / preview karo</button><button class="btn" type="button" id="stmStopOcr" data-stm="stop" hidden>OCR rok do</button></div>
+      <div id="stmOcrStatus" class="stm-help" role="status">Text paste offline bhi chalega. Photo locally read hogi (PNG/JPG/WebP, max 5 MB); pehli OCR engine/model download ke liye internet chahiye. Koi image-upload / AI service nahi.</div>
+      <div id="stmImage"></div>
+      <h4 class="stm-step">2 · Entry details — ek baar per message</h4>
+      <div class="stm-controls">
+        <label class="stk-field"><span>Gaye = kya record karna hai? *</span><select id="stmType" class="inp"><option value="">Sale / Stock Out choose karein</option><option value="sale">Stock Sale — customer ko gaya</option><option value="out">Stock Out — office transfer / other purpose</option></select><small>Office ko automatic sale nahi maana jata.</small></label>
+        <label class="stk-field"><span>Out purpose (Stock Out me required)</span><input id="stmPurpose" class="inp" maxlength="250" placeholder="e.g. Office transfer"></label>
+        <label class="stk-field"><span>Salesperson (Sale me required)</span><input id="stmSalesperson" class="inp" list="stmMembers" maxlength="90" placeholder="Tag se choose ya naam likhein"></label>
+        <label class="stk-field"><span>Delivery / office receiver name</span><input id="stmDelivery" class="inp" list="stmMembers" maxlength="90" placeholder="Sale me required; Out me optional"></label>
+        <label class="stk-field"><span>Stock In supplier (optional)</span><input id="stmSupplier" class="inp" maxlength="90" placeholder="Na diya ho to blank; header party guess nahi"></label>
+      </div><datalist id="stmMembers"></datalist>
+      <p class="stm-help">Tags sab source note me rahenge. Kaun salesperson / receiver hai, aap choose karein—multiple tags se role guess nahi hota. Confirmed product-name matches future messages ke liye yaad rehte hain.</p>
+      <label class="stm-check"><input id="stmSameDay" type="checkbox"><span>Same-day opening ho to: yeh <b>opening snapshot ke BAAD</b> ki nayi movements hain; opening me pehle se included nahi.</span></label>
+      <h4 class="stm-step">3 · Poora preview review karein</h4>
+      <p class="stm-help">Sirf <b>aaye = In</b> aur <b>gaye = Sale / Out</b>. Pichhle bache / Available checks hain, nayi opening ya manual balance nahi. OCR me date, party ya quantity galat ho? <button type="button" class="btn xs" data-stm="edit">Upar text sudharein</button> aur Preview dobara karein.</p>
+      <div id="stmPreview" aria-live="polite"></div>
+      <p id="stmError" class="stk-error stm-errors" role="alert" tabindex="-1"></p>
+      <label class="stm-check"><input id="stmReviewed" type="checkbox"><span>Maine source text / OCR, <b>dates + year</b>, party, products/units, In / Sale / Out, tagged-member roles aur duplicate / opening checks review kiye. Sirf preview ki nayi entries save karni hain.</span></label>
+    </div>
+    <div class="modal-f"><button class="btn" type="button" data-act="closeModal">Abhi nahi</button><button class="btn primary" type="button" id="stmSave" data-stm="save" disabled>Confirm entries</button></div>
+  </div>`, { sticky:true });
+  stmEditor = { element:$('#stmDialog'), context:stkContext(), serial:0, busy:false, phase:'', matches:{}, actions:{}, plan:null, worker:null, reader:null };
+  $('#stmText').focus();
+}
+function stmRender(plan) {
+  const p = plan.parsed, products = stkData().products;
+  const option = (id, name, selected) => '<option value="' + esc(id) + '"' + (selected ? ' selected' : '') + '>' + esc(name) + '</option>';
+  const displayQty = value => value === null ? 'not given' : stkFmt(value);
+  $('#stmPreview').innerHTML = `<div class="stm-heading"><b>${esc(p.header.date)} · ${esc(p.header.party)}</b><p>${plan.added} nayi movements · ${plan.skipped} skipped · ${plan.errors.length} issues</p><p>Driver phone: ${esc(p.phone || 'not given')} · Tags: ${esc(p.tags.join(' ') || 'not given')}</p></div>` +
+    (p.preamble.length || p.ignored.length ? '<details class="stm-source"><summary>Quoted sender / photo / footer chrome (entry nahi)</summary><pre>' + esc(p.preamble.concat(p.ignored).join('\n')) + '</pre></details>' : '') +
+    (plan.warnings.length ? '<div class="banner warn stm-warnings">' + plan.warnings.map(esc).join('<br>') + '</div>' : '') +
+    plan.blocks.map(block => `<section class="stm-item"><div class="stm-item-title"><b>${esc(block.name)}</b><span>Previous ${displayQty(block.prior)} → Available ${displayQty(block.available)} ${esc(block.unit)}</span></div>
+      <label class="stk-field"><span>Saved product / unit *</span><select class="inp" data-stm-match="${block.index}">${option('', 'Choose product', !block.productId)}${products.map(product => option(product.id, (block.match.suggestions?.includes(product.id) ? 'Suggested: ' : '') + product.name + ' · ' + product.unit, product.id === block.productId)).join('')}</select><small>${esc(block.match.kind)}</small></label>
+      <details class="stm-source"><summary>Original item text</summary><pre>${esc(p.header.raw + '\n' + block.raw)}</pre></details>
+      <div class="stm-rows">${plan.rows.filter(row => row.block === block.index).map(row => `<div class="stm-row" data-stm-row="${esc(row.index)}"><div><b>${esc(row.date)} · ${row.direction === 'in' ? '+' : '−'}${stkFmt(row.qty)} ${esc(row.unit)}</b><span>${esc(row.direction === 'in' ? 'Stock In' : row.type === 'sale' ? 'Stock Sale' : row.type === 'out' ? 'Stock Out' : 'Outgoing type required')} · ${esc(row.party || 'supplier not given')}</span>${row.before ? '<span>Opening snapshot: ' + esc(row.cutover) + ' — isse pehle ka history yahan add nahi hoga.</span>' : ''}${row.similar && !row.exact ? '<span>Same product / date / quantity current ya edited/deleted audit history me hai. Alag real entry ho tabhi reference + New choose karein.</span>' : ''}</div>${row.exact ? '<span class="badge">Already recorded / processed — skip</span>' : '<label><span>Action</span><select class="inp" aria-label="Movement action ' + esc(row.index) + '" data-stm-action="' + esc(row.index) + '">' + (row.similar || row.before ? option('', 'Resolve before saving', !row.action) : '') + (!row.before ? option('new', row.similar ? 'Alag real movement — unique reference' : 'Nayi movement', row.action === 'new') : '') + option('skip', row.before ? 'Opening me already included — skip' : 'Already included / skip', row.action === 'skip') + '</select></label>'}</div>`).join('')}</div>
+      </section>`).join('');
+  stmError(plan.errors.length ? plan.errors.join('\n') : !plan.added ? 'Sab movements pehle se recorded / processed / skipped hain. Stock dobara add / minus nahi hua. Correction ke liye Stock History dekhein.' : 'Ready. Review checkbox tick karke Confirm karein.');
+  $('#stmSave').textContent = plan.added ? 'Confirm ' + plan.added + ' entries' : 'Koi nayi entry nahi'; stmEnable();
+}
+async function stmPreview() {
+  const e = stmEditor; if (!stmCurrent(e) || e.busy) return;
+  const serial = ++e.serial; e.plan = null; $('#stmReviewed').checked = false; stmEnable();
+  stmError('Preview taiyar ho raha hai…');
+  try {
+    stkCheck(e.context);
+    const text = $('#stmText').value, parsed = stmParse(text, $('#stmYear').value);
+    const tags = parsed.tags.join(' ').split('@').map(x => x.trim().replace(/^~/, '')).filter(Boolean);
+    const previous = stkData().transactions.flatMap(t => [t.salesperson, t.deliveryName]).filter(Boolean);
+    $('#stmMembers').innerHTML = [...new Set(tags.concat(previous))].slice(0, 150).map(name => '<option value="' + esc(name) + '"></option>').join('');
+    const plan = await stmPlan(text, stmOptions(e));
+    if (!stmCurrent(e) || e.serial !== serial) return;
+    stkCheck(e.context); e.plan = plan; stmRender(plan);
+  } catch (error) {
+    if (stmCurrent(e) && e.serial === serial) { $('#stmPreview').innerHTML = ''; stmError(error.message); stmEnable(); }
+  }
+}
+async function stmSave() {
+  const e = stmEditor; if (!stmCurrent(e) || e.busy || !e.plan?.valid || !$('#stmReviewed').checked) return;
+  const signature = e.plan.signature, text = $('#stmText').value, options = stmOptions(e), serial = e.serial;
+  e.busy = true; e.phase = 'save'; stmEnable();
+  try {
+    const result = await stmApply(text, options, e.context, signature, () => stmCurrent(e) && e.serial === serial && e.plan?.signature === signature && $('#stmReviewed').checked && JSON.stringify(stmOptions(e)) === JSON.stringify(options) && $('#stmText').value === text);
+    if (!stmCurrent(e)) return;
+    closeModal(); Object.assign(stkUI(), { tab:'history', q:'', page:0, product:'all', party:'', salesperson:'', from:'', to:'', type:'all', order:'newest' });
+    go('stock'); toast(result.imported + ' Stock entries saved; ' + result.skipped + ' skipped', 'ok');
+  } catch (error) {
+    if (stmCurrent(e) && e.serial === serial) { e.busy = false; e.phase = ''; e.plan = null; $('#stmReviewed').checked = false; stmError(error.message + '\nFresh preview karein.'); stmEnable(); $('#stmError').focus(); }
+  }
+}
+async function stmPhoto(input) {
+  const e = stmEditor, file = input.files?.[0]; if (!stmCurrent(e) || !file) return;
+  input.value = ''; stmInvalidate(e, true);
+  const serial = ++e.serial; e.busy = true; e.phase = 'ocr'; stmEnable();
+  const status = message => { if (stmCurrent(e) && e.serial === serial) $('#stmOcrStatus').textContent = message; };
+  const check = () => { if (!stmCurrent(e) || e.serial !== serial) throw new Error('Screenshot draft cancelled.'); stkCheck(e.context); };
+  let worker;
+  try {
+    if (!['image/png','image/jpeg','image/webp'].includes(file.type) || file.size > 5 * 1024 * 1024 || file.size === 0) throw new Error('Screenshot PNG/JPG/WebP, maximum 5 MB honi chahiye. SVG / PDF nahi.');
+    const original = await new Promise((resolve, reject) => {
+      const reader = e.reader = new FileReader();
+      reader.onload = () => resolve(reader.result); reader.onerror = () => reject(new Error('Screenshot read nahi hui.')); reader.onabort = () => reject(new Error('Screenshot read cancelled.')); reader.readAsDataURL(file);
+    }); check();
+    $('#stmImage').innerHTML = '<details><summary>Original screenshot — khol kar OCR se compare karein</summary><img src="' + esc(original) + '" alt="Selected source screenshot — draft only"></details>';
+    status('Screenshot locally saaf ho rahi hai…');
+    const good = await new Promise((resolve, reject) => {
+      const image = new Image(), timer = setTimeout(() => reject(new Error('Screenshot decode timeout; text paste kar sakte hain.')), 12000);
+      image.onerror = () => { clearTimeout(timer); reject(new Error('Image invalid / corrupt hai.')); };
+      image.onload = () => {
+        clearTimeout(timer);
+        try {
+          check();
+          if (image.naturalWidth * image.naturalHeight > 20000000 || !image.naturalWidth) throw new Error('Screenshot maximum 20 megapixels honi chahiye.');
+          const scale = Math.min(2, 1600 / image.naturalWidth, 4000 / image.naturalHeight), canvas = document.createElement('canvas');
+          canvas.width = Math.max(1, Math.round(image.naturalWidth * scale)); canvas.height = Math.max(1, Math.round(image.naturalHeight * scale));
+          const cx = canvas.getContext('2d'); cx.drawImage(image, 0, 0, canvas.width, canvas.height);
+          const pixels = cx.getImageData(0, 0, canvas.width, canvas.height); let sum = 0;
+          for (let i = 0; i < pixels.data.length; i += 4) sum += (pixels.data[i] + pixels.data[i + 1] + pixels.data[i + 2]) / 3;
+          const dark = sum / (pixels.data.length / 4) < 125;
+          // Dark chat screenshots contain green @tags. A luminance-only stretch
+          // can erase them next to white text; preserve the brightest channel
+          // before inverting. Do not mutate the separate Canteen OCR pipeline.
+          if (dark) for (let i = 0; i < pixels.data.length; i += 4) pixels.data[i] = pixels.data[i + 1] = pixels.data[i + 2] = Math.max(pixels.data[i], pixels.data[i + 1], pixels.data[i + 2]);
+          ctEnhancePixels(pixels.data);
+          if (dark) for (let i = 0; i < pixels.data.length; i += 4) pixels.data[i] = pixels.data[i + 1] = pixels.data[i + 2] = 255 - pixels.data[i];
+          cx.putImageData(pixels, 0, 0); resolve(canvas.toDataURL('image/png'));
+        } catch (error) { reject(error); }
+      }; image.src = original;
+    }); check();
+    e.ocrTimer = setTimeout(() => { if (stmCurrent(e) && e.serial === serial) { stmInvalidate(e, false); $('#stmOcrStatus').textContent = 'OCR timeout. Purana text retained; internet / updated browser check karein ya message paste karke fresh preview karein.'; } }, 120000);
+    status('Local OCR engine / English model download ho raha hai…');
+    const T = await ctEnsureTesseract(); check();
+    // v5 can leave createWorker pending after a language/model rejection. Its
+    // errorHandler + our race give a prompt, caught text-fallback error instead
+    // of an uncaught library exception or an apparent successful empty draft.
+    let rejectWorker;
+    const reported = new Promise((resolve, reject) => { rejectWorker = reject; });
+    const creating = Promise.resolve(T.createWorker('eng', 1, {
+      logger:m => status('Screenshot reading: ' + (m.status || 'working') + ' ' + Math.round((m.progress || 0) * 100) + '%'),
+      errorHandler:issue => rejectWorker(new Error('OCR engine / model: ' + String(issue?.message || issue).slice(0, 300)))
+    }));
+    creating.then(late => { if (!stmCurrent(e) || e.serial !== serial || e.phase !== 'ocr') Promise.resolve(late.terminate()).catch(() => {}); }, () => {});
+    worker = await Promise.race([creating, reported]);
+    if (!stmCurrent(e) || e.serial !== serial) return;
+    e.worker = worker; check();
+    await worker.setParameters({ tessedit_pageseg_mode:'6', preserve_interword_spaces:'1' });
+    const result = await worker.recognize(good); check();
+    const text = result?.data?.text || '';
+    if (!text.trim()) throw new Error('Photo se clear message nahi padha. Clear / cropped screenshot use karein ya text paste karein.');
+    if (text.length > STM_MAX_TEXT) throw new Error('OCR text bahut bada hai. Ek message ki screenshot use karein.');
+    $('#stmText').value = text; e.matches = {}; e.actions = {};
+    status('OCR draft taiyar' + (Number.isFinite(result.data.confidence) ? ' · ' + (result.data.confidence < 70 ? 'LOW confidence ' : 'confidence ') + Math.round(result.data.confidence) + '%' : '') + '. Original image se HAR date, quantity aur name review karein; kuch save nahi hua.');
+    await worker.terminate(); if (e.worker === worker) e.worker = null; worker = null;
+    e.busy = false; e.phase = ''; clearTimeout(e.ocrTimer); stmEnable(); await stmPreview();
+  } catch (error) {
+    if (stmCurrent(e) && e.serial === serial) { const message = String(error?.message || error); status('OCR nahi hua: ' + message + ' Purana text safe hai; text paste karke preview kar sakte hain.'); stmError(message); }
+  } finally {
+    try { await worker?.terminate(); } catch (error) {}
+    if (stmCurrent(e) && e.serial === serial) { clearTimeout(e.ocrTimer); e.busy = false; e.phase = ''; e.reader = null; e.worker = null; stmEnable(); }
+  }
+}
+document.addEventListener('click', event => {
+  const button = event.target.closest('[data-stm]'); if (!button) return; event.preventDefault();
+  try {
+    const action = button.dataset.stm;
+    if (action === 'open') stmOpen();
+    if (action === 'preview') stmPreview();
+    if (action === 'photo') $('#stmPhoto')?.click();
+    if (action === 'save') stmSave();
+    if (action === 'edit') { $('#stmText').focus(); $('#stmText').scrollIntoView({ block:'center', behavior:'smooth' }); }
+    if (action === 'stop') { stmInvalidate(stmEditor, false); $('#stmOcrStatus').textContent = 'OCR cancelled. Purana text safe hai; message paste / fresh preview kar sakte hain.'; }
+  } catch (error) { toast(error.message, 'bad'); }
+});
+document.addEventListener('input', event => {
+  const e = stmEditor, target = event.target;
+  if (!stmCurrent(e) || !target.closest('#stmDialog') || target.type === 'checkbox' || target.type === 'file') return;
+  if (target.matches('input,textarea')) stmInvalidate(e, target.id === 'stmText');
+});
+document.addEventListener('change', event => {
+  const e = stmEditor, target = event.target; if (!stmCurrent(e) || !target.closest('#stmDialog')) return;
+  if (target.id === 'stmPhoto') { stmPhoto(target); return; }
+  if (target.id === 'stmReviewed') { if (e.busy) stmInvalidate(e, false); stmEnable(); return; }
+  stmInvalidate(e, target.id === 'stmText');
+  if (target.dataset.stmMatch !== undefined) e.matches[target.dataset.stmMatch] = target.value;
+  if (target.dataset.stmAction !== undefined) e.actions[target.dataset.stmAction] = target.value;
+  if (target.id !== 'stmText') stmPreview();
+});
+/* v3.35 STOCK MESSAGE END */
+
 /* ----------------------------- 17. BOOTSTRAP ---------------------------- */
 Store.load();
 initTheme();
@@ -11522,7 +12002,8 @@ window.Hisaab = { Store, calc, monthMeta, PdfDoc, inWords, UI, render, go, Cloud
     saveProduct: stkSaveProduct, deleteProduct: stkDeleteProduct, saveEntry: stkSaveMovement, deleteEntry: stkDeleteMovement,
     ui: stkUI, context: stkContext, openProduct: stkOpenProduct, openEntry: stkOpenMovement,
     openingImport: { parse: stkiParse, plan: stkiPlan, apply: stkiApply, open: stkiOpen },
-    openingLink: { parse: stklParse, open: stklOpen } },
+    openingLink: { parse: stklParse, open: stklOpen },
+    messageImport: { parse: stmParse, plan: stmPlan, apply: stmApply, open: stmOpen } },
   /* canteen module API */
   canteen: { data: ct, totals: ctTotals, itemLines: ctItemLines, entries: ctAll, onDate: ctOnDate, inMonth: ctInMonth,
              dayLedger: ctDayLedger, monthLedger: ctMonthLedger, openModal: openCtModal, save: ctSave,

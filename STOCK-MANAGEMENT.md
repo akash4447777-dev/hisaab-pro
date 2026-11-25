@@ -1,4 +1,4 @@
-# Hisaab Pro v3.34 — Stock Management
+# Hisaab Pro v3.35 — Stock Management
 
 Stock Management existing Hisaab panel ka **alag tab** hai: products/photo, Stock In,
 purpose-wise Stock Out, customer-wise Sales, live availability, date-wise history,
@@ -8,7 +8,7 @@ nahi karni**; har saved transaction se balance apne-aap calculate hota hai.
 ## 1. Pehli baar
 
 1. Jis **same browser/site** par asli data hai, Settings → **Backup (JSON)** download karein.
-2. Updated panel me **Panel v3.34** confirm karein. Storage clear, entries re-enter
+2. Updated panel me **Panel v3.35** confirm karein. Storage clear, entries re-enter
    ya company logo dobara upload karne ki zaroorat nahi.
 3. Sidebar → **Stock Management** kholein. Phone par upar navigation ko sideways
    scroll kar sakte hain. Keyboard shortcut: **g**, phir **i**.
@@ -18,7 +18,7 @@ nahi karni**; har saved transaction se balance apne-aap calculate hota hai.
    ki **Opening / Stock In** entry save hoti hai. Zero opening par fake entry nahi banti.
 
 Purana version khule ya **Import stock** button na dikhe to [normal panel link](https://akash4447777-dev.github.io/hisaab-pro/)
-dobara kholkar refresh karein aur **Panel v3.34** dekhein. **Browser ka site data /
+dobara kholkar refresh karein aur **Panel v3.35** dekhein. **Browser ka site data /
 local storage clear na karein**—isse unsynced entries hat sakti hain.
 
 Photo camera/gallery se PNG, JPG ya WebP ho sakti hai, maximum **5 MB** input.
@@ -33,7 +33,7 @@ Old panel me jo available quantity hai wahi chosen cut-over date ki Opening bant
 hai. Box ko box, pcs ko pcs rakhein—pack size ya box → pcs conversion guess nahi hoti.
 
 1. Pehle same asli-data wale browser/site par **Settings → Backup (JSON)** lein aur
-   **Panel v3.34** confirm karein. Same account/project use karein; storage clear na karein.
+   **Panel v3.35** confirm karein. Same account/project use karein; storage clear na karein.
 2. **Stock Management → Import stock** → apni prepared `.json` / UTF-8 `.csv` file chunein.
    **Partial opening file ko Settings → Restore me mat daalein**; woh whole-backup
    replacement hai. Stock importer full Settings backups accept nahi karta.
@@ -133,6 +133,113 @@ DOM. Script only writes owner-readable Markdown + URL text under ignored
 same-origin versioned HTML target required; loader/root URL is not used. Do not
 publish these private outputs or run a preview server serving the repository root.
 
+## 1c. Message / screenshot se In, Sale ya Out (v3.35)
+
+**Har nayi stock message ke liye panel ke andar do options hain: message paste YA
+screenshot upload. Screenshot zaroori nahi; text akela bhi chalega. Har baar chat
+me bhejne ki zaroorat nahi.** Panel WhatsApp / phone background me nahi padhta.
+Yeh reviewed browser OCR + format parser hai, general AI / WhatsApp integration nahi.
+
+1. Same asli-data wale browser/account me **Panel v3.35 → Stock Management →
+   Message / screenshot** kholein. Upar destination account/local-browser label dekhein.
+2. **Ek complete numbered message** paste karein, ya **Screenshot se text** se ek
+   clear PNG/JPG/WebP chunein (maximum **5 MB / 20 megapixels**). Photo aur text dono
+   **draft** hain. Text internet ke bina bhi parse hota hai. Photo ki first OCR
+   engine/English-model download ke liye internet chahiye; reading browser me hoti
+   hai, screenshot kisi image-upload / AI service ko nahi bheji jati.
+3. **Year khud confirm karein**—field blank se shuru hota hai. DD/MM/YYYY me year
+   explicitly likha ho to wahi use hota hai. Today, attachment name, WhatsApp quoted
+   sender ya phone-file date se transaction year guess nahi hota. Cross-year receipt
+   par poori DD/MM/YYYY likhein. **Entries taiyar / preview karo** dabayein.
+4. **Gaye = Stock Sale ya Stock Out** khud choose karein. Office-going ko sale nahi
+   maana jata. Out ke liye purpose required; Sale ke liye header party/customer ke
+   saath **salesperson + delivery-person name required**. Out me office receiver
+   name optional hai. Tags/previously saved names suggestions me milte hain, lekin
+   multiple tags se roles auto-assign nahi hote; previous same-party sale bhi naye
+   message ka driver/salesperson invent nahi karti. Driver phone naam ki jagah nahi.
+   Earlier receipt ka supplier unknown ho to blank rahega; supplier optional field
+   sirf actual known supplier ke liye hai, outgoing party ka guess nahi.
+5. Har item ka **saved product + exact unit**, date, quantity, In / Sale / Out,
+   original item text, party, tags aur New / Skip / issue dekhein. Clear same-name
+   + unit aur pehle confirmed aliases match hote hain. Similar names sirf suggestions
+   hain; ambiguous names khud select karein. Box/pcs/roll/bundle/pack conversion nahi;
+   `ps`/`pc`/`pcs`/`pieces` sirf same-count spelling aliases hain. Missing product
+   silently create nahi hota: zaroorat ho to Cancel → Add product with its genuine
+   opening/date → fresh message preview. Confirmed name matches ordinary audit me
+   yaad rehte hain; conflicting matches dobara choice maangte hain.
+6. OCR me date, party, name, unit ya quantity galat ho to **Upar text sudharein**
+   se source textbox correct karke fresh Preview karein. Product mapping, type,
+   purpose, roles, reference aur Skip decisions preview controls se badal sakte hain.
+   **Har correction purana review/Confirm invalidate karti hai.** Original screenshot
+   expand karke compare karein. Confidence visible hai, correctness guarantee nahi;
+   low confidence / unclear lines / symbols / numbers ko khud verify karein.
+7. Complete preview + review checkbox ke baad **Confirm … entries** dabayein. Saari
+   reviewed new movements **ek guarded atomic save**, required pre-change safety
+   copy aur har movement ke independent actor/date/Before → After audit me aati hain.
+   Ek invalid row/save failure par koi partial batch nahi. Cancel / Escape / OCR stop /
+   another modal / stale account/data/disk ya quota failure stock nahi badalte.
+   Save ke baad unfiltered Stock History aur live quantities check karein; configured
+   account ho to **Cloud synced** ka wait karein aur fresh JSON backup lein.
+
+Supported familiar format (generic example, **customer data nahi**):
+
+```text
+23/11 Example customer
+1- Example product
+Pichle bache box 12
+21/11 ko aaye +8
+Aaj gaye -3
+Available box 17
+@Sales Employee @Delivery Employee @Informed Employee
+```
+
+- Header ki **date aur paas wala party text** retained. Quoted sender / Photo / Video /
+  time / reaction stock party ya product nahi. Ignored chrome preview me reviewable hai.
+- **Aaye → Stock In**, apni inline date par. **Aaj gaye → chosen Sale/Out**, header
+  date par. Bare Aaye/Gaye bhi header date use karte hain. Header ke baad ki receipt
+  date ya ambiguous year silently backdate nahi hota—source correct karna padega.
+- **Pichhle bache / Available sirf checks**: fake opening, movement ya manually
+  overwritten available counter nahi. Dono hon to exact thousandths arithmetic
+  validate hota hai. New rows ke baad header-date tak panel ledger ka balance bhi
+  message Available se match chahiye; mismatch par reconcile karein, fake In/Out
+  bana kar force na karein. Missing checks visible warning hain, guessed quantities
+  nahi; full nonnegative dated ledger har save par phir bhi mandatory hai.
+- Header/item text aur saare captured tags saved movement note me rehte hain
+  (maximum 500 characters per source note). Original photo sirf draft me hai,
+  Stock product photo/company logo nahi banti. Historical receipt ke delivery fields
+  me outgoing driver assign nahi hota; raw footer contextual source note me retained.
+- Ek message per batch, **1–50 sequential numbered items**, ek product ek block,
+  maximum **8 movements per item / 20,000 source characters**. Unknown lines,
+  duplicate/cropped numbering, unclear O/I digits, mixed units aur mismatched signs
+  review/correction maangte hain. Single-digit quantity ki alag line lose nahi hoti.
+
+### Duplicate aur opening snapshot safety
+
+**Purane messages ko nayi opening ke upar replay mat karein.** Opening me receipts /
+Sales pehle se included ho sakti hain. New opening ki date se **purani movement yahan
+add nahi hoti**—sirf explicitly **Opening me already included — Skip** resolve kar
+sakte hain. Same-day movement ke liye **opening snapshot ke BAAD** wali explicit
+attestation chahiye. Zero-opening catalogue ki product date bhi cutoff hai. Agar
+asli historical ledger migrate karna hai to opening/history alag reconcile karein;
+importer purani transactions ya opening balance invent/change nahi karta.
+
+Same processed message dobara kholne par movements skip; edited/deleted imported
+entries bhi old screenshot se resurrect nahi hoti. **Same dated receipt different
+outgoing messages me repeated ho to bhi** product/date/quantity-based provenance
+use karke skip hoti hai—sirf screenshot/file hash par bharosa nahi. Manual entries
+(edited/deleted audit samet) ke same product/date/quantity par **possible duplicate**
+choice chahiye; blank/different party ya Sale vs Out se warning bypass nahi hoti.
+
+Sach me same date/qty ki **alag real delivery** ho to **unique message/delivery
+reference + explicit New choice** aur correct source/panel balances chahiye. Source
+facts ke bina importer dono ko alag delivery guess nahi karega. Already-included
+rows ko Skip karein; all-skipped/processed batch strict no-op hai. Correction ke
+liye existing **Stock History → Edit/Delete** + audit use karein, old message replay
+nahi. Independent offline copies of one message share semantic movement IDs; any
+remaining conflict uses the existing explicit cloud conflict/recovery flow, not a
+second warehouse reservation service. Prefer importing once on the actual-data
+device, then sync before opening another device.
+
 ## 2. Stock In, Stock Out aur Stock Sale
 
 | Action | Kya bharein | Quantity par asar |
@@ -143,7 +250,8 @@ publish these private outputs or run a preview server serving the repository roo
 
 Sale me delivery phone aur address / vehicle / gate details bhi likh sakte hain.
 Product row ke **In / Out / Sale** shortcuts wahi product pehle se select karte hain.
-Har transaction ek product ki hoti hai; alag products ke liye alag entries karein.
+Har transaction ek product ki hoti hai; manual forms me alag products ki alag entries
+hain. Message / screenshot importer poore reviewed message ki rows ek saath taiyar karta hai.
 Is tab me pricing, invoice, payment ya salary/Canteen financial write nahi hai.
 
 **Formula:**
@@ -225,7 +333,7 @@ product rename/photo replacement purani history ko rewrite nahi karta.
 - Failed local save/quota/stale tab/account par success assume na karein; error padhein.
   Draft memory me ho sakta hai. Purane confirmed Stock/available/audit rollback rehte
   hain; successful pre-change safety copy alag se ban sakti hai.
-- Saare editing devices/tabs **v3.34** par update karein. Local save cloud ACK nahi:
+- Saare editing devices/tabs **v3.35** par update karein. Local save cloud ACK nahi:
   doosre device par jaane se pehle **Cloud synced** confirm karein.
 
 Independent devices ki compatible entries merge ho sakti hain. Lekin Stock 100 par
