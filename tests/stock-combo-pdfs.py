@@ -12,7 +12,7 @@ import pymupdf as pdf
 
 parser=argparse.ArgumentParser(description=__doc__)
 parser.add_argument('folders',nargs='+',type=Path)
-parser.add_argument('--version',default='3.37')
+parser.add_argument('--version',default='3.38')
 parser.add_argument('--render',type=Path)
 a=parser.parse_args()
 files=sorted({file.resolve() for folder in a.folders for file in folder.glob('*.pdf')})
@@ -74,6 +74,11 @@ for file in files:
             assert 'Corrected common buyer' in text and 'Original message: 23/11 Example buyer' in text,(file,'new shared party / original source retained')
     if file.name=='one-filtered-movement-logo.pdf':
         assert len(re.findall(r'Movement \d+ of 1\b',text))==1 and '2026-11-21' not in text,(file,'exactly one filter match')
+    if file.name=='fuzzy-two-product-combo-logo.pdf':
+        ids=re.findall(r'Saved item · (smsg1_[a-f0-9]{64})',text)
+        assert len(ids)==len(set(ids))==2,(file,'two saved fuzzy rows, not extra products')
+        assert '2 products' in text and '2 stock movements' in text,(file,'one combined combo')
+        assert all(value in compact(text) for value in map(compact,['Plastic scoreboard','Plastc scoreboard','alpha beta gamma delta epsilon','Sales Employee','Delivery Employee','2026-11-23','−2 pcs','−2 box','8 pcs','8 box'])),(file,'canonical names, original misspelled source, shared roles and independent exact units/dates/ledger')
     if '50-product-combo' in file.name:
         expected=json.loads((file.parent/'50-product-combo-expected.json').read_text())
         assert all(compact(name) in compact(text) for name in expected['names']+expected['members']+[expected['party']]),(file,'complete long product/party/Hindi text')

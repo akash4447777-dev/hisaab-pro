@@ -1,4 +1,4 @@
-# Hisaab Pro v3.37 — Stock Management
+# Hisaab Pro v3.38 — Stock Management
 
 Stock Management existing Hisaab panel ka **alag tab** hai: products/photo, Stock In,
 purpose-wise Stock Out, customer-wise Sales, live availability, date-wise history,
@@ -8,7 +8,7 @@ nahi karni**; har saved transaction se balance apne-aap calculate hota hai.
 ## 1. Pehli baar
 
 1. Jis **same browser/site** par asli data hai, Settings → **Backup (JSON)** download karein.
-2. Updated panel me **Panel v3.37** confirm karein. Storage clear, entries re-enter
+2. Updated panel me **Panel v3.38** confirm karein. Storage clear, entries re-enter
    ya company logo dobara upload karne ki zaroorat nahi.
 3. Sidebar → **Stock Management** kholein. Phone par upar navigation ko sideways
    scroll kar sakte hain. Keyboard shortcut: **g**, phir **i**.
@@ -18,7 +18,7 @@ nahi karni**; har saved transaction se balance apne-aap calculate hota hai.
    ki **Opening / Stock In** entry save hoti hai. Zero opening par fake entry nahi banti.
 
 Purana version khule ya **Import stock** button na dikhe to [normal panel link](https://akash4447777-dev.github.io/hisaab-pro/)
-dobara kholkar refresh karein aur **Panel v3.37** dekhein. **Browser ka site data /
+dobara kholkar refresh karein aur **Panel v3.38** dekhein. **Browser ka site data /
 local storage clear na karein**—isse unsynced entries hat sakti hain.
 
 Photo camera/gallery se PNG, JPG ya WebP ho sakti hai, maximum **5 MB** input.
@@ -33,7 +33,7 @@ Old panel me jo available quantity hai wahi chosen cut-over date ki Opening bant
 hai. Box ko box, pcs ko pcs rakhein—pack size ya box → pcs conversion guess nahi hoti.
 
 1. Pehle same asli-data wale browser/site par **Settings → Backup (JSON)** lein aur
-   **Panel v3.37** confirm karein. Same account/project use karein; storage clear na karein.
+   **Panel v3.38** confirm karein. Same account/project use karein; storage clear na karein.
 2. **Stock Management → Import stock** → apni prepared `.json` / UTF-8 `.csv` file chunein.
    **Partial opening file ko Settings → Restore me mat daalein**; woh whole-backup
    replacement hai. Stock importer full Settings backups accept nahi karta.
@@ -140,7 +140,7 @@ publish these private outputs or run a preview server serving the repository roo
 **Ek-ek item bharna nahi. Ek poora message paste YA screenshot chuno. Chat mein
 har message bhejna zaroori nahi; phone/WhatsApp apne-aap read nahi hota.**
 
-1. Same asli-data wale browser/account mein **Panel v3.37 → Stock Management →
+1. Same asli-data wale browser/account mein **Panel v3.38 → Stock Management →
    ＋ Combo / message**. Upar account/local-browser label check karo.
 2. **Pehli screen:** WhatsApp ka poora numbered message Paste karo, ya bada
    **Screenshot chuno** button dabao. PNG/JPG/WebP, maximum **5 MB / 20 megapixels**.
@@ -163,10 +163,16 @@ har message bhejna zaroori nahi; phone/WhatsApp apne-aap read nahi hota.**
    to **Naam likho → ＋ Naam jodo** (Enter bhi chalega). Typed name ko jode bina Save
    enabled nahi hoga. Extra added naam hataya ja sakta hai; original tag text sudharne
    ke liye **← Message / Message sudharo**. Isse Employee/Attendance profile nahi banti.
-6. **Saare items, dates, quantities aur units check karo.** Clear exact/confirmed
-   name + unit match compact dikhta hai; **badlein** kholkar remap kar sakte ho.
-   Unclear product ka **Choose product** khula rahega; fuzzy suggestion automatic
-   match nahi. Box/pcs/roll/bundle/pack conversion kabhi nahi. `ps`/`pc`/`pcs` same-count
+6. **Saare items, dates, quantities aur units check karo.** Naam same-to-same hona
+   zaroori nahi: **unique 75%+ naam match** par saved product apne-aap chunta hai.
+   Typos, word order, spacing, common plurals aur chhoote descriptive words handle
+   hote hain. Compact summary mein **match % + saved product / unit** dikhenge;
+   **badlein** se apna doosra product chun sakte ho. Exact/confirmed alias ko priority.
+   Do candidates five percentage points ke andar hon, size/model/colour/half-full
+   alag ho, ya omitted size/colour ke do actual variants hon, toh **Choose product**
+   khula rahega—pehla/random product nahi chuna jayega. **75% name score hai, stock
+   sahi hone ki probability nahi**; complete review ab bhi zaroori hai.
+   Box/pcs/roll/bundle/pack conversion kabhi nahi. `ps`/`pc`/`pcs` same-count
    spelling aliases hain. Missing product silently create nahi hota: Cancel → actual
    opening/date ke saath Add product → fresh preview. Product aliases audited save
    ke baad yaad rehte hain; conflicting aliases dobara explicit choice maangte hain.
@@ -187,6 +193,30 @@ lekin original item aur har movement ki date/quantity/unit poori preview mein re
 old combo correction History → **Edit combo** mein karein; individual row ka apna
 Edit retained hai. v3.35 ke note-only tags bhi ab History/PDF mein padhe jaate hain,
 bina old records rewrite kiye.
+
+### Naam ka 75% automatic match (v3.38)
+
+- Text aur actual screenshot/OCR draft **usi local matcher** se guzarte hain. Koi
+  AI/product-lookup service, external catalogue, image upload ya naya library nahi.
+- Score: normalized common-word Dice aur original/sorted-word character edit
+  similarity mein se highest. Case/punctuation, number-letter spacing (`9mm` /
+  `9 mm`), limited common plurals, `gray/grey` / `golden/gold` normalize sirf lookup
+  ke liye; saved/source naam, actual numbers aur original units nahi badalte.
+- **Raw score >= 0.75** chahiye: 74.7% ko round karke automatic 75% nahi banate.
+  Exact normalized name + original unit / earlier reviewed alias first; conflicting
+  aliases kabhi fuzzy score se chupaye nahi jate. Unknown/low match manual select.
+- Explicit mismatched sizes/model-number order, colour, half/full, small/medium/large,
+  left/right aur male/female automatic substitution nahi. Same-family variants mein
+  missing detail ho toh bhi review, even if shorter model thoda higher score le.
+- Matching sirf **product dropdown** bharta hai. Preview/Cancel zero-save; Save ke
+  liye original year, type, roles, warnings aur final consent ab bhi chahiye.
+  Apni selection badalne par purana tick reset hota hai; manually chosen product par
+  purane different product ka % nahi dikhate. Reviewed save ke baad alias audit mein
+  yaad rehta hai. Source/canonical names, tags, combo/PDF/audit alag-alag retained.
+- **Opening/date aur source maths ke errors isse remove nahi hote.** Pre-opening
+  movements ko backdate karke ya galat Skip se force na karein. Source Available
+  check galat ho sakta hai ya OCR reading; asli text/stock reconcile karein. Is build
+  mein historical-record-only combo / stock-neutral archive add nahi hua hai.
 
 ### Ek party, ek message, ek combo (v3.37)
 
@@ -424,7 +454,7 @@ product rename/photo replacement purani history ko rewrite nahi karta.
 - Failed local save/quota/stale tab/account par success assume na karein; error padhein.
   Draft memory me ho sakta hai. Purane confirmed Stock/available/audit rollback rehte
   hain; successful pre-change safety copy alag se ban sakti hai.
-- Saare editing devices/tabs **v3.37** par update karein. Local save cloud ACK nahi:
+- Saare editing devices/tabs **v3.38** par update karein. Local save cloud ACK nahi:
   doosre device par jaane se pehle **Cloud synced** confirm karein.
 
 Independent devices ki compatible entries merge ho sakti hain. Lekin Stock 100 par
