@@ -1,4 +1,4 @@
-# Hisaab Pro v3.38 — Stock Management
+# Hisaab Pro v3.39 — Stock Management
 
 Stock Management existing Hisaab panel ka **alag tab** hai: products/photo, Stock In,
 purpose-wise Stock Out, customer-wise Sales, live availability, date-wise history,
@@ -8,17 +8,39 @@ nahi karni**; har saved transaction se balance apne-aap calculate hota hai.
 ## 1. Pehli baar
 
 1. Jis **same browser/site** par asli data hai, Settings → **Backup (JSON)** download karein.
-2. Updated panel me **Panel v3.38** confirm karein. Storage clear, entries re-enter
+2. Updated panel me **Panel v3.39** confirm karein. Storage clear, entries re-enter
    ya company logo dobara upload karne ki zaroorat nahi.
 3. Sidebar → **Stock Management** kholein. Phone par upar navigation ko sideways
    scroll kar sakte hain. Keyboard shortcut: **g**, phir **i**.
-4. **Add product** dabayein: unique product name, unit (pcs / kg / metre…), date,
+4. **Add product** dabayein: unique product name, Unit dropdown (box / set / bundle / pcs…), date,
    opening quantity aur minimum-stock limit bharein. Photo aur note optional hain.
 5. **Save product** ke baad product aur, opening quantity positive ho to, usi date
    ki **Opening / Stock In** entry save hoti hai. Zero opening par fake entry nahi banti.
 
+### Add product: 30 unit choices (v3.39)
+
+**Stock Management → Add product → Unit** ab ek visible dropdown hai:
+
+| Group | Exact unit labels |
+|---|---|
+| Count / packing | `pcs`, `box`, `set`, `bundle`, `roll`, `packet`, `pack`, `carton`, `pair`, `dozen`, `bag`, `gaddi`, `table`, `unit`, `bottle`, `can`, `drum` |
+| Weight | `kg`, `g`, `quintal`, `tonne` |
+| Volume | `litre`, `ml` |
+| Length / area | `metre`, `cm`, `mm`, `feet`, `inch`, `sqft`, `sqm` |
+
+- Apni doosri unit ke liye **Other / custom unit…** chunein, phir exact label
+  likhein (maximum 18 characters). Khaali custom unit save nahi hogi.
+- New product ka default `pcs` hai. Purane products ki spelling/case/custom labels
+  **apne-aap nahi badalti**; existing custom label Edit mein wahi khulta hai.
+- **Koi pack conversion nahi:** 1 box ko pcs, set ya bundle mein convert nahi
+  karte. Har product ki ek exact unit aur usi unit mein dated quantity rehti hai.
+- Opening / koi movement banne ke baad product ki unit change karna ab bhi blocked
+  hai. Alag unit ke liye alag product banayein; old stock ko rename/convert na karein.
+- Dropdown/custom selection sirf draft hai; **Save product** se pehle ya Cancel par
+  stock nahi badalta. Canteen ka unit selector is change se alag/unchanged hai.
+
 Purana version khule ya **Import stock** button na dikhe to [normal panel link](https://akash4447777-dev.github.io/hisaab-pro/)
-dobara kholkar refresh karein aur **Panel v3.38** dekhein. **Browser ka site data /
+dobara kholkar refresh karein aur **Panel v3.39** dekhein. **Browser ka site data /
 local storage clear na karein**—isse unsynced entries hat sakti hain.
 
 Photo camera/gallery se PNG, JPG ya WebP ho sakti hai, maximum **5 MB** input.
@@ -33,7 +55,7 @@ Old panel me jo available quantity hai wahi chosen cut-over date ki Opening bant
 hai. Box ko box, pcs ko pcs rakhein—pack size ya box → pcs conversion guess nahi hoti.
 
 1. Pehle same asli-data wale browser/site par **Settings → Backup (JSON)** lein aur
-   **Panel v3.38** confirm karein. Same account/project use karein; storage clear na karein.
+   **Panel v3.39** confirm karein. Same account/project use karein; storage clear na karein.
 2. **Stock Management → Import stock** → apni prepared `.json` / UTF-8 `.csv` file chunein.
    **Partial opening file ko Settings → Restore me mat daalein**; woh whole-backup
    replacement hai. Stock importer full Settings backups accept nahi karta.
@@ -140,7 +162,7 @@ publish these private outputs or run a preview server serving the repository roo
 **Ek-ek item bharna nahi. Ek poora message paste YA screenshot chuno. Chat mein
 har message bhejna zaroori nahi; phone/WhatsApp apne-aap read nahi hota.**
 
-1. Same asli-data wale browser/account mein **Panel v3.38 → Stock Management →
+1. Same asli-data wale browser/account mein **Panel v3.39 → Stock Management →
    ＋ Combo / message**. Upar account/local-browser label check karo.
 2. **Pehli screen:** WhatsApp ka poora numbered message Paste karo, ya bada
    **Screenshot chuno** button dabao. PNG/JPG/WebP, maximum **5 MB / 20 megapixels**.
@@ -454,7 +476,7 @@ product rename/photo replacement purani history ko rewrite nahi karta.
 - Failed local save/quota/stale tab/account par success assume na karein; error padhein.
   Draft memory me ho sakta hai. Purane confirmed Stock/available/audit rollback rehte
   hain; successful pre-change safety copy alag se ban sakti hai.
-- Saare editing devices/tabs **v3.38** par update karein. Local save cloud ACK nahi:
+- Saare editing devices/tabs **v3.39** par update karein. Local save cloud ACK nahi:
   doosre device par jaane se pehle **Cloud synced** confirm karein.
 
 Independent devices ki compatible entries merge ho sakti hain. Lekin Stock 100 par

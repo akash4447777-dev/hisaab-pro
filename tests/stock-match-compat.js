@@ -34,6 +34,7 @@ const hooks=[
   ]
 ];
 function withoutStockMatch(source){
+ source=require('./stock-units-compat').withoutStockUnits(source);
  const start='/* v3.38 STOCK NAME MATCH BEGIN',end='/* v3.38 STOCK NAME MATCH END */';
  if(!source.includes(start))return source;
  assert.equal(source.split(start).length-1,1);assert.equal(source.split(end).length-1,1);
