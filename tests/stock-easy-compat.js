@@ -165,6 +165,7 @@ const hooks=[
   ]
 ];
 function withoutStockEasy(source){
+ source=require('./stock-combo-compat').withoutStockCombo(source);
  if(!source.includes('/* v3.36 STOCK EASY BEGIN'))return source;
  for(const[start,end]of [['/* v3.36 STOCK EASY BEGIN','/* v3.36 STOCK EASY END */'],['/* v3.36 STOCK EASY STYLE BEGIN */','/* v3.36 STOCK EASY STYLE END */']]){
   assert.equal(source.split(start).length-1,1);assert.equal(source.split(end).length-1,1);
