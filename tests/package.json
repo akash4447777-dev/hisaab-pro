@@ -1,10 +1,10 @@
 {
   "name": "hisaab-pro-tests",
-  "version": "3.36.0",
+  "version": "3.37.0",
   "private": true,
-  "description": "Hisaab \u2014 easier Stock message review, explicit tagged people, branded Stock PDFs, audited inventory, Canteen, salary, Attendance and cloud safety tests",
+  "description": "Hisaab \u2014 one-party Stock combos, atomic combo correction, tagged people, branded PDFs, audited inventory, Canteen, salary, Attendance and cloud safety tests",
   "scripts": {
-    "test": "node canteen.test.js && node loader.test.js && node pdf.test.js && node cloud.test.js && node attendance.test.js && node employees.test.js && node canteen-lines.test.js && node company-logo.test.js && node canteen-pdf.test.js && node canteen-filters.test.js && node stock.test.js && node stock-cloud.test.js && node stock-import.test.js && node stock-link.test.js && node stock-message.test.js && node stock-easy.test.js",
+    "test": "node canteen.test.js && node loader.test.js && node pdf.test.js && node cloud.test.js && node attendance.test.js && node employees.test.js && node canteen-lines.test.js && node company-logo.test.js && node canteen-pdf.test.js && node canteen-filters.test.js && node stock.test.js && node stock-cloud.test.js && node stock-import.test.js && node stock-link.test.js && node stock-message.test.js && node stock-easy.test.js && node stock-combo.test.js",
     "test:stock": "node stock.test.js && node stock-cloud.test.js",
     "test:stock:browser": "node stock.browser.js",
     "test:canteen": "node canteen.test.js",
@@ -31,7 +31,9 @@
     "test:stock:message": "node stock-message.test.js",
     "test:stock:message:browser": "node stock-message.browser.js",
     "test:stock:easy": "node stock-easy.test.js",
-    "test:stock:easy:browser": "node stock-easy.browser.js"
+    "test:stock:easy:browser": "node stock-easy.browser.js",
+    "test:stock:combo": "node stock-combo.test.js",
+    "test:stock:combo:browser": "node stock-combo.browser.js"
   },
   "devDependencies": {
     "jsdom": "^26.0.0"

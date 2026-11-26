@@ -1,4 +1,4 @@
-# HISAAB v3.36 — safe login, device sync aur recovery
+# HISAAB v3.37 — safe login, device sync aur recovery
 
 v3.17’s data-safety protocol remains in place. v3.19 extends the same protection
 to the integrated manager Attendance tab; no new Supabase table/project is needed.
@@ -61,7 +61,7 @@ keep the bounded local image. A confirmed removal is an explicit empty value;
 concurrent different replacements/removal pause for an explicit local/cloud
 choice. No new storage key, backend/table or sync/recovery/financial change.
 Bad/cancelled/stale-account uploads or failed local persistence retain the previous
-logo/data; local save is never a cloud ACK. Update all devices/tabs to **v3.36** to
+logo/data; local save is never a cloud ACK. Update all devices/tabs to **v3.37** to
 see branding on their PDFs. [Logo guide](COMPANY-LOGO.md).
 
 v3.30 removes only Canteen PDF/print Bikri / Kharcha display columns and their
@@ -104,7 +104,7 @@ canonical persistence restores previous inventory/audit/dirty state; a successfu
 saved **pre-change safety copy** may still advance. Global erase explicitly includes
 Stock photos/audit; demo/sample and old backups without Stock preserve it. Recovery
 adds missing dependencies or refuses an invalid dated combination, never clamps
-available quantity. Update every editing client to **v3.36** before Stock use.
+available quantity. Update every editing client to **v3.37** before Stock use.
 Synthetic CAS/RLS/adversarial tests are not live-customer backend verification.
 
 ## Opening-stock file import (v3.33+)
@@ -129,7 +129,7 @@ is not cloud ACK. Import once on the actual-data device, verify the preview and
 quantities, download a fresh JSON backup, then wait for **Cloud synced** before
 using another updated device. Competing offline imports of the same new name pause
 as a duplicate-name conflict instead of silently summing their openings. Use
-**v3.36 on every tab/device**, the same project/account, and never clear storage.
+**v3.37 on every tab/device**, the same project/account, and never clear storage.
 Private catalogues/screenshots are not embedded in the public release/tests.
 [File format, date/review and reimport rules](STOCK-MANAGEMENT.md).
 
@@ -156,7 +156,7 @@ confuse a local success with Cloud synced. [Link guide and local generator](STOC
 
 ## Reviewed message / screenshot Stock entry (v3.35+, easier v3.36)
 
-Stock → **Message / screenshot** accepts one explicitly pasted message or selected
+Stock → **Combo / message** accepts one explicitly pasted message or selected
 raster image. No background WhatsApp/phone access, AI service or inventory seed.
 Source extraction, OCR, year/type/roles/product matching and complete preview never
 save. OCR uses the existing browser Tesseract5 English engine/core/model downloads;
@@ -196,10 +196,41 @@ Concurrent offline versions of the same semantic event share an ID; incompatible
 values still require existing explicit conflict resolution. This is not a global
 server-side stock reservation lock. Import once on the actual-data device; verify
 live stock/History, take JSON backup, wait for **Cloud synced**, then use another
-updated **v3.36** tab/device. No customer-account write was performed by shipping
+updated **v3.37** tab/device. No customer-account write was performed by shipping
 this generic feature. [Formats, review and duplicate/opening rules](STOCK-MANAGEMENT.md#1c-message--screenshot-se-in-sale-ya-out).
 
-## Read-only Stock PDFs (v3.36)
+## One-party Stock combos (v3.37)
+
+One reviewed pasted message/screenshot is **ONE combo entry for ONE party**, with
+all saved products inside it, shared tags/explicit roles and one combined PDF.
+Product-specific quantities, units and actual In/Out/Sale dates remain ordinary
+independent v1 transactions—the only availability ledger. The display reads source
+batch IDs from existing create audits; no migration, second quantity counter,
+new key/table/backend or party/date-based guessed merging. v3.35/v3.36 source
+imports group without rewriting their saved JSON; manual/opening rows stay separate.
+Skipped/deleted/unsaved rows are not invented as active combo inventory.
+
+Whole-combo Edit/Delete use the existing Stock context guard and one atomic
+checkpoint/save for ALL current child movements, with per-child edit/delete audits.
+Full dated nonnegative ledger validation and required safety capture run before
+persistence; stale scope/epoch/version/owner/snapshot/disk, quota or any invalid
+child refuse the complete operation. Common outgoing party/roles never replace
+an earlier In's actual supplier; notes and exact product units remain. Adding tags
+retains all original people; unchanged review (including old note-only tags) is a
+strict no-op. Merely opening, editing a draft or cancelling does not save.
+
+A partial History filter explicitly shows matched/total rows. **Combo PDF/Edit/
+Delete are whole-combo actions**; the review lists all current children. Filtered
+History PDF stays only the actual matches across every page. Combo pagination
+never divides products into separate user-facing entries. Original source audit
+and delete history continue to block re-paste resurrection and duplicate receipts.
+Cloud merge/recovery still works on the existing product/dependency sets: this is
+not a new multi-user reservation lock or a server-transaction schema. Conflicting
+advanced corrections remain visible for explicit reconciliation, not a guessed
+common party. Update ALL tabs/devices to **v3.37** for consistent combo presentation;
+no customer account is imported or edited by shipping this generic release.
+
+## Read-only Stock PDFs (v3.36+, combined combos v3.37)
 
 Available Stock, current combined-filter History and a saved message's current rows
 have local branded PDFs. Every matching row/page, exact unit, full-ledger balance,
@@ -215,9 +246,9 @@ is a report, **not a JSON backup**. [Stock PDF guide](STOCK-MANAGEMENT.md#4a-sto
 ## Pehle ye karein (existing users)
 
 1. **Jis phone/laptop par asli data abhi dikh raha hai, uska Settings → Backup (JSON) download karein.** Salary, canteen, saved Attendance aur Stock/photos/audit sab isi backup me aate hain. Doosre device par bhi bacha data ho to uska alag backup rakhein.
-2. **Dono devices aur saare purane tabs par v3.36 kholein:**
-   [Hisaab-Pro-v3.36.html](https://akash4447777-dev.github.io/hisaab-pro/Hisaab-Pro-v3.36.html).
-   Sidebar me **Panel v3.36** confirm karein. Browser/site storage clear, uninstall, “Erase all data” ya “Sample data” mat karein.
+2. **Dono devices aur saare purane tabs par v3.37 kholein:**
+   [Hisaab-Pro-v3.37.html](https://akash4447777-dev.github.io/hisaab-pro/Hisaab-Pro-v3.37.html).
+   Sidebar me **Panel v3.37** confirm karein. Browser/site storage clear, uninstall, “Erase all data” ya “Sample data” mat karein.
 3. Pehle bache-data wale device par **usi Supabase Project URL aur usi email/account** se sign in karein. Existing setup ko reset ya naya project/account banane ki zaroorat nahi.
 4. Settings → **Sync now**. `Cloud synced` aane par doosre updated device par bhi same project/account se sign in karein. Pehli login par cloud read hota hai; naya khaali/demo device populated cloud ko replace nahi karta.
 5. `Sync paused · data protected` aaye to neeche wali conflict/recovery choice dekhein. `Local saved · sync pending` ya `Offline · sync pending` ko cloud backup ki confirmation **na** maanein.
