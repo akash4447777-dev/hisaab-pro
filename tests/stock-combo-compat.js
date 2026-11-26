@@ -119,6 +119,7 @@ const hooks=[
   ]
 ];
 function withoutStockCombo(source){
+ source=require('./stock-match-compat').withoutStockMatch(source);
  if(!source.includes('/* v3.37 STOCK COMBO BEGIN'))return source;
  for(const[start,end]of [['/* v3.37 STOCK COMBO BEGIN','/* v3.37 STOCK COMBO END */'],['/* v3.37 STOCK COMBO STYLE BEGIN */','/* v3.37 STOCK COMBO STYLE END */']]){
   assert.equal(source.split(start).length-1,1);assert.equal(source.split(end).length-1,1);

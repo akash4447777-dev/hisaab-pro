@@ -1995,7 +1995,7 @@ const rRate = (n) => { const x = Math.max(0, num(n)); return x >= 1 ? r2(x) : Ma
 /* rate dikhane ka format: <₹1 ho to 0.075 jaisa khula number, warna moneyS */
 const rateS = (n) => { const x = num(n); if (x > 0 && x < 1) return "₹" + String(Math.round((x + Number.EPSILON) * 10000) / 10000); return moneyS(x); };
 const clamp = (n, lo, hi) => Math.min(hi, Math.max(lo, n));
-const APP_VERSION = "3.37";
+const APP_VERSION = "3.38";
 const esc = (s) => String(s == null ? "" : s).replace(/[&<>"']/g, (m) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[m]));
 
 const MONTHS = ["January","February","March","April","May","June","July","August","September","October","November","December"];
@@ -3478,6 +3478,7 @@ function viewSettings(){
 
     '<div style="text-align:center;font-size:11.5px;color:var(--muted);margin-top:18px;line-height:1.7">'+
       'Panel <b style="color:var(--ink)">v<span data-ver></span></b> · Auto-update enabled<br>'+
+      'v3.38 — <b style="color:var(--ink)">75% naam match par product apne-aap</b>: Same-to-same spelling zaroori nahi. Typos, word order aur chhoote descriptive words par unique 75%+ match select; percent visible, badalne ka option. Close matches / alag size, model, colour ya unit par review; exact units, dates, opening aur maths safety unchanged.<br>'+
       'v3.37 — <b style="color:var(--ink)">Ek party, ek message, ek combo</b>: Pasted message ke saare products ab ek History combo ke andar; common party / tagged log / roles, poore combo ka ek PDF. Ek saath Edit / Delete, original product units aur dated In / Out / Sale ledger safe. Purane audited messages bina re-save grouped; alag messages party/date milne par bhi merge nahi hote.<br>'+
       'v3.36 — <b style="color:var(--ink)">Aasaan Stock + tagged log + PDF</b>: Message/photo se do-screen review, saare tagged naam alag dikhte aur save hote hain; ek tap se explicit Salesperson / Delivery / Receiver choice. Naam manually jod sakte hain. Available Stock, combined-filter History aur saved message ke logo-wale local PDF / file-share. Date/year, units, duplicates, opening checks aur atomic save guards unchanged.<br>'+
       'v3.35 — <b style="color:var(--ink)">Message / screenshot se Stock</b>: Message paste ya local screenshot OCR se dated In / Sale / Out draft; party, original item text aur tags retained. Explicit type/roles/unit/year review, message maths + panel balance checks, duplicate/opening safeguards aur ek guarded atomic confirmation. Pichhle / Available se fake stock nahi banta. Extraction se save nahi; AI/chat access nahi.<br>'+
@@ -11651,7 +11652,7 @@ function stmParse(text, year) {
   if (result.tags.join('\n').length > 400) fail('Tagged members bahut lambe hain; shorter complete message use karein.');
   return result;
 }
-function stmMatch(block, s) {
+function stfExactMatch(block, s) {
   const unit = stmUnit(block.unit), key = stmKey(block.name);
   const named = key ? s.products.filter(p => stmKey(p.name) === key) : [];
   const direct = named.filter(p => stmUnit(p.unit) === unit), aliases = new Set();
@@ -12022,7 +12023,7 @@ function steOpen() {
         <div class="stm-controls ste-roles"><label id="steSalesField" class="stk-field" hidden><span>Salesperson kaun hai? *</span><input id="stmSalesperson" class="inp" list="stmMembers" maxlength="90" placeholder="Upar naam par tap ya yahan likho"></label><label id="steDeliveryField" class="stk-field" hidden><span id="steDeliveryLabel">Delivery kisne ki? *</span><input id="stmDelivery" class="inp" list="stmMembers" maxlength="90" placeholder="Upar naam par tap ya yahan likho"></label></div><datalist id="stmMembers"></datalist>
         <details id="steMore" class="ste-more"><summary>Extra options: supplier / delivery reference</summary><div class="stm-controls"><label class="stk-field"><span>Stock In supplier (optional)</span><input id="stmSupplier" class="inp" maxlength="90" placeholder="Pata ho to hi naam likho"></label><label class="stk-field"><span>Alag delivery ka reference (optional)</span><input id="stmReference" class="inp" maxlength="80" placeholder="Bill / delivery number"></label></div></details>
         <label class="stm-check ste-opening" id="steOpening" hidden><input id="stmSameDay" type="checkbox"><span>Opening isi din ki hai: yeh movements <b>opening snapshot ke BAAD</b> hui hain aur usme pehle se shamil nahi hain.</span></label>
-        <h4 class="stm-step">Saare items — date, quantity aur unit dekh lo</h4>
+        <h4 class="stm-step">Saare items — date, quantity aur unit dekh lo</h4><p class="stm-help stf-help">Naam bilkul same hona zaroori nahi: unique 75%+ naam match par product apne-aap select hoga. Match % aur saved naam dekhein; badlein se doosra product chun sakte hain. Close matches / alag size, model, colour ya unit par pehle review.</p>
         <div id="stmPreview" aria-live="polite"></div>
         <p class="stm-help">Aaye = In; gaye = Sale / Out. Pichhle bache / Available sirf checks hain. Galti ho to <button type="button" class="btn xs" data-stm="edit">Message sudharo</button>.</p>
         <label class="stm-check ste-consent"><input id="stmReviewed" type="checkbox"><span>Maine date + saal, products, quantity/unit, tags/roles aur warnings dekh li hain. Is ek combo ki sirf nayi movements save karo; already included / skipped dobara nahi.</span></label>
@@ -12047,9 +12048,9 @@ function steRender(plan) {
     (plan.warnings.length ? '<div class="banner warn stm-warnings">' + plan.warnings.map(esc).join('<br>') + '</div>' : '') +
     plan.blocks.map(block => {
       const saved = products.find(product => product.id === block.productId), matched = !!saved && !/CONFLICT|Conflicting/.test(block.match.kind) && stmUnit(saved.unit) === block.unit;
-      const select = '<label class="stk-field"><span>Saved product / unit *</span><select class="inp" data-stm-match="' + block.index + '">' + option('', 'Choose product', !block.productId) + products.map(product => option(product.id, (block.match.suggestions?.includes(product.id) ? 'Suggested: ' : '') + product.name + ' · ' + product.unit, product.id === block.productId)).join('') + '</select><small>' + esc(block.match.kind) + '</small></label>';
+      const select = '<label class="stk-field"><span>Saved product / unit *</span><select class="inp" data-stm-match="' + block.index + '">' + option('', 'Choose product', !block.productId) + products.map(product => option(product.id, (block.match.suggestions?.includes(product.id) ? 'Suggested: ' : '') + product.name + ' · ' + product.unit, product.id === block.productId)).join('') + '</select><small>' + esc(stfMatchNote(block)) + '</small></label>';
       return '<section class="stm-item"><div class="stm-item-title"><b>' + esc(block.name) + '</b><span>Previous ' + displayQty(block.prior) + ' → Available ' + displayQty(block.available) + ' ' + esc(block.unit) + '</span></div>' +
-        (matched ? '<details class="ste-product"><summary><span class="ste-status">✓ Product matched</span> ' + esc(saved.name + ' · ' + saved.unit) + ' <span class="muted">— badlein</span></summary>' + select + '</details>' : select) +
+        (matched ? '<details class="ste-product"><summary><span class="ste-status">' + esc(stfStatus(block)) + '</span> ' + esc(saved.name + ' · ' + saved.unit) + ' <span class="muted">— badlein</span></summary>' + select + '</details>' : select) +
         '<div class="stm-rows">' + plan.rows.filter(row => row.block === block.index).map(row => {
           const actions = '<label><span>Action</span><select class="inp" aria-label="Movement action ' + esc(row.index) + '" data-stm-action="' + esc(row.index) + '">' + (row.similar || row.before ? option('', 'Resolve before saving', !row.action) : '') + (!row.before ? option('new', row.similar ? 'Alag real movement — unique reference' : 'Nayi movement', row.action === 'new') : '') + option('skip', row.before ? 'Opening me already included — skip' : 'Already included / skip', row.action === 'skip') + '</select></label>';
           return '<div class="stm-row" data-stm-row="' + esc(row.index) + '"><div><b>' + esc(row.date) + ' · ' + (row.direction === 'in' ? '+' : '−') + stkFmt(row.qty) + ' ' + esc(row.unit) + '</b><span>' + esc(row.direction === 'in' ? 'Stock In' : row.type === 'sale' ? 'Stock Sale' : row.type === 'out' ? 'Stock Out' : 'Outgoing type required') + ' · ' + esc(row.party || 'supplier not given') + '</span>' + (row.before ? '<span>Opening snapshot: ' + esc(row.cutover) + ' — purani movement dobara add nahi hogi.</span>' : '') + (row.similar && !row.exact ? '<span>Isi product/date/quantity ki entry milti hai. Pehle se included ho to Skip chuno.</span>' : '') + '</div>' +
@@ -12465,6 +12466,106 @@ document.addEventListener('change',event=>{
 });
 document.addEventListener('keydown',event=>{if(event.target.id==='stcName'&&event.key==='Enter'){event.preventDefault();$('[data-stc="addName"]')?.click();}});
 /* v3.37 STOCK COMBO END */
+
+/* v3.38 STOCK NAME MATCH BEGIN
+   Local name similarity only. The ordinary reviewed plan/apply path remains the
+   sole stock writer. Scores are not probabilities; units are never converted. */
+const STF_MIN = 0.75, STF_GAP = 0.05;
+const STF_WORDS = Object.freeze({sticks:'stick',cues:'cue',balls:'ball',boards:'board',rolls:'roll',bundles:'bundle',sets:'set',boxes:'box',pieces:'piece',tables:'table',bags:'bag',brushes:'brush',triangles:'triangle',lights:'light',gray:'grey',golden:'gold'});
+function stfName(value) {
+  return String(value || '').normalize('NFKC').toLocaleLowerCase('en')
+    .replace(/[०-९]/g, d => String('०१२३४५६७८९'.indexOf(d)))
+    .replace(/([\p{N}])([\p{L}])/gu, '$1 $2').replace(/([\p{L}])([\p{N}])/gu, '$1 $2')
+    .replace(/[^\p{L}\p{M}\p{N}]+/gu, ' ').trim().replace(/\s+/g, ' ').split(' ')
+    .map(word => Object.hasOwn(STF_WORDS, word) ? STF_WORDS[word] : word).join(' ');
+}
+function stfEdit(a, b) {
+  const x = Array.from(a), y = Array.from(b);
+  if (!x.length || !y.length) return x.length === y.length ? 1 : 0;
+  let previous = Array.from({length:y.length + 1}, (_, i) => i);
+  for (let i = 0; i < x.length; i++) {
+    const next = [i + 1];
+    for (let j = 0; j < y.length; j++) next.push(Math.min(next[j] + 1, previous[j + 1] + 1, previous[j] + (x[i] === y[j] ? 0 : 1)));
+    previous = next;
+  }
+  return 1 - previous[y.length] / Math.max(x.length, y.length);
+}
+function stfScore(a, b) {
+  const left = stfName(a), right = stfName(b);
+  if (!left || !right) return 0;
+  const x = left.split(' '), y = right.split(' '), remaining = [...y]; let common = 0;
+  for (const word of x) { const at = remaining.indexOf(word); if (at >= 0) { common++; remaining.splice(at, 1); } }
+  // Token Dice accepts omitted descriptive words/reordered names. Character edit
+  // similarity accepts typos and spacing differences; neither rewrites the name.
+  return Math.max(2 * common / (x.length + y.length), stfEdit(left.replace(/ /g, ''), right.replace(/ /g, '')),
+    stfEdit([...x].sort().join(''), [...y].sort().join('')));
+}
+function stfVariant(a, b) {
+  const left = stfName(a), right = stfName(b);
+  const numbers = text => text.match(/\d+/g) || [];
+  const x = numbers(left), y = numbers(right);
+  if (x.length && y.length && x.join('|') !== y.join('|')) return 'size / model number alag';
+  const dimensions = text => (text.match(/\d+\s+(?:mm|cm|m|inch|inches|ft|feet|foot)\b/g) || []).map(part => part.replace(/inches/g, 'inch').replace(/feet|foot/g, 'ft'));
+  const firstSize = dimensions(left), secondSize = dimensions(right);
+  if (firstSize.length && secondSize.length && firstSize.join('|') !== secondSize.join('|')) return 'size ki unit alag';
+  const codes = value => String(value).normalize('NFKC').toLocaleLowerCase('en').replace(/[०-९]/g, d => String('०१२३४५६७८९'.indexOf(d)))
+    .match(/[\p{L}\p{N}]+/gu)?.filter(word => /\p{L}/u.test(word) && /\p{N}/u.test(word)) || [];
+  const firstCode = codes(a), secondCode = codes(b);
+  if (firstCode.length && secondCode.length && firstCode.join('|') !== secondCode.join('|')) return 'model code alag';
+  const groups = [
+    ['black','white','red','blue','green','yellow','orange','brown','pink','purple','grey','gold','silver'],
+    ['half','full'], ['small','medium','large'], ['left','right'], ['male','female']
+  ];
+  const l = left.split(' '), r = right.split(' ');
+  for (let i = 0; i < groups.length; i++) {
+    const first = [...new Set(l.filter(word => groups[i].includes(word)))].sort(), second = [...new Set(r.filter(word => groups[i].includes(word)))].sort();
+    if (first.length && second.length && first.join('|') !== second.join('|')) return i ? 'product variant alag' : 'colour alag';
+  }
+  return '';
+}
+function stfFamily(value) {
+  const variants = new Set(['mm','cm','inch','inches','ft','feet','foot','black','white','red','blue','green','yellow','orange','brown','pink','purple','grey','gold','silver','half','full','small','medium','large','left','right','male','female']);
+  return stfName(value).split(' ').filter(word => !/\d/.test(word) && !variants.has(word)).join(' ');
+}
+function stmMatch(block, s) {
+  // Exact normalized name + exact unit and previously reviewed aliases retain
+  // precedence, including old alias conflicts and explicit unit-conflict errors.
+  const known = stfExactMatch(block, s);
+  if (known.id || known.kind.startsWith('Conflicting')) return known;
+  const unit = stmUnit(block.unit);
+  const candidates = s.products.map(product => ({id:product.id, score:stfScore(block.name, product.name),
+    sameUnit:stmUnit(product.unit) === unit, variant:stfVariant(block.name, product.name)}))
+    .filter(candidate => candidate.score >= 0.55)
+    .sort((a, b) => b.score - a.score || a.id.localeCompare(b.id));
+  const compatible = candidates.filter(candidate => candidate.sameUnit && !candidate.variant), best = compatible[0];
+  const wrongUnit = candidates.find(candidate => !candidate.sameUnit && !candidate.variant && candidate.score >= STF_MIN);
+  const percent = score => Math.floor(score * 100 + 1e-9);
+  const summary = {suggestions:candidates.slice(0, 3).map(candidate => candidate.id), candidates};
+  if (wrongUnit && (!best || wrongUnit.score > best.score + STF_GAP)) return {...summary, id:'', kind:'UNIT CONFLICT — naam ' + percent(wrongUnit.score) + '% milta hai, lekin unit alag hai. Product / original unit check karein.'};
+  if (best && best.score >= STF_MIN) {
+    const rival = compatible[1], bestName = s.products.find(product => product.id === best.id).name;
+    const missingVariant = compatible.slice(1).some(candidate => {
+      const other = s.products.find(product => product.id === candidate.id).name;
+      return stfVariant(bestName, other) && stfFamily(bestName) && stfFamily(bestName) === stfFamily(other);
+    });
+    // A shorter numeric model must not win merely because its number has fewer
+    // characters when the source omitted size/colour and both variants fit.
+    if (missingVariant || rival && best.score - rival.score <= STF_GAP + 1e-12)
+      return {...summary, id:'', kind:'Conflicting close matches — do products / variants milte hain; sahi product chuno.'};
+    return {...summary, id:best.id, method:'fuzzy', score:best.score, percent:percent(best.score),
+      kind:percent(best.score) + '% naam match — product apne-aap chuna. Naam / unit dekhkar badal sakte hain.'};
+  }
+  const variant = candidates.find(candidate => candidate.sameUnit && candidate.variant && candidate.score >= STF_MIN);
+  return {...summary, id:'', kind:variant ? 'Naam milta hai, lekin ' + variant.variant + ' — sahi product confirm karein.' : '75% se kam / unclear naam match — saved product chuno.'};
+}
+function stfStatus(block) {
+  if (block.productId !== block.match.id) return '✓ Aapne product chuna';
+  return block.match.method === 'fuzzy' ? '✓ ' + block.match.percent + '% naam match' : '✓ Product matched';
+}
+function stfMatchNote(block) {
+  return block.productId && block.productId !== block.match.id ? 'Aapne product chuna. Original quantity / unit aur date dekhkar confirm karein.' : block.match.kind;
+}
+/* v3.38 STOCK NAME MATCH END */
 
 /* ----------------------------- 17. BOOTSTRAP ---------------------------- */
 Store.load();
