@@ -533,9 +533,13 @@ function assertPdf(pdf) {
     reset();const note=Array.from({length:60},(_,i)=>'Line '+i).join('\n'),m=manager({note}),r=A.report(m.id,'2026-11-14','2026-11-14','all'),sheet=xml(parseZip(A.xlsxBytes(r))['xl/worksheets/sheet5.xml']),h=registerLayout(sheet).header;const top=Array.from(sheet.querySelectorAll('row')).filter(row=>Number(row.getAttribute('r'))<h).map(row=>row.textContent).join('\n');for(let i=0;i<60;i++)assert.ok(top.includes('Line '+i));assert.ok(Array.from(sheet.querySelectorAll('row')).every(row=>Number(row.getAttribute('ht'))<=409));assert.equal(A.manager(m.id).note,note);
   });
   await test('export-only change leaves v3.25 four detail sheets and Attendance PDF byte-identical apart from the version footer',()=>{
-    reset();const m=manager();mark(m,{mode:'time',checkIn:'10:32',checkOut:'13:33',outNextDay:true,note:'Original note retained'});const payload=copy(S.data),old=boot(payload,fs.readFileSync(path.join(__dirname,'..','Hisaab-Pro-v3.25.html'),'utf8')),OA=old.Hisaab.attendance;
+    // Distinct fixture timestamps prevent random audit-ID ordering from changing
+    // on the archived client's load normalization when two saves share one ms.
+    reset();const fixtureClock=w.Date.now;let tick=1794657500000,m;
+    try{w.Date.now=()=>++tick;m=manager();mark(m,{mode:'time',checkIn:'10:32',checkOut:'13:33',outNextDay:true,note:'Original note retained'});}finally{w.Date.now=fixtureClock;}
+    const payload=copy(S.data),old=boot(payload,fs.readFileSync(path.join(__dirname,'..','Hisaab-Pro-v3.25.html'),'utf8')),OA=old.Hisaab.attendance;
     const now=w.Date.now,oldNow=old.Date.now;w.Date.now=old.Date.now=()=>1794657600000;
-    try{const current=A.report(m.id,'2026-11-01','2026-11-30','all'),previous=OA.report(m.id,'2026-11-01','2026-11-30','all'),newZip=parseZip(A.xlsxBytes(current)),oldZip=parseZip(OA.xlsxBytes(previous));for(let i=1;i<=4;i++)assert.equal(newZip['xl/worksheets/sheet'+i+'.xml'],oldZip['xl/worksheets/sheet'+i+'.xml']);assert.equal(A.pdfString(current).replaceAll('Hisaab v3.35','Hisaab v3.25'),OA.pdfString(previous));}finally{w.Date.now=now;old.Date.now=oldNow;}
+    try{const current=A.report(m.id,'2026-11-01','2026-11-30','all'),previous=OA.report(m.id,'2026-11-01','2026-11-30','all'),newZip=parseZip(A.xlsxBytes(current)),oldZip=parseZip(OA.xlsxBytes(previous));for(let i=1;i<=4;i++)assert.equal(newZip['xl/worksheets/sheet'+i+'.xml'],oldZip['xl/worksheets/sheet'+i+'.xml']);assert.equal(A.pdfString(current).replaceAll('Hisaab v3.36','Hisaab v3.25'),OA.pdfString(previous));}finally{w.Date.now=now;old.Date.now=oldNow;}
     assert.deepEqual(copy(S.data),payload);salaryUnchanged();
   });
   await test('paper-register headers and comments remain literal text with no workbook formulas, macros or external links',()=>{
