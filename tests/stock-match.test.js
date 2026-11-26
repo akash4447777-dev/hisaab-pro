@@ -1,4 +1,4 @@
-/* v3.39 name matching. Synthetic catalogue only; never customer data/uploads. */
+/* v3.40 name matching. Synthetic catalogue only; never customer data/uploads. */
 const {assert,fs,path,html,KEY,devices,errors,boot,same,snapshot,finance,click,set,wait}=require('./stock-qa');
 const {legacy,clone}=require('./fixtures/stock');
 const {saleOptions}=require('./fixtures/stock-message');
@@ -18,8 +18,8 @@ async function until(fn){const end=Date.now()+6000;while(!fn()){if(Date.now()>en
 async function preview(d,text){d.I.messageImport.open();set(d,'#stmText',text,'input');set(d,'#stmYear','2026');click(d,'#stmPreviewButton');await until(()=>!!d.$('.stm-heading'));}
 async function sale(d){set(d,'#stmType','sale');await until(()=>!!d.$('[data-ste="role"][data-role="salesperson"]'));click(d,'[data-ste="role"][data-role="salesperson"][data-person="0"]');click(d,'[data-ste="role"][data-role="deliveryName"][data-person="1"]');await until(()=>d.$('#stmError').textContent.startsWith('Ready.'));}
 (async()=>{
- console.log('\n▸ Stock product name matching v3.39 — unique 75%+, never an auto-save');
- await test('six counted hooks + bounded module recover EVERY published v3.37 byte; canonical equals v3.39 release',()=>{assert.equal(hooks.length,6);assert.equal(withoutStockMatch(html),old);assert.equal(createHash('sha256').update(old).digest('hex'),'369f7415b0a7eaa42a4fc63e05a33b2b7f25f13feded9cd323e5c184bd0bae06');assert.equal(html,fs.readFileSync(path.join(__dirname,'..','Hisaab-Pro-v3.39.html'),'utf8'));});
+ console.log('\n▸ Stock product name matching v3.40 — unique 75%+, never an auto-save');
+ await test('six counted hooks + bounded module recover EVERY published v3.37 byte; canonical equals v3.40 release',()=>{assert.equal(hooks.length,6);assert.equal(withoutStockMatch(html),old);assert.equal(createHash('sha256').update(old).digest('hex'),'369f7415b0a7eaa42a4fc63e05a33b2b7f25f13feded9cd323e5c184bd0bae06');assert.equal(html,fs.readFileSync(path.join(__dirname,'..','Hisaab-Pro-v3.40.html'),'utf8'));});
  await test('v3.37 upgrade has no migration, new key, product rename, unit conversion or saved-byte rewrite',()=>{const previous=start({source:old});add(previous,'Plastic scoreboard');const d=start({data:clone(previous.S.data)}),before=snapshot(d);assert.equal(d.w.localStorage.getItem(KEY),d.raw);same(d.S.data,previous.S.data);d.H.render();assert.equal(snapshot(d),before);});
  await test('local score is symmetric, bounded and deterministic; empty/non-name tokens never create a match',()=>{const names=['','!!!','alpha beta gamma','Plastic scoreboard','Plastic score board','Half cue 10mm','10 mm cue half','नमूना लाइट','नमूना लाइट्स','constructor','__proto__'];for(const a of names)for(const b of names){const x=helpers.stfScore(a,b);assert.ok(x>=0&&x<=1);assert.equal(x,helpers.stfScore(b,a));assert.equal(x,helpers.stfScore(a,b));}assert.equal(helpers.stfScore('!!!','???'),0);});
  await test('normalization is Unicode-safe and prototype-safe, with no O/I digit substitution',()=>{assert.equal(helpers.stfName('constructor'),'constructor');assert.equal(helpers.stfName('__proto__'),'proto');assert.equal(helpers.stfName('Cue ९mm'),'cue 9 mm');assert.equal(helpers.stfName('नमूना लाइट'),'नमूना लाइट');assert.notEqual(helpers.stfName('Cue IOmm'),helpers.stfName('Cue 10mm'));});

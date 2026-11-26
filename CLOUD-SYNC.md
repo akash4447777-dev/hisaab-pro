@@ -1,4 +1,4 @@
-# HISAAB v3.39 — safe login, device sync aur recovery
+# HISAAB v3.40 — safe login, device sync aur recovery
 
 v3.17’s data-safety protocol remains in place. v3.19 extends the same protection
 to the integrated manager Attendance tab; no new Supabase table/project is needed.
@@ -61,7 +61,7 @@ keep the bounded local image. A confirmed removal is an explicit empty value;
 concurrent different replacements/removal pause for an explicit local/cloud
 choice. No new storage key, backend/table or sync/recovery/financial change.
 Bad/cancelled/stale-account uploads or failed local persistence retain the previous
-logo/data; local save is never a cloud ACK. Update all devices/tabs to **v3.39** to
+logo/data; local save is never a cloud ACK. Update all devices/tabs to **v3.40** to
 see branding on their PDFs. [Logo guide](COMPANY-LOGO.md).
 
 v3.30 removes only Canteen PDF/print Bikri / Kharcha display columns and their
@@ -104,8 +104,44 @@ canonical persistence restores previous inventory/audit/dirty state; a successfu
 saved **pre-change safety copy** may still advance. Global erase explicitly includes
 Stock photos/audit; demo/sample and old backups without Stock preserve it. Recovery
 adds missing dependencies or refuses an invalid dated combination, never clamps
-available quantity. Update every editing client to **v3.39** before Stock use.
+available quantity. Update every editing client to **v3.40** before Stock use.
 Synthetic CAS/RLS/adversarial tests are not live-customer backend verification.
+
+## Private received-stock list (v3.40)
+
+A typed **`#stock-in=`** link adds actual explicitly dated receipts, unlike the
+opening-link flow (which skips existing products). Decode/match/preview/cancel is
+read-only; normal account bootstrap/login/sync completes before a review bound to
+that account's actual catalogue. Unique 75%+ matching is a proposed product choice,
+not save permission. Close/model/unit ambiguity needs review. Genuinely new
+products are visibly proposed and created without fake opening movements only
+when the final **Haan** approves the entire list.
+
+Existing balances/openings/labels are not replaced or converted. Every new product
+and ordinary incoming row is saved in one existing `stkAtomic` transaction,
+requiring a pre-change recovery copy, independent audits and full dated-ledger
+validation. Stable existing `smsg1_` receipt identities and deterministic new
+catalogue identities deduplicate across current/edited/deleted provenance, the
+normal message importer and independent synthetic CAS devices. Different real
+same-date/quantity deliveries still need an actual distinct reference and explicit
+review; never invent a reference or assume an earlier snapshot excludes them.
+Existing before-opening blocking and unticked same-day after-snapshot attestation
+remain mandatory. Changed account/scope/epoch/version/owner/disk/snapshot or closed/
+replaced/edited review cancels consent, including during async hashing. Failed
+canonical persistence rolls back the entire list; a successful pre-change safety
+copy alone may advance. All-processed lists are strict no-ops.
+
+No schema/key/table/backend/library/migration or availability counter is added.
+New saved records remain ordinary Stock, compatible with current JSON/cloud and
+v3.39. One source list derives one History combo/PDF with independent child dates,
+units and quantities. The source/token stays local and private fragments are
+scrubbed before bootstrap; this is **not encryption, account authorization or an
+expiring secret**. Developer input/output stay ignored under `private-imports/`.
+Open only in the actual-data browser/account; a public demo or QA fixture is not
+the customer's inventory. **Preparing/publishing a link does not remotely save it.**
+After explicit local save, confirm Cloud synced and keep a JSON backup. Synthetic
+cloud/native tests are not live-customer-backend or physical-phone verification.
+[Incoming-link instructions](STOCK-MANAGEMENT.md#1bii-private-received-stock-link--naya-stock-in-v340).
 
 ## Stock product-unit picker (v3.39)
 
@@ -141,7 +177,7 @@ is not cloud ACK. Import once on the actual-data device, verify the preview and
 quantities, download a fresh JSON backup, then wait for **Cloud synced** before
 using another updated device. Competing offline imports of the same new name pause
 as a duplicate-name conflict instead of silently summing their openings. Use
-**v3.39 on every tab/device**, the same project/account, and never clear storage.
+**v3.40 on every tab/device**, the same project/account, and never clear storage.
 Private catalogues/screenshots are not embedded in the public release/tests.
 [File format, date/review and reimport rules](STOCK-MANAGEMENT.md).
 
@@ -208,7 +244,7 @@ Concurrent offline versions of the same semantic event share an ID; incompatible
 values still require existing explicit conflict resolution. This is not a global
 server-side stock reservation lock. Import once on the actual-data device; verify
 live stock/History, take JSON backup, wait for **Cloud synced**, then use another
-updated **v3.39** tab/device. No customer-account write was performed by shipping
+updated **v3.40** tab/device. No customer-account write was performed by shipping
 this generic feature. [Formats, review and duplicate/opening rules](STOCK-MANAGEMENT.md#1c-message--screenshot-se-in-sale-ya-out).
 
 ## Local 75% product-name selection (v3.38)
@@ -226,7 +262,7 @@ passes the existing atomic/checkpoint/context/stale-disk/dated-ledger/rollback p
 Opening, duplicate and source-maths safeguards are unchanged; this is not permission
 to replay old pre-opening stock. Confirmed saves remember aliases in the ordinary
 create audit; older clients can still read the same data but require manual matching
-for a new fuzzy name. Update all editing clients to **v3.39** for consistent name
+for a new fuzzy name. Update all editing clients to **v3.40** for consistent name
 selection. No customer account was accessed or altered to ship this generic change.
 
 ## One-party Stock combos (v3.37)
@@ -257,7 +293,7 @@ and delete history continue to block re-paste resurrection and duplicate receipt
 Cloud merge/recovery still works on the existing product/dependency sets: this is
 not a new multi-user reservation lock or a server-transaction schema. Conflicting
 advanced corrections remain visible for explicit reconciliation, not a guessed
-common party. Update ALL tabs/devices to **v3.39** for consistent combo presentation;
+common party. Update ALL tabs/devices to **v3.40** for consistent combo presentation;
 no customer account is imported or edited by shipping this generic release.
 
 ## Read-only Stock PDFs (v3.36+, combined combos v3.37)
@@ -276,9 +312,9 @@ is a report, **not a JSON backup**. [Stock PDF guide](STOCK-MANAGEMENT.md#4a-sto
 ## Pehle ye karein (existing users)
 
 1. **Jis phone/laptop par asli data abhi dikh raha hai, uska Settings → Backup (JSON) download karein.** Salary, canteen, saved Attendance aur Stock/photos/audit sab isi backup me aate hain. Doosre device par bhi bacha data ho to uska alag backup rakhein.
-2. **Dono devices aur saare purane tabs par v3.39 kholein:**
-   [Hisaab-Pro-v3.39.html](https://akash4447777-dev.github.io/hisaab-pro/Hisaab-Pro-v3.39.html).
-   Sidebar me **Panel v3.39** confirm karein. Browser/site storage clear, uninstall, “Erase all data” ya “Sample data” mat karein.
+2. **Dono devices aur saare purane tabs par v3.40 kholein:**
+   [Hisaab-Pro-v3.40.html](https://akash4447777-dev.github.io/hisaab-pro/Hisaab-Pro-v3.40.html).
+   Sidebar me **Panel v3.40** confirm karein. Browser/site storage clear, uninstall, “Erase all data” ya “Sample data” mat karein.
 3. Pehle bache-data wale device par **usi Supabase Project URL aur usi email/account** se sign in karein. Existing setup ko reset ya naya project/account banane ki zaroorat nahi.
 4. Settings → **Sync now**. `Cloud synced` aane par doosre updated device par bhi same project/account se sign in karein. Pehli login par cloud read hota hai; naya khaali/demo device populated cloud ko replace nahi karta.
 5. `Sync paused · data protected` aaye to neeche wali conflict/recovery choice dekhein. `Local saved · sync pending` ya `Offline · sync pending` ko cloud backup ki confirmation **na** maanein.
