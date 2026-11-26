@@ -1,4 +1,4 @@
-/* Native v3.38: ONE party/message/combo, whole-combo correction, actual combined
+/* Native v3.39: ONE party/message/combo, whole-combo correction, actual combined
    PDF downloads and phone layout. Only disposable synthetic browser accounts. */
 const assert=require('node:assert/strict'),fs=require('node:fs'),path=require('node:path');
 const {chromium}=require('playwright');
@@ -27,7 +27,7 @@ async function shot(p,name){await p.waitForTimeout(150);await p.screenshot({path
 async function context(browser){const c=await browser.newContext({viewport:{width:1280,height:1000},locale:'en-IN',timezoneId:'Asia/Kolkata',acceptDownloads:true});await c.addInitScript(clock);await c.route('**/*',route=>{const r=route.request();requests.push({url:r.url(),method:r.method(),body:r.postData()});return r.url().startsWith(new globalThis.URL(URL).origin+'/')?route.continue():route.abort();});return c;}
 async function page(c){const p=await c.newPage();p.on('pageerror',error=>errors.push(error.stack));await p.goto(URL);await p.waitForFunction(()=>!!window.Hisaab);await p.evaluate(({legacy,logo})=>{localStorage.clear();legacy.settings.companyLogo=logo;localStorage.setItem('hisaabPro.v1',JSON.stringify(legacy));},{legacy,logo});await p.reload();await p.waitForFunction(()=>!!window.Hisaab);return p;}
 (async()=>{
- console.log('\n▸ Native single-party Stock combos v3.38');
+ console.log('\n▸ Native single-party Stock combos v3.39');
  const browser=await chromium.launch({headless:true,...(process.env.HISAAB_CHROME_EXECUTABLE?{executablePath:process.env.HISAAB_CHROME_EXECUTABLE}:{}),args:process.env.HISAAB_CHROME_ARGS?JSON.parse(process.env.HISAAB_CHROME_ARGS):['--no-sandbox']});
  try{
   const c=await context(browser),p=await page(c);
@@ -36,8 +36,8 @@ async function page(c){const p=await c.newPage();p.on('pageerror',error=>errors.
   await p.evaluate(rows=>rows.forEach(([name,unit,openingQty])=>Hisaab.stock.saveProduct({name,unit,openingQty,minQty:0,date:'2026-11-01'})),catalogue);
   await apply(p,mixed);const baseline=await snapshot(p),originalFinance=await finance(p);
   await p.goto(URL);await p.waitForFunction(()=>!!window.Hisaab);await history(p);
-  check(await snapshot(p)===baseline,'v3.36 → v3.38 groups existing saved messages with NO migration, storage write or quantity change');
-  check(await p.locator('[data-ver]').first().textContent()==='3.38','exact native panel reports v3.38');
+  check(await snapshot(p)===baseline,'v3.36 → v3.39 groups existing saved messages with NO migration, storage write or quantity change');
+  check(await p.locator('[data-ver]').first().textContent()==='3.39','exact native panel reports v3.39');
   const original=(await groups(p))[0],originalId=original.entryId;
   check(original.productCount===4&&original.rows.length===5,'the old four-product / five-dated-movement message is ONE combo');
   check(await p.locator('[data-stock-combo]').count()===1,'History shows ONE combo card, not five unrelated product entries');
