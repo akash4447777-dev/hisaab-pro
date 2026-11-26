@@ -1,5 +1,6 @@
 /* Narrow v3.35 allowlist: restore every immutable v3.34 byte, then older guards. */
 const assert=require('node:assert/strict');
+const {withoutStockEasy}=require('./stock-easy-compat');
 const hooks=[
   [
     "const APP_VERSION = \"3.35\";",
@@ -33,6 +34,7 @@ const hooks=[
   ]
 ];
 function withoutStockMessage(source){
+ source=withoutStockEasy(source);
  if(!source.includes('/* v3.35 STOCK MESSAGE BEGIN'))return source;
  for(const[start,end]of [['/* v3.35 STOCK MESSAGE BEGIN','/* v3.35 STOCK MESSAGE END */'],['/* v3.35 STOCK MESSAGE STYLE BEGIN */','/* v3.35 STOCK MESSAGE STYLE END */']]){
   assert.equal(source.split(start).length-1,1);assert.equal(source.split(end).length-1,1);let tail=source.indexOf(end)+end.length;if(source[tail]==='\n')tail++;if(!start.includes('STYLE')&&source[tail]==='\n')tail++;source=source.slice(0,source.indexOf(start))+source.slice(tail);
