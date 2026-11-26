@@ -19,6 +19,7 @@ const hooks=[
   ]
 ];
 function withoutStockUnits(source){
+ source=require('./stock-receipt-compat').withoutStockReceipt(source);
  if(!source.includes('/* v3.39 STOCK UNIT CHOICES BEGIN'))return source;
  for(const[start,end]of [['/* v3.39 STOCK UNIT CHOICES BEGIN','/* v3.39 STOCK UNIT CHOICES END */'],['/* v3.39 STOCK UNIT STYLE BEGIN */','/* v3.39 STOCK UNIT STYLE END */']]){
   assert.equal(source.split(start).length-1,1);assert.equal(source.split(end).length-1,1);

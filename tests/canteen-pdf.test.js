@@ -134,7 +134,7 @@ async function test(label, run) { try { await run(); passed++; console.log('  ‚ú
           if (which === 'month') for (const row of prior.querySelector('table').rows) {
             const offset = row.cells[0].colSpan === 2 ? 1 : 0; row.cells[5 - offset].remove(); row.cells[4 - offset].remove();
           }
-          assert.equal(root.innerHTML.replaceAll('Hisaab v3.39', 'Hisaab v3.29'), prior.innerHTML);
+          assert.equal(root.innerHTML.replaceAll('Hisaab v3.40', 'Hisaab v3.29'), prior.innerHTML);
           assert.ok(!/bikri|kharcha/i.test(root.textContent));
           assert.equal(root.querySelectorAll('.meta > div')[which === 'day' ? 1 : 0].children.length, 1);
         }
@@ -205,7 +205,7 @@ async function test(label, run) { try { await run(); passed++; console.log('  ‚ú
     }
     assert.equal(normalize(html), normalize(previous));
     assert.equal(crypto.createHash('sha256').update(previous).digest('hex'), 'e0b41029bba0716924ef75b909c39c794d46bfd1fee19adeed4e5246d8b50831');
-    assert.equal(html, fs.readFileSync(path.join(__dirname, '..', 'Hisaab-Pro-v3.39.html'), 'utf8'));
+    assert.equal(html, fs.readFileSync(path.join(__dirname, '..', 'Hisaab-Pro-v3.40.html'), 'utf8'));
   });
   await test('all report regressions finish without uncaught JavaScript errors', () => same(errors, []));
   windows.forEach(w => w.window.close()); console.log(`\n${failed ? '‚ùå' : '‚úÖ'} CANTEEN PDF COLUMNS: ${passed} checks pass${failed ? ', ' + failed + ' FAIL' : ''}`); process.exitCode = failed ? 1 : 0;

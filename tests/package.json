@@ -1,10 +1,10 @@
 {
   "name": "hisaab-pro-tests",
-  "version": "3.39.0",
+  "version": "3.40.0",
   "private": true,
-  "description": "Hisaab \u2014 30 Stock unit choices and custom units, 75 percent product-name matching, one-party combos, atomic combo correction, tagged people, branded PDFs, audited inventory, Canteen, salary, Attendance and cloud safety tests",
+  "description": "Hisaab \u2014 typed reviewed Stock In links, 30 unit choices and custom units, 75 percent product-name matching, one-party combos, atomic combo correction, tagged people, branded PDFs, audited inventory, Canteen, salary, Attendance and cloud safety tests",
   "scripts": {
-    "test": "node canteen.test.js && node loader.test.js && node pdf.test.js && node cloud.test.js && node attendance.test.js && node employees.test.js && node canteen-lines.test.js && node company-logo.test.js && node canteen-pdf.test.js && node canteen-filters.test.js && node stock.test.js && node stock-cloud.test.js && node stock-import.test.js && node stock-link.test.js && node stock-message.test.js && node stock-easy.test.js && node stock-combo.test.js && node stock-match.test.js && node stock-units.test.js",
+    "test": "node canteen.test.js && node loader.test.js && node pdf.test.js && node cloud.test.js && node attendance.test.js && node employees.test.js && node canteen-lines.test.js && node company-logo.test.js && node canteen-pdf.test.js && node canteen-filters.test.js && node stock.test.js && node stock-cloud.test.js && node stock-import.test.js && node stock-link.test.js && node stock-message.test.js && node stock-easy.test.js && node stock-combo.test.js && node stock-match.test.js && node stock-units.test.js && node stock-receipt.test.js",
     "test:stock": "node stock.test.js && node stock-cloud.test.js",
     "test:stock:browser": "node stock.browser.js",
     "test:canteen": "node canteen.test.js",
@@ -37,7 +37,9 @@
     "test:stock:match": "node stock-match.test.js",
     "test:stock:match:browser": "node stock-match.browser.js",
     "test:stock:units": "node stock-units.test.js",
-    "test:stock:units:browser": "node stock-units.browser.js"
+    "test:stock:units:browser": "node stock-units.browser.js",
+    "test:stock:receipt": "node stock-receipt.test.js",
+    "test:stock:receipt:browser": "node stock-receipt.browser.js"
   },
   "devDependencies": {
     "jsdom": "^26.0.0"

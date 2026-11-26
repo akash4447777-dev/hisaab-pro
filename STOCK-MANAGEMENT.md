@@ -1,4 +1,4 @@
-# Hisaab Pro v3.39 — Stock Management
+# Hisaab Pro v3.40 — Stock Management
 
 Stock Management existing Hisaab panel ka **alag tab** hai: products/photo, Stock In,
 purpose-wise Stock Out, customer-wise Sales, live availability, date-wise history,
@@ -8,7 +8,7 @@ nahi karni**; har saved transaction se balance apne-aap calculate hota hai.
 ## 1. Pehli baar
 
 1. Jis **same browser/site** par asli data hai, Settings → **Backup (JSON)** download karein.
-2. Updated panel me **Panel v3.39** confirm karein. Storage clear, entries re-enter
+2. Updated panel me **Panel v3.40** confirm karein. Storage clear, entries re-enter
    ya company logo dobara upload karne ki zaroorat nahi.
 3. Sidebar → **Stock Management** kholein. Phone par upar navigation ko sideways
    scroll kar sakte hain. Keyboard shortcut: **g**, phir **i**.
@@ -40,7 +40,7 @@ nahi karni**; har saved transaction se balance apne-aap calculate hota hai.
   stock nahi badalta. Canteen ka unit selector is change se alag/unchanged hai.
 
 Purana version khule ya **Import stock** button na dikhe to [normal panel link](https://akash4447777-dev.github.io/hisaab-pro/)
-dobara kholkar refresh karein aur **Panel v3.39** dekhein. **Browser ka site data /
+dobara kholkar refresh karein aur **Panel v3.40** dekhein. **Browser ka site data /
 local storage clear na karein**—isse unsynced entries hat sakti hain.
 
 Photo camera/gallery se PNG, JPG ya WebP ho sakti hai, maximum **5 MB** input.
@@ -55,7 +55,7 @@ Old panel me jo available quantity hai wahi chosen cut-over date ki Opening bant
 hai. Box ko box, pcs ko pcs rakhein—pack size ya box → pcs conversion guess nahi hoti.
 
 1. Pehle same asli-data wale browser/site par **Settings → Backup (JSON)** lein aur
-   **Panel v3.39** confirm karein. Same account/project use karein; storage clear na karein.
+   **Panel v3.40** confirm karein. Same account/project use karein; storage clear na karein.
 2. **Stock Management → Import stock** → apni prepared `.json` / UTF-8 `.csv` file chunein.
    **Partial opening file ko Settings → Restore me mat daalein**; woh whole-backup
    replacement hai. Stock importer full Settings backups accept nahi karta.
@@ -155,6 +155,84 @@ DOM. Script only writes owner-readable Markdown + URL text under ignored
 same-origin versioned HTML target required; loader/root URL is not used. Do not
 publish these private outputs or run a preview server serving the repository root.
 
+## 1b(ii). Private received-stock link — naya Stock In (v3.40)
+
+**Naya maal aaya hai, total available / opening nahi?** Uske liye alag typed
+**`#stock-in=`** hand-off hai. Upar wala `#stock-opening=` link **mat use karein**:
+woh existing products skip karta hai, unmein receipts add nahi karta.
+
+1. Prepared private **Stock In list** link **usi browser/site/account** mein kholein
+   jahan asli Stock saved hai. Normal login/initial sync ka wait hota hai; koi JSON
+   chooser, Settings Restore ya har product ki manual entry nahi.
+2. Review mein **actual account, explicit receipt date, saare source names, incoming
+   quantities aur units** dikhte hain. Device ka today / filename / opening-date
+   policy receipt ki date ko change nahi karti.
+3. Unique **raw 75%+ name match** saved product select karta hai, lekin save nahi.
+   Saved identity / exact unit / match % visible hain. **Product check / badlein**
+   se choice badal sakte hain. Close/model/variant/unit ambiguity unresolved rehti
+   hai. Jahan credible saved match nahi hai, **Naya product banega** clearly dikhta
+   hai; final Haan us catalogue creation ko bhi approve karta hai. Existing exact
+   name ko doosri unit mein duplicate create karna blocked hai.
+4. Existing product mein received quantity **ADD** hoti hai; balance overwrite,
+   opening change, box/set/pcs conversion ya item-name ke pack-number se multiply
+   nahi hota. Existing saved unit spelling/case unchanged. New products ke liye
+   familiar source labels `Boxes` → `box`, `Sets` → `set` sirf unit spelling aliases
+   hain, quantity conversion nahi. New catalogue record receipt date se shuru hota
+   hai, **koi fake zero/positive opening movement nahi**—sirf actual Stock In.
+5. Warnings resolve karein. Receipt **opening se pehle** ho to add blocked; date ko
+   galat backdate ya imaginary reference se force na karein. Same-day EXISTING
+   opening/zero-opening catalogue ke liye unticked **snapshot ke BAAD** confirmation
+   chahiye. Pehle se included ho to Skip. Manual/edited/deleted duplicate ke liye
+   Skip, ya sach mein alag delivery ka actual distinct reference **aur explicit
+   New** chahiye; random reference mat banayein. Choice/reference edit purana
+   same-day confirmation reset karta hai.
+6. Sirf **Haan, … Stock In save karo** se poora reviewed combo **ek atomic save**
+   mein, required pre-change safety copy aur har new product / In ka independent
+   before→after audit ke saath save hota hai. Unknown supplier/roles blank rehte
+   hain. Ek bhi unresolved/invalid item ho to partial save nahi.
+7. History mein **1 combo** aur **Is combo ka PDF** milta hai. Har product ki apni
+   actual date/unit/quantity rehti hai; mixed-unit total nahi. Whole-combo Edit /
+   Delete aur dated nonnegative/dependent-stock guards wahi hain. Same list dobara
+   kholne par saved/edited/deleted receipts duplicate ya resurrect nahi hote.
+   Local save ke baad configured account ka **Cloud synced**, live quantities aur
+   **Backup (JSON)** check karein.
+
+Open/parse/match/preview/Cancel/Escape zero-write. Account/data/disk/version/consent
+badle, required recovery fail ho ya quota lage to poora save refused/rolled back;
+successful **pre-change** safety copy akeli advance ho sakti hai. This adds no new
+schema, backend, availability counter, storage key, runtime library or automatic
+migration; saved rows use ordinary Stock/cloud/JSON and semantic message IDs.
+
+Private fragments reuse the same early hash scrubber and bounded local UTF-8/gzip
+transport as opening links. **Not encryption / expiry / authorization**; forward,
+public PR/issue/server ya URL shortener mein na daalein. No chat access / image/text
+upload / catalogue lookup service. Limit **1–50 positive rows**, explicit valid
+`YYYY-MM-DD`, name ≤90, unit ≤18, actual reference ≤80, optional original source
+≤20,000 characters, 5 MB expanded JSON / 131,072-character encoded token. Missing
+Previous/Available is explicitly disclosed as absent checks, never fabricated.
+
+Developer-only example (generic, not a customer's inventory):
+
+```json
+{"format":"hisaab-stock-in","version":1,"date":"2026-11-25","rows":[
+  {"name":"Example received product","quantity":3,"unit":"Boxes"}
+]}
+```
+
+Optional `supplier`, `reference`, `source` contain only actual supplied context.
+Keep the manifest and generated one-click hand-off private:
+
+```bash
+npm ci --prefix tests
+node scripts/create-stock-receipt-link.js --input private-imports/receipt.json --output private-imports/add-receipt.md
+```
+
+The local generator validates against the actual current parser in an isolated
+DOM; optional `--encoding raw` avoids compression. It writes owner-readable `.md`
++ `.url.txt` **only under ignored `private-imports/`**, refuses old/foreign/root/
+query/hash targets and existing output files, and does not print tokens, upload
+anything or write any customer account. Publishing the app is not an account save.
+
 ## 1c. Message / screenshot se In, Sale ya Out
 
 ### Aasaan flow (v3.36+, combo v3.37): Message → Dekho → Save
@@ -162,7 +240,7 @@ publish these private outputs or run a preview server serving the repository roo
 **Ek-ek item bharna nahi. Ek poora message paste YA screenshot chuno. Chat mein
 har message bhejna zaroori nahi; phone/WhatsApp apne-aap read nahi hota.**
 
-1. Same asli-data wale browser/account mein **Panel v3.39 → Stock Management →
+1. Same asli-data wale browser/account mein **Panel v3.40 → Stock Management →
    ＋ Combo / message**. Upar account/local-browser label check karo.
 2. **Pehli screen:** WhatsApp ka poora numbered message Paste karo, ya bada
    **Screenshot chuno** button dabao. PNG/JPG/WebP, maximum **5 MB / 20 megapixels**.
@@ -476,7 +554,7 @@ product rename/photo replacement purani history ko rewrite nahi karta.
 - Failed local save/quota/stale tab/account par success assume na karein; error padhein.
   Draft memory me ho sakta hai. Purane confirmed Stock/available/audit rollback rehte
   hain; successful pre-change safety copy alag se ban sakti hai.
-- Saare editing devices/tabs **v3.39** par update karein. Local save cloud ACK nahi:
+- Saare editing devices/tabs **v3.40** par update karein. Local save cloud ACK nahi:
   doosre device par jaane se pehle **Cloud synced** confirm karein.
 
 Independent devices ki compatible entries merge ho sakti hain. Lekin Stock 100 par

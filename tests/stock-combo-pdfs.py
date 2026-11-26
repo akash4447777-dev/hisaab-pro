@@ -12,7 +12,7 @@ import pymupdf as pdf
 
 parser=argparse.ArgumentParser(description=__doc__)
 parser.add_argument('folders',nargs='+',type=Path)
-parser.add_argument('--version',default='3.39')
+parser.add_argument('--version',default='3.40')
 parser.add_argument('--render',type=Path)
 a=parser.parse_args()
 files=sorted({file.resolve() for folder in a.folders for file in folder.glob('*.pdf')})
@@ -79,6 +79,17 @@ for file in files:
         assert len(ids)==len(set(ids))==2,(file,'two saved fuzzy rows, not extra products')
         assert '2 products' in text and '2 stock movements' in text,(file,'one combined combo')
         assert all(value in compact(text) for value in map(compact,['Plastic scoreboard','Plastc scoreboard','alpha beta gamma delta epsilon','Sales Employee','Delivery Employee','2026-11-23','−2 pcs','−2 box','8 pcs','8 box'])),(file,'canonical names, original misspelled source, shared roles and independent exact units/dates/ledger')
+    if file.name=='received-14-product-combo-logo.pdf':
+        expected=json.loads((file.parent/'received-list-expected.json').read_text())
+        assert '14 products' in text and '14 stock movements' in text,(file,'one complete received-stock combo')
+        assert all(compact(name) in compact(text) for name in expected['names']),(file,'every exact received product name')
+        ids=re.findall(r'Saved item · (smsg1_[a-f0-9]{64})',text)
+        assert len(ids)==len(set(ids))==14 and set(ids)=={row['id'] for row in expected['rows']},(file,'all14 saved receipts exactly once')
+        assert len(re.findall(r'(?m)^2026-11-25$',text))==14,(file,'all14 explicit receipt dates in the table')
+        assert all(compact('+'+str(row['qty'])+' '+row['unit']) in compact(text) for row in expected['rows']),(file,'every independent exact received quantity/unit')
+        assert 'Salesperson:' not in text and 'Delivery / receiver:' not in text,(file,'incoming-only receipt has no invented outgoing roles')
+        assert 'Supplier not given' in text and 'not given' in text,(file,'missing supplier is transparent')
+        assert 'Packingcrate(100Pcs)' in compact(text) and '+12box' in compact(text),(file,'pack number is not a conversion')
     if '50-product-combo' in file.name:
         expected=json.loads((file.parent/'50-product-combo-expected.json').read_text())
         assert all(compact(name) in compact(text) for name in expected['names']+expected['members']+[expected['party']]),(file,'complete long product/party/Hindi text')
