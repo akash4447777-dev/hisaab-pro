@@ -34,6 +34,7 @@ const hooks=[
   ]
 ];
 function withoutStockReceipt(source){
+ source=require('./stock-pdf-compat').withoutStockPdf(source);
  if(!source.includes('/* v3.40 REVIEWED STOCK IN LINK BEGIN'))return source;
  for(const[start,end]of [['/* v3.40 REVIEWED STOCK IN LINK BEGIN','/* v3.40 REVIEWED STOCK IN LINK END */'],['/* v3.40 STOCK IN LINK STYLE BEGIN */','/* v3.40 STOCK IN LINK STYLE END */']]){
   assert.equal(source.split(start).length-1,1);assert.equal(source.split(end).length-1,1);
