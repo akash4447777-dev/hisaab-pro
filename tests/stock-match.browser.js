@@ -1,4 +1,4 @@
-/* Native v3.42: actual fuzzy dropdown/review/save, phone layout, combined PDF,
+/* Native v3.43: actual fuzzy dropdown/review/save, phone layout, combined PDF,
    offline text and actual locally fulfilled Tesseract/WASM/model OCR. Synthetic. */
 const assert=require('node:assert/strict'),fs=require('node:fs'),path=require('node:path');
 const {chromium}=require('playwright'),{legacy}=require('./fixtures/stock');
@@ -27,8 +27,8 @@ const combo='23/11 Example buyer\n1- Plastc scoreboard\nPichle bache ps 10\nAaj 
   await p.goto(new globalThis.URL('Hisaab-Pro-v3.37.html',URL).href);await p.waitForFunction(()=>!!window.Hisaab);
   const products=await seed(p,[['Plastic scoreboard','pcs'],['alpha beta gamma delta epsilon','box'],['Wooden tray','pcs']]);const baseline=await snapshot(p);
   await p.goto(URL);await p.waitForFunction(()=>!!window.Hisaab);await stock(p);
-  check(await p.locator('[data-ver]').first().textContent()==='3.42','native panel is v3.42');
-  check(await snapshot(p)===baseline,'v3.37 → v3.42 preserves every raw saved byte, product, unit, quantity and unrelated module');
+  check(await p.locator('[data-ver]').first().textContent()==='3.43','native panel is v3.43');
+  check(await snapshot(p)===baseline,'v3.37 → v3.43 preserves every raw saved byte, product, unit, quantity and unrelated module');
   await preview(p,combo);
   check(await p.locator('[data-stm-match="0"]').inputValue()===products[0].id,'a real typo automatically selects its saved pcs product without exact spelling');
   check(await p.locator('[data-stm-match="1"]').inputValue()===products[1].id,'exactly 75% name similarity automatically selects the saved box product');
@@ -70,7 +70,7 @@ const combo='23/11 Example buyer\n1- Plastc scoreboard\nPichle bache ps 10\nAaj 
   check(await p.locator('[data-stm-match="0"]').inputValue()===''&&(await p.locator('#stmPreview').textContent()).includes('Conflicting close'),'omitted-size ambiguity stays unselected, even when the shorter model has a slightly higher character score');
   check(await p.locator('#stmSave').isDisabled()&&await snapshot(p)===beforeAmbiguous,'ambiguous product review cannot silently choose first / write anything');
   await p.selectOption('[data-stm-match="0"]',variants[0].id);await sale(p);
-  check(await p.locator('[data-stm-match="0"]').inputValue()===variants[0].id&&(await p.locator('.stm-item small').textContent()).includes('Aapne product chuna'),'user can explicitly resolve an ambiguous match in the normal review');await close(p);
+  check(await p.locator('[data-stm-match="0"]').inputValue()===variants[0].id&&(await p.locator('[data-stm-match="0"] + small').textContent()).includes('Aapne product chuna'),'user can explicitly resolve an ambiguous match in the normal review');await close(p);
   await seed(p,[['Premium cue M9B']]);
   const guarded=await p.evaluate(async texts=>{const options={year:'2026',type:'sale',salesperson:'Sales Employee',deliveryName:'Delivery Employee'};return Promise.all(texts.map(text=>Hisaab.stock.messageImport.plan(text,options)));},[msg('Premium cue M9A'),msg('Premium cue 9cm')]);
   check(guarded[0].blocks[0].productId===''&&!guarded[0].valid,'high-similarity alphanumeric model M9A never silently selects M9B');

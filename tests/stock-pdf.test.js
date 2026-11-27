@@ -1,4 +1,4 @@
-/* v3.42 approved premium Stock PDF: presentation only, synthetic data only. */
+/* v3.43 approved premium Stock PDF: presentation only, synthetic data only. */
 const {assert,fs,path,html,KEY,devices,errors,boot,snapshot,same,click,wait,blobBytes,Server}=require('./stock-qa');
 const {clone,product,movement,blank,legacy}=require('./fixtures/stock');
 const {overview,many,EXAMPLE_ROWS}=require('./fixtures/stock-pdf');
@@ -32,12 +32,12 @@ function artifact(name,out){if(OUT)fs.writeFileSync(path.join(OUT,name),out.str,
 const texts=out=>out.texts.map(t=>t.text);
 async function ready(d){for(let i=0;i<200;i++){if(d.$('#stePdfDownload')&&!d.$('#stePdfDownload').disabled)return;await wait(5);}throw Error('PDF not ready: '+d.$('#stePdfError')?.textContent);}
 (async()=>{
- console.log('\n▸ Premium Stock PDF v3.42 — approved design, exact numbers, no writes');
+ console.log('\n▸ Premium Stock PDF v3.43 — approved design, exact numbers, no writes');
  await test('three exact hooks and one renderer restore EVERY immutable v3.40 byte; release equals canonical',()=>{
-   assert.equal(hooks.length,3);assert.equal(withoutStockPdf(html),original);assert.equal(createHash('sha256').update(original).digest('hex'),'e85d8df64c37119655f8cc5e75b2024b9614217108d09543f71fc4c3aad2abb3');assert.equal(html,fs.readFileSync(path.join(__dirname,'..','Hisaab-Pro-v3.42.html'),'utf8'));
+   assert.equal(hooks.length,3);assert.equal(withoutStockPdf(html),original);assert.equal(createHash('sha256').update(original).digest('hex'),'e85d8df64c37119655f8cc5e75b2024b9614217108d09543f71fc4c3aad2abb3');assert.equal(html,fs.readFileSync(path.join(__dirname,'..','Hisaab-Pro-v3.43.html'),'utf8'));
  });
  await test('upgrade preserves every raw saved byte, stock value, audit, logo and unrelated module',()=>{
-   const data=overview();data.settings.companyLogo=logo;const old=boot(data,{source:original}),d=start(data);assert.equal(d.w.localStorage.getItem(KEY),old.w.localStorage.getItem(KEY));same(d.S.data,old.S.data);same(d.dump(),old.dump());assert.equal(d.$('[data-ver]').textContent,'3.42');
+   const data=overview();data.settings.companyLogo=logo;const old=boot(data,{source:original}),d=start(data);assert.equal(d.w.localStorage.getItem(KEY),old.w.localStorage.getItem(KEY));same(d.S.data,old.S.data);same(d.dump(),old.dump());assert.equal(d.$('[data-ver]').textContent,'3.43');
  });
  await test('summary cards and health use real matching product identities / exact units / saved minima',()=>{
    const d=start(),r=d.I.report({kind:'stock'}),s=stats(d,r);assert.equal(s.products,8);assert.equal(s.movements,8);assert.equal(s.units.length,4);assert.equal(s.low,1);assert.equal(s.healthy,7);

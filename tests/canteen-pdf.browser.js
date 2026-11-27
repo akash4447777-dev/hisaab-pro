@@ -50,8 +50,8 @@ async function printState(page) {
     await page.evaluate(data => localStorage.setItem('hisaabPro.v1', JSON.stringify(data)), fixture); await page.reload(); await page.waitForFunction(() => !!window.Hisaab);
     const original = await snapshot(page);
     await page.goto(URL); await page.waitForFunction(() => !!window.Hisaab); await go(page);
-    check(await snapshot(page) === original, 'native v3.29 → v3.42 preserves every original saved entry, salary record and raw-storage byte');
-    check(await page.locator('[data-ver]').first().textContent() === '3.42', 'native release shows Panel v3.42');
+    check(await snapshot(page) === original, 'native v3.29 → v3.43 preserves every original saved entry, salary record and raw-storage byte');
+    check(await page.locator('[data-ver]').first().textContent() === '3.43', 'native release shows Panel v3.43');
     const beforeEntries = await page.evaluate(() => JSON.stringify({ canteen: Hisaab.Store.data.canteen, workers: Hisaab.Store.data.workers, records: Hisaab.Store.data.records, attendance: Hisaab.Store.data.attendance }));
     const tpls = await page.evaluate(() => Hisaab.canteen.tpls.map(t => t.id));
     for (const branded of [false, true]) {

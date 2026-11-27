@@ -54,6 +54,7 @@ const modules=[
   ]
 ];
 function withoutStockSmart(source){
+ source=require('./stock-sale-compat').withoutStockSale(source);
  if(!source.includes('/* v3.42 SMART STOCK PASTE BEGIN'))return source;
  for(const[start,end,sha,gap]of modules){
   assert.equal(source.split(start).length-1,1);assert.equal(source.split(end).length-1,1);
