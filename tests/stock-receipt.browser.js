@@ -1,4 +1,4 @@
-/* Real Chromium v3.42 incoming-list fragment, one-click review/save, matching,
+/* Real Chromium v3.43 incoming-list fragment, one-click review/save, matching,
    date/cutoff/duplicate safety, old data, one combo/PDF, phone and offline.
    Synthetic only: no customer catalogue, configured customer account or upload. */
 const assert=require('node:assert/strict'),fs=require('node:fs'),path=require('node:path');
@@ -19,12 +19,12 @@ async function close(p){await p.locator('#overlay .modal-h [data-act="closeModal
 async function save(p){await p.click('#sirSave');await p.waitForSelector('#sirDialog',{state:'detached'});}
 async function seed(p,extra={}){return p.evaluate(extra=>Hisaab.stock.saveProduct({name:'Plastic scoreboard',unit:'Boxes',date:'2026-11-01',openingQty:10,minQty:0,...extra}),extra);}
 (async()=>{
- console.log('\n▸ Native received-stock link v3.42 — typed incoming list, ordinary audited ledger');
+ console.log('\n▸ Native received-stock link v3.43 — typed incoming list, ordinary audited ledger');
  const browser=await chromium.launch({headless:true,executablePath:process.env.HISAAB_CHROME_EXECUTABLE||undefined,args:process.env.HISAAB_CHROME_ARGS?JSON.parse(process.env.HISAAB_CHROME_ARGS):['--no-sandbox']});
  try{
   const {c,p}=await context(browser),input=packet();
   await p.goto(URL+'#stock-in='+tok(input));await ready(p);
-  check(await p.locator('[data-ver]').first().textContent()==='3.42','native deployed-copy panel reports v3.42');
+  check(await p.locator('[data-ver]').first().textContent()==='3.43','native deployed-copy panel reports v3.43');
   check(new globalThis.URL(p.url()).hash===''&&!requests[0].url.includes('stock-in'),'private fragment is scrubbed during initial boot and never appears in HTTP request');
   check(await p.locator('.sir-item').count()===14&&(await p.locator('#sirCounts').textContent()).includes('14 Stock In'),'initial private gzip link reviews ALL14 incoming items in one combo');
   check((await p.locator('#sirTitle').textContent()).includes('25 Nov 2026')&&(await p.locator('#sirDialog').textContent()).includes('2026-11-25'),'explicit25/11/2026 is retained even though the test device day is14/11; no import-day guess');
@@ -73,7 +73,7 @@ async function seed(p,extra={}){return p.evaluate(extra=>Hisaab.stock.saveProduc
   await c.close();
   const {c:other,p:q}=await context(browser);await q.goto(new globalThis.URL('Hisaab-Pro-v3.39.html',URL).href);await q.waitForFunction(()=>!!window.Hisaab);const oldProduct=await seed(q),old=await snapshot(q);
   await q.goto(URL);await q.waitForFunction(()=>!!window.Hisaab);await q.evaluate(()=>Hisaab.go('stock'));
-  check(await snapshot(q)===old,'native v3.39 → v3.42 upgrade keeps every existing raw byte, opening and exact Boxes label');
+  check(await snapshot(q)===old,'native v3.39 → v3.43 upgrade keeps every existing raw byte, opening and exact Boxes label');
   const mixed=one({rows:[{name:'Plastc scoreboard',quantity:3,unit:'Boxes'},{name:'Velvet cover',quantity:2,unit:'Sets'}]});
   await open(q,mixed);check((await q.locator('.sir-item').first().textContent()).includes('% naam match')&&await q.locator('[data-sir-match="0"]').inputValue()===oldProduct.id,'a real unique75%+ typo automatically selects the saved product while showing its name/unit/%');
   check((await q.locator('#sirCounts').textContent()).includes('1 naye products'),'mixed list proposes only the genuinely new product; no duplicate of the matched one');

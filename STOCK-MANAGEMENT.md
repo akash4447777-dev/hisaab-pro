@@ -1,11 +1,97 @@
-# Hisaab Pro v3.42 — Stock Management
+# Hisaab Pro v3.43 — Stock Management
 
 Stock Management existing Hisaab panel ka **alag tab** hai: products/photo, Stock In,
 purpose-wise Stock Out, customer-wise Sales, live availability, date-wise history,
 changes ka audit aur minimum-stock warnings. **Available quantity manually adjust
 nahi karni**; har saved transaction se balance apne-aap calculate hota hai.
 
-## Smart Paste — paste → pehchaan → check → automatic save (v3.42)
+## Stock Sale / custom combo — search → select → confirm once (v3.43)
+
+**Stock Management → Stock Sale**, product row ka **Sale**, ya **Stock Sale / combo**
+tab ek hi **inline cart** kholta hai—per-item pop-up nahi. Naya Sale tab tak **draft**
+hai jab tak **Confirm sale & reduce stock** nahi dabate.
+
+1. Actual **customer/party, date, local sale time, salesperson aur delivery person**
+   bharein. Date/time device ki local clock se start hote hain aur editable hain;
+   actual past sale ho to uski date/time badlein. **Combo/package name optional** hai.
+   Delivery phone/address/vehicle aur note optional details mein hain.
+2. Product name/model type karein. Saved names ke saath typos, extra spaces,
+   familiar abbreviations (`Plas scbd`, `adjstr sm`, `brkt`) ke local auto-suggestions
+   turant aate hain. Har choice mein **available stock + Sale-date sellable stock
+   + exact saved unit** hai. Tap ya ↑/↓ + Enter se add karein. Search Enter sirf add
+   karta hai, Sale confirm nahi. Search kabhi doosra product silently sell nahi karta.
+3. Har selected product ki **quantity, actual ₹/unit price aur discount** independently
+   editable hain. Discount **% per line** ya **₹ per line** chunein; ₹ discount poori
+   line par hai, per unit nahi. **Change / Remove** se confirmation se pehle line
+   badlein/hatayein. Ek hi product alag qty/price ke saath alag lines mein reh sakta
+   hai; woh collapse nahi hoti. **Use last recorded price** explicit optional tap hai,
+   silent price guess nahi. New line ka price blank hai; genuine free item ke liye
+   explicitly0 likhein. Maximum50 lines; quantity3 decimals, ₹ price/discount2 decimals.
+4. **All selected products** summary mein product, quantity/unit, actual rate,
+   discount aur final line amount saaf hain. Subtotal, total discount aur final amount
+   automatically calculate hote hain. **Total quantity by exact unit** alag hai:
+   `2 Boxes · 1.25 sets`, misleading `3.25 items` nahi. Integer paise/hundredth percent/
+   thousandth quantity arithmetic; har subtotal aur discount half-up ₹0.01 round hota
+   hai. Udaharan: `₹263.00 − ₹12.53 = ₹250.47`.
+5. **Confirm once** par poora Sale ek mandatory-recovery-copy, audited atomic save
+   mein commit hota hai. Kisi ek line ki kami/overdraw se **koi product partially
+   minus nahi hota**. Same product ki saari selected lines milakar check hoti hain.
+   Full dated ledger + future saved commitments checked: later receipt se backdated
+   sale fund nahi ho sakti, even if current Available bada hai. Error par original
+   saved stock/audit unchanged aur draft retained hai; false green Saved nahi.
+
+**History / receipt:** poora Sale ek card mein product-wise quantities, original
+units, prices, discount, final amount, actual date/time, party, roles aur saved IDs
+ke saath rehta hai. **Edit Sale** poora saved Sale kholta hai; confirm par old qty
+replace hoti hai, double-subtract nahi, old/new audit retained. Remove/replace line
+bhi whole-sale edit mein hi. **Delete Sale…** explicit confirmation ke baad saari
+lines ek saath restore karta hai; individual line/product delete se package adhoora
+nahi hota. **Use combo again** editable new draft copy hai—new actual customer/roles
+blank, fresh date/time/identity aur current stock rechecked, no automatic sale.
+
+**PDF / sync / old records:** approved navy/emerald + saved actual logo ka **Sale
+PDF** whole saved Sale ke prices/discount/date/time/party ko export karta hai.
+Filtered **History PDF** matches-only prices/totals dikhata hai; whole-sale action
+scope clearly labelled hai. Unsaved cart/edit PDF mein nahi aata; PDF zero-write hai.
+Old sales **unpriced hi rehti hain**, fabricated₹0/discount/time ya migration nahi.
+Salary/Canteen/payment/tax/invoice write nahi. Compatible independent-device Sales
+normal sync se merge; conflicting prices/quantities/deletion ko **whole Sale** choose
+karna hota hai, half-price/half-quantity hybrid nahi. Missing-data recovery bhi
+incompatible Sale versions silently combine nahi karti. **Local Saved ≠ Cloud synced**.
+
+Draft same-account navigation mein memory mein rehta hai, reload par saved nahi
+hota. Visible meaningful cart cloud apply ko pause karta hai; navigation away ke
+baad sync ho to old cart stale rahega—**Refresh stock** same account par typed values
+rakhta hai aur quantities rechecks. Account switch par old account ka draft clear.
+**Clear draft / Cancel edit** unsaved fields hi hataate hain, confirmed Sale nahi.
+
+## Message / Screenshot — highlighted suggested matches (v3.43)
+
+Nonexact pasted/OCR item ke paas ab **distinct background + thick coloured border**
+mein **✦ Suggested matches** khula dikhta hai—collapsed dropdown ke andar nahi.
+**Original item** unchanged naam ke saath har candidate ka **saved product name,
+current available stock/exact unit aur local name similarity %** hai; best-first
+ranking aur **Best suggestion / Selected / Use product** clear indicators hain.
+
+- Unique safe **≥75%** spelling/spacing/order/known-abbreviation match automatic
+  mapping rakhta hai; **74.7% ko75% round karke select nahi**. Pure initials (jaise
+  `PS`) sirf review suggestions hain. Missing size/model, close candidates within
+  five points, colour/material/shape/quality differences aur wrong units silently
+  choose/convert nahi hote. Wrong variant/unit **Not interchangeable** warning hai.
+- **Unsuitable → Unmatched — no suitable saved product**, not a weak first guess.
+  Exact saved name ko extra noisy panel nahi. Local score accuracy guarantee ya
+  OCR-confidence nahi; original image/text aur actual facts review karein.
+- **Message / screenshot · review:** candidate par **one tap** dropdown map + replan
+  karta hai, purana consent reset. Is tap se stock save nahi hota; actual roles,
+  source arithmetic/opening/date checks aur newly reviewed final Save retained.
+- **Smart Paste:** unclear product par **Use & process** ka **one tap** explicit mapping
+  aur safe processing karta hai. Sirf valid resolved row save; already-saved rows
+  repeat nahi, remaining row **usi source combo** mein. Missing quantity/date/unit/
+  roles/opening attestation ko product selection invent/bypass nahi karti.
+- Matching local/offline hai; product search, text ya screenshot external AI service
+  par upload nahi. Existing optional OCR engine/model static downloads unchanged.
+
+## Smart Paste — paste → pehchaan → check → automatic save (v3.42 retained)
 
 **Stock Management → ⚡ Smart Paste** mein poora copied message / list / table
 Paste karein. Is surface ko kholne par **Paste karte hi clear entries SAVE hongi**
@@ -41,7 +127,7 @@ hone par ek **Process & save** tap karein. Phone/WhatsApp apne-aap read nahi hot
   ke liye History ka audited Edit/Delete use karein, source dobara badal kar nahi.
 - Safe fixes hi automatic: case/spacing/Unicode digits, unambiguous grouped numbers,
   familiar unit spellings/plurals (`Boxes` → box for matching, **old `Boxes` saved
-  label unchanged**), date formatting aur **unique raw ≥75% name match**. Close
+  label unchanged**), date formatting aur **unique safe ≥75% name match (known abbreviations included)**. Close
   candidates within five points, explicit model/colour/size/material/shape/quality
   differences, omitted sibling variants aur unit conflicts clarification maangte
   hain. Box ↔ pcs / set / bundle conversions ya quantity multiplications nahi.
@@ -116,12 +202,12 @@ mein default hai; koi theme setup, import, product re-entry ya logo upload nahi.
 
 **PDF export presentation-only hai.** PDF banana, dekhna, share ya cancel karna
 Stock, audit, cloud data, company settings, Canteen, Employee, Attendance ya salary
-mein write/migration nahi karta. Same browser/site par **Panel v3.42** dekhein.
+mein write/migration nahi karta. Same browser/site par **Panel v3.43** dekhein.
 
 ## 1. Pehli baar
 
 1. Jis **same browser/site** par asli data hai, Settings → **Backup (JSON)** download karein.
-2. Updated panel me **Panel v3.42** confirm karein. Storage clear, entries re-enter
+2. Updated panel me **Panel v3.43** confirm karein. Storage clear, entries re-enter
    ya company logo dobara upload karne ki zaroorat nahi.
 3. Sidebar → **Stock Management** kholein. Phone par upar navigation ko sideways
    scroll kar sakte hain. Keyboard shortcut: **g**, phir **i**.
@@ -153,7 +239,7 @@ mein write/migration nahi karta. Same browser/site par **Panel v3.42** dekhein.
   stock nahi badalta. Canteen ka unit selector is change se alag/unchanged hai.
 
 Purana version khule ya **Import stock** button na dikhe to [normal panel link](https://akash4447777-dev.github.io/hisaab-pro/)
-dobara kholkar refresh karein aur **Panel v3.42** dekhein. **Browser ka site data /
+dobara kholkar refresh karein aur **Panel v3.43** dekhein. **Browser ka site data /
 local storage clear na karein**—isse unsynced entries hat sakti hain.
 
 Photo camera/gallery se PNG, JPG ya WebP ho sakti hai, maximum **5 MB** input.
@@ -168,7 +254,7 @@ Old panel me jo available quantity hai wahi chosen cut-over date ki Opening bant
 hai. Box ko box, pcs ko pcs rakhein—pack size ya box → pcs conversion guess nahi hoti.
 
 1. Pehle same asli-data wale browser/site par **Settings → Backup (JSON)** lein aur
-   **Panel v3.42** confirm karein. Same account/project use karein; storage clear na karein.
+   **Panel v3.43** confirm karein. Same account/project use karein; storage clear na karein.
 2. **Stock Management → Import stock** → apni prepared `.json` / UTF-8 `.csv` file chunein.
    **Partial opening file ko Settings → Restore me mat daalein**; woh whole-backup
    replacement hai. Stock importer full Settings backups accept nahi karta.
@@ -353,7 +439,7 @@ anything or write any customer account. Publishing the app is not an account sav
 **Ek-ek item bharna nahi. Ek poora message paste YA screenshot chuno. Chat mein
 har message bhejna zaroori nahi; phone/WhatsApp apne-aap read nahi hota.**
 
-1. Same asli-data wale browser/account mein **Panel v3.42 → Stock Management →
+1. Same asli-data wale browser/account mein **Panel v3.43 → Stock Management →
    Message / screenshot · review**. Upar account/local-browser label check karo.
    Yeh optional reviewed path hai; automatic Smart Paste ka flow upar alag hai.
 2. **Pehli screen:** WhatsApp ka poora numbered message Paste karo, ya bada
@@ -416,13 +502,13 @@ bina old records rewrite kiye.
   similarity mein se highest. Case/punctuation, number-letter spacing (`9mm` /
   `9 mm`), limited common plurals, `gray/grey` / `golden/gold` normalize sirf lookup
   ke liye; saved/source naam, actual numbers aur original units nahi badalte.
-- **Raw score >= 0.75** chahiye: 74.7% ko round karke automatic 75% nahi banate.
+- **Raw/known-abbreviation-normalized score >= 0.75** chahiye (initials-only review): 74.7% ko round karke automatic 75% nahi banate.
   Exact normalized name + original unit / earlier reviewed alias first; conflicting
   aliases kabhi fuzzy score se chupaye nahi jate. Unknown/low match manual select.
 - Explicit mismatched sizes/model-number order, colour, half/full, small/medium/large,
   left/right aur male/female automatic substitution nahi. Same-family variants mein
   missing detail ho toh bhi review, even if shorter model thoda higher score le.
-- Is optional reviewed path mein matching sirf **product dropdown** bharta hai. Preview/Cancel zero-save; Save ke
+- Is optional reviewed path mein matching **product dropdown + highlighted choices** bharta hai. Preview/Cancel zero-save; Save ke
   liye original year, type, roles, warnings aur final consent ab bhi chahiye.
   Apni selection badalne par purana tick reset hota hai; manually chosen product par
   purane different product ka % nahi dikhate. Reviewed save ke baad alias audit mein
@@ -546,13 +632,15 @@ device, then sync before opening another device.
 |---|---|---|
 | **Stock In** | Product, quantity, date; supplier/party aur note optional | Quantity add |
 | **Stock Out** | Product, quantity, date aur **purpose zaroori** | Quantity subtract |
-| **Stock Sale** | Product, quantity, date, **party/customer, salesperson aur delivery-person name zaroori** | Quantity subtract |
+| **Stock Sale** | One/multiple products ki quantity, actual ₹price/discount, date/time, **party/customer, salesperson aur delivery-person name zaroori**; package name optional | Confirm once par all selected quantities subtract |
 
 Sale me delivery phone aur address / vehicle / gate details bhi likh sakte hain.
 Product row ke **In / Out / Sale** shortcuts wahi product pehle se select karte hain.
-Har transaction ek product ki hoti hai; manual forms me alag products ki alag entries
-hain. Message / screenshot importer poore reviewed message ki rows ek saath taiyar karta hai.
-Is tab me pricing, invoice, payment ya salary/Canteen financial write nahi hai.
+In/Out ordinary single-product forms hain; **Sale ab inline multi-product cart** hai
+(top section dekhein). Saved movement har line ka alag auditable row rehta hai, lekin
+Sale identity poora combo jodti hai. Existing unpriced Sale/Message records ka format
+ya amounts change nahi hota. Actual INR pricing optional Sale metadata hai; invoice,
+tax, payment ya salary/Canteen financial write nahi.
 
 **Formula:**
 
@@ -644,8 +732,10 @@ ke liye hain, available quantity ko manually change nahi karte. Product row ka
 - Opening quantity sudharni ho to **Stock History → Opening entry → Edit** karein.
 - Har entry **Edit / Delete** ho sakti hai; save/delete ke baad complete inventory
   dobara calculate aur validate hoti hai. Delete confirmation cancel = no change.
-- Product delete uski **saari dependent movements** bhi delete karta hai; confirmation
-  me exact count dikhta hai. Current ledger se rows hatengi, audit se nahi.
+- Ordinary product delete uski **saari dependent movements** bhi delete karta hai;
+  confirmation me exact count dikhta hai. **Priced Sale mein used product** ka direct
+  delete blocked hai—pehle complete Sale review/delete karein, package adhoora nahi.
+  Current ledger se rows hatengi, audit se nahi.
 - **Change Audit → Details** me who/when, action aur full **Before → After** snapshots.
   Deleted entries, previous product names/photos aur delivery details bhi retained.
   Audit ke dates **change ki date** par filter hote hain; History me entry ki date.
@@ -668,7 +758,7 @@ product rename/photo replacement purani history ko rewrite nahi karta.
 - Failed local save/quota/stale tab/account par success assume na karein; error padhein.
   Draft memory me ho sakta hai. Purane confirmed Stock/available/audit rollback rehte
   hain; successful pre-change safety copy alag se ban sakti hai.
-- Saare editing devices/tabs **v3.40** par update karein. Local save cloud ACK nahi:
+- Saare editing devices/tabs **v3.43** par update karein. Local save cloud ACK nahi:
   doosre device par jaane se pehle **Cloud synced** confirm karein.
 
 Independent devices ki compatible entries merge ho sakti hain. Lekin Stock 100 par

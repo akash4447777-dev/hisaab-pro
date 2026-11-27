@@ -7,18 +7,19 @@ Only reads supplied PDFs/expected JSON. --render writes chosen QA PNGs/summary.
 import argparse
 import json
 import re
+from decimal import Decimal, ROUND_HALF_UP
 from pathlib import Path
 import pymupdf as pdf
 
 parser=argparse.ArgumentParser(description=__doc__)
 parser.add_argument('folders',nargs='+',type=Path)
-parser.add_argument('--version',default='3.42')
+parser.add_argument('--version',default='3.43')
 parser.add_argument('--render',type=Path)
 a=parser.parse_args()
 files=sorted({file.resolve() for folder in a.folders for file in folder.glob('*.pdf')})
 assert files, 'Generate actual PDF artifacts first'
 if a.render:a.render.mkdir(parents=True,exist_ok=True)
-summary={'pdfs':0,'pages':0,'logo_pages':0,'combo_pdfs':0,'files':[]}
+summary={'pdfs':0,'pages':0,'logo_pages':0,'combo_pdfs':0,'sale_pdfs':0,'files':[]}
 compact=lambda value:re.sub(r'\s+','',value)
 for file in files:
     doc=pdf.open(file)
@@ -31,6 +32,8 @@ for file in files:
         assert len(re.findall(r'Party / message context:',text))==1,(file,'one shared party block')
         assert len(re.findall(r'(?m)^Salesperson:',text))<=1,(file,'one common salesperson block')
         assert len(re.findall(r'(?m)^Tagged members:',text))<=1,(file,'one common tagged block')
+    is_sale='Stock Sale · 1 Sale' in text
+    if is_sale:summary['sale_pdfs']+=1
     branded='logo' in file.name
     for i,page in enumerate(doc):
         assert abs(page.rect.width-595.28)<.1 and abs(page.rect.height-841.89)<.1,(file,i,'A4')
@@ -141,9 +144,38 @@ for file in files:
         assert len(re.findall(r'(?m)^2026-11-28$',text))==50,(file,'all 50 actual table dates')
         for unit,count in [('box',13),('pcs',13),('roll',12),('bundle',12)]:
             assert len(re.findall(r'(?m)^19 '+unit+r'$',text))==count,(file,'per-product available / exact unit',unit)
+    # v3.43: independently recompute real PDF price cells/totals with Decimal,
+    # not the application's BigInt implementation or its quoted total trace.
+    if file.name in ['sale-package-logo.pdf','sale-50-products-logo.pdf']:
+        expected=json.loads((file.parent/('sale-50-products-expected.json' if '50-products' in file.name else 'expected-sale.json')).read_text())
+        rows=expected['rows'];gross_total=discount_total=net_total=0
+        money=lambda n:f'{n//100:,}.{n%100:02d}'
+        for row in rows:
+            sale=row['sale'];gross=int((Decimal(str(row['qty']))*sale['rate']).quantize(Decimal('1'),rounding=ROUND_HALF_UP))
+            off=int((Decimal(gross)*sale['discount']/10000).quantize(Decimal('1'),rounding=ROUND_HALF_UP)) if sale['discountType']=='percent' else sale['discount']
+            net=gross-off;gross_total+=gross;discount_total+=off;net_total+=net
+            percentage=f" ({sale['discount']//100}.{sale['discount']%100:02d}%)" if sale['discountType']=='percent' else ''
+            cells=row['productName']+str(row['qty'])+' '+row['unit']+money(sale['rate'])+' / '+row['unit']+money(off)+percentage+money(net)
+            assert compact(cells) in compact(text),(file,'complete actual product + ORIGINAL qty/unit + independently calculated rate/discount/net cells',row['productName'])
+        assert compact(f'Subtotal ₹{money(gross_total)} · Discount ₹{money(discount_total)} · FINAL AMOUNT ₹{money(net_total)}') in compact(text),(file,'exact independently rounded money totals')
+        ids=re.findall(r'Saved item · (sl_[a-zA-Z0-9_-]+)',text)
+        assert len(ids)==len(set(ids))==len(rows) and set(ids)=={r['id'] for r in rows},(file,'all saved priced lines exactly once')
+        assert 'Customer / party: '+rows[0]['party'] in text and '17:30 (local clock as entered)' in text,(file,'actual shared date/time/party')
+        assert 'No mixed-unit quantity' in text and 'not an invoice' in text,(file,'no invented invoice/payment/unit conversion')
+        if '50-products' in file.name:
+            assert len(doc)>2 and compact('उदाहरण बिलियर्ड्स') in compact(text),(file,'multi-page / original shaped Hindi company')
+            assert len(re.findall(r'(?m)^Salesperson:',text))==1 and len(re.findall(r'(?m)^Customer / party:',text))==1,(file,'one common customer / roles, not repeated per product')
+    if file.name=='sale-filtered-history-logo.pdf':
+        assert '1 stock movements' in text and compact('−2 Boxes') in compact(text) and 'Maple hanger' not in text,(file,'ONLY matching original product/quantity')
+        assert compact('Sale pricing: ₹100.25 / Boxes · Subtotal ₹200.50 · Discount ₹10.03 · Final ₹190.47') in compact(text),(file,'correct matching line price')
+        assert compact('PRICED MATCHING SALE ROWS: 1 of 1. Subtotal ₹200.50 · Discount ₹10.03 · Final ₹190.47.') in compact(text),(file,'filtered financial totals, not whole Sale totals')
+    if file.name=='sale-unsaved-draft-excluded-history.pdf':
+        assert '2 stock movements' in text and compact('−2 Boxes') in compact(text) and compact('−1.25 sets') in compact(text),(file,'only two persisted quantities, not the unsaved3')
+        assert compact('PRICED MATCHING SALE ROWS: 2 of 2. Subtotal ₹263.00 · Discount ₹12.53 · Final ₹250.47.') in compact(text),(file,'saved-only money totals')
+        assert '345.71' not in text and compact('−3 Boxes') not in compact(text),(file,'unsaved quantity/price changes excluded')
     summary['pdfs']+=1
-    summary['files'].append({'name':file.name,'pages':len(doc),'combo':is_combo})
-    if a.render and is_combo:
+    summary['files'].append({'name':file.name,'pages':len(doc),'combo':is_combo,'sale':is_sale})
+    if a.render and (is_combo or is_sale):
         for i in sorted({0,len(doc)-1}):doc[i].get_pixmap(matrix=pdf.Matrix(1.1,1.1),alpha=False).save(a.render/(file.stem+f'-page-{i+1}.png'))
     print('PASS',file.name,len(doc),'pages')
 if a.render:(a.render/'summary.json').write_text(json.dumps(summary,ensure_ascii=False,indent=2)+'\n')

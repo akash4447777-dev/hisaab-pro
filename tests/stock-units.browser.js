@@ -1,4 +1,4 @@
-/* v3.42 native product-unit picker: real forms, legacy/custom labels, mobile,
+/* v3.43 native product-unit picker: real forms, legacy/custom labels, mobile,
    exact save/reload/ledger and guarded refusal. Isolated synthetic data only. */
 const assert = require('node:assert/strict');
 const fs = require('node:fs'), path = require('node:path');
@@ -43,7 +43,7 @@ function clock() {
   };
 }
 (async () => {
-  console.log('\n▸ Native Stock unit choices v3.42 — product forms, custom labels and persistence');
+  console.log('\n▸ Native Stock unit choices v3.43 — product forms, custom labels and persistence');
   const browser=await chromium.launch({headless:true, executablePath:process.env.HISAAB_CHROME_EXECUTABLE||undefined, args:process.env.HISAAB_CHROME_ARGS?JSON.parse(process.env.HISAAB_CHROME_ARGS):['--no-sandbox']});
   try {
     const c=await browser.newContext({viewport:{width:1280,height:950},locale:'en-IN',timezoneId:'Asia/Kolkata',acceptDownloads:true});
@@ -55,8 +55,8 @@ function clock() {
     const saved=await p.evaluate(()=>['box','set','bundle','BOX','sq ft','crate'].map((unit,i)=>Hisaab.stock.saveProduct({name:'Legacy unit '+i,unit,date:'2026-11-01',openingQty:7.125,minQty:0})));
     const original=await snapshot(p), finance=await p.evaluate(()=>JSON.stringify({workers:Hisaab.Store.data.workers,records:Hisaab.Store.data.records,canteen:Hisaab.Store.data.canteen,attendance:Hisaab.Store.data.attendance}));
     await p.goto(URL); await p.waitForFunction(()=>!!window.Hisaab); await p.evaluate(()=>Hisaab.go('stock'));
-    check(await p.locator('[data-ver]').first().textContent()==='3.42','exact native release reports v3.42');
-    check(await snapshot(p)===original,'v3.38 → v3.42 preserves every raw stored byte, ID, opening, legacy unit and unrelated row');
+    check(await p.locator('[data-ver]').first().textContent()==='3.43','exact native release reports v3.43');
+    check(await snapshot(p)===original,'v3.38 → v3.43 preserves every raw stored byte, ID, opening, legacy unit and unrelated row');
     for (const product of saved) {
       await edit(p,product.id);
       const known=units.includes(product.unit);
