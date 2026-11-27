@@ -12,7 +12,7 @@ import pymupdf as pdf
 
 parser=argparse.ArgumentParser(description=__doc__)
 parser.add_argument('folders',nargs='+',type=Path)
-parser.add_argument('--version',default='3.41')
+parser.add_argument('--version',default='3.42')
 parser.add_argument('--render',type=Path)
 a=parser.parse_args()
 files=sorted({file.resolve() for folder in a.folders for file in folder.glob('*.pdf')})

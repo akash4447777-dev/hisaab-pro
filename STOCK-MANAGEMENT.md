@@ -1,9 +1,87 @@
-# Hisaab Pro v3.41 — Stock Management
+# Hisaab Pro v3.42 — Stock Management
 
 Stock Management existing Hisaab panel ka **alag tab** hai: products/photo, Stock In,
 purpose-wise Stock Out, customer-wise Sales, live availability, date-wise history,
 changes ka audit aur minimum-stock warnings. **Available quantity manually adjust
 nahi karni**; har saved transaction se balance apne-aap calculate hota hai.
+
+## Smart Paste — paste → pehchaan → check → automatic save (v3.42)
+
+**Stock Management → ⚡ Smart Paste** mein poora copied message / list / table
+Paste karein. Is surface ko kholne par **Paste karte hi clear entries SAVE hongi**
+ki notice aur actual account dikhta hai. Ab har list ke liye Message → Review →
+checkbox → Save zaroori nahi. **Khud type kar rahe hon to woh draft hai**; complete
+hone par ek **Process & save** tap karein. Phone/WhatsApp apne-aap read nahi hota.
+
+- Fixed template ya exact spelling zaroori nahi. Plain / numbered lists,
+  Hindi-English wording, spacing/sequence differences, labelled fields (quantity
+  product se pehle bhi), combined `Qty: 3 Boxes`, copied Excel/TSV, CSV/semicolon/
+  pipe/Markdown tables, mixed text + table + tagged footer, quoted commas/multiline
+  cells aur ordinary row JSON local parser pehchaanta hai. Multiple/repeated table
+  headings product nahi bante. Unknown/conflicting columns safely stop/report hote
+  hain, quietly shift nahi hote. Maximum **20,000 characters / 50 items / 8
+  movements per item**; oversized sources truncate karke save nahi hote.
+- **Saaf, valid entries apne-aap ek atomic save mein** ordinary dated Stock In /
+  Sale / Out banti hain. One paste = **one party / one combo**, na ki alag unrelated
+  History cards. Har item ki actual date, quantity aur exact saved unit alag rehti
+  hai. Invalid independent rows hold/report hoti hain; actual saved subset ka
+  complete chronological nonnegative ledger dobara validate hota hai. Dependent
+  invalid product ledger ka arbitrary balancing subset nahi chuna jata. Conflicting
+  common party/count/source details hon to affected processing pehle clarify hoga.
+- Result mein **✓ Saved**, **↪ Already recorded / repeated / explicitly skipped**,
+  **? Clarification** aur **New products** alag counts hain. Sirf unresolved items
+  ke actual missing/wrong fields dikhte hain; source line aur original text bhi.
+  Ek shared year/type/actual role ek baar bharein. Captured tagged names par
+  **Salesperson / Delivery** tap kar sakte hain; tag order se role kabhi nahi lagta.
+- Jo valid tha woh **save ho chuka hai**. Unclear quantity/date/unit/product ko ek
+  baar clarify karke **bache hue save karo** tap karein; pehle saved rows repeat
+  nahi hoti aur remaining rows **usi combo** mein judti hain. Saved original source
+  locked rehta hai; **Agla paste** doosre message ke liye hai. **Close / navigation
+  pending processing cancel karta hai, completed save undo nahi.** Saved correction
+  ke liye History ka audited Edit/Delete use karein, source dobara badal kar nahi.
+- Safe fixes hi automatic: case/spacing/Unicode digits, unambiguous grouped numbers,
+  familiar unit spellings/plurals (`Boxes` → box for matching, **old `Boxes` saved
+  label unchanged**), date formatting aur **unique raw ≥75% name match**. Close
+  candidates within five points, explicit model/colour/size/material/shape/quality
+  differences, omitted sibling variants aur unit conflicts clarification maangte
+  hain. Box ↔ pcs / set / bundle conversions ya quantity multiplications nahi.
+- **Missing date/year/quantity/unit/type/person/purpose invent nahi hote.** Ek actual
+  full date se isi source ka unambiguous year mil sakta hai; device today, screenshot
+  filename ya chat sender/timestamp actual receipt date nahi. `Gaye / dispatch`
+  outgoing hai lekin Sale ya Out aur actual roles explicitly clear hone chahiye.
+  Bare Out needs purpose; explicit Used/Damage wording apna actual purpose de sakti
+  hai. O/I ko digit banana, minus/sign repair ya contradictory repeated fields par
+  last-value-wins save nahi hota. Source Previous / Available checks hain, new stock
+  ya overwrite values nahi.
+- Genuinely distinct **clear dated Stock In** ka new product automatic ban sakta
+  hai: source unit, earliest **actually saved receipt** date, minimum0, no photo aur
+  **koi fake opening movement nahi**. Same-name/different-unit, ambiguous saved
+  variant, outgoing-only ya deleted/renamed historical product auto-create nahi.
+  Purane openings, metadata, saved units/minima/photos aur all-time balances retained.
+- Re-paste / alternate layout / prior confirmed correction / edited/deleted history
+  ordinary semantic movement IDs aur audit provenance se detect hote hain. Manual
+  same-date/qty means **possible duplicate**, not automatic add or an unasked Skip.
+  Sirf genuinely separate delivery ka actual unique reference **plus explicit
+  separate confirmation** use karein. Included/opening Skip optional aur unticked
+  hai. Before-opening still blocked; same-day needs actual **snapshot ke BAAD**
+  attestation. Random reference, guessed opening inclusion ya fake adjustment nahi.
+- **↓ Result report** saved/skipped/unresolved reasons aur private source text ka
+  local download hai. **↓ Combo PDF** mein currently saved combo ke saare original
+  dates/units/roles/tags/IDs/source aur approved premium design/saved logo hain;
+  unresolved items stock/PDF rows nahi bante. PDF/report export zero-write hai aur
+  unresolved correction draft open rehta hai. Report/source private rakhein.
+- Existing account/scope/disk/version/unsaved-data checks, cancellation during
+  hashing, required pre-change recovery copy aur full quota rollback still apply.
+  All-recorded/no-valid batches save/checkpoint nahi karte. Processing already-open
+  panel mein **offline/local**, no external AI/text/image upload, new library/schema/
+  key/backend or financial/Canteen/Attendance migration. Ordinary saved rows existing
+  configured cloud sync mein jaati hain; **local Saved ≠ Cloud synced**.
+
+**Screenshot unclear hai ya pehle review chahiye?** Separate **Message / screenshot
+· review** button (Smart Paste footer se bhi) unchanged review-only flow kholta hai;
+OCR text ko dekhna/sudharna aur original explicit Save ab bhi zaroori hai. Screenshot
+reading apne-aap Smart Paste write nahi banti. Neeche section1c isi optional path
+ko explain karta hai.
 
 ## Naya premium Stock PDF (v3.41)
 
@@ -36,14 +114,14 @@ mein default hai; koi theme setup, import, product re-entry ya logo upload nahi.
   cancellation aur Blob cleanup guards unchanged. Offline already-open export
   supported; OS share destinations user chooses—automatic delivery claim nahi.
 
-**Yeh presentation-only upgrade hai.** PDF banana, dekhna, share ya cancel karna
+**PDF export presentation-only hai.** PDF banana, dekhna, share ya cancel karna
 Stock, audit, cloud data, company settings, Canteen, Employee, Attendance ya salary
-mein write/migration nahi karta. Same browser/site par **Panel v3.41** dekhein.
+mein write/migration nahi karta. Same browser/site par **Panel v3.42** dekhein.
 
 ## 1. Pehli baar
 
 1. Jis **same browser/site** par asli data hai, Settings → **Backup (JSON)** download karein.
-2. Updated panel me **Panel v3.41** confirm karein. Storage clear, entries re-enter
+2. Updated panel me **Panel v3.42** confirm karein. Storage clear, entries re-enter
    ya company logo dobara upload karne ki zaroorat nahi.
 3. Sidebar → **Stock Management** kholein. Phone par upar navigation ko sideways
    scroll kar sakte hain. Keyboard shortcut: **g**, phir **i**.
@@ -75,7 +153,7 @@ mein write/migration nahi karta. Same browser/site par **Panel v3.41** dekhein.
   stock nahi badalta. Canteen ka unit selector is change se alag/unchanged hai.
 
 Purana version khule ya **Import stock** button na dikhe to [normal panel link](https://akash4447777-dev.github.io/hisaab-pro/)
-dobara kholkar refresh karein aur **Panel v3.41** dekhein. **Browser ka site data /
+dobara kholkar refresh karein aur **Panel v3.42** dekhein. **Browser ka site data /
 local storage clear na karein**—isse unsynced entries hat sakti hain.
 
 Photo camera/gallery se PNG, JPG ya WebP ho sakti hai, maximum **5 MB** input.
@@ -90,7 +168,7 @@ Old panel me jo available quantity hai wahi chosen cut-over date ki Opening bant
 hai. Box ko box, pcs ko pcs rakhein—pack size ya box → pcs conversion guess nahi hoti.
 
 1. Pehle same asli-data wale browser/site par **Settings → Backup (JSON)** lein aur
-   **Panel v3.41** confirm karein. Same account/project use karein; storage clear na karein.
+   **Panel v3.42** confirm karein. Same account/project use karein; storage clear na karein.
 2. **Stock Management → Import stock** → apni prepared `.json` / UTF-8 `.csv` file chunein.
    **Partial opening file ko Settings → Restore me mat daalein**; woh whole-backup
    replacement hai. Stock importer full Settings backups accept nahi karta.
@@ -270,13 +348,14 @@ anything or write any customer account. Publishing the app is not an account sav
 
 ## 1c. Message / screenshot se In, Sale ya Out
 
-### Aasaan flow (v3.36+, combo v3.37): Message → Dekho → Save
+### Optional reviewed flow (v3.36+, combo v3.37): Message → Dekho → Save
 
 **Ek-ek item bharna nahi. Ek poora message paste YA screenshot chuno. Chat mein
 har message bhejna zaroori nahi; phone/WhatsApp apne-aap read nahi hota.**
 
-1. Same asli-data wale browser/account mein **Panel v3.41 → Stock Management →
-   ＋ Combo / message**. Upar account/local-browser label check karo.
+1. Same asli-data wale browser/account mein **Panel v3.42 → Stock Management →
+   Message / screenshot · review**. Upar account/local-browser label check karo.
+   Yeh optional reviewed path hai; automatic Smart Paste ka flow upar alag hai.
 2. **Pehli screen:** WhatsApp ka poora numbered message Paste karo, ya bada
    **Screenshot chuno** button dabao. PNG/JPG/WebP, maximum **5 MB / 20 megapixels**.
    Photo aur usse nikla text draft hain; text offline bhi chalega. Photo ki pehli
@@ -343,7 +422,7 @@ bina old records rewrite kiye.
 - Explicit mismatched sizes/model-number order, colour, half/full, small/medium/large,
   left/right aur male/female automatic substitution nahi. Same-family variants mein
   missing detail ho toh bhi review, even if shorter model thoda higher score le.
-- Matching sirf **product dropdown** bharta hai. Preview/Cancel zero-save; Save ke
+- Is optional reviewed path mein matching sirf **product dropdown** bharta hai. Preview/Cancel zero-save; Save ke
   liye original year, type, roles, warnings aur final consent ab bhi chahiye.
   Apni selection badalne par purana tick reset hota hai; manually chosen product par
   purane different product ka % nahi dikhate. Reviewed save ke baad alias audit mein

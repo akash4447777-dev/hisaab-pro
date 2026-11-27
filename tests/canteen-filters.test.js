@@ -68,7 +68,7 @@ async function test(label, fn) { try { await fn(); passed++; console.log('  ✅ 
   await test('all enumerated old-code hooks reverse EXACTLY to immutable v3.30, including all finance/cloud/Attendance/CSS/fonts', () => {
     assert.equal(withoutPartyReports(html), previous);
     assert.equal(crypto.createHash('sha256').update(previous).digest('hex'), '9e4e744ebd7cf6e92187d226caeb944eee0a04b9f635987350be781b9efb8501');
-    assert.equal(html, fs.readFileSync(path.join(__dirname, '..', 'Hisaab-Pro-v3.41.html'), 'utf8'));
+    assert.equal(html, fs.readFileSync(path.join(__dirname, '..', 'Hisaab-Pro-v3.42.html'), 'utf8'));
   });
   await test('old raw JSON boots without adding a party field, migrating data or changing any stored byte', () => {
     const payload = copy(fixture); delete payload.settings.canteenParties; const d = boot(payload);
