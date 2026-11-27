@@ -1,9 +1,9 @@
-/* v3.41 native premium PDF downloads, multipage / Unicode / mobile / offline.
+/* v3.42 native premium PDF downloads, multipage / Unicode / mobile / offline.
    Isolated synthetic browser storage, local GETs only, no customer/backend use. */
 const assert=require('node:assert/strict'),fs=require('node:fs'),path=require('node:path');
 const {chromium}=require('playwright');
 const {overview,many}=require('./fixtures/stock-pdf');
-const URL=process.env.HISAAB_URL||'http://127.0.0.1:8000/Hisaab-Pro-v3.41.html';
+const URL=process.env.HISAAB_URL||'http://127.0.0.1:8000/Hisaab-Pro-v3.42.html';
 const OUT=path.resolve(process.env.HISAAB_ARTIFACTS||'.cache/stock-pdf-native');fs.mkdirSync(OUT,{recursive:true});
 const logo='data:image/jpeg;base64,'+fs.readFileSync(path.join(__dirname,'fixtures/company-logo.jpg')).toString('base64');
 const errors=[],requests=[];let checks=0;
@@ -15,7 +15,7 @@ async function close(p){await p.locator('#stePdfDialog .modal-h [data-act="close
 async function download(p,name){await ready(p);const event=p.waitForEvent('download');await p.click('#stePdfDownload');const file=await event;await file.saveAs(path.join(OUT,name));return fs.readFileSync(path.join(OUT,name));}
 async function install(p,data){await p.evaluate(data=>{localStorage.clear();localStorage.setItem('hisaabPro.v1',JSON.stringify(data));},data);await p.reload();await p.waitForFunction(()=>!!window.Hisaab);await p.evaluate(()=>Hisaab.go('stock'));}
 (async()=>{
- console.log('\n▸ Native premium Stock PDF v3.41');
+ console.log('\n▸ Native premium Stock PDF v3.42');
  const browser=await chromium.launch({headless:true,...(process.env.HISAAB_CHROME_EXECUTABLE?{executablePath:process.env.HISAAB_CHROME_EXECUTABLE}:{}),args:process.env.HISAAB_CHROME_ARGS?JSON.parse(process.env.HISAAB_CHROME_ARGS):['--no-sandbox']});
  try{
    const c=await browser.newContext({viewport:{width:1280,height:1000},locale:'en-IN',timezoneId:'Asia/Kolkata',acceptDownloads:true});await c.addInitScript(clock);
@@ -24,8 +24,8 @@ async function install(p,data){await p.evaluate(data=>{localStorage.clear();loca
    await p.goto(new globalThis.URL('Hisaab-Pro-v3.40.html',URL).href);await p.waitForFunction(()=>!!window.Hisaab);
    const data=overview();data.settings.companyLogo=logo;await install(p,data);const baseline=await snapshot(p),oldRows=await p.evaluate(()=>Hisaab.stock.report({kind:'stock'}).rows);
    await p.goto(URL);await p.waitForFunction(()=>!!window.Hisaab);await p.evaluate(()=>Hisaab.go('stock'));
-   check(await p.locator('[data-ver]').first().textContent()==='3.41','actual standalone release shows v3.41');
-   check(await snapshot(p)===baseline,'real v3.40 to v3.41 upgrade preserves every stored byte and original data');
+   check(await p.locator('[data-ver]').first().textContent()==='3.42','actual standalone release shows v3.42');
+   check(await snapshot(p)===baseline,'real v3.40 to v3.42 upgrade preserves every stored byte and original data');
    check(JSON.stringify(await p.evaluate(()=>Hisaab.stock.report({kind:'stock'}).rows))===JSON.stringify(oldRows),'design upgrade retains exact report rows / IDs / units / dated ledger');
    check(await p.locator('[data-ste-pdf="current"]').isVisible(),'existing Stock PDF action opens the new design without setup');
    await p.click('[data-ste-pdf="current"]');await ready(p);

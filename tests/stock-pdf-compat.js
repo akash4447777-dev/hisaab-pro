@@ -20,6 +20,7 @@ const hooks=[
   ]
 ];
 function withoutStockPdf(source){
+ source=require('./stock-smart-compat').withoutStockSmart(source);
  const start='/* v3.41 PREMIUM STOCK PDF BEGIN',end='/* v3.41 PREMIUM STOCK PDF END */';
  if(!source.includes(start))return source;
  assert.equal(source.split(start).length-1,1);assert.equal(source.split(end).length-1,1);
