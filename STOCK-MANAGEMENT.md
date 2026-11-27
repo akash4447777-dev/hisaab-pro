@@ -1,14 +1,49 @@
-# Hisaab Pro v3.40 — Stock Management
+# Hisaab Pro v3.41 — Stock Management
 
 Stock Management existing Hisaab panel ka **alag tab** hai: products/photo, Stock In,
 purpose-wise Stock Out, customer-wise Sales, live availability, date-wise history,
 changes ka audit aur minimum-stock warnings. **Available quantity manually adjust
 nahi karni**; har saved transaction se balance apne-aap calculate hota hai.
 
+## Naya premium Stock PDF (v3.41)
+
+Approved preview ka **navy / emerald design** ab existing **↓ Stock PDF** action
+mein default hai; koi theme setup, import, product re-entry ya logo upload nahi.
+
+- **Available Stock:** bold branded header, real matching product / unit-type /
+  low-stock counts, healthy-vs-low product ring, readable In / Out / Sales columns
+  aur highlighted Available. Har product ki original opening date aur exact saved
+  minimum retained. Sirf genuinely below-minimum rows amber; min0 koi fake alert nahi.
+- **Available by unit:** har exact saved unit ka alag total. `box`, `pcs`, `roll`,
+  `set`, `bundle`, legacy case aur custom units never converted/merged. Thousandths
+  exact rehte hain; large cross-product totals ke liye integer BigInt grouping hai.
+  Mixed-unit grand quantity ya money/invoice total kabhi nahi.
+- **History / combo:** same premium branding/table theme. History ke combined
+  product/date/party/salesperson/type/search filters ke sirf matches; full-ledger
+  balances remain. Combo action ab bhi **one whole saved combo** hai, including
+  every original item/date/unit/supplier, shared party/roles/tags, original source
+  notes and saved IDs. Movement totals keep In / Out / Sales separate per unit;
+  repeated running balances ko total nahi karte. In mein matched openings included.
+- Actual **saved company logo** proportional form mein **har page** par, embedded
+  once. Preview ka sample monogram / names / quantities ship nahi hote. Long
+  product/company/party text wraps without loss; Hindi shapes locally on the actual
+  navy/amber/mint background with Unicode ActualText. Continuation pages compact
+  hain; saare matching products/movements export hote hain, sirf visible screen nahi.
+- Available means **all saved dates, future-dated entries samet**, not an invented
+  as-of cutoff. Counts/health/totals bhi report ke actual filtered rows se aate hain.
+  Saved/opening/receipt dates ya Available manually overwrite nahi hote.
+- Download / Share ke existing consent, font wait, account/context/stale-data,
+  cancellation aur Blob cleanup guards unchanged. Offline already-open export
+  supported; OS share destinations user chooses—automatic delivery claim nahi.
+
+**Yeh presentation-only upgrade hai.** PDF banana, dekhna, share ya cancel karna
+Stock, audit, cloud data, company settings, Canteen, Employee, Attendance ya salary
+mein write/migration nahi karta. Same browser/site par **Panel v3.41** dekhein.
+
 ## 1. Pehli baar
 
 1. Jis **same browser/site** par asli data hai, Settings → **Backup (JSON)** download karein.
-2. Updated panel me **Panel v3.40** confirm karein. Storage clear, entries re-enter
+2. Updated panel me **Panel v3.41** confirm karein. Storage clear, entries re-enter
    ya company logo dobara upload karne ki zaroorat nahi.
 3. Sidebar → **Stock Management** kholein. Phone par upar navigation ko sideways
    scroll kar sakte hain. Keyboard shortcut: **g**, phir **i**.
@@ -40,7 +75,7 @@ nahi karni**; har saved transaction se balance apne-aap calculate hota hai.
   stock nahi badalta. Canteen ka unit selector is change se alag/unchanged hai.
 
 Purana version khule ya **Import stock** button na dikhe to [normal panel link](https://akash4447777-dev.github.io/hisaab-pro/)
-dobara kholkar refresh karein aur **Panel v3.40** dekhein. **Browser ka site data /
+dobara kholkar refresh karein aur **Panel v3.41** dekhein. **Browser ka site data /
 local storage clear na karein**—isse unsynced entries hat sakti hain.
 
 Photo camera/gallery se PNG, JPG ya WebP ho sakti hai, maximum **5 MB** input.
@@ -55,7 +90,7 @@ Old panel me jo available quantity hai wahi chosen cut-over date ki Opening bant
 hai. Box ko box, pcs ko pcs rakhein—pack size ya box → pcs conversion guess nahi hoti.
 
 1. Pehle same asli-data wale browser/site par **Settings → Backup (JSON)** lein aur
-   **Panel v3.40** confirm karein. Same account/project use karein; storage clear na karein.
+   **Panel v3.41** confirm karein. Same account/project use karein; storage clear na karein.
 2. **Stock Management → Import stock** → apni prepared `.json` / UTF-8 `.csv` file chunein.
    **Partial opening file ko Settings → Restore me mat daalein**; woh whole-backup
    replacement hai. Stock importer full Settings backups accept nahi karta.
@@ -240,7 +275,7 @@ anything or write any customer account. Publishing the app is not an account sav
 **Ek-ek item bharna nahi. Ek poora message paste YA screenshot chuno. Chat mein
 har message bhejna zaroori nahi; phone/WhatsApp apne-aap read nahi hota.**
 
-1. Same asli-data wale browser/account mein **Panel v3.40 → Stock Management →
+1. Same asli-data wale browser/account mein **Panel v3.41 → Stock Management →
    ＋ Combo / message**. Upar account/local-browser label check karo.
 2. **Pehli screen:** WhatsApp ka poora numbered message Paste karo, ya bada
    **Screenshot chuno** button dabao. PNG/JPG/WebP, maximum **5 MB / 20 megapixels**.

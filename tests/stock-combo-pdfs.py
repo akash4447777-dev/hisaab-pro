@@ -12,7 +12,7 @@ import pymupdf as pdf
 
 parser=argparse.ArgumentParser(description=__doc__)
 parser.add_argument('folders',nargs='+',type=Path)
-parser.add_argument('--version',default='3.40')
+parser.add_argument('--version',default='3.41')
 parser.add_argument('--render',type=Path)
 a=parser.parse_args()
 files=sorted({file.resolve() for folder in a.folders for file in folder.glob('*.pdf')})
@@ -58,6 +58,49 @@ for file in files:
                     assert not b.y0+.15<r.y0<b.y1-.15,(file,i,'rule crosses text',r,span)
         page.get_pixmap(matrix=pdf.Matrix(.75,.75),alpha=False)  # actually render every page
         summary['pages']+=1
+    # v3.41 native design fixtures: independently extract actual rendered cells,
+    # not just a renderer trace or the presence of numbers somewhere in the PDF.
+    if file.name.startswith('premium-') and (file.parent/'expected.json').exists():
+        expected=json.loads((file.parent/'expected.json').read_text())
+        assert 'OVERVIEW' in text and 'STOCK HEALTH' in text,(file,'approved premium overview')
+        assert 'SAMPLE DATA - DESIGN PREVIEW' not in text and 'DESIGN CONCEPT' not in text,(file,'not the mockup image')
+        if file.name=='premium-overview-logo.pdf':
+            assert len(doc)==1 and '7 Healthy / 1 Low' in text,(file,'eight-row one-page layout / actual health')
+            page=doc[0]
+            for row in expected['overview']:
+                matches=page.search_for(row['name']);assert len(matches)==1,(file,'one product row',row['name'])
+                row_spans=[s for b in page.get_text('dict')['blocks'] if b['type']==0 for line in b['lines'] for s in line['spans']]
+                baseline=next(s['origin'][1] for s in row_spans if s['text']==row['name'])
+                cell=lambda left,right:compact(''.join(s['text'] for s in row_spans if left<=(s['bbox'][0]+s['bbox'][2])/2<right and abs(s['origin'][1]-baseline)<=3))
+                assert cell(223,268)==row['unit'],(file,row['name'],'exact unit cell')
+                for left,right,key in [(268,342,'totalIn'),(342,392,'totalOut'),(392,442,'totalSale'),(442,548,'available')]:
+                    assert cell(left,right)==str(row[key]),(file,row['name'],key,cell(left,right),row[key])
+                assert 'Min: '+str(row['minQty'])+' '+row['unit'] in text,(file,'saved minimum')
+            assert len(re.findall(r'Opening: 2026-11-01',text))==8,(file,'eight real dated products')
+            assert all(value in text for value in ['AVAILABLE BY UNIT','166','60','12','28','REORDER WATCH: 1 product']),(file,'exact separate unit totals / warning')
+        if file.name=='premium-128-long-products-logo.pdf':
+            assert len(re.findall(r'Opening: 2026-11-01',text))==128,(file,'all128 dated products')
+            assert all(compact(row['name']) in compact(text) for row in expected['stress']),(file,'all128 complete long names')
+            assert text.count('OVERVIEW')==1 and text.count('Available Stock · continued')==len(doc)-1,(file,'compact continuation headers')
+        if file.name=='premium-many-units-logo.pdf':
+            assert len(re.findall(r'Opening: 2026-11-01',text))==61,(file,'all61 products')
+            for row in expected['units']:
+                assert compact(text).count(compact(row['unit']))>=3,(file,'unit row + minimum + total tile',row['unit'])
+        if 'hindi' in file.name:
+            assert all(compact(value) in compact(text) for value in expected['hindi'].values()),(file,'full shaped Hindi company / address / product / exact unit')
+            # Header JPEG-backed Indic text must be flattened onto navy, not onto
+            # a white rectangle that would spoil the approved dark masthead.
+            checked=0
+            for image in doc[0].get_images(full=True):
+                if not image[7].startswith('ATT'):continue
+                rects=doc[0].get_image_rects(image[0])
+                if not rects:continue  # shared resource drawn on another page
+                r=rects[0]
+                if r.y0<100:
+                    rgb=pdf.Pixmap(doc,image[0]).pixel(0,0)
+                    assert all(abs(v-w)<12 for v,w in zip(rgb[:3],(12,23,38))),(file,'Indic masthead image background',rgb)
+                    checked+=1
+            assert checked>=2,(file,'native shaped company name and address')
     # Exact row completeness for full-history stress fixtures, not a visible-page count.
     for count in [55,84,85]:
         if f'{count}-' in file.name:

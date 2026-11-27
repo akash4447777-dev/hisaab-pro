@@ -1,4 +1,4 @@
-/* Native v3.40: actual fuzzy dropdown/review/save, phone layout, combined PDF,
+/* Native v3.41: actual fuzzy dropdown/review/save, phone layout, combined PDF,
    offline text and actual locally fulfilled Tesseract/WASM/model OCR. Synthetic. */
 const assert=require('node:assert/strict'),fs=require('node:fs'),path=require('node:path');
 const {chromium}=require('playwright'),{legacy}=require('./fixtures/stock');
@@ -27,8 +27,8 @@ const combo='23/11 Example buyer\n1- Plastc scoreboard\nPichle bache ps 10\nAaj 
   await p.goto(new globalThis.URL('Hisaab-Pro-v3.37.html',URL).href);await p.waitForFunction(()=>!!window.Hisaab);
   const products=await seed(p,[['Plastic scoreboard','pcs'],['alpha beta gamma delta epsilon','box'],['Wooden tray','pcs']]);const baseline=await snapshot(p);
   await p.goto(URL);await p.waitForFunction(()=>!!window.Hisaab);await stock(p);
-  check(await p.locator('[data-ver]').first().textContent()==='3.40','native panel is v3.40');
-  check(await snapshot(p)===baseline,'v3.37 → v3.40 preserves every raw saved byte, product, unit, quantity and unrelated module');
+  check(await p.locator('[data-ver]').first().textContent()==='3.41','native panel is v3.41');
+  check(await snapshot(p)===baseline,'v3.37 → v3.41 preserves every raw saved byte, product, unit, quantity and unrelated module');
   await preview(p,combo);
   check(await p.locator('[data-stm-match="0"]').inputValue()===products[0].id,'a real typo automatically selects its saved pcs product without exact spelling');
   check(await p.locator('[data-stm-match="1"]').inputValue()===products[1].id,'exactly 75% name similarity automatically selects the saved box product');
