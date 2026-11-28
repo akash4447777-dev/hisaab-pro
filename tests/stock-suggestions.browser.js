@@ -1,9 +1,9 @@
-/* Native v3.43 highlighted Message / Screenshot / Smart product suggestions.
+/* Native v3.44 highlighted Message / Screenshot / Smart product suggestions.
    Actual one-tap cards, phone/dark, clipboard, genuine locally fulfilled OCR.
    Synthetic disposable storage only; never a connected customer database. */
 const assert=require('node:assert/strict'),fs=require('node:fs'),path=require('node:path'),{chromium}=require('playwright');
 const {legacy,clone}=require('./fixtures/stock');
-const URL=process.env.HISAAB_URL||'http://127.0.0.1:8000/Hisaab-Pro-v3.43.html',OUT=path.resolve(process.env.HISAAB_ARTIFACTS||'.cache/stock-suggestions-native'),ASSETS=path.resolve(process.env.HISAAB_OCR_ASSETS||'.cache/qa/node_modules');fs.mkdirSync(OUT,{recursive:true});
+const URL=process.env.HISAAB_URL||'http://127.0.0.1:8000/Hisaab-Pro-v3.44.html',OUT=path.resolve(process.env.HISAAB_ARTIFACTS||'.cache/stock-suggestions-native'),ASSETS=path.resolve(process.env.HISAAB_OCR_ASSETS||'.cache/qa/node_modules');fs.mkdirSync(OUT,{recursive:true});
 const errors=[],requests=[];let checks=0;
 const check=(ok,label)=>{assert.ok(ok,label);checks++;console.log('  ✅ '+label);};
 function clock(){const Real=Date;window.Date=class extends Real{constructor(...args){super(...(args.length?args:['2026-11-14T12:00:00Z']));}static now(){return 1794657600000;}};}
@@ -20,7 +20,7 @@ async function readySmart(p){await p.waitForFunction(()=>!!document.querySelecto
 async function paste(p,text){await p.click('[data-sap=open]');await p.evaluate(text=>navigator.clipboard.writeText(text),text);await p.locator('#sapText').focus();await p.keyboard.press('Control+V');await readySmart(p);}
 async function shot(p,name){await p.screenshot({path:path.join(OUT,name),fullPage:false});}
 (async()=>{
- console.log('\n▸ Native highlighted suggestions v3.43 — original source / stock / similarity / one-click');
+ console.log('\n▸ Native highlighted suggestions v3.44 — original source / stock / similarity / one-click');
  const browser=await chromium.launch({headless:true,executablePath:process.env.HISAAB_CHROME_EXECUTABLE||undefined,args:process.env.HISAAB_CHROME_ARGS?JSON.parse(process.env.HISAAB_CHROME_ARGS):['--no-sandbox']});
  try{
   const c=await browser.newContext({viewport:{width:1280,height:950},locale:'en-IN',timezoneId:'Asia/Kolkata',acceptDownloads:true});await c.addInitScript(clock);await c.grantPermissions(['clipboard-read','clipboard-write'],{origin:new globalThis.URL(URL).origin});

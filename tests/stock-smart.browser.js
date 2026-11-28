@@ -1,9 +1,9 @@
-/* Native v3.43 Smart Paste: actual clipboard / Ctrl+V, no review or save click,
+/* Native v3.44 Smart Paste: actual clipboard / Ctrl+V, no review or save click,
    real persistence / downloads / phone layouts / offline / cancellation. Only
    synthetic local browser data, no customer login or connected backend. */
 const assert=require('node:assert/strict'),fs=require('node:fs'),path=require('node:path'),{chromium}=require('playwright');
 const {legacy,clone}=require('./fixtures/stock'),{catalogue,incoming,partial,mixed}=require('./fixtures/stock-smart');
-const URL=process.env.HISAAB_URL||'http://127.0.0.1:8000/Hisaab-Pro-v3.43.html',OUT=path.resolve(process.env.HISAAB_ARTIFACTS||'.cache/stock-smart-native');fs.mkdirSync(OUT,{recursive:true});
+const URL=process.env.HISAAB_URL||'http://127.0.0.1:8000/Hisaab-Pro-v3.44.html',OUT=path.resolve(process.env.HISAAB_ARTIFACTS||'.cache/stock-smart-native');fs.mkdirSync(OUT,{recursive:true});
 const logo='data:image/jpeg;base64,'+fs.readFileSync(path.join(__dirname,'fixtures/company-logo.jpg')).toString('base64');
 const requests=[],errors=[];let checks=0;
 function check(ok,label){assert.ok(ok,label);checks++;console.log('  ✅ '+label);}
@@ -22,7 +22,7 @@ async function countWrites(p){await p.evaluate(()=>{window.__writes=0;window.__c
 async function download(p,action,name){const event=p.waitForEvent('download');await action();const file=await event;await file.saveAs(path.join(OUT,name));return fs.readFileSync(path.join(OUT,name));}
 async function shot(p,name){await p.screenshot({path:path.join(OUT,name),fullPage:true});}
 (async()=>{
- console.log('\n▸ Native Smart Stock Paste v3.43 — trusted paste, one combo, safe partial success');
+ console.log('\n▸ Native Smart Stock Paste v3.44 — trusted paste, one combo, safe partial success');
  const browser=await chromium.launch({headless:true,executablePath:process.env.HISAAB_CHROME_EXECUTABLE||undefined,args:process.env.HISAAB_CHROME_ARGS?JSON.parse(process.env.HISAAB_CHROME_ARGS):['--no-sandbox']});
  try{
   const c=await browser.newContext({viewport:{width:1280,height:1000},locale:'en-IN',timezoneId:'Asia/Kolkata',acceptDownloads:true});await c.addInitScript(clock);
@@ -31,7 +31,7 @@ async function shot(p,name){await p.screenshot({path:path.join(OUT,name),fullPag
   const p=await c.newPage();p.on('pageerror',error=>errors.push(error.stack));
   await p.goto(new globalThis.URL('Hisaab-Pro-v3.41.html',URL).href);await p.waitForFunction(()=>!!window.Hisaab);const data=clone(legacy);data.settings.companyLogo=logo;await reset(p,{data});const baseline=await snapshot(p);
   await p.goto(URL);await p.waitForFunction(()=>!!window.Hisaab);await p.evaluate(()=>Hisaab.go('stock'));
-  check(await p.locator('[data-ver]').first().textContent()==='3.43','actual standalone release reports v3.43');check(await snapshot(p)===baseline,'real v3.41 upgrade preserves every raw byte / stock row / logo / unrelated module');
+  check(await p.locator('[data-ver]').first().textContent()==='3.44','actual standalone release reports v3.44');check(await snapshot(p)===baseline,'real v3.41 upgrade preserves every raw byte / stock row / logo / unrelated module');
   check(await p.locator('[data-sap="open"]').isVisible()&&await p.locator('[data-stm="open"]').isVisible(),'Smart Paste is primary, original Message / screenshot review is still available');
   await p.click('[data-sap="open"]');check((await p.locator('.sap-notice').textContent()).includes('apne-aap SAVE'),'automatic-save notice is visible BEFORE paste');check(await snapshot(p)===baseline,'opening Smart Paste does not write');
   check(await p.locator('#sapDialog input[type=checkbox]').count()===0,'no mandatory preview / year / review checkbox on an empty Smart Paste');

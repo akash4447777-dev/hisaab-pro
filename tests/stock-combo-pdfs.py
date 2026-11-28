@@ -13,7 +13,7 @@ import pymupdf as pdf
 
 parser=argparse.ArgumentParser(description=__doc__)
 parser.add_argument('folders',nargs='+',type=Path)
-parser.add_argument('--version',default='3.43')
+parser.add_argument('--version',default='3.44')
 parser.add_argument('--render',type=Path)
 a=parser.parse_args()
 files=sorted({file.resolve() for folder in a.folders for file in folder.glob('*.pdf')})
@@ -144,6 +144,30 @@ for file in files:
         assert len(re.findall(r'(?m)^2026-11-28$',text))==50,(file,'all 50 actual table dates')
         for unit,count in [('box',13),('pcs',13),('roll',12),('bundle',12)]:
             assert len(re.findall(r'(?m)^19 '+unit+r'$',text))==count,(file,'per-product available / exact unit',unit)
+    # v3.44: verify the REAL bulk PDF table and independently derive each
+    # per-product balance/unit total. Original spelling rows stay in the source;
+    # an unresolved item is not permitted to appear in the saved-only PDF.
+    if file.name in ['bulk-partial-logo.pdf','bulk-complete-logo.pdf']:
+        expected=json.loads((file.parent/'expected-bulk.json').read_text())
+        rows=expected['partial' if 'partial' in file.name else 'complete']
+        ids=re.findall(r'Saved item · (smsg1_[a-f0-9]{64})',text)
+        assert len(ids)==len(set(ids))==len(rows) and set(ids)=={r['id'] for r in rows},(file,'all actual saved bulk receipts exactly once')
+        balances={};units={}
+        number=lambda n:format(Decimal(str(n)).normalize(),'f')
+        for row in rows:
+            assert row['type']=='in' and row['date']=='2026-11-25',(file,'actual incoming date, not a guessed opening')
+            key=row['productId'];unit=row['unit'];quantity=Decimal(str(row['qty']))
+            before=balances.get(key,Decimal('10') if row['productName'] in ['Plastic scoreboard','Maple hanger'] else Decimal('0'))
+            balances[key]=before+quantity;units[unit]=units.get(unit,Decimal('0'))+quantity
+            cells=row['date']+row['productName']+'Stock In'+'+'+number(quantity)+' '+unit+number(balances[key])+' '+unit+'not given'
+            assert compact(cells) in compact(text),(file,'exact real product/date/type/quantity/unit/full-ledger balance table cells',row['productName'],quantity)
+        for unit,total in units.items():
+            assert compact(unit+'In'+number(total)+'Out0Sales0') in compact(text),(file,'independent exact-unit quantity total',unit)
+        assert text.count('Ceramic marker')==3,(file,'two separate canonical movement rows, one literal source line; no duplicated product')
+        assert 'Ceramc marker 4 pieces' in text,(file,'original uncorrected source spelling retained')
+        assert 'Salesperson:' not in text and 'Delivery / receiver:' not in text,(file,'no invented outgoing roles')
+        if 'partial' in file.name:assert 'Maple hanger' not in text and len(rows)==3,(file,'unresolved zero quantity NOT exported as stock')
+        else:assert len(rows)==4 and 'Maple hanger 0 sets' in text,(file,'explicit corrected qty2 in table, original bad qty0 in provenance only')
     # v3.43: independently recompute real PDF price cells/totals with Decimal,
     # not the application's BigInt implementation or its quoted total trace.
     if file.name in ['sale-package-logo.pdf','sale-50-products-logo.pdf']:

@@ -271,6 +271,7 @@ const modules=[
   ]
 ];
 function withoutStockSale(source){
+ source=require('./stock-bulk-compat').withoutStockBulk(source);
  if(!source.includes('/* v3.43 STOCK SALE CORE BEGIN'))return source;
  for(const[start,end,sha,gap]of modules){
   assert.equal(source.split(start).length-1,1);assert.equal(source.split(end).length-1,1);
