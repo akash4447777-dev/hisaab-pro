@@ -1,9 +1,9 @@
-/* Native v3.43 primary priced Sale cart. Actual keyboard/clicks, storage,
+/* Native v3.44 primary priced Sale cart. Actual keyboard/clicks, storage,
    downloads, mobile/dark, edit/reuse, dated capacity, offline and quota failures.
    All fixtures are synthetic in disposable browser contexts; no customer DB. */
 const assert=require('node:assert/strict'),fs=require('node:fs'),path=require('node:path'),{chromium}=require('playwright');
 const F=require('./fixtures/stock-sale'),{clone}=require('./fixtures/stock');
-const URL=process.env.HISAAB_URL||'http://127.0.0.1:8000/Hisaab-Pro-v3.43.html',OUT=path.resolve(process.env.HISAAB_ARTIFACTS||'.cache/stock-sale-native');fs.mkdirSync(OUT,{recursive:true});
+const URL=process.env.HISAAB_URL||'http://127.0.0.1:8000/Hisaab-Pro-v3.44.html',OUT=path.resolve(process.env.HISAAB_ARTIFACTS||'.cache/stock-sale-native');fs.mkdirSync(OUT,{recursive:true});
 const logo='data:image/jpeg;base64,'+fs.readFileSync(path.join(__dirname,'fixtures/company-logo.jpg')).toString('base64');
 const errors=[],requests=[];let checks=0;
 const check=(ok,label)=>{assert.ok(ok,label);checks++;console.log('  ✅ '+label);};
@@ -21,7 +21,7 @@ async function pdfReady(p){await p.waitForFunction(()=>!!document.querySelector(
 async function close(p){await p.locator('#overlay .modal-h [data-act=closeModal]').click();await p.waitForSelector('#overlay',{state:'detached'});}
 async function shot(p,name){if(p.viewportSize().width>600)await p.evaluate(()=>scrollTo({top:0,behavior:'instant'}));await p.screenshot({path:path.join(OUT,name),fullPage:p.viewportSize().width>600});}
 (async()=>{
- console.log('\n▸ Native Stock Sale v3.43 — one confirmed cart / actual paise / full-sale history');
+ console.log('\n▸ Native Stock Sale v3.44 — one confirmed cart / actual paise / full-sale history');
  const browser=await chromium.launch({headless:true,executablePath:process.env.HISAAB_CHROME_EXECUTABLE||undefined,args:process.env.HISAAB_CHROME_ARGS?JSON.parse(process.env.HISAAB_CHROME_ARGS):['--no-sandbox']});
  try{
   const c=await browser.newContext({viewport:{width:1440,height:1050},locale:'en-IN',timezoneId:'Asia/Kolkata',acceptDownloads:true});await c.addInitScript(clock);
@@ -29,7 +29,7 @@ async function shot(p,name){if(p.viewportSize().width>600)await p.evaluate(()=>s
   const p=await c.newPage();p.on('pageerror',error=>errors.push(error.stack));
   await p.goto(new globalThis.URL('Hisaab-Pro-v3.42.html',URL).href);await p.waitForFunction(()=>!!window.Hisaab);await reset(p);const upgrade=await snapshot(p);
   await p.goto(URL);await p.waitForFunction(()=>!!window.Hisaab);await p.evaluate(()=>Hisaab.go('stock'));
-  check(await p.locator('[data-ver]').first().textContent()==='3.43','actual standalone panel reports v3.43');check(await snapshot(p)===upgrade,'real v3.42 upgrade changes NO old row / raw storage byte / logo / financial data');check(await p.locator('.stk-tabs [role=tab]').count()===4,'Products / Sale-combo / History / Audit are distinct visible sections');
+  check(await p.locator('[data-ver]').first().textContent()==='3.44','actual standalone panel reports v3.44');check(await snapshot(p)===upgrade,'real v3.42 upgrade changes NO old row / raw storage byte / logo / financial data');check(await p.locator('.stk-tabs [role=tab]').count()===4,'Products / Sale-combo / History / Audit are distinct visible sections');
   const before=await snapshot(p),nonStock=await finance(p);await open(p);
   check(await p.locator('#ssaSale').isVisible()&&await p.locator('#overlay').count()===0,'primary Stock Sale opens one INLINE cart without a modal / second confirmation screen');check(await p.locator('#ssa_date').inputValue()==='2026-11-14'&&await p.locator('#ssa_time').inputValue()==='17:30','new sale starts at the actual mocked LOCAL clock, not a guessed message date/time');
   check(await p.locator('#ssaCommit').isDisabled(),'empty sale / missing actual customer and roles cannot confirm');await common(p);

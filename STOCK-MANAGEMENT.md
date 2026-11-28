@@ -1,9 +1,92 @@
-# Hisaab Pro v3.43 — Stock Management
+# Hisaab Pro v3.44 — Stock Management
 
 Stock Management existing Hisaab panel ka **alag tab** hai: products/photo, Stock In,
 purpose-wise Stock Out, customer-wise Sales, live availability, date-wise history,
 changes ka audit aur minimum-stock warnings. **Available quantity manually adjust
 nahi karni**; har saved transaction se balance apne-aap calculate hota hai.
+
+## Bulk Item Add via Paste + intelligent Smart Paste (v3.44)
+
+**Stock Management → ＋ Bulk Item Add via Paste** opens a dedicated **Stock In only**
+surface. Paste the complete received-item list; clear rows save automatically.
+Typing stays a draft until **Process & save**. This is the same audited inventory,
+not a second ledger or an opening/Available overwrite.
+
+1. **Date / unit already written?** Paste as-is. If absent, optional **Actual received
+   date** / **Common actual unit** fills only missing values once for the list.
+   Both start blank. Explicit item dates/units are retained; an invalid date or
+   conflicting unit must be corrected, not silently replaced by a common default.
+   Supplier and actual bill reference are optional. Choosing this surface explicitly
+   means incoming stock; **a pasted Sale / Out / Gaye is held**, never converted to In
+   or silently deducted. Use existing **Smart Paste** for mixed movements.
+2. No mandatory template: plain/numbered/labelled Hindi-English lists, quantity
+   before/after a known unit, `Boxes 3`, combined `Qty: 3 Boxes`, copied Excel,
+   headed or uniquely mappable **headerless TSV/CSV/pipe/semicolon columns** work.
+   Headerless cells may be in different orders with optional actual date/type.
+   Two possible quantities, missing/extra cells, unlabelled people or unknown units
+   are held instead of guessing a column shift. Quoted CSV preserves commas.
+3. Safe mistakes are corrected and reported: spacing/Unicode digits/grouped numbers,
+   known unit plurals/spellings, whitelisted header typos (`Prodcut`, `Quanity`,
+   `Unti`), explicit `Qty (Boxes)`, labelled serial-number columns, and uniquely
+   misplaced **Qty↔Unit / Date↔Type** cells. Source values are retained. O/I digits,
+   minus signs, pack conversions and missing quantities are **not invented**.
+4. **Existing product:** same shared local matcher, exact/accepted aliases first,
+   then a unique safe **raw ≥75%** spelling/known-abbreviation match, five-point
+   ambiguity margin and unit/model/colour/material/quality guards. Stock **increases
+   through an ordinary dated audited Stock In**; saved name/photo/minimum/opening/
+   exact unit label are not overwritten. Missing unit is never assumed from a match.
+5. **New product:** clear genuinely new incoming names create one zero-opening
+   catalogue product plus actual receipt movements. Matching now also examines
+   **every eligible new name in this paste before saving**: safe spelling variants
+   share one product; different quantities remain separate movements. Every pair
+   in an auto-group must meet the safe threshold—no transitive A→B→C guessing.
+   A literal, more complete source spelling is retained, not an invented brand/model.
+   Future sibling variants are visible before a generic name is mapped, including
+   a new variant beside an existing saved one. Generic/initials/below-threshold
+   ambiguity waits for clarification; distinct explicit variants never collapse.
+   Same-name/incompatible-unit and historical deleted/renamed identities do not
+   silently become duplicate products. New dates come from actually saved receipts.
+6. Result separates **Saved / Already recorded, repeated or explicitly skipped /
+   Clarification / New products**. Each product visibly shows **Before + received −
+   outgoing = Available now**, separately in its exact saved unit. Running totals
+   use ledger-scale integers, including balances larger than a single-entry limit;
+   no mixed-unit grand quantity. Available includes all saved dates, not just today.
+7. Correct only unresolved fields, or expand **✎ Puri galat row yahin correct
+   karein** to fix one malformed row without repasting the saved list. The original
+   bad row, explicit correction, known date/unit and original source identity are
+   retained. A row replacement cannot inject extra products/movement indexes or
+   change already-saved facts. One-tap **Similar items in THIS paste** can resolve an
+   ambiguous generic name. **Process & save** appends only newly resolved receipts
+   to the **same combo**, with no duplicated stock. A product explicitly created
+   without an opening does not demand a fictitious same-day opening attestation;
+   genuine opening snapshots retain their original checks. The no-opening exception
+   requires the actual deterministic creator snapshot plus its first dated receipt
+   audit, not merely a copied reason string; ambiguous history still asks.
+8. Same receipt/re-paste/edited/deleted history and within-list repetition are
+   checked before writing. Identical product/date/quantity repeats count once;
+   genuinely separate identical-quantity deliveries need an **actual unique
+   reference + explicit separate-delivery confirmation**. Existing opening cutoffs,
+   source arithmetic, full dated/future ledger and no-oversell checks remain.
+   Cross-device chronology/source conflicts still pause for a coherent choice;
+   they do not multiply stock or silently merge incompatible audit facts.
+
+**Reports / safety:** the local result download includes saved/skipped/unresolved
+reasons, exact-unit balance changes and original private source. The existing
+approved **Combo PDF** exports only saved rows, exact dates/units/roles/tags/IDs and
+actual saved logo/company. Pending corrections remain open; exports never write.
+**Agla paste** keeps Bulk mode but clears old facts/corrections. Close/navigation
+cancels pending work, not a completed save. Stale account/tab/disk, revoked consent,
+failed mandatory checkpoint or storage quota refuse/roll back the whole attempted
+subset; no false green Saved message. **Local Saved ≠ Cloud synced**.
+
+Bounds remain **20,000 characters / 50 items / 8 movements per item**; no silent
+truncation. A row correction is bounded at 4,000 characters; saved original-plus-
+corrected notes/details retain the existing 500-character limits. An
+oversized/unrepresentable source is reported, never silently shortened. Processing
+is local/offline with no AI service/upload, dependency, schema/key migration,
+financial integration or bundled customer catalogue. Existing Smart Paste receives
+these parser/same-batch/correction improvements; **Message / screenshot · review**,
+priced Sales, opening import and typed received-stock links remain available.
 
 ## Stock Sale / custom combo — search → select → confirm once (v3.43)
 
